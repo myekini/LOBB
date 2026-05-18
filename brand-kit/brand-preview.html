@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOBB — Brand Kit 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --lobb-black:   #0D0D0D;
+      --lobb-white:   #FAFAFA;
+      --lobb-clay:    #C4622D;
+      --lobb-surface: #F2F1EF;
+      --lobb-muted:   #8A8A8A;
+      --lobb-border:  #E5E3DF;
+      --lobb-success: #2D6A4F;
+      --lobb-star:    #F4A228;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--lobb-surface);
+      color: var(--lobb-black);
+      line-height: 1.5;
+    }
+
+    /* ── HERO ──────────────────────────────────────── */
+    .hero {
+      background: var(--lobb-black);
+      padding: 80px 64px 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(196,98,45,0.10);
+      pointer-events: none;
+    }
+    .hero-ring-1 { width: 480px; height: 480px; right: -120px; top: -140px; }
+    .hero-ring-2 { width: 280px; height: 280px; right: 80px;   top: -40px; border-color: rgba(196,98,45,0.06); }
+    .hero-ring-3 { width: 160px; height: 160px; right: 220px;  top: 40px;  border-color: rgba(196,98,45,0.05); }
+
+    .hero-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--lobb-muted);
+      margin-bottom: 48px;
+    }
+    .hero-lockup {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      margin-bottom: 24px;
+    }
+    .hero-wordmark {
+      font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+      font-size: 104px;
+      line-height: 1;
+      color: var(--lobb-white);
+      letter-spacing: 0.04em;
+    }
+    .hero-tagline {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--lobb-muted);
+      margin-bottom: 56px;
+    }
+    .hero-tagline strong {
+      color: var(--lobb-white);
+      font-weight: 700;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 28px;
+    }
+    .hero-meta-item {
+      padding-right: 40px;
+      margin-right: 40px;
+      border-right: 1px solid rgba(255,255,255,0.06);
+    }
+    .hero-meta-item:last-child { border-right: none; }
+    .hero-meta-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--lobb-muted);
+      margin-bottom: 4px;
+    }
+    .hero-meta-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--lobb-white);
+    }
+
+    /* ── SECTION SHELL ─────────────────────────────── */
+    .section {
+      padding: 72px 64px;
+      border-bottom: 1px solid var(--lobb-border);
+    }
+    .section-alt { background: white; }
+    .section-dark {
+      background: #111111;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 52px;
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--lobb-muted);
+      white-space: nowrap;
+    }
+    .section-label-dark { color: rgba(255,255,255,0.25); }
+    .section-rule {
+      flex: 1;
+      height: 1px;
+      background: var(--lobb-border);
+    }
+    .section-rule-dark { background: rgba(255,255,255,0.06); }
+
+    /* ── COLORS ────────────────────────────────────── */
+    .color-grid {
+      display: grid;
+      grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .color-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--lobb-border);
+    }
+    .color-swatch { height: 108px; width: 100%; }
+    .color-info { padding: 14px 16px; background: white; }
+    .color-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+    .color-token {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--lobb-clay);
+      margin-bottom: 2px;
+    }
+    .color-hex {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--lobb-muted);
+    }
+    .color-role {
+      font-size: 10px;
+      color: var(--lobb-muted);
+      margin-top: 4px;
+    }
+
+    /* ── TYPOGRAPHY ────────────────────────────────── */
+    .type-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 48px;
+      align-items: start;
+      padding: 40px 0;
+      border-bottom: 1px solid var(--lobb-border);
+    }
+    .type-row:first-child { padding-top: 0; }
+    .type-row:last-child  { border-bottom: none; padding-bottom: 0; }
+    .type-meta-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lobb-muted);
+      margin-bottom: 8px;
+    }
+    .type-spec {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--lobb-muted);
+      line-height: 1.9;
+    }
+    .t-display {
+      font-family: 'Bebas Neue', 'Arial Black', Impact, sans-serif;
+      font-size: 80px;
+      line-height: 0.95;
+      letter-spacing: 0.03em;
+      color: var(--lobb-black);
+    }
+    .t-headline {
+      font-family: 'Manrope', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.12;
+      color: var(--lobb-black);
+    }
+    .t-body {
+      font-family: 'Manrope', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.65;
+      color: #3a3a3a;
+      max-width: 560px;
+    }
+    .t-label {
+      font-family: 'Manrope', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--lobb-clay);
+    }
+    .t-mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 500;
+      color: var(--lobb-black);
+    }
+
+    /* ── LOGO GRID ─────────────────────────────────── */
+    .logo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .logo-card {
+      border-radius: 16px;
+      padding: 52px 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      min-height: 220px;
+    }
+    .logo-card-dark    { background: var(--lobb-black); }
+    .logo-card-light   { background: var(--lobb-white); border: 1px solid var(--lobb-border); }
+    .logo-card-surface { background: var(--lobb-surface); border: 1px solid var(--lobb-border); }
+
+    .logo-lockup {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo-lockup-text {
+      font-family: 'Bebas Neue', 'Arial Black', sans-serif;
+      font-size: 52px;
+      line-height: 1;
+      letter-spacing: 0.05em;
+    }
+    .logo-caption {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .logo-caption-dark  { color: rgba(255,255,255,0.25); }
+    .logo-caption-light { color: var(--lobb-muted); }
+
+    /* ── FAVICONS ──────────────────────────────────── */
+    .favicon-strip {
+      display: flex;
+      align-items: flex-end;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+    .favicon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .fav-bg {
+      background: #1a1a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fav-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--lobb-muted);
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    /* ── VERIFIED BADGE ────────────────────────────── */
+    .badge-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: start;
+    }
+    .badge-variants {
+      display: flex;
+      gap: 32px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .badge-variant-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .verified-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--lobb-clay);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+    .verified-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1.5px solid var(--lobb-clay);
+      color: var(--lobb-clay);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 6px 14px;
+      border-radius: 8px;
+    }
+
+    /* ── COACH CARD MOCK ───────────────────────────── */
+    .coach-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--lobb-border);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      width: 276px;
+    }
+    .coach-img-area {
+      width: 100%;
+      height: 168px;
+      background: linear-gradient(140deg, #1c1c1c 0%, #2a2a2a 60%, #1a1a1a 100%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 12px;
+      position: relative;
+    }
+    .coach-avatar-placeholder {
+      position: absolute;
+      bottom: -32px;
+      left: 16px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3a3a3a, #555);
+      border: 3px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .coach-body { padding: 44px 16px 18px; }
+    .coach-name { font-size: 17px; font-weight: 800; margin-bottom: 3px; }
+    .coach-sub  { font-size: 12px; color: var(--lobb-muted); margin-bottom: 14px; }
+    .coach-stars { color: var(--lobb-star); font-size: 13px; }
+    .coach-rating-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+    .coach-rating-num { font-size: 13px; font-weight: 700; }
+    .coach-rating-count { font-size: 12px; color: var(--lobb-muted); }
+    .coach-price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .price-main {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 19px;
+      font-weight: 500;
+    }
+    .price-unit { font-size: 12px; color: var(--lobb-muted); }
+    .coach-book-btn {
+      background: var(--lobb-black);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: default;
+    }
+
+    /* ── USAGE RULES ───────────────────────────────── */
+    .rules-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+    .rule-col-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .rule-col-title-do    { color: var(--lobb-success); }
+    .rule-col-title-dont  { color: #C04040; }
+    .rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--lobb-border);
+      font-size: 13px;
+      line-height: 1.55;
+      color: #3a3a3a;
+    }
+    .rule-item:last-child { border-bottom: none; }
+    .rule-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── TOKENS TABLE ──────────────────────────────── */
+    .tokens-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+    }
+    .token-group-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--lobb-muted);
+      margin-bottom: 16px;
+    }
+    table.token-tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+    }
+    .token-tbl th {
+      font-family: 'Manrope', sans-serif;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lobb-muted);
+      text-align: left;
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--lobb-border);
+    }
+    .token-tbl td {
+      padding: 9px 0;
+      border-bottom: 1px solid var(--lobb-border);
+      vertical-align: middle;
+    }
+    .token-tbl tr:last-child td { border-bottom: none; }
+    .t-token  { color: var(--lobb-clay); }
+    .t-val    { color: var(--lobb-black); padding-left: 24px; }
+    .t-swatch {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    /* ── FOOTER ────────────────────────────────────── */
+    .brand-footer {
+      background: var(--lobb-black);
+      padding: 36px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      color: var(--lobb-white);
+      letter-spacing: 0.07em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-meta { font-size: 11px; color: rgba(255,255,255,0.25); text-align: right; line-height: 1.7; }
+    .footer-tagline { font-size: 13px; color: var(--lobb-muted); font-style: italic; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-ring hero-ring-1"></div>
+  <div class="hero-ring hero-ring-2"></div>
+  <div class="hero-ring hero-ring-3"></div>
+
+  <div class="hero-eyebrow">LOBB · Brand Kit · 2026 · Confidential</div>
+
+  <div class="hero-lockup">
+    <!-- Logo mark — the lob arc -->
+    <svg width="88" height="88" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+    </svg>
+    <div class="hero-wordmark">LOBB</div>
+  </div>
+
+  <div class="hero-tagline">
+    <strong>Book a coach.</strong> Not a favor.
+  </div>
+
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">Primary Domain</div>
+      <div class="hero-meta-value">lobb.ng</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">App URL</div>
+      <div class="hero-meta-value">lobb.app</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">Social Handle</div>
+      <div class="hero-meta-value">@lobbapp</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">Category</div>
+      <div class="hero-meta-value">Tennis Coaching Marketplace</div>
+    </div>
+    <div class="hero-meta-item">
+      <div class="hero-meta-label">Market</div>
+      <div class="hero-meta-value">Lagos → Anglophone Africa</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     COLOR SYSTEM
+═══════════════════════════════════════════════ -->
+<section class="section section-alt">
+  <div class="section-header">
+    <span class="section-label">01 — Color System</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="color-grid">
+    <div class="color-card">
+      <div class="color-swatch" style="background:#0D0D0D;"></div>
+      <div class="color-info">
+        <div class="color-name">LOBB Black</div>
+        <div class="color-token">--lobb-black</div>
+        <div class="color-hex">#0D0D0D</div>
+        <div class="color-role">Primary bg · CTAs · Nav</div>
+      </div>
+    </div>
+
+    <div class="color-card">
+      <div class="color-swatch" style="background:#C4622D;"></div>
+      <div class="color-info">
+        <div class="color-name">LOBB Clay</div>
+        <div class="color-token">--lobb-clay</div>
+        <div class="color-hex">#C4622D</div>
+        <div class="color-role">Accent · Active states · Verified</div>
+      </div>
+    </div>
+
+    <div class="color-card">
+      <div class="color-swatch" style="background:#FAFAFA; border-bottom:1px solid #E5E3DF;"></div>
+      <div class="color-info">
+        <div class="color-name">LOBB White</div>
+        <div class="color-token">--lobb-white</div>
+        <div class="color-hex">#FAFAFA</div>
+        <div class="color-role">Light bg · Text on dark</div>
+      </div>
+    </div>
+
+    <div class="color-card">
+      <div class="color-swatch" style="background:#F2F1EF;"></div>
+      <div class="color-info">
+        <div class="color-name">Surface</div>
+        <div class="color-token">--lobb-surface</div>
+        <div class="color-hex">#F2F1EF</div>
+        <div class="color-role">Card surface · Off-white</div>
+      </div>
+    </div>
+
+    <div class="color-card">
+      <div class="color-swatch" style="background:#2D6A4F;"></div>
+      <div class="color-info">
+        <div class="color-name">Success</div>
+        <div class="color-token">--lobb-success</div>
+        <div class="color-hex">#2D6A4F</div>
+        <div class="color-role">Confirmed · Paid · Done</div>
+      </div>
+    </div>
+
+    <div class="color-card">
+      <div class="color-swatch" style="background:#F4A228;"></div>
+      <div class="color-info">
+        <div class="color-name">Star</div>
+        <div class="color-token">--lobb-star</div>
+        <div class="color-hex">#F4A228</div>
+        <div class="color-role">Rating fill only</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     TYPOGRAPHY
+═══════════════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-label">02 — Typography</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="type-row">
+    <div>
+      <div class="type-meta-label">Display</div>
+      <div class="type-spec">Bebas Neue<br>All caps · 96px<br>Tracking +0.03em</div>
+    </div>
+    <div class="t-display">LOBB</div>
+  </div>
+
+  <div class="type-row">
+    <div>
+      <div class="type-meta-label">Headline</div>
+      <div class="type-spec">Manrope<br>800 ExtraBold<br>36–48px · lh 1.12</div>
+    </div>
+    <div class="t-headline">Book a coach.<br>Not a favor.</div>
+  </div>
+
+  <div class="type-row">
+    <div>
+      <div class="type-meta-label">Body</div>
+      <div class="type-spec">Manrope<br>400 Regular<br>15–16px · lh 1.65</div>
+    </div>
+    <div class="t-body">Every coach on Lobb is video-reviewed before going live. You see their demo, their rating, and their live availability — before you spend a single naira. No surprises on court. No WhatsApp back-and-forth. Just a confirmed session in under 90 seconds.</div>
+  </div>
+
+  <div class="type-row">
+    <div>
+      <div class="type-meta-label">Label / Badge</div>
+      <div class="type-spec">Manrope<br>700 Bold<br>10–12px · uppercase<br>Tracking +0.12em</div>
+    </div>
+    <div class="t-label">✓ &nbsp;LOBB VERIFIED COACH</div>
+  </div>
+
+  <div class="type-row">
+    <div>
+      <div class="type-meta-label">Mono / Currency</div>
+      <div class="type-spec">JetBrains Mono<br>500 Medium<br>Currency values only</div>
+    </div>
+    <div class="t-mono">₦25,000 <span style="font-size:18px;color:var(--lobb-muted);font-weight:400;">/ session</span></div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     LOGO SYSTEM
+═══════════════════════════════════════════════ -->
+<section class="section section-alt">
+  <div class="section-header">
+    <span class="section-label">03 — Logo System</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="logo-grid">
+    <!-- Primary dark -->
+    <div class="logo-card logo-card-dark">
+      <div class="logo-lockup">
+        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+        </svg>
+        <span class="logo-lockup-text" style="color:#FAFAFA;">LOBB</span>
+      </div>
+      <span class="logo-caption logo-caption-dark">Primary — Dark Background</span>
+    </div>
+
+    <!-- Reversed light -->
+    <div class="logo-card logo-card-light">
+      <div class="logo-lockup">
+        <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+        </svg>
+        <span class="logo-lockup-text" style="color:#0D0D0D;">LOBB</span>
+      </div>
+      <span class="logo-caption logo-caption-light">Reversed — Light Background</span>
+    </div>
+
+    <!-- Mark only -->
+    <div class="logo-card logo-card-dark">
+      <svg width="96" height="96" viewBox="0 0 64 64" fill="none">
+        <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+      </svg>
+      <span class="logo-caption logo-caption-dark">Logo Mark — Isolated</span>
+    </div>
+
+    <!-- Wordmark only white -->
+    <div class="logo-card logo-card-dark">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#FAFAFA;letter-spacing:0.06em;line-height:1;">LOBB</span>
+      <span class="logo-caption logo-caption-dark">Wordmark — White</span>
+    </div>
+
+    <!-- Wordmark only dark -->
+    <div class="logo-card logo-card-light">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:60px;color:#0D0D0D;letter-spacing:0.06em;line-height:1;">LOBB</span>
+      <span class="logo-caption logo-caption-light">Wordmark — Dark</span>
+    </div>
+
+    <!-- With tagline -->
+    <div class="logo-card logo-card-dark" style="gap:16px;">
+      <div class="logo-lockup">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+        </svg>
+        <span class="logo-lockup-text" style="color:#FAFAFA;font-size:40px;">LOBB</span>
+      </div>
+      <span style="font-size:12px;color:var(--lobb-muted);font-style:italic;">Book a coach. Not a favor.</span>
+      <span class="logo-caption logo-caption-dark">Full Lockup — With Tagline</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     FAVICONS & APP ICONS
+═══════════════════════════════════════════════ -->
+<section class="section section-dark">
+  <div class="section-header">
+    <span class="section-label section-label-dark">04 — Favicons &amp; App Icons</span>
+    <div class="section-rule section-rule-dark"></div>
+  </div>
+
+  <div class="favicon-strip">
+    <div class="favicon-item">
+      <div class="fav-bg" style="width:16px;height:16px;border-radius:3px;">
+        <svg width="10" height="10" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="9" fill="#C4622D"/>
+        </svg>
+      </div>
+      <div class="fav-label" style="color:rgba(255,255,255,0.3);">16×16<br>favicon.ico</div>
+    </div>
+
+    <div class="favicon-item">
+      <div class="fav-bg" style="width:32px;height:32px;border-radius:7px;">
+        <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="7" fill="#C4622D"/>
+        </svg>
+      </div>
+      <div class="fav-label" style="color:rgba(255,255,255,0.3);">32×32<br>favicon.svg</div>
+    </div>
+
+    <div class="favicon-item">
+      <div class="fav-bg" style="width:64px;height:64px;border-radius:14px;">
+        <svg width="40" height="40" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+        </svg>
+      </div>
+      <div class="fav-label" style="color:rgba(255,255,255,0.3);">64×64<br>icon.png</div>
+    </div>
+
+    <div class="favicon-item">
+      <div class="fav-bg" style="width:128px;height:128px;border-radius:28px;">
+        <svg width="80" height="80" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+        </svg>
+      </div>
+      <div class="fav-label" style="color:rgba(255,255,255,0.3);">128×128<br>icon@2x.png</div>
+    </div>
+
+    <div class="favicon-item">
+      <div class="fav-bg" style="width:180px;height:180px;border-radius:40px;">
+        <svg width="112" height="112" viewBox="0 0 64 64" fill="none">
+          <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round"/>
+          <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+        </svg>
+      </div>
+      <div class="fav-label" style="color:rgba(255,255,255,0.3);">180×180<br>apple-touch-icon</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     LOBB VERIFIED BADGE
+═══════════════════════════════════════════════ -->
+<section class="section section-alt">
+  <div class="section-header">
+    <span class="section-label">05 — LOBB Verified Badge</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="badge-layout">
+    <!-- Variants column -->
+    <div>
+      <p style="font-size:13px;color:#555;line-height:1.7;margin-bottom:40px;">
+        The LOBB Verified mark is the most important trust signal in the product. Every coach on Lobb is video-reviewed by a human before going live. The badge communicates instantly that this coach has been checked — not just auto-approved.
+      </p>
+
+      <div class="badge-variants">
+        <!-- Circular seal -->
+        <div class="badge-variant-item">
+          <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="57" fill="#0D0D0D" stroke="#C4622D" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#C4622D" stroke-width="0.75" stroke-opacity="0.22"/>
+            <text x="60" y="28" text-anchor="middle"
+                  font-family="'Bebas Neue','Arial Black',sans-serif"
+                  font-size="13" letter-spacing="3.5" fill="#FAFAFA">LOBB</text>
+            <path d="M 36 82 C 36 38 84 38 84 82"
+                  stroke="#C4622D" stroke-width="2.75" stroke-linecap="round" fill="none"/>
+            <circle cx="60" cy="50" r="5.5" fill="#C4622D"/>
+            <text x="60" y="106" text-anchor="middle"
+                  font-family="'Manrope','Helvetica Neue',sans-serif"
+                  font-size="8.5" font-weight="700" letter-spacing="2.8" fill="#C4622D">VERIFIED</text>
+          </svg>
+          <div class="fav-label">Seal Badge — Large</div>
+        </div>
+
+        <!-- Circular seal small -->
+        <div class="badge-variant-item">
+          <svg width="64" height="64" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="57" fill="#0D0D0D" stroke="#C4622D" stroke-width="1.5"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="#C4622D" stroke-width="0.75" stroke-opacity="0.22"/>
+            <text x="60" y="28" text-anchor="middle"
+                  font-family="'Bebas Neue','Arial Black',sans-serif"
+                  font-size="13" letter-spacing="3.5" fill="#FAFAFA">LOBB</text>
+            <path d="M 36 82 C 36 38 84 38 84 82"
+                  stroke="#C4622D" stroke-width="2.75" stroke-linecap="round" fill="none"/>
+            <circle cx="60" cy="50" r="5.5" fill="#C4622D"/>
+            <text x="60" y="106" text-anchor="middle"
+                  font-family="'Manrope','Helvetica Neue',sans-serif"
+                  font-size="8.5" font-weight="700" letter-spacing="2.8" fill="#C4622D">VERIFIED</text>
+          </svg>
+          <div class="fav-label">Seal Badge — Small</div>
+        </div>
+
+        <!-- Pill -->
+        <div class="badge-variant-item">
+          <span class="verified-pill">
+            <svg width="12" height="12" viewBox="0 0 64 64" fill="none">
+              <path d="M 8 56 C 8 4 56 4 56 56" stroke="white" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="32" cy="17" r="8" fill="white"/>
+            </svg>
+            LOBB VERIFIED
+          </span>
+          <div class="fav-label">Pill — On card images</div>
+        </div>
+
+        <!-- Outline -->
+        <div class="badge-variant-item">
+          <span class="verified-outline">
+            <svg width="11" height="11" viewBox="0 0 64 64" fill="none">
+              <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="6" stroke-linecap="round"/>
+              <circle cx="32" cy="17" r="8" fill="#C4622D"/>
+            </svg>
+            LOBB VERIFIED
+          </span>
+          <div class="fav-label">Outline — Light contexts</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In context: coach card -->
+    <div>
+      <p style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--lobb-muted);margin-bottom:20px;">In Context — Coach Card</p>
+      <div class="coach-card">
+        <div class="coach-img-area">
+          <span class="verified-pill" style="font-size:9px;padding:5px 11px;">
+            <svg width="10" height="10" viewBox="0 0 64 64" fill="none">
+              <path d="M 8 56 C 8 4 56 4 56 56" stroke="white" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="32" cy="17" r="9" fill="white"/>
+            </svg>
+            LOBB VERIFIED
+          </span>
+          <div class="coach-avatar-placeholder">
+            <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="22" r="12" fill="#555"/>
+              <path d="M 10 56 Q 32 42 54 56" fill="#555"/>
+            </svg>
+          </div>
+        </div>
+        <div class="coach-body">
+          <div class="coach-name">Emeka Adeyemi</div>
+          <div class="coach-sub">Lagos Lawn Tennis Club · 6 yrs exp</div>
+          <div class="coach-rating-row">
+            <span class="coach-stars">★★★★★</span>
+            <span class="coach-rating-num">4.9</span>
+            <span class="coach-rating-count">(48 sessions)</span>
+          </div>
+          <div class="coach-price-row">
+            <div>
+              <span class="price-main">₦25,000</span>
+              <span class="price-unit"> / session</span>
+            </div>
+            <button class="coach-book-btn">Book Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     USAGE RULES
+═══════════════════════════════════════════════ -->
+<section class="section">
+  <div class="section-header">
+    <span class="section-label">06 — Brand Voice &amp; Usage</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="rules-grid">
+    <div>
+      <div class="rule-col-title rule-col-title-do">Do</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use LOBB in all-caps in logos, marks, and headlines</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use "Lobb" in sentence case for running UI copy and body text</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Lead with benefits — "Pay safely" before "our escrow system"</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Keep CTAs active and direct: "Book a coach." not "Sessions can be booked."</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use clay (#C4622D) only for active states, verified elements, and key accents</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use JetBrains Mono exclusively for all currency values (₦)</div>
+    </div>
+    <div>
+      <div class="rule-col-title rule-col-title-dont">Don't</div>
+      <div class="rule-item"><span class="rule-icon" style="color:#C04040;">✗</span> Never use tennis puns in serious contexts ("game, set, match for your career")</div>
+      <div class="rule-item"><span class="rule-icon" style="color:#C04040;">✗</span> Never stretch, skew, rotate, or recolour the logo mark</div>
+      <div class="rule-item"><span class="rule-icon" style="color:#C04040;">✗</span> Never use ball-yellow, court-blue, or clay-red as primary brand colours</div>
+      <div class="rule-item"><span class="rule-icon" style="color:#C04040;">✗</span> Never place the logo on a busy photographic background without a scrim</div>
+      <div class="rule-item"><span class="rule-icon" style="color:#C04040;">✗</span> Never over-Nigerianise copy to prove local credentials — it reads as patronising</div>
+      <div class="rule-item"><span class="rule-icon" style="color:#C04040;">✗</span> Never use passive voice in CTAs or marketing copy</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     DESIGN TOKENS
+═══════════════════════════════════════════════ -->
+<section class="section section-alt">
+  <div class="section-header">
+    <span class="section-label">07 — Design Tokens</span>
+    <div class="section-rule"></div>
+  </div>
+
+  <div class="tokens-grid">
+    <div>
+      <div class="token-group-title">Color Tokens</div>
+      <table class="token-tbl">
+        <thead><tr><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td class="t-token">--lobb-black</td>  <td class="t-val"><span class="t-swatch" style="background:#0D0D0D;"></span>#0D0D0D</td></tr>
+          <tr><td class="t-token">--lobb-white</td>  <td class="t-val"><span class="t-swatch" style="background:#FAFAFA;border:1px solid #ddd;"></span>#FAFAFA</td></tr>
+          <tr><td class="t-token">--lobb-clay</td>   <td class="t-val"><span class="t-swatch" style="background:#C4622D;"></span>#C4622D</td></tr>
+          <tr><td class="t-token">--lobb-surface</td><td class="t-val"><span class="t-swatch" style="background:#F2F1EF;border:1px solid #ddd;"></span>#F2F1EF</td></tr>
+          <tr><td class="t-token">--lobb-muted</td>  <td class="t-val"><span class="t-swatch" style="background:#8A8A8A;"></span>#8A8A8A</td></tr>
+          <tr><td class="t-token">--lobb-border</td> <td class="t-val"><span class="t-swatch" style="background:#E5E3DF;border:1px solid #ccc;"></span>#E5E3DF</td></tr>
+          <tr><td class="t-token">--lobb-success</td><td class="t-val"><span class="t-swatch" style="background:#2D6A4F;"></span>#2D6A4F</td></tr>
+          <tr><td class="t-token">--lobb-star</td>   <td class="t-val"><span class="t-swatch" style="background:#F4A228;"></span>#F4A228</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="token-group-title">Spacing &amp; Shape Tokens</div>
+      <table class="token-tbl">
+        <thead><tr><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td class="t-token">base-unit</td>       <td class="t-val">4px</td></tr>
+          <tr><td class="t-token">card-padding</td>    <td class="t-val">16px</td></tr>
+          <tr><td class="t-token">screen-margin</td>   <td class="t-val">20px</td></tr>
+          <tr><td class="t-token">section-gap</td>     <td class="t-val">24px</td></tr>
+          <tr><td class="t-token">element-gap</td>     <td class="t-val">8px</td></tr>
+          <tr><td class="t-token">radius-card</td>     <td class="t-val">16px</td></tr>
+          <tr><td class="t-token">radius-button</td>   <td class="t-val">14px</td></tr>
+          <tr><td class="t-token">radius-pill</td>     <td class="t-val">999px</td></tr>
+          <tr><td class="t-token">radius-input</td>    <td class="t-val">12px</td></tr>
+          <tr><td class="t-token">radius-photo</td>    <td class="t-val">12px (card) / 50% (profile)</td></tr>
+          <tr><td class="t-token">shadow-card</td>     <td class="t-val">0 2px 12px rgba(0,0,0,.06)</td></tr>
+          <tr><td class="t-token">shadow-sticky</td>   <td class="t-val">0 -4px 20px rgba(0,0,0,.08)</td></tr>
+          <tr><td class="t-token">nav-height</td>      <td class="t-val">64px + safe area</td></tr>
+          <tr><td class="t-token">sticky-cta-h</td>    <td class="t-val">80px + safe area</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════ -->
+<footer class="brand-footer">
+  <div class="footer-logo">
+    <svg width="28" height="28" viewBox="0 0 64 64" fill="none">
+      <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="4" stroke-linecap="round"/>
+      <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+    </svg>
+    LOBB
+  </div>
+  <div class="footer-tagline">Book a coach. Not a favor.</div>
+  <div class="footer-meta">lobb.ng · @lobbapp<br>Brand Kit 2026 · Confidential</div>
+</footer>
+
+</body>
+</html>

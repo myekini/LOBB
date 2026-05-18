@@ -1,0 +1,12 @@
+<svg viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LOBB Apple Touch Icon">
+  <title>LOBB Apple Touch Icon 180×180</title>
+  <!-- iOS rounds corners automatically, but include for reference -->
+  <rect width="180" height="180" rx="40" fill="#0D0D0D"/>
+  <!-- Subtle clay tint ring -->
+  <circle cx="90" cy="90" r="78" stroke="#C4622D" stroke-width="0.75" stroke-opacity="0.15" fill="none"/>
+  <!-- Large arc mark, well padded -->
+  <path d="M 30 148 C 30 16 150 16 150 148"
+        stroke="#C4622D" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- Ball at apex -->
+  <circle cx="90" cy="52" r="16" fill="#C4622D"/>
+</svg>

@@ -1,0 +1,7 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LOBB Favicon 32px">
+  <title>LOBB Favicon 32px</title>
+  <rect width="32" height="32" rx="7" fill="#0D0D0D"/>
+  <path d="M 6 26 C 6 4 26 4 26 26"
+        stroke="#C4622D" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <circle cx="16" cy="10" r="3.5" fill="#C4622D"/>
+</svg>

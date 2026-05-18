@@ -1,0 +1,19 @@
+<svg viewBox="0 0 320 92" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LOBB Logo with Tagline">
+  <title>LOBB Logo with Tagline</title>
+  <rect width="320" height="92" fill="#0D0D0D"/>
+  <g transform="translate(20, 10) scale(0.875)">
+    <path d="M 8 56 C 8 4 56 4 56 56"
+          stroke="#C4622D" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <circle cx="32" cy="17" r="6" fill="#C4622D"/>
+  </g>
+  <text x="88" y="52"
+        font-family="'Bebas Neue', 'Arial Black', Impact, sans-serif"
+        font-size="52" font-weight="400"
+        letter-spacing="3"
+        fill="#FAFAFA">LOBB</text>
+  <text x="90" y="72"
+        font-family="'Manrope', 'Helvetica Neue', Arial, sans-serif"
+        font-size="11" font-weight="400"
+        letter-spacing="0.5"
+        fill="#8A8A8A">Book a coach. Not a favor.</text>
+</svg>

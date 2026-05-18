@@ -1,0 +1,9 @@
+<svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LOBB Logo Mark">
+  <title>LOBB Logo Mark</title>
+  <!-- Lob trajectory arc: start bottom-left, peak at (32,17), end bottom-right -->
+  <path d="M 8 56 C 8 4 56 4 56 56"
+        stroke="#C4622D" stroke-width="3.5"
+        stroke-linecap="round" fill="none"/>
+  <!-- Tennis ball at apex -->
+  <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+</svg>

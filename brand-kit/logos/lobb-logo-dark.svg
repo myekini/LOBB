@@ -1,0 +1,17 @@
+<svg viewBox="0 0 300 72" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LOBB Primary Logo — Dark">
+  <title>LOBB Primary Logo — Dark Background</title>
+  <!-- Background -->
+  <rect width="300" height="72" rx="0" fill="#0D0D0D"/>
+  <!-- Logo mark (scaled, centered vertically at 36) -->
+  <g transform="translate(20, 8) scale(0.875)">
+    <path d="M 8 56 C 8 4 56 4 56 56"
+          stroke="#C4622D" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <circle cx="32" cy="17" r="6" fill="#C4622D"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="88" y="50"
+        font-family="'Bebas Neue', 'Arial Black', Impact, sans-serif"
+        font-size="52" font-weight="400"
+        letter-spacing="3"
+        fill="#FAFAFA">LOBB</text>
+</svg>

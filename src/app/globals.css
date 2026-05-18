@@ -1,0 +1,72 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-6px); }
+  75%       { transform: translateX(6px); }
+}
+
+@keyframes successPop {
+  0%   { transform: scale(0.82); opacity: 0; }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+@layer base {
+  :root {
+    /* ── LOBB Brand Tokens (aligned to brand kit) ── */
+    --lobb-black:    #0D0D0D;
+    --lobb-clay:     #C4622D;
+    --lobb-clay-dark:#9A4820;
+    --lobb-surface:  #FAFAFA;
+    --lobb-bg:       #F2F1EF;
+    --lobb-surface-2:#E8E4DD;
+    --lobb-border:   #E5E3DF;
+    --lobb-muted:    #8A8A8A;
+    --lobb-success:  #2D6A4F;
+    --lobb-star:     #F4A228;
+    /* Legacy aliases kept for components */
+    --lobb-ink:      #171613;
+    --lobb-green:    #0F3D2E;
+
+    /* ── shadcn/ui base tokens ── */
+    --background:          oklch(1 0 0);
+    --foreground:          oklch(0.145 0 0);
+    --card:                oklch(1 0 0);
+    --card-foreground:     oklch(0.145 0 0);
+    --popover:             oklch(1 0 0);
+    --popover-foreground:  oklch(0.145 0 0);
+    --primary:             oklch(0.205 0 0);
+    --primary-foreground:  oklch(0.985 0 0);
+    --secondary:           oklch(0.97 0 0);
+    --secondary-foreground:oklch(0.205 0 0);
+    --muted:               oklch(0.97 0 0);
+    --muted-foreground:    oklch(0.556 0 0);
+    --accent:              oklch(0.97 0 0);
+    --accent-foreground:   oklch(0.205 0 0);
+    --destructive:         oklch(0.577 0.245 27.325);
+    --border:              oklch(0.922 0 0);
+    --input:               oklch(0.922 0 0);
+    --ring:                oklch(0.708 0 0);
+    --radius:              0.625rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+}

@@ -1,0 +1,27 @@
+<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="LOBB Verified Badge">
+  <title>LOBB Verified Badge</title>
+  <!-- Outer clay ring -->
+  <circle cx="60" cy="60" r="58" fill="#0D0D0D" stroke="#C4622D" stroke-width="1.5"/>
+  <!-- Inner subtle ring -->
+  <circle cx="60" cy="60" r="51" fill="none" stroke="#C4622D" stroke-width="0.75" stroke-opacity="0.25"/>
+  <!-- Arc mark centered in badge -->
+  <path d="M 36 82 C 36 38 84 38 84 82"
+        stroke="#C4622D" stroke-width="2.75" stroke-linecap="round" fill="none"/>
+  <!-- Ball at apex of arc -->
+  <circle cx="60" cy="50" r="5.5" fill="#C4622D"/>
+  <!-- LOBB label top -->
+  <text x="60" y="28"
+        text-anchor="middle"
+        font-family="'Bebas Neue', 'Arial Black', Impact, sans-serif"
+        font-size="13"
+        letter-spacing="3"
+        fill="#FAFAFA">LOBB</text>
+  <!-- VERIFIED label bottom -->
+  <text x="60" y="106"
+        text-anchor="middle"
+        font-family="'Manrope', 'Helvetica Neue', Arial, sans-serif"
+        font-size="8.5"
+        font-weight="700"
+        letter-spacing="2.5"
+        fill="#C4622D">VERIFIED</text>
+</svg>
