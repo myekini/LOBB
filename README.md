@@ -35,10 +35,107 @@ Product promise:
 | Public | `/`, `/coaches`, `/coaches/[slug]` | Landing page, coach discovery, public coach profile |
 | Auth | `/auth/login`, `/auth/verify`, `/auth/role`, `/auth/setup/player`, `/auth/setup/coach/1` | OTP login, role selection, onboarding |
 | Booking | `/book/[coachSlug]/step-1`, `/book/[coachSlug]/step-2`, `/book/[coachSlug]/step-3`, `/book/confirm` | Slot confirmation, session details, payment summary, success state |
-| Player | `/dashboard`, `/dashboard/bookings/[id]`, `/dashboard/review/[bookingId]`, `/profile`, `/profile/edit` | My bookings, booking detail, reviews, profile |
+| Player | `/dashboard`, `/dashboard/bookings/[id]`, `/dashboard/review/[bookingId]`, `/profile` | My bookings, booking detail, reviews, profile |
 | Coach | `/coach/dashboard`, `/coach/bookings`, `/coach/bookings/[id]`, `/coach/earnings`, `/coach/profile`, `/coach/availability`, `/coach/profile/preview` | Coach home, schedule, earnings, profile editor, availability |
-| Admin | `/admin`, `/admin/coaches`, `/admin/bookings`, `/admin/disputes`, `/admin/earnings` | Platform dashboard, coach approvals, booking log, disputes, GMV |
+| Admin | `/admin`, `/admin/coaches`, `/admin/bookings`, `/admin/disputes` | Platform dashboard, coach approvals, booking log, disputes |
+| Utility/Sub-screens | `/profile/edit`, `/coach/create-profile`, `/admin/earnings` | Implementation helpers for edit and finance workflows |
 | Support/Legal | `/how-it-works`, `/faq`, `/terms`, `/privacy` | MVP support and legal pages |
+
+## MVP Screen Inventory
+
+The counted MVP scope is **27 distinct screens plus 8 overlay/modal states**. Utility routes and support/legal pages help the implementation, but they do not change the MVP screen count.
+
+### Onboarding & Auth (Shared)
+
+| ID | Screen | Route |
+| --- | --- | --- |
+| 1.1 | Splash / Hero | `/` |
+| 1.2 | Phone Entry | `/auth/login` |
+| 1.3 | OTP Verification | `/auth/verify` |
+| 1.4 | Role Selection | `/auth/role` |
+| 1.5a | Player Quick Setup | `/auth/setup/player` |
+| 1.5b | Coach Name Setup (Step 1) | `/auth/setup/coach/1` |
+
+### Player
+
+| ID | Screen | Route |
+| --- | --- | --- |
+| 2.1 | Home | `/` |
+| 2.2 | Browse / Search | `/coaches` |
+| 2.3 | Coach Profile with About, Availability, Reviews tabs | `/coaches/[slug]` |
+| 2.4 | Booking Step 1: Select Slot | `/book/[coachSlug]/step-1` |
+| 2.5 | Booking Step 2: Session Details | `/book/[coachSlug]/step-2` |
+| 2.6 | Booking Step 3: Payment | `/book/[coachSlug]/step-3` |
+| 2.7 | Booking Confirmation | `/book/confirm` |
+| 2.8 | My Bookings with Upcoming and Past tabs | `/dashboard` |
+| 2.9 | Booking Detail with Cancel flow | `/dashboard/bookings/[id]` |
+| 2.10 | Leave a Review | `/dashboard/review/[bookingId]` |
+| 2.11 | Player Profile / Settings | `/profile` |
+
+### Coach
+
+| ID | Screen | Route |
+| --- | --- | --- |
+| 3.1 | Coach Dashboard Home | `/coach/dashboard` |
+| 3.2 | Coach Bookings List | `/coach/bookings` |
+| 3.3 | Coach Earnings | `/coach/earnings` |
+| 3.4 | Coach Profile Editor with section sub-flows | `/coach/profile` |
+| 3.5 | Availability Manager | `/coach/availability` |
+| 3.6 | Profile Preview | `/coach/profile/preview` |
+
+### Admin
+
+| ID | Screen | Route |
+| --- | --- | --- |
+| 4.1 | Admin Dashboard | `/admin` |
+| 4.2 | Coach Approval Queue | `/admin/coaches` |
+| 4.3 | All Bookings | `/admin/bookings` |
+| 4.4 | Dispute Resolution | `/admin/disputes` |
+
+### Global / Utility States
+
+| State | Where It Appears |
+| --- | --- |
+| Toast system | Global app shell |
+| Empty states | Every list screen that can be empty |
+| Skeleton loaders | Data-fetching screens |
+| Offline state | Global app shell |
+| Cancellation confirmation modal | Player booking detail |
+| Filter bottom sheet | Browse / Search |
+| Sort bottom sheet | Browse / Search |
+| Coach rejection modal | Admin coach approvals |
+
+### Helper Routes Outside The Count
+
+| Route | Reason |
+| --- | --- |
+| `/profile/edit` | Player profile edit sub-screen for 2.11 |
+| `/coach/create-profile` | Coach profile section editor for 3.4 |
+| `/admin/earnings` | Admin finance utility linked from platform operations |
+| `/how-it-works`, `/faq`, `/terms`, `/privacy` | Support and legal content |
+
+## Navigation Map
+
+```txt
+SPLASH
+  -> Phone Entry -> OTP -> Role Selection
+        |-> Player Setup -> HOME (Player)
+        |     |-> Browse <-> Coach Profile -> Book Step 1 -> Step 2 -> Step 3 -> Confirmation
+        |     |-> My Bookings -> Booking Detail -> Cancel modal
+        |     |                              -> Leave Review
+        |     `-> Player Profile
+        |
+        `-> Coach Setup -> COACH DASHBOARD
+              |-> Coach Bookings
+              |-> Coach Earnings
+              |-> Coach Profile Editor -> Profile Preview
+              `-> Availability Manager
+
+ADMIN (separate login through the same phone OTP, role = admin)
+  -> Admin Dashboard -> Coach Approvals -> Reject modal
+                     -> All Bookings
+                     -> Dispute Resolution
+```
 
 ## Core Product Behaviors
 
