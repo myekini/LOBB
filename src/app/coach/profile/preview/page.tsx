@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Edit3, Eye, MapPin, Share2, Star } from "lucide-react";
 import { getCoach, money } from "@/lib/mock-data";
+import { LobbVerifiedBadge } from "@/components/lobb-badge";
 
 export default function CoachProfilePreviewPage() {
   const router = useRouter();
@@ -33,9 +34,7 @@ export default function CoachProfilePreviewPage() {
         <img src={coach.hero} alt="" className="size-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]">
-            LOBB Verified
-          </span>
+          <LobbVerifiedBadge verified={coach.verified} size="large" />
           <h2 className="mt-3 text-[28px] font-black leading-tight">{coach.name}</h2>
           <p className="text-sm font-semibold text-white/75">{coach.subtitle}</p>
         </div>

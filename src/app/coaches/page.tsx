@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { coaches } from "@/lib/mock-data";
 import { CoachListCard } from "@/components/coach-cards";
 import { PlayerBottomNav } from "@/components/player-nav";
+import { LobbEmptyState } from "@/components/lobb-empty-state";
 
 const locations = ["All", "Lekki", "VI", "Ikoyi", "Ikeja", "Surulere"];
 const specs = ["Beginners", "Kids", "Adults", "Competitive", "Fitness"];
@@ -83,14 +84,18 @@ export default function CoachesPage() {
         {results.length ? (
           results.map((coach) => <CoachListCard key={coach.slug} coach={coach} />)
         ) : (
-          <div className="rounded-[28px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center shadow-[0_14px_34px_rgba(58,43,20,0.06)]">
-            <p className="mx-auto flex size-16 items-center justify-center rounded-full bg-[var(--lobb-surface-2)] text-3xl">🎾</p>
-            <h2 className="mt-4 font-black">No coaches match these filters.</h2>
-            <p className="mt-2 text-sm font-medium text-[var(--lobb-muted)]">Try widening your search.</p>
-            <button className="mt-5 rounded-full bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white" onClick={() => { setQuery(""); setLocation("All"); }}>
-              Clear filters
-            </button>
-          </div>
+          <LobbEmptyState
+            title="No coaches match your filters."
+            body="Try widening your search."
+            action={
+              <button
+                className="rounded-full bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white"
+                onClick={() => { setQuery(""); setLocation("All"); }}
+              >
+                Clear filters
+              </button>
+            }
+          />
         )}
       </section>
 

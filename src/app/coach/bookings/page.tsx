@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Circle, MapPin } from "lucide-react";
 import { CoachBottomNav } from "@/components/coach-nav";
+import { LobbEmptyState } from "@/components/lobb-empty-state";
 import { coachBookings, getBookingDay, money, type CoachBooking } from "@/lib/mock-data";
 
 type BookingTab = "confirmed" | "completed" | "cancelled";
@@ -38,9 +39,16 @@ export default function CoachBookingsPage() {
         </div>
 
         <section className="mt-6 space-y-4">
-          {bookings.map((booking) => (
-            <CoachBookingCard key={booking.id} booking={booking} />
-          ))}
+          {bookings.length ? (
+            bookings.map((booking) => (
+              <CoachBookingCard key={booking.id} booking={booking} />
+            ))
+          ) : (
+            <LobbEmptyState
+              title="No bookings here yet"
+              body="Confirmed sessions and player requests will appear here."
+            />
+          )}
         </section>
       </section>
 

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CheckCircle2, Circle, Star, Trophy } from "lucide-react";
+import { CheckCircle2, Circle, Star } from "lucide-react";
 import { PlayerBottomNav } from "@/components/player-nav";
 import { getBookingDay, getCoach, playerBookings } from "@/lib/mock-data";
+import { LobbEmptyState } from "@/components/lobb-empty-state";
 
 type BookingTab = "upcoming" | "past";
 
@@ -105,14 +106,14 @@ function BookingCard({ booking }: { booking: (typeof playerBookings)[number] }) 
 
 function EmptyBookings() {
   return (
-    <section className="rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-6 py-10 text-center shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
-      <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[#fff0e8] text-[var(--lobb-clay)]">
-        <Trophy className="size-10" />
-      </div>
-      <h2 className="mt-5 font-black">No upcoming sessions</h2>
-      <Link href="/coaches" className="mt-6 inline-flex h-12 items-center justify-center rounded-full bg-[var(--lobb-clay)] px-6 text-sm font-black text-white">
-        Find a Coach
-      </Link>
-    </section>
+    <LobbEmptyState
+      title="No upcoming sessions"
+      body="No sessions yet. Find a coach and get on court."
+      action={
+        <Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--lobb-clay)] px-6 text-sm font-black text-white">
+          Find a Coach
+        </Link>
+      }
+    />
   );
 }

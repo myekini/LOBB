@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Clock3, LockKeyhole, Star } from "lucide-react";
 import { BookingButton, BookingShell } from "@/components/booking-shell";
+import { showLobbToast } from "@/components/lobb-global-state";
 import { bookingDays, getBookingDay, getCoach } from "@/lib/mock-data";
 
 function BookingStepOneContent() {
@@ -65,7 +66,10 @@ function BookingStepOneContent() {
         {slots.map((slot) => (
           <button
             key={slot}
-            onClick={() => setTime(slot)}
+            onClick={() => {
+              setTime(slot);
+              showLobbToast({ type: "info", message: "Slot held for 10 minutes." });
+            }}
             className={`h-12 rounded-full border text-sm font-black ${time === slot ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white" : "border-[var(--lobb-border)] bg-[var(--lobb-surface)]"}`}
           >
             {slot}

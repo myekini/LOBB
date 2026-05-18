@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
+import { showLobbToast } from "@/components/lobb-global-state";
 import { getBookingDay, getCoach, getPlayerBooking } from "@/lib/mock-data";
 
 export default function LeaveReviewPage() {
@@ -14,11 +15,10 @@ export default function LeaveReviewPage() {
   const day = getBookingDay(booking.day);
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
-  const [submitted, setSubmitted] = useState(false);
 
   const submit = () => {
     if (!rating) return;
-    setSubmitted(true);
+    showLobbToast({ type: "success", message: "Review submitted. Thank you." });
     window.setTimeout(() => router.push("/dashboard"), 800);
   };
 
@@ -31,12 +31,6 @@ export default function LeaveReviewPage() {
           </button>
           <h1 className="font-black">Leave a Review</h1>
         </header>
-
-        {submitted && (
-          <p className="mb-5 rounded-[18px] bg-[#e8f4ed] px-4 py-3 text-sm font-black text-[var(--lobb-success)]">
-            Review submitted. Thank you.
-          </p>
-        )}
 
         <h2 className="text-[22px] font-black leading-tight">How was your session with {coach.name.split(" ")[0]}?</h2>
         <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">{day.short} · {booking.time}</p>

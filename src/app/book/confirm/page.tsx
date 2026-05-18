@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle, ClipboardList, CreditCard, MapPin, Phone } from "lucide-react";
+import { showLobbToast } from "@/components/lobb-global-state";
 import { getBookingDay, getCoach, money } from "@/lib/mock-data";
 
 function BookingConfirmContent() {
@@ -14,6 +15,10 @@ function BookingConfirmContent() {
   const bookingDay = getBookingDay(day);
   const court = search.get("court") || "";
   const total = Number(search.get("total") || coach.rate * 1.05);
+
+  useEffect(() => {
+    showLobbToast({ type: "success", message: "Booking confirmed! Check your SMS." });
+  }, []);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--lobb-bg)] p-5 text-[var(--lobb-black)]">

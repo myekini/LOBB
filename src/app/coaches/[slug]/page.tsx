@@ -1,9 +1,12 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ArrowLeft, Heart, Play, Star } from "lucide-react";
 import { getCoach, money } from "@/lib/mock-data";
+import { LobbVerifiedBadge } from "@/components/lobb-badge";
+import { LobbEmptyState } from "@/components/lobb-empty-state";
+import { showLobbToast } from "@/components/lobb-global-state";
 
 const days = ["Mon 12", "Tue 13", "Wed 14", "Thu 15", "Fri 16", "Sat 17"];
 
@@ -17,8 +20,17 @@ function CoachProfileContent() {
   const [selectedDay, setSelectedDay] = useState(search.get("date") || Object.keys(coach.slots)[0] || "Thu 15");
   const [selectedSlot, setSelectedSlot] = useState("");
   const slotTimedOut = search.get("timeout") === "slot";
+  const reviewSamples = coach.reviews
+    ? ["Great session. Emeka was patient with my kids and explained everything clearly.", "Very professional. Court access was confirmed before I arrived."]
+    : [];
 
   const slots = useMemo(() => coach.slots[selectedDay] || [], [coach.slots, selectedDay]);
+
+  useEffect(() => {
+    if (slotTimedOut) {
+      showLobbToast({ type: "warning", message: "Your slot timed out. Select a new time." });
+    }
+  }, [slotTimedOut]);
 
   const cta = () => {
     if (!selectedSlot) {
@@ -64,7 +76,7 @@ function CoachProfileContent() {
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-xl font-black">{coach.name}</h1>
-              {coach.verified && <span className="rounded-full bg-[var(--lobb-clay)] px-2.5 py-1 text-[11px] font-black text-white">LOBB Verified</span>}
+              <LobbVerifiedBadge verified={coach.verified} size="large" />
             </div>
             <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach.subtitle}</p>
             <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach.years} Years Exp</p>
@@ -171,14 +183,23 @@ function CoachProfileContent() {
       {tab === "reviews" && (
         <section className="space-y-4 px-5 py-6">
           <h2 className="font-black">Reviews & Ratings</h2>
-          <p className="text-4xl font-black">{coach.rating} <span className="text-[var(--lobb-clay)]">★★★★★</span> <span className="text-sm font-semibold text-[var(--lobb-muted)]">({coach.reviews} reviews)</span></p>
-          {["Great session. Emeka was patient with my kids and explained everything clearly.", "Very professional. Court access was confirmed before I arrived."].map((review, index) => (
-            <div key={review} className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_30px_rgba(58,43,20,0.05)]">
-              <p className="text-sm font-black">{index ? "Amara O." : "Tunde A."} <span className="text-[var(--lobb-clay)]">★★★★★</span></p>
-              <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--lobb-muted)]">&quot;{review}&quot;</p>
-            </div>
-          ))}
-          <button className="w-full py-3 text-sm font-black text-[var(--lobb-muted)]">Load more reviews</button>
+          {reviewSamples.length ? (
+            <>
+              <p className="text-4xl font-black">{coach.rating} <span className="text-[var(--lobb-clay)]">★★★★★</span> <span className="text-sm font-semibold text-[var(--lobb-muted)]">({coach.reviews} reviews)</span></p>
+              {reviewSamples.map((review, index) => (
+                <div key={review} className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_30px_rgba(58,43,20,0.05)]">
+                  <p className="text-sm font-black">{index ? "Amara O." : "Tunde A."} <span className="text-[var(--lobb-clay)]">★★★★★</span></p>
+                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-[var(--lobb-muted)]">&quot;{review}&quot;</p>
+                </div>
+              ))}
+              <button className="w-full py-3 text-sm font-black text-[var(--lobb-muted)]">Load more reviews</button>
+            </>
+          ) : (
+            <LobbEmptyState
+              title="No reviews yet"
+              body="No reviews yet - be the first to book and leave one."
+            />
+          )}
         </section>
       )}
 

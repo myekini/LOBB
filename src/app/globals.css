@@ -21,6 +21,16 @@
   100% { transform: scale(1);    opacity: 1; }
 }
 
+@keyframes toastSlideDown {
+  0%   { transform: translateY(-18px); opacity: 0; }
+  100% { transform: translateY(0);     opacity: 1; }
+}
+
+@keyframes lobbShimmer {
+  0%   { background-position: 180% 0; }
+  100% { background-position: -180% 0; }
+}
+
 @layer base {
   :root {
     /* ── LOBB Brand Tokens (aligned to brand kit) ── */
@@ -33,6 +43,8 @@
     --lobb-border:   #E5E3DF;
     --lobb-muted:    #8A8A8A;
     --lobb-success:  #2D6A4F;
+    --lobb-error:    #BA1A1A;
+    --lobb-warning:  #F4A228;
     --lobb-star:     #F4A228;
     /* Legacy aliases kept for components */
     --lobb-ink:      #171613;
@@ -68,5 +80,18 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer components {
+  .lobb-skeleton {
+    background-image: linear-gradient(
+      90deg,
+      var(--lobb-surface-2) 0%,
+      #f7f4ee 42%,
+      var(--lobb-surface-2) 78%
+    );
+    background-size: 220% 100%;
+    animation: lobbShimmer 1.5s ease-in-out infinite;
   }
 }

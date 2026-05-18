@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { CreditCard, Info, ShieldCheck } from "lucide-react";
 import { BookingButton, BookingShell } from "@/components/booking-shell";
+import { showLobbToast } from "@/components/lobb-global-state";
 import { getBookingDay, getCoach, money } from "@/lib/mock-data";
 
 function formatCountdown(seconds: number) {
@@ -20,6 +21,7 @@ function BookingStepThreeContent() {
   const bookingDay = getBookingDay(day);
   const court = search.get("court") || "";
   const [seconds, setSeconds] = useState(6 * 60 + 21);
+  const warned = useRef(false);
   const fee = coach.rate;
   const lobbFee = Math.round(fee * 0.05);
   const total = fee + lobbFee;
@@ -34,6 +36,19 @@ function BookingStepThreeContent() {
       router.replace(`/coaches/${coach.slug}?timeout=slot`);
     }
   }, [coach.slug, router, seconds]);
+
+  useEffect(() => {
+    if (search.get("payment") === "failed") {
+      showLobbToast({ type: "error", message: "Payment failed. Try again." });
+    }
+  }, [search]);
+
+  useEffect(() => {
+    if (seconds <= 120 && !warned.current) {
+      warned.current = true;
+      showLobbToast({ type: "warning", message: "2 minutes left to complete payment." });
+    }
+  }, [seconds]);
 
   return (
     <BookingShell step={3}>

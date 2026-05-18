@@ -8,6 +8,7 @@ import { Bell, Search, User } from "lucide-react";
 import { coaches, courtImage, money } from "@/lib/mock-data";
 import { PlayerBottomNav } from "@/components/player-nav";
 import { SmallCoachCard } from "@/components/coach-cards";
+import { CoachCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
 
 /* ─── Inline LOBB mark — used in multiple render paths ─── */
 function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: string }) {
@@ -90,15 +91,21 @@ export default function Home() {
   /* ── Loading ── */
   if (loadingProfile) {
     return (
-      <main className="relative flex min-h-svh items-center justify-center overflow-hidden bg-[#0D0D0D]">
-        <div className="absolute inset-0 select-none" aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={courtImage} alt="" className="size-full object-cover object-center opacity-45" />
-          <div className="absolute inset-0 bg-[#0D0D0D]/70" />
+      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 pt-5 text-[var(--lobb-black)]">
+        <header className="flex h-[52px] items-center justify-between">
+          <SkeletonBlock className="h-8 w-24 rounded-full" />
+          <SkeletonBlock className="size-9 rounded-full" />
+        </header>
+        <SkeletonBlock className="mt-4 h-[232px] rounded-[24px]" />
+        <div className="mt-10 flex gap-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <SkeletonBlock key={index} className="h-8 w-24 rounded-full" />
+          ))}
         </div>
-        <div className="relative animate-pulse">
-          <LobbMark size={36} />
-        </div>
+        <section className="mt-6 space-y-3">
+          <SkeletonBlock className="h-5 w-36" />
+          <CoachCardSkeleton />
+        </section>
       </main>
     );
   }

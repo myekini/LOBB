@@ -1,28 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
 import { type Coach, money } from "@/lib/mock-data";
-
-/* ── Inline LOBB mark — keeps cards self-contained ── */
-function LobbMark({ size = 10 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <path d="M 8 56 C 8 4 56 4 56 56" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="32" cy="17" r="7" fill="currentColor" />
-    </svg>
-  );
-}
-
-/* ── Verified pill ── */
-function VerifiedBadge({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-white ${className}`}
-    >
-      <LobbMark size={9} />
-      Verified
-    </span>
-  );
-}
+import { LobbVerifiedBadge } from "@/components/lobb-badge";
 
 /* ── Small card — horizontal scroll strip on home ── */
 export function SmallCoachCard({ coach }: { coach: Coach }) {
@@ -34,11 +13,9 @@ export function SmallCoachCard({ coach }: { coach: Coach }) {
       <div className="relative h-[108px] w-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={coach.photo} alt={coach.name} className="size-full object-cover" />
-        {coach.verified && (
-          <div className="absolute bottom-2 left-2">
-            <VerifiedBadge />
-          </div>
-        )}
+        <div className="absolute bottom-2 left-2">
+          <LobbVerifiedBadge verified={coach.verified} size="small" />
+        </div>
       </div>
       <div className="p-3">
         <div className="flex items-center gap-1 text-[11px] font-bold text-[var(--lobb-black)]">
@@ -76,7 +53,7 @@ export function CoachListCard({ coach }: { coach: Coach }) {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h2 className="truncate font-black text-[var(--lobb-black)]">{coach.name}</h2>
-                {coach.verified && <VerifiedBadge />}
+                <LobbVerifiedBadge verified={coach.verified} size="small" />
               </div>
               <p className="text-[12px] font-medium text-[var(--lobb-muted)]">{coach.subtitle}</p>
             </div>

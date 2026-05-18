@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { LobbToaster, OfflineState } from "@/components/lobb-global-state";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -53,7 +54,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={cn("font-sans", geistSans.variable, geistMono.variable)}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <LobbToaster />
+        <OfflineState />
+        {children}
+      </body>
     </html>
   );
 }
