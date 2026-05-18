@@ -223,6 +223,23 @@ brand-kit/             Brand system, SVG assets, rendered preview
 supabase/              Database migration artifacts
 ```
 
+## Root Directory Contract
+
+The root should stay intentionally small.
+
+| Path | Keep? | Reason |
+| --- | --- | --- |
+| `src/` | Yes | Application routes, components, and runtime helpers |
+| `public/` | Yes | Public runtime assets such as `favicon.svg` |
+| `brand-kit/` | Yes | Internal brand assets, preview, and design-system docs |
+| `supabase/` | Yes | Database migrations and project artifacts |
+| `.env.example` | Yes | Safe environment template |
+| `.env.local` | Local only | Developer secrets, ignored by Git |
+| `package.json` / `package-lock.json` | Yes | Dependency contract |
+| `tailwind.config.ts`, `tsconfig.json`, `next.config.mjs`, `postcss.config.mjs` | Yes | Framework configuration |
+| `.editorconfig`, `.gitattributes`, `.gitignore` | Yes | Repo hygiene and cross-machine consistency |
+| `.next/`, `node_modules/`, `.agents/`, `skills-lock.json` | No | Local/generated/tooling artifacts; ignored |
+
 ## Production Readiness Notes
 
 - Rotate any keys that have ever lived outside the secret manager.
