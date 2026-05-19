@@ -1,7 +1,7 @@
 import { createHmac } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { verifyOtp } from "@/lib/app-otp";
+import { verifyOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { getSupabaseServerKey } from "@/lib/supabase/server";
 
@@ -57,20 +57,22 @@ function getSyntheticCredentials(phone: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { phone?: string; code?: string };
+    const body = (await request.json()) as { phone?: string; code?: string; otp?: string; role?: "player" | "coach" | "admin" };
 
-    if (!body.phone || !body.code) {
+    const requestedCode = body.code ?? body.otp;
+
+    if (!body.phone || !requestedCode) {
       return NextResponse.json({ error: "Phone and code are required" }, { status: 400 });
     }
 
     const phone = formatNigerianPhoneNumber(body.phone);
-    const code = body.code.replace(/\D/g, "");
+    const code = requestedCode.replace(/\D/g, "");
 
     if (code.length !== 6) {
       return NextResponse.json({ error: "Enter the 6-digit code" }, { status: 400 });
     }
 
-    const otpResult = verifyOtp(phone, code);
+    const otpResult = await verifyOtp(phone, code);
     if (!otpResult.ok) {
       return NextResponse.json({ error: otpResult.error }, { status: 400 });
     }
@@ -113,6 +115,13 @@ export async function POST(request: Request) {
 
     if (!session || !user) {
       return NextResponse.json({ error: "Could not start your session" }, { status: 400 });
+    }
+
+    if (adminClient && body.role && ["player", "coach", "admin"].includes(body.role)) {
+      await adminClient
+        .from("profiles")
+        .update({ role: body.role })
+        .eq("id", user.id);
     }
 
     return NextResponse.json({

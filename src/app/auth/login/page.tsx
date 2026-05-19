@@ -2,6 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -11,18 +12,15 @@ import {
 } from "@/components/onboarding-shell";
 import { setPendingAuth } from "@/lib/auth-flow";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
+import { createClient } from "@/lib/supabase/client";
+
+// Only visible when NEXT_PUBLIC_LOBB_TEST_OTP is set (local dev)
+const IS_TEST_MODE = Boolean(process.env.NEXT_PUBLIC_LOBB_TEST_OTP);
 
 function nationalDigits(value: string) {
   const digits = value.replace(/\D/g, "");
-
-  if (digits.startsWith("234")) {
-    return digits.slice(3, 13);
-  }
-
-  if (digits.startsWith("0")) {
-    return digits.slice(1, 11);
-  }
-
+  if (digits.startsWith("234")) return digits.slice(3, 13);
+  if (digits.startsWith("0"))   return digits.slice(1, 11);
   return digits.slice(0, 10);
 }
 
@@ -32,6 +30,73 @@ function formatNationalPhone(value: string) {
   return parts.join(" ");
 }
 
+// ─── Dev quick-login panel ────────────────────────────────────────────────────
+function DevLoginPanel() {
+  const router = useRouter();
+  const [busy, setBusy] = useState<"player" | "coach" | null>(null);
+
+  const quickLogin = async (role: "player" | "coach") => {
+    setBusy(role);
+    try {
+      const res = await fetch("/api/dev/quick-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      const json = await res.json() as {
+        session?: { access_token: string; refresh_token: string };
+        role?: string;
+        error?: string;
+      };
+
+      if (!res.ok || !json.session) {
+        alert(json.error ?? "Quick login failed");
+        return;
+      }
+
+      const supabase = createClient();
+      await supabase.auth.setSession({
+        access_token:  json.session.access_token,
+        refresh_token: json.session.refresh_token,
+      });
+
+      router.push(role === "coach" ? "/coach/dashboard" : "/");
+    } catch {
+      alert("Network error during quick login");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <div className="mt-8 rounded-[20px] border-2 border-dashed border-[var(--lobb-clay)]/40 bg-[#fff8f4] p-4">
+      <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
+        Dev test accounts
+      </p>
+      <p className="mt-1 text-center text-[11px] font-semibold text-[var(--lobb-muted)]">
+        One-click login — not visible in production
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {(["player", "coach"] as const).map((role) => (
+          <button
+            key={role}
+            onClick={() => quickLogin(role)}
+            disabled={busy !== null}
+            className="flex h-11 items-center justify-center gap-2 rounded-full border border-[var(--lobb-clay)] text-sm font-black text-[var(--lobb-clay)] disabled:opacity-50"
+          >
+            {busy === role ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}`
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Login form ───────────────────────────────────────────────────────────────
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,9 +112,7 @@ function LoginForm() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!isReady || loading) {
-      return;
-    }
+    if (!isReady || loading) return;
 
     const e164Phone = formatNigerianPhoneNumber(digits);
     setError("");
@@ -114,6 +177,8 @@ function LoginForm() {
           </div>
           {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
         </section>
+
+        {IS_TEST_MODE && <DevLoginPanel />}
 
         <div className="mt-auto pb-8">
           <p className="mb-4 px-4 text-center text-xs font-semibold leading-4 text-[var(--lobb-muted)]">

@@ -1,18 +1,98 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Circle, MapPin, Phone, X } from "lucide-react";
-import { getBookingDay, getCoach, getPlayerBooking, money } from "@/lib/mock-data";
+import { showLobbToast } from "@/components/lobb-global-state";
+import {
+  durationMinutes,
+  firstJoin,
+  formatBookingDate,
+  money,
+  type DashboardBooking,
+} from "@/lib/dashboard-client-types";
+import { fetchWithCache } from "@/lib/offline-cache";
+import { BookingCardSkeleton } from "@/components/lobb-skeleton";
 
 export default function BookingDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [showCancel, setShowCancel] = useState(false);
-  const booking = getPlayerBooking(params.id);
-  const coach = getCoach(booking.coachSlug);
-  const day = getBookingDay(booking.day);
+  const [booking, setBooking] = useState<DashboardBooking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const coach = firstJoin(booking?.coaches);
+
+  useEffect(() => {
+    let alive = true;
+
+    fetchWithCache<{ upcoming: DashboardBooking[]; past: DashboardBooking[] }>("lobb.dashboard.player", "/api/dashboard/player")
+      .then((payload) => {
+        const allBookings: DashboardBooking[] = [...(payload.upcoming ?? []), ...(payload.past ?? [])];
+        const found = allBookings.find((item) => item.id === params.id) ?? null;
+        if (!found) throw new Error("Booking not found");
+        if (alive) setBooking(found);
+      })
+      .catch((error) => {
+        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load booking" });
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [params.id]);
+
+  const cancelBooking = async () => {
+    if (!booking) return;
+    setCancelling(true);
+    try {
+      const response = await fetch(`/api/bookings/${booking.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Cancelled by player from dashboard" }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Unable to cancel booking");
+      showLobbToast({ type: "success", message: "Booking cancelled." });
+      router.push("/dashboard");
+    } catch (error) {
+      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to cancel booking" });
+    } finally {
+      setCancelling(false);
+      setShowCancel(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
+        <section className="mx-auto max-w-md">
+          <BookingCardSkeleton />
+          <div className="mt-7 space-y-4">
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 py-10 text-[var(--lobb-black)]">
+        <section className="mx-auto max-w-md">
+          <h1 className="text-xl font-black">Booking not found</h1>
+          <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+        </section>
+      </main>
+    );
+  }
+
+  const payment = booking.payments?.[0];
   const isUpcoming = booking.status === "confirmed";
 
   return (
@@ -30,22 +110,29 @@ export default function BookingDetailPage() {
           Confirmed
         </span>
 
-        <h2 className="mt-5 text-[22px] font-black">{day.short} · {booking.time}</h2>
-        <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">{booking.durationMinutes} minutes · {money(booking.total)} paid</p>
+        <h2 className="mt-5 text-[22px] font-black">{formatBookingDate(booking.starts_at)}</h2>
+        <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">{durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid</p>
 
         <DetailSection title="Coach">
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coach.photo} alt="" className="size-14 rounded-full object-cover" />
+            <img src={coach?.profile_photo_url || "/favicon.svg"} alt="" className="size-14 rounded-full object-cover" />
             <div>
-              <p className="font-black">{coach.name}</p>
-              <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach.subtitle} · {coach.locations[0]}</p>
+              <p className="font-black">{coach?.full_name ?? "Coach"}</p>
+              <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || booking.location}</p>
             </div>
           </div>
-          <a href="tel:08123456789" className="mt-4 flex items-center gap-2 text-sm font-black">
-            <Phone className="size-4 text-[var(--lobb-clay)]" />
-            0812 345 6789
-          </a>
+          {payment?.status === "paid" ? (
+            <p className="mt-4 flex items-center gap-2 text-sm font-black">
+              <Phone className="size-4 text-[var(--lobb-clay)]" />
+              Coach phone is available in your confirmation SMS
+            </p>
+          ) : (
+            <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-muted)]">
+              <Phone className="size-4 text-[var(--lobb-clay)]" />
+              Coach phone unlocks after payment
+            </p>
+          )}
         </DetailSection>
 
         <DetailSection title="Location">
@@ -55,21 +142,21 @@ export default function BookingDetailPage() {
           </p>
         </DetailSection>
 
-        {booking.note && (
+        {booking.player_notes && (
           <DetailSection title="Your Note to Coach">
-            <p className="text-sm font-medium leading-6 text-[var(--lobb-muted)]">&quot;{booking.note}&quot;</p>
+            <p className="text-sm font-medium leading-6 text-[var(--lobb-muted)]">&quot;{booking.player_notes}&quot;</p>
           </DetailSection>
         )}
 
         <DetailSection title="Payment">
-          <PaymentRow amount={booking.sessionFee} label="Session fee" />
-          <PaymentRow amount={booking.lobbFee} label="LOBB fee" />
-          <PaymentRow amount={booking.total} label="Total paid" strong />
-          <p className="mt-3 text-xs font-bold text-[var(--lobb-muted)]">Ref: {booking.reference}</p>
+          <PaymentRow amount={booking.hourly_rate_ngn} label="Session fee" />
+          <PaymentRow amount={booking.platform_fee_ngn} label="Convenience fee" />
+          <PaymentRow amount={booking.total_amount_ngn} label="Total paid" strong />
+          <p className="mt-3 text-xs font-bold text-[var(--lobb-muted)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
         </DetailSection>
 
         <DetailSection title="Cancellation Policy">
-          <p className="text-sm font-semibold leading-6 text-[var(--lobb-muted)]">Free cancellation until {booking.cancellationCutoff}</p>
+          <p className="text-sm font-semibold leading-6 text-[var(--lobb-muted)]">Free cancellation applies more than 24 hours before session start.</p>
         </DetailSection>
 
         {isUpcoming && (
@@ -97,8 +184,8 @@ export default function BookingDetailPage() {
               <button onClick={() => setShowCancel(false)} className="h-12 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white">
                 Keep Booking
               </button>
-              <button onClick={() => setShowCancel(false)} className="h-12 rounded-full border border-red-300 text-sm font-black text-red-700">
-                Yes, Cancel
+              <button disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-full border border-red-300 text-sm font-black text-red-700 disabled:opacity-60">
+                {cancelling ? "Cancelling..." : "Yes, Cancel"}
               </button>
             </div>
           </section>

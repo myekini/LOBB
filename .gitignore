@@ -38,7 +38,11 @@ pnpm-debug.log*
 
 # local Codex/agent tooling
 .agents/
+.codex-logs/
 skills-lock.json
+
+# supabase local/link metadata
+supabase/.temp/
 
 # typescript
 *.tsbuildinfo

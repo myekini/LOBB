@@ -103,7 +103,7 @@ async function sendTwilioWhatsApp({ phone, message }: SendSmsInput) {
 }
 
 export async function sendOtpSms(input: SendSmsInput) {
-  const provider = process.env.SMS_PROVIDER || "twilio";
+  const provider = process.env.SMS_PROVIDER || "termii";
 
   if (provider === "termii") {
     return sendTermiiSms(input);

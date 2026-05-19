@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import * as z from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
@@ -254,7 +254,6 @@ export default function CreateCoachProfile() {
               </div>
 
               <Button type="submit" className="h-10 w-full bg-emerald-950 hover:bg-emerald-900" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="size-4 animate-spin" />}
                 {isSubmitting ? "Saving profile" : "Submit for review"}
               </Button>
             </form>

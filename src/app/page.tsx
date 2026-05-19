@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Bell, Search, User } from "lucide-react";
-import { coaches, courtImage, money } from "@/lib/mock-data";
+import { courtImage, money } from "@/lib/mock-data";
+import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav } from "@/components/player-nav";
 import { SmallCoachCard } from "@/components/coach-cards";
 import { CoachCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
@@ -30,6 +31,7 @@ export default function Home() {
   const router = useRouter();
   const [profile, setProfile] = useState<HomeProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [liveCoaches, setLiveCoaches] = useState<CoachPublicProfile[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +53,17 @@ export default function Home() {
         .maybeSingle();
 
       return data as HomeProfile | null;
+    }
+
+    async function loadCoaches() {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("coach_profiles_public")
+        .select("*")
+        .eq("status", "active")
+        .order("session_count", { ascending: false })
+        .limit(6);
+      if (!cancelled && data) setLiveCoaches(data as CoachPublicProfile[]);
     }
 
     async function loadProfile() {
@@ -82,6 +95,7 @@ export default function Home() {
     }
 
     loadProfile();
+    loadCoaches();
 
     return () => {
       cancelled = true;
@@ -112,7 +126,7 @@ export default function Home() {
 
   /* ── Authenticated player home ── */
   if (profile?.role === "player" && profile.full_name) {
-    const featured = coaches[0];
+    const featured = liveCoaches[0];
     const firstName = profile.full_name.split(" ")[0] || "there";
 
     return (
@@ -183,8 +197,8 @@ export default function Home() {
         </section>
 
         {/* Filter chips */}
-        <section className="mt-12 overflow-x-auto px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex w-max gap-2">
+        <section className="mt-12 px-5">
+          <div className="flex flex-wrap gap-2">
             {["All", "Beginners", "Kids", "Adults", "Competitive"].map((chip, i) => (
               <button
                 key={chip}
@@ -208,8 +222,8 @@ export default function Home() {
               See all →
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {coaches.map((coach) => (
+          <div className="grid grid-cols-2 gap-3 px-5 pb-2 sm:grid-cols-3">
+            {liveCoaches.map((coach) => (
               <SmallCoachCard key={coach.slug} coach={coach} />
             ))}
           </div>
@@ -223,35 +237,43 @@ export default function Home() {
               See all →
             </Link>
           </div>
-          <div className="relative overflow-hidden rounded-[22px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_40px_rgba(13,13,13,0.2)]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={featured.photo}
-              alt=""
-              className="absolute bottom-0 right-0 h-full w-36 object-cover opacity-60 grayscale"
-            />
-            <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-[var(--lobb-black)] to-transparent" />
-            <div className="relative z-10 max-w-[68%]">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]">
-                <span className="size-1.5 rounded-full bg-white/60" />
-                Available today
-              </span>
-              <p className="mt-3.5 text-[12px] font-bold text-white/70">
-                ★ {featured.rating} · {money(featured.rate)}/hr
-              </p>
-              <h3 className="mt-1.5 text-[22px] font-black leading-tight">{featured.name}</h3>
-              <p className="mt-1 text-[12px] text-white/60">{featured.headline}</p>
-              <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">
-                {featured.weekendSlots} slots this weekend
-              </p>
-              <Link
-                href={`/coaches/${featured.slug}#availability`}
-                className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-5 py-2.5 text-[12px] font-black"
-              >
-                Book Now →
-              </Link>
+          {featured ? (
+            <div className="relative overflow-hidden rounded-[22px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_40px_rgba(13,13,13,0.2)]">
+              {featured.profile_photo_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={featured.profile_photo_url}
+                  alt=""
+                  className="absolute bottom-0 right-0 h-full w-36 object-cover opacity-60 grayscale"
+                />
+              )}
+              <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-[var(--lobb-black)] to-transparent" />
+              <div className="relative z-10 max-w-[68%]">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]">
+                  <span className="size-1.5 rounded-full bg-white/60" />
+                  Active on LOBB
+                </span>
+                <p className="mt-3.5 text-[12px] font-bold text-white/70">
+                  {featured.avg_rating != null ? `★ ${featured.avg_rating}` : "New coach"} · {money(featured.hourly_rate_ngn)}/hr
+                </p>
+                <h3 className="mt-1.5 text-[22px] font-black leading-tight">{featured.full_name}</h3>
+                <p className="mt-1 text-[12px] text-white/60">{featured.headline}</p>
+                <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">
+                  {featured.session_count} sessions completed
+                </p>
+                <Link
+                  href={`/coaches/${featured.slug}`}
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-5 py-2.5 text-[12px] font-black"
+                >
+                  Book Now →
+                </Link>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="rounded-[22px] bg-[var(--lobb-surface)] p-5 text-center text-sm font-semibold text-[var(--lobb-muted)]">
+              No coaches available yet — check back soon.
+            </div>
+          )}
         </section>
 
         <PlayerBottomNav active="home" />

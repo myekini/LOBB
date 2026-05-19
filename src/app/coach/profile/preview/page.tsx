@@ -1,106 +1,54 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { CoachProfileContent } from "@/app/coaches/[slug]/coach-profile-content";
+import type { CoachPublicProfile, CourtAccess } from "@/lib/types";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Edit3, Eye, MapPin, Share2, Star } from "lucide-react";
-import { getCoach, money } from "@/lib/mock-data";
-import { LobbVerifiedBadge } from "@/components/lobb-badge";
-
-export default function CoachProfilePreviewPage() {
-  const router = useRouter();
-  const coach = getCoach("emeka-okonkwo");
-
-  return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
-      <header className="sticky top-0 z-50 flex h-[64px] items-center justify-between border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
-        <button onClick={() => router.back()} className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
-          <ArrowLeft className="size-5" />
-        </button>
-        <h1 className="font-black">Profile Preview</h1>
-        <button className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Share">
-          <Share2 className="size-4" />
-        </button>
-      </header>
-
-      <section className="bg-[var(--lobb-surface)] px-5 py-3 text-center text-sm font-semibold text-[var(--lobb-muted)]">
-        <span className="inline-flex items-center gap-2">
-          <Eye className="size-4" />
-          This is how players see your profile
-        </span>
-      </section>
-
-      <section className="relative aspect-[4/5] overflow-hidden bg-[var(--lobb-surface-2)] sm:aspect-video">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={coach.hero} alt="" className="size-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-          <LobbVerifiedBadge verified={coach.verified} size="large" />
-          <h2 className="mt-3 text-[28px] font-black leading-tight">{coach.name}</h2>
-          <p className="text-sm font-semibold text-white/75">{coach.subtitle}</p>
-        </div>
-      </section>
-
-      <section className="relative z-10 mx-auto -mt-6 grid max-w-md grid-cols-2 gap-3 px-5">
-        <Stat label={`${coach.reviews} reviews`} value={String(coach.rating)} star />
-        <Stat label="Experience" value={`${coach.years} years`} />
-        <Stat label="Location" value="Lagos" />
-        <Stat label="per session" value={money(coach.rate)} />
-      </section>
-
-      <section className="mx-auto max-w-md space-y-8 px-5 pt-8">
-        <div>
-          <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">About Coach</h3>
-          <p className="mt-3 text-sm font-medium leading-6 text-[var(--lobb-muted)]">{coach.bio}</p>
-        </div>
-
-        <div>
-          <h3 className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">Specializations</h3>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {coach.specializations.map((item) => (
-              <span key={item} className="rounded-full bg-[var(--lobb-surface)] px-4 py-2 text-sm font-black text-[var(--lobb-muted)]">
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-[14px] bg-white">
-              <MapPin className="size-5 text-[var(--lobb-clay)]" />
-            </div>
-            <div>
-              <p className="font-black">Lagos Country Club</p>
-              <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">Ikeja, Lagos State</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-t border-[var(--lobb-border)] py-8 text-center">
-          <p className="text-xs font-semibold text-[var(--lobb-muted)]">Players will see a Book Session button here.</p>
-        </div>
-      </section>
-
-      <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--lobb-border)] bg-[var(--lobb-surface)]/95 p-4 backdrop-blur">
-        <div className="mx-auto max-w-md">
-          <Link href="/coach/profile" className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)]">
-            <Edit3 className="size-4" />
-            Edit Profile
-          </Link>
-        </div>
-      </footer>
-    </main>
-  );
+function asArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-function Stat({ value, label, star }: { value: string; label: string; star?: boolean }) {
-  return (
-    <div className="rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.08)]">
-      <p className="flex items-center gap-1 text-sm font-black">
-        {star && <Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />}
-        {value}
-      </p>
-      <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">{label}</p>
-    </div>
-  );
+export default async function CoachProfilePreviewPage() {
+  const supabase = createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/auth/login");
+
+  const { data: coach, error } = await supabase
+    .from("coaches")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !coach) redirect("/auth/setup/coach/1");
+
+  const previewCoach: CoachPublicProfile = {
+    ...(coach as CoachPublicProfile),
+    full_name: coach.full_name ?? "Coach",
+    bio: coach.bio ?? "",
+    headline: coach.headline ?? null,
+    hourly_rate_ngn: coach.hourly_rate_ngn ?? 0,
+    experience_years: coach.experience_years ?? 0,
+    primary_location: coach.primary_location ?? "Lagos",
+    service_areas: asArray(coach.service_areas),
+    skill_levels: asArray(coach.skill_levels),
+    specializations: asArray(coach.specializations),
+    languages: asArray(coach.languages),
+    certifications: asArray(coach.certifications),
+    court_access: (coach.court_access ?? "player_arranges") as CourtAccess,
+    demo_video_url: coach.demo_video_url ?? null,
+    profile_photo_url: coach.profile_photo_url ?? null,
+    slug: coach.slug ?? null,
+    status: coach.status ?? "draft",
+    is_verified: Boolean(coach.is_verified),
+    avg_rating: null,
+    review_count: 0,
+    session_count: coach.sessions_completed ?? 0,
+    has_availability: false,
+    created_at: coach.created_at ?? new Date().toISOString(),
+  };
+
+  return <CoachProfileContent coach={previewCoach} isPreview />;
 }

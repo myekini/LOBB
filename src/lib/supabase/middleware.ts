@@ -85,6 +85,55 @@ export async function updateSession(request: NextRequest) {
     .eq("id", user.id)
     .maybeSingle();
 
+  const isCoachSetupRoute = pathname.startsWith("/auth/setup/coach");
+  const isCoachAppRoute = coachRoutes.some((r) => pathname.startsWith(r));
+
+  // Guard: coach accessing app routes but onboarding is incomplete
+  if (
+    profile?.role === "coach" &&
+    isCoachAppRoute &&
+    !isCoachSetupRoute
+  ) {
+    const { data: coach } = await supabase
+      .from("coaches")
+      .select("bio, experience_years, skill_levels, certifications")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.search = "";
+
+    if (!coach) {
+      redirectUrl.pathname = "/auth/setup/coach/1";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    const hasStep2 =
+      typeof coach.bio === "string" &&
+      coach.bio.length >= 50 &&
+      typeof coach.experience_years === "number" &&
+      coach.experience_years > 0;
+
+    const hasStep3 =
+      Array.isArray(coach.skill_levels) && (coach.skill_levels as string[]).length > 0;
+
+    const hasStep4 =
+      Array.isArray(coach.certifications) && (coach.certifications as string[]).length > 0;
+
+    if (!hasStep2) {
+      redirectUrl.pathname = "/auth/setup/coach/2";
+      return NextResponse.redirect(redirectUrl);
+    }
+    if (!hasStep3) {
+      redirectUrl.pathname = "/auth/setup/coach/3";
+      return NextResponse.redirect(redirectUrl);
+    }
+    if (!hasStep4) {
+      redirectUrl.pathname = "/auth/setup/coach/4";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   const role = profile?.role as "player" | "coach" | "admin" | undefined;
   const needsRole = !role && !setupRoutes.some((route) => pathname.startsWith(route));
 

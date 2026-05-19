@@ -1,0 +1,19 @@
+{
+  "name": "LOBB",
+  "short_name": "LOBB",
+  "description": "Book verified tennis coaches in Lagos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F2F1EF",
+  "theme_color": "#0D0D0D",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

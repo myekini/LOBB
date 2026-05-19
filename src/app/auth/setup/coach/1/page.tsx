@@ -82,8 +82,7 @@ export default function CoachSetupStepOnePage() {
         throw coachError;
       }
 
-      router.push("/coach/profile");
-      router.refresh();
+      router.push("/auth/setup/coach/2");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not save your coach profile.");
     } finally {

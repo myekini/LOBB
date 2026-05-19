@@ -1,27 +1,79 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { AlertTriangle, ChevronRight, Gavel, UserCheck } from "lucide-react";
 import { AdminShell } from "@/components/admin-shell";
-import { adminStats, money } from "@/lib/mock-data";
+import { money } from "@/lib/dashboard-client-types";
+import { showLobbToast } from "@/components/lobb-global-state";
+import { fetchWithCache } from "@/lib/offline-cache";
+import { SkeletonBlock } from "@/components/lobb-skeleton";
+
+type AdminDashboardPayload = {
+  metrics: {
+    total_bookings: number;
+    gmv_ngn: number;
+    active_coaches: number;
+    active_players: number;
+    lobb_earnings_ngn: number;
+    pending_coach_approvals: number;
+    open_disputes: number;
+  } | null;
+};
 
 export default function AdminDashboardPage() {
+  const [data, setData] = useState<AdminDashboardPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    fetchWithCache<AdminDashboardPayload>("lobb.admin.dashboard", "/api/admin/dashboard")
+      .then((payload) => {
+        if (alive) setData(payload);
+      })
+      .catch((error) => {
+        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load admin dashboard" });
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const metrics = data?.metrics;
+
   return (
     <AdminShell active="Dashboard">
       <section>
         <h1 className="text-2xl font-black">Platform Overview</h1>
 
-        <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
-          <Stat value={String(adminStats.activeCoaches)} label="Active Coaches" />
-          <Stat value={money(adminStats.totalGmv)} label="Total GMV" bordered />
-          <Stat value={String(adminStats.totalBookings)} label="Total Bookings" top />
-          <Stat value={String(adminStats.pendingApprovals)} label="Pending Approvals" bordered top clay />
-        </div>
+        {loading ? (
+          <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="border-l border-t border-[var(--lobb-border)] p-5 first:border-l-0">
+                <SkeletonBlock className="h-7 w-20" />
+                <SkeletonBlock className="mt-3 h-3 w-28" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+            <Stat value={String(metrics?.active_coaches ?? 0)} label="Active Coaches" />
+            <Stat value={money(metrics?.gmv_ngn ?? 0)} label="Total GMV" bordered />
+            <Stat value={String(metrics?.total_bookings ?? 0)} label="Total Bookings" top />
+            <Stat value={String(metrics?.pending_coach_approvals ?? 0)} label="Pending Approvals" bordered top clay />
+            <Stat value={String(metrics?.active_players ?? 0)} label="Active Players" top />
+            <Stat value={money(metrics?.lobb_earnings_ngn ?? 0)} label="LOBB Earnings" bordered top />
+          </div>
+        )}
 
         <SectionTitle title="Action Items" />
         <div className="space-y-3">
-          <ActionRow href="/admin/coaches" icon={<UserCheck className="size-5" />} title="3 coaches pending review" />
-          <ActionRow href="/admin/disputes" icon={<Gavel className="size-5" />} title="1 dispute open" danger />
+          <ActionRow href="/admin/coaches" icon={<UserCheck className="size-5" />} title={`${metrics?.pending_coach_approvals ?? 0} coaches pending review`} />
+          <ActionRow href="/admin/disputes" icon={<Gavel className="size-5" />} title={`${metrics?.open_disputes ?? 0} disputes open`} danger />
         </div>
 
         <SectionTitle title="Navigation" />

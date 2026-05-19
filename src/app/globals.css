@@ -74,12 +74,38 @@
 
   * {
     @apply border-border;
+    min-width: 0;
+  }
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
   }
   body {
     @apply bg-background text-foreground antialiased;
+    min-width: 320px;
   }
   html {
     @apply font-sans;
+  }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+  button,
+  a,
+  input,
+  select {
+    min-height: 44px;
+  }
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
   }
 }
 

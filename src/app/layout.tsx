@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,15 @@ export const metadata: Metadata = {
   description:
     "Lagos's verified tennis coaches, bookable in under 90 seconds. Video-reviewed, rated by real players, guaranteed.",
   applicationName: "LOBB",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "LOBB",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: {
+    telephone: true,
+  },
   keywords: ["tennis coach Lagos", "book tennis coach", "Lagos tennis", "verified tennis coach Nigeria"],
   icons: {
     icon: [
@@ -45,6 +54,14 @@ export const metadata: Metadata = {
     title: "LOBB",
     description: "Book a coach. Not a favor.",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0D0D0D",
 };
 
 export default function RootLayout({

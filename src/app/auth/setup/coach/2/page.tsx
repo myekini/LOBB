@@ -1,0 +1,138 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight } from "lucide-react";
+import {
+  OnboardingButton,
+  OnboardingCopy,
+  OnboardingKicker,
+  OnboardingShell,
+  OnboardingTitle,
+} from "@/components/onboarding-shell";
+import { createClient } from "@/lib/supabase/client";
+
+const EXPERIENCE_OPTIONS = [
+  { value: 1, label: "1–2 years" },
+  { value: 3, label: "3–5 years" },
+  { value: 6, label: "6–10 years" },
+  { value: 11, label: "10+ years" },
+];
+
+export default function CoachSetupStep2Page() {
+  const router = useRouter();
+  const [bio, setBio] = useState("");
+  const [experienceYears, setExperienceYears] = useState<number | null>(null);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const bioLength = bio.trim().length;
+  const canContinue = bioLength >= 50 && experienceYears !== null;
+
+  const next = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canContinue) return;
+
+    setSaving(true);
+    setError("");
+
+    const supabase = createClient();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setSaving(false);
+      setError("Session expired. Please log in again.");
+      return;
+    }
+
+    const { error: coachError } = await supabase
+      .from("coaches")
+      .update({ bio: bio.trim(), experience_years: experienceYears })
+      .eq("id", user.id);
+
+    setSaving(false);
+
+    if (coachError) {
+      setError(coachError.message);
+      return;
+    }
+
+    router.push("/auth/setup/coach/3");
+  };
+
+  return (
+    <OnboardingShell step="2 of 4">
+      <form onSubmit={next} className="flex flex-1 flex-col pt-3">
+        <section>
+          <OnboardingKicker>Coach onboarding</OnboardingKicker>
+          <OnboardingTitle>
+            Your story &amp;
+            <br />
+            experience
+          </OnboardingTitle>
+          <OnboardingCopy>
+            Players read your bio to decide if you&apos;re the right fit. Be specific — mention your coaching
+            style and what a typical session looks like.
+          </OnboardingCopy>
+        </section>
+
+        <div className="mt-8 space-y-6">
+          <label className="block">
+            <span className="text-sm font-bold text-[var(--lobb-black)]">
+              Bio <span className="text-[#ba1a1a]">*</span>
+            </span>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="I'm an ITF-certified coach based in Lekki. I focus on adult beginners and intermediates — structured sessions, clear drills, and proper footwork from day one."
+              maxLength={600}
+              rows={6}
+              className="mt-2 w-full resize-none rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-3 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+            />
+            <span
+              className={`mt-1 block text-right text-xs font-bold ${
+                bioLength < 50 ? "text-[#ba1a1a]" : "text-[var(--lobb-muted)]"
+              }`}
+            >
+              {bioLength < 50 ? `${50 - bioLength} more characters needed` : `${bio.length}/600`}
+            </span>
+          </label>
+
+          <div>
+            <span className="text-sm font-bold text-[var(--lobb-black)]">
+              Years coaching tennis <span className="text-[#ba1a1a]">*</span>
+            </span>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              {EXPERIENCE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setExperienceYears(opt.value)}
+                  className={`h-14 rounded-2xl border text-sm font-black transition ${
+                    experienceYears === opt.value
+                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-auto pb-8">
+          {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
+          <OnboardingButton type="submit" disabled={!canContinue}>
+            <span className="inline-flex items-center gap-2">
+              {saving ? "Saving..." : "Next"} <ArrowRight className="size-4" />
+            </span>
+          </OnboardingButton>
+        </div>
+      </form>
+    </OnboardingShell>
+  );
+}

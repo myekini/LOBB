@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOtp, isTestOtpEnabled } from "@/lib/app-otp";
+import { createOtp, isTestOtpEnabled } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { sendOtpSms } from "@/lib/sms";
 
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
     const phone = formatNigerianPhoneNumber(body.phone);
     const role = body.role === "coach" ? "coach" : "player";
-    const otp = createOtp(phone, role);
+    const otp = await createOtp(phone, role);
 
     if ("error" in otp) {
       return NextResponse.json({ error: otp.error }, { status: 429 });

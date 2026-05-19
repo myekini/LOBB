@@ -4,12 +4,13 @@ export async function uploadProfilePhoto(
   supabase: SupabaseClient,
   userId: string,
   file: File,
-  folder = "avatars"
+  folder = "avatars",
+  bucket = "coach-media"
 ) {
   const extension = file.name.split(".").pop() || "jpg";
   const path = `${userId}/${folder}-${Date.now()}.${extension}`;
 
-  const { error } = await supabase.storage.from("coach-media").upload(path, file, {
+  const { error } = await supabase.storage.from(bucket).upload(path, file, {
     cacheControl: "3600",
     upsert: true,
   });
@@ -18,6 +19,6 @@ export async function uploadProfilePhoto(
     throw error;
   }
 
-  const { data } = supabase.storage.from("coach-media").getPublicUrl(path);
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }

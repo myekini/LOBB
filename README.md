@@ -28,6 +28,10 @@ Product promise:
 
 > Book a coach. Not a favor.
 
+## Mobile Web Strategy
+
+LOBB is intentionally a mobile-optimized web app for the MVP. App store downloads are a conversion barrier; a browser-first product works on every Lagos phone with zero install friction. Native iOS/Android should wait until at least 100 completed bookings prove the core loop.
+
 ## What Is Included
 
 | Area | Routes | Purpose |
@@ -265,18 +269,55 @@ Production disables the test OTP unless it is explicitly enabled.
 
 Use `.env.example` as the source of truth.
 
-Important groups:
+Required groups:
 
 - `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `PAYSTACK_PUBLIC_KEY`
 - `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_WEBHOOK_SECRET`
 - `TERMII_API_KEY`
+- `TERMII_SENDER_ID`
+- `RESEND_API_KEY`
+- `NEXT_PUBLIC_APP_URL`
+- `NEXT_PUBLIC_APP_NAME`
+- `ADMIN_SECRET`
+
+Optional compatibility variables:
+
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SMS_PROVIDER`
 - `TWILIO_*`
 
 Never commit `.env.local`. It is ignored by `.gitignore`.
+
+## Data Model Mapping
+
+Supabase Auth owns credentials and sessions. The product spec's `users` model is represented by `public.profiles`, with a compatibility view at `public.users`.
+
+The product spec's `coach_profiles` model is represented by `public.coaches`, with a compatibility view at `public.coach_profiles`.
+
+Canonical implementation tables:
+
+- `profiles`: phone, email, full name, role, avatar, active state.
+- `coaches`: slug, headline, bio, rate, locations, specializations, languages, certifications, court access, video, Paystack subaccount, bank details, review status, verified badge.
+- `players`: player-specific profile fields.
+- `bookings`, `payments`, `reviews`, `coach_availability`, `coach_availability_blocks`: marketplace workflow data.
+
+## Scheduled Notifications
+
+Configure a cron runner to call these endpoints with `x-admin-secret: $ADMIN_SECRET`:
+
+```bash
+curl -X POST "$NEXT_PUBLIC_APP_URL/api/notifications/schedule-booking-jobs" -H "x-admin-secret: $ADMIN_SECRET"
+curl -X POST "$NEXT_PUBLIC_APP_URL/api/notifications/process-due" -H "x-admin-secret: $ADMIN_SECRET"
+```
+
+Recommended cadence:
+
+- Schedule booking jobs every 15 minutes.
+- Process due SMS jobs every 5 minutes.
 
 ## Quality Gates
 

@@ -1,0 +1,26 @@
+# Supabase local dev config (used by `supabase start`)
+# For the hosted Supabase project, mirror these settings in:
+# Dashboard → Authentication → Configuration
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://lobb.ng"]
+
+# 30 days in seconds (spec requirement: "Session persistence — JWT, 30-day expiry")
+# IMPORTANT: also update this in Supabase Dashboard → Auth → JWT expiry
+jwt_expiry = 2592000
+
+# Disable email confirmation since LOBB uses phone OTP only
+enable_signup = true
