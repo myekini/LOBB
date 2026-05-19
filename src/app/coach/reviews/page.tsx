@@ -6,6 +6,7 @@ import { CoachBottomNav } from "@/components/coach-nav";
 import { showLobbToast } from "@/components/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
 import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { BackLink } from "@/components/back-link";
 
 type Review = {
   id: string;
@@ -40,8 +41,11 @@ export default function CoachReviewsPage() {
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 pt-7 text-[var(--lobb-black)]">
       <section className="mx-auto max-w-md">
-        <h1 className="text-[22px] font-black">Reviews</h1>
-        <section className="mt-6 space-y-3">
+        <div className="mb-6 flex items-center gap-3">
+          <BackLink href="/coach/profile" label="Profile" />
+          <h1 className="text-[22px] font-black">Reviews</h1>
+        </div>
+        <section className="space-y-3">
           {loading ? (
             <>
               {Array.from({ length: 4 }).map((_, index) => (

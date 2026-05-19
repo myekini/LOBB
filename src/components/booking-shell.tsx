@@ -1,20 +1,27 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-export function BookingShell({ children, step }: { children: React.ReactNode; step: 1 | 2 | 3 }) {
-  const router = useRouter();
+export function BookingShell({
+  children,
+  step,
+  backHref = "/coaches",
+}: {
+  children: React.ReactNode;
+  step: 1 | 2 | 3;
+  backHref?: string;
+}) {
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] pb-8 text-[var(--lobb-black)]">
       <header className="sticky top-0 z-40 flex h-[72px] items-center justify-center border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
-        <button
-          onClick={() => router.back()}
+        <Link
+          href={backHref}
           className="absolute left-3 flex size-10 items-center justify-center rounded-full border border-transparent transition hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface)]"
           aria-label="Go back"
         >
           <ArrowLeft className="size-5" />
-        </button>
+        </Link>
         <div className="text-center">
           <h1 className="font-black">Book a Session</h1>
         </div>

@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { ArrowLeft, Search, SlidersHorizontal, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { CoachListCard } from "@/components/coach-cards";
 import { PlayerBottomNav } from "@/components/player-nav";
 import { LobbEmptyState } from "@/components/lobb-empty-state";
@@ -25,7 +25,6 @@ type SortOption = "Best Match" | "Highest Rated" | "Most Reviewed" | "Lowest Pri
 type AvailFilter = "Any" | "Has availability";
 
 export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicProfile[] }) {
-  const router = useRouter();
   const [query,        setQuery]        = useState("");
   const [location,     setLocation]     = useState("All");
   const [specs,        setSpecs]        = useState<string[]>([]);
@@ -116,13 +115,13 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
       <header className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
-        <button
-          onClick={() => router.back()}
+        <Link
+          href="/"
           aria-label="Go back"
           className="-ml-2 flex size-10 items-center justify-center rounded-full border border-transparent hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface)]"
         >
           <ArrowLeft className="size-5" />
-        </button>
+        </Link>
         <div className="text-center">
           <h1 className="font-black">Find a Coach</h1>
           <p className="text-xs font-semibold text-[var(--lobb-muted)]">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Camera, Loader2, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -84,13 +85,13 @@ export default function EditProfilePage() {
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
+          <Link
+            href="/profile"
             className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
             aria-label="Go back"
           >
             <ArrowLeft className="size-5" />
-          </button>
+          </Link>
           <h1 className="font-black">Edit Profile</h1>
         </header>
 

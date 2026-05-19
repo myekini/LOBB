@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarPlus, Clock3, X } from "lucide-react";
+import { CalendarPlus, Clock3, X } from "lucide-react";
 import type { CoachAvailabilityRow, CoachAvailabilityBlock } from "@/lib/types";
 import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { BackLink } from "@/components/back-link";
 
 // 0 = Sunday … 6 = Saturday (matches JS Date.getDay / Postgres DOW)
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -54,8 +54,6 @@ function blockMonthDay(dateStr: string) {
 }
 
 export default function CoachAvailabilityPage() {
-  const router = useRouter();
-
   const [days,    setDays]    = useState<DayRow[]>(buildDefaultDays());
   const [blocks,  setBlocks]  = useState<CoachAvailabilityBlock[]>([]);
   const [newDate, setNewDate] = useState("");
@@ -165,13 +163,7 @@ export default function CoachAvailabilityPage() {
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-32 pt-5 text-[var(--lobb-black)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
-          <button
-            onClick={() => router.back()}
-            className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="size-5" />
-          </button>
+          <BackLink href="/coach/dashboard" label="Dashboard" />
           <h1 className="font-black">My Availability</h1>
         </header>
 

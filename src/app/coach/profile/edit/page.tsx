@@ -17,6 +17,7 @@ import {
   type CoachRow,
   type CourtAccess,
 } from "@/lib/types";
+import { BackLink } from "@/components/back-link";
 
 function SectionHead({ id, title }: { id: string; title: string }) {
   return (
@@ -199,19 +200,19 @@ export default function CoachProfileEditPage() {
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 pt-7 text-[var(--lobb-black)]">
       <div className="mx-auto max-w-md">
         <div className="mb-8 flex items-center justify-between">
-          <div>
+          <div className="min-w-0">
+            <BackLink href="/coach/profile" label="Profile" className="mb-4" />
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
               Coach Profile
             </p>
             <h1 className="text-[26px] font-black">Edit Profile</h1>
           </div>
-          <button
-            type="button"
-            onClick={() => router.back()}
+          <a
+            href="/coach/profile/preview"
             className="text-sm font-bold text-[var(--lobb-muted)]"
           >
-            Cancel
-          </button>
+            Preview
+          </a>
         </div>
 
         {success && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -134,6 +135,13 @@ export default function CreateCoachProfile() {
     <main className="min-h-screen bg-stone-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 lg:grid lg:grid-cols-[0.85fr_1.4fr]">
         <section className="pt-2">
+          <Link
+            href="/auth/role"
+            className="mb-6 inline-flex min-h-11 items-center gap-2 rounded-full border border-stone-200 bg-white px-3 text-sm font-bold text-stone-950 hover:bg-stone-100"
+          >
+            <span aria-hidden="true">←</span>
+            Back
+          </Link>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-800">LOBB for coaches</p>
           <h1 className="mt-4 text-4xl font-bold tracking-tight text-stone-950">Create your coach profile</h1>
           <p className="mt-4 max-w-md text-base text-stone-600">

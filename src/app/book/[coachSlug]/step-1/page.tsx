@@ -155,7 +155,7 @@ function BookingStep1Content() {
 
   if (loading) {
     return (
-      <BookingShell step={1}>
+      <BookingShell step={1} backHref={`/coaches/${slug}`}>
         <div className="space-y-6">
           <CoachCardSkeleton />
           <SkeletonBlock className="h-5 w-36" />
@@ -172,7 +172,7 @@ function BookingStep1Content() {
   }
 
   return (
-    <BookingShell step={1}>
+    <BookingShell step={1} backHref={`/coaches/${slug}`}>
       {/* Coach card */}
       {coach && (
         <section className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_14px_34px_rgba(58,43,20,0.07)]">

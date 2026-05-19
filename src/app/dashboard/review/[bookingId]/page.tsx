@@ -91,9 +91,9 @@ export default function LeaveReviewPage() {
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
-          <button onClick={() => router.back()} className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
+          <Link href="/dashboard" className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
-          </button>
+          </Link>
           <h1 className="font-black">Leave a Review</h1>
         </header>
 

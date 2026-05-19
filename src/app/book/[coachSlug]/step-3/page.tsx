@@ -133,7 +133,10 @@ function BookingStep3Content() {
   };
 
   return (
-    <BookingShell step={3}>
+    <BookingShell
+      step={3}
+      backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}`}
+    >
       {/* Countdown */}
       <p className="mb-5 rounded-full bg-[#fff0e8] px-4 py-2 text-center text-sm font-black text-[var(--lobb-clay)]">
         {formatCountdown(seconds)} remaining

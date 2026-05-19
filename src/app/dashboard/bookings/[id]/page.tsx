@@ -99,9 +99,9 @@ export default function BookingDetailPage() {
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
       <section className="mx-auto max-w-md">
         <header className="mb-7 flex items-center gap-3">
-          <button onClick={() => router.back()} className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
+          <Link href="/dashboard/bookings" className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
-          </button>
+          </Link>
           <h1 className="font-black">Booking Detail</h1>
         </header>
 

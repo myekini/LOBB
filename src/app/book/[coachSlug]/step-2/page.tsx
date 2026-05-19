@@ -86,7 +86,7 @@ function BookingStep2Content() {
   };
 
   return (
-    <BookingShell step={2}>
+    <BookingShell step={2} backHref={`/book/${slug}/step-1`}>
       {/* Slot summary */}
       <section className="space-y-3 rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-semibold text-[var(--lobb-muted)] shadow-[0_14px_34px_rgba(58,43,20,0.07)]">
         {slot && (
