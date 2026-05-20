@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, ChevronRight, Clock3, Eye } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronRight, Clock3, Eye, Pencil, Settings, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CoachBottomNav } from "@/components/coach-nav";
 import type { CoachRow } from "@/lib/types";
 import { SubmitForReviewButton } from "./submit-button";
+import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { CoachKicker, CoachSurface } from "@/components/coach-surface";
 
 type Section = {
   label: string;
@@ -42,19 +44,19 @@ function buildSections(coach: CoachRow): Section[] {
       href: "/coach/profile/edit#bio",
     },
     {
-      label: "Demo Video",
-      detail: coach.demo_video_url ? "Video added" : "Upload required to go live",
-      done: Boolean(coach.demo_video_url),
-      href: "/coach/profile/edit#demo-video",
+      label: "Rate",
+      detail:
+        hourlyRate >= 1000
+          ? `₦${hourlyRate.toLocaleString()}/hr`
+          : "Not set",
+      done: hourlyRate >= 1000,
+      href: "/coach/profile/edit#rate",
     },
     {
-      label: "Rate & Locations",
-      detail:
-        hourlyRate > 1000
-          ? `₦${hourlyRate.toLocaleString()}/hr · ${primaryLocation || "Location not set"}`
-          : "Not set",
-      done: hourlyRate > 1000 && Boolean(primaryLocation),
-      href: "/coach/profile/edit#rate",
+      label: "Locations",
+      detail: primaryLocation || "Not set",
+      done: Boolean(primaryLocation),
+      href: "/coach/profile/edit#locations",
     },
     {
       label: "Specializations",
@@ -130,34 +132,48 @@ export default async function CoachProfilePage() {
   const statusInfo = STATUS_LABELS[coach.status] ?? STATUS_LABELS.draft;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 pt-7 text-[var(--lobb-black)]">
-      <section className="mx-auto max-w-md">
-        {/* Completion header */}
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-sm font-black text-[var(--lobb-muted)]">Profile</p>
-            <h1 className="text-[22px] font-black">{completionPct}% complete</h1>
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 text-[var(--lobb-black)]">
+      <CoachFlowHeader title="Profile" eyebrow="Coach account" actionHref="/coach/profile/edit" actionLabel="Edit" actionIcon={Pencil} />
+      <section className="mx-auto max-w-md pt-5">
+        <section className="overflow-hidden rounded-[24px] bg-[var(--lobb-black)] text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]">
+          <div className="p-5">
+            <div className="flex items-start gap-4">
+              <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-[20px] bg-white/10">
+                {coach.profile_photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={coach.profile_photo_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <User className="size-7 text-white/60" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <CoachKicker>{statusInfo.label}</CoachKicker>
+                <h1 className="mt-2 truncate text-xl font-black">{coach.full_name || "Coach profile"}</h1>
+                <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-white/62">
+                  {coach.headline || "Add a clear headline so players know what you teach best."}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="h-2 overflow-hidden rounded-full bg-white/12">
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${completionPct}%`,
+                      backgroundColor: completionPct === 100 ? "var(--lobb-success)" : "var(--lobb-clay)",
+                    }}
+                  />
+                </div>
+                <p className="mt-2 text-xs font-black text-white/60">{doneCount}/{sections.length} required sections complete</p>
+              </div>
+              <span className="rounded-full bg-white/10 px-3 py-1.5 text-sm font-black">{completionPct}%</span>
+            </div>
           </div>
-          <span
-            className="text-sm font-black"
-            style={{ color: completionPct === 100 ? "var(--lobb-success)" : "var(--lobb-clay)" }}
-          >
-            {doneCount}/{sections.length}
-          </span>
-        </div>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[var(--lobb-surface-2)]">
-          <div
-            className="h-full rounded-full transition-all"
-            style={{
-              width: `${completionPct}%`,
-              backgroundColor:
-                completionPct === 100 ? "var(--lobb-success)" : "var(--lobb-clay)",
-            }}
-          />
-        </div>
+        </section>
 
         {/* Status banner */}
-        <section className="mt-6 flex items-start gap-3 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4"
+        <section className="mt-5 flex items-start gap-3 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4"
           style={{ borderLeftWidth: 4, borderLeftColor: statusInfo.color }}
         >
           <Clock3 className="mt-0.5 size-5 shrink-0" style={{ color: statusInfo.color }} />
@@ -197,7 +213,24 @@ export default async function CoachProfilePage() {
           </Link>
         </div>
 
-        <section className="mt-3 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <Link
+            href="/coach/profile/edit"
+            className="flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white"
+          >
+            <Pencil className="size-4" />
+            Edit profile
+          </Link>
+          <Link
+            href="/coach/settings"
+            className="flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black"
+          >
+            <Settings className="size-4 text-[var(--lobb-clay)]" />
+            Settings
+          </Link>
+        </div>
+
+        <CoachSurface className="mt-3 overflow-hidden">
           {sections.map((section, index) => (
             <Link
               key={section.label}
@@ -231,7 +264,7 @@ export default async function CoachProfilePage() {
               </span>
             </Link>
           ))}
-        </section>
+        </CoachSurface>
 
         {!allDone && (
           <section className="mt-6 rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">

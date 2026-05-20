@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminShell } from "@/components/admin-shell";
-import { adminBookings, adminStats, money } from "@/lib/mock-data";
+import { adminBookings, adminStats, money } from "@/lib/demo-content";
 
 export default function AdminEarningsPage() {
   const commission = Math.round(adminStats.totalGmv * 0.05);

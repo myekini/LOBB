@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOtp, isTestOtpEnabled } from "@/lib/db-otp";
+import { createOtp, shouldUseTestOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { sendOtpSms } from "@/lib/sms";
 
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: otp.error }, { status: 429 });
     }
 
-    if (!isTestOtpEnabled()) {
+    if (!shouldUseTestOtp(phone)) {
       await sendOtpSms({
         phone,
         message: `Your LOBB login code is ${otp.code}. It expires in 10 minutes.`,

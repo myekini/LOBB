@@ -6,6 +6,7 @@ const REQUEST_WINDOW_MS = 60 * 60 * 1000;
 const MAX_REQUESTS = 3;
 const MAX_ATTEMPTS = 5;
 const FALLBACK_TEST_OTP = "000000";
+const FALLBACK_TEST_PHONES = ["+2340000000001", "+2340000000002"];
 
 function hashOtp(phone: string, code: string) {
   return createHash("sha256").update(`${phone}:${code}`).digest("hex");
@@ -20,6 +21,21 @@ export function isTestOtpEnabled() {
   // Explicit opt-in only — never falls back to NODE_ENV so a missing env var
   // in production doesn't silently leave 000000 working for real users.
   return process.env.LOBB_ENABLE_TEST_OTP === "true";
+}
+
+export function getTestPhones() {
+  return (process.env.LOBB_TEST_PHONE_NUMBERS ?? FALLBACK_TEST_PHONES.join(","))
+    .split(",")
+    .map((phone) => phone.trim())
+    .filter(Boolean);
+}
+
+export function isTestPhone(phone: string) {
+  return getTestPhones().includes(phone);
+}
+
+export function shouldUseTestOtp(phone: string) {
+  return isTestOtpEnabled() && isTestPhone(phone);
 }
 
 export async function createOtp(phone: string, role: "player" | "coach") {
@@ -48,7 +64,7 @@ export async function createOtp(phone: string, role: "player" | "coach") {
     };
   }
 
-  const code = isTestOtpEnabled()
+  const code = shouldUseTestOtp(phone)
     ? getTestOtp()
     : String(randomInt(0, 1_000_000)).padStart(6, "0");
 
@@ -75,8 +91,8 @@ export async function createOtp(phone: string, role: "player" | "coach") {
 export async function verifyOtp(phone: string, code: string) {
   const supabase = createAdminClient();
 
-  // Test OTP shortcut — valid for any phone in test mode
-  if (isTestOtpEnabled() && code === getTestOtp()) {
+  // Test OTP shortcut — valid only for explicitly configured dev phones.
+  if (shouldUseTestOtp(phone) && code === getTestOtp()) {
     const { data } = await supabase
       .from("otp_verifications")
       .select("role")

@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarPlus, Clock3, X } from "lucide-react";
-import type { CoachAvailabilityRow, CoachAvailabilityBlock } from "@/lib/types";
+import { Clock3, X } from "lucide-react";
+import type { CoachAvailabilityRow, CoachAvailabilityBlock, CoachAvailabilitySlotBlock } from "@/lib/types";
 import { SkeletonBlock } from "@/components/lobb-skeleton";
-import { BackLink } from "@/components/back-link";
+import { showLobbToast } from "@/components/lobb-global-state";
+import { CoachFlowHeader } from "@/components/coach-flow-header";
 
 // 0 = Sunday … 6 = Saturday (matches JS Date.getDay / Postgres DOW)
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -53,10 +54,69 @@ function blockMonthDay(dateStr: string) {
   };
 }
 
+function formatShortDate(date: Date) {
+  return date.toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short" });
+}
+
+function toDateValue(date: Date) {
+  return date.toISOString().split("T")[0];
+}
+
+function upcomingDateOptions(daysAhead = 21) {
+  const start = new Date();
+  start.setDate(start.getDate() + 1);
+  start.setHours(0, 0, 0, 0);
+  return Array.from({ length: daysAhead }).map((_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    return { value: toDateValue(date), label: formatShortDate(date), dow: date.getDay() };
+  });
+}
+
+function nextDatesForDow(dow: number) {
+  const start = new Date();
+  start.setDate(start.getDate() + 1);
+  start.setHours(0, 0, 0, 0);
+  const dates: string[] = [];
+  for (let offset = 0; offset < 28 && dates.length < 3; offset += 1) {
+    const date = new Date(start);
+    date.setDate(start.getDate() + offset);
+    if (date.getDay() === dow) dates.push(formatShortDate(date));
+  }
+  return dates.join(", ");
+}
+
+function slotTimesForDate(dateValue: string, days: DayRow[]) {
+  if (!dateValue) return [];
+  const dow = new Date(`${dateValue}T00:00:00`).getDay();
+  const row = days.find((day) => day.dow === dow && day.enabled);
+  if (!row) return [];
+  const slots: Array<{ starts_at: string; ends_at: string; label: string }> = [];
+  let [hour, minute] = row.start.split(":").map(Number);
+  const [endHour, endMinute] = row.end.split(":").map(Number);
+  const start = hour * 60 + minute;
+  const end = endHour * 60 + endMinute;
+  for (let current = start; current + 60 <= end; current += 60) {
+    hour = Math.floor(current / 60);
+    minute = current % 60;
+    const endTotal = current + 60;
+    const startTime = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    const endTime = `${String(Math.floor(endTotal / 60)).padStart(2, "0")}:${String(endTotal % 60).padStart(2, "0")}`;
+    slots.push({
+      starts_at: new Date(`${dateValue}T${startTime}:00+01:00`).toISOString(),
+      ends_at: new Date(`${dateValue}T${endTime}:00+01:00`).toISOString(),
+      label: `${startTime} - ${endTime}`,
+    });
+  }
+  return slots;
+}
+
 export default function CoachAvailabilityPage() {
   const [days,    setDays]    = useState<DayRow[]>(buildDefaultDays());
   const [blocks,  setBlocks]  = useState<CoachAvailabilityBlock[]>([]);
+  const [slotBlocks, setSlotBlocks] = useState<CoachAvailabilitySlotBlock[]>([]);
   const [newDate, setNewDate] = useState("");
+  const [slotBlockDate, setSlotBlockDate] = useState("");
 
   const [loading, setLoading] = useState(true);
   const [saving,  setSaving]  = useState(false);
@@ -69,9 +129,15 @@ export default function CoachAvailabilityPage() {
     try {
       const res = await fetch("/api/coaches/me/availability");
       if (!res.ok) throw new Error("Failed to load");
-      const json = await res.json() as { slots: CoachAvailabilityRow[]; blocks: CoachAvailabilityBlock[] };
+      const json = await res.json() as {
+        slots: CoachAvailabilityRow[];
+        blocks: CoachAvailabilityBlock[];
+        slot_blocks?: CoachAvailabilitySlotBlock[];
+      };
       setDays(slotsToRows(json.slots));
       setBlocks(json.blocks);
+      setSlotBlocks(json.slot_blocks ?? []);
+      setSlotBlockDate((json.slot_blocks?.[0]?.slot_starts_at ?? "") ? toDateValue(new Date(json.slot_blocks![0].slot_starts_at)) : "");
     } catch {
       setError("Could not load your availability. Please refresh.");
     } finally {
@@ -83,6 +149,30 @@ export default function CoachAvailabilityPage() {
 
   const updateDay = (index: number, updates: Partial<DayRow>) => {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, ...updates } : d)));
+    setSaved(false);
+  };
+
+  const toggleSlotBlock = (slot: { starts_at: string; ends_at: string }) => {
+    setSlotBlocks((prev) => {
+      const exists = prev.some((item) => item.slot_starts_at === slot.starts_at);
+      if (exists) return prev.filter((item) => item.slot_starts_at !== slot.starts_at);
+      return [
+        ...prev,
+        {
+          id: `local-slot-${Date.now()}`,
+          coach_id: "",
+          slot_starts_at: slot.starts_at,
+          slot_ends_at: slot.ends_at,
+          reason: "Blocked by coach",
+          created_at: new Date().toISOString(),
+        },
+      ].sort((a, b) => a.slot_starts_at.localeCompare(b.slot_starts_at));
+    });
+    setSaved(false);
+  };
+
+  const removeSlotBlock = (startsAt: string) => {
+    setSlotBlocks((prev) => prev.filter((slot) => slot.slot_starts_at !== startsAt));
     setSaved(false);
   };
 
@@ -134,6 +224,11 @@ export default function CoachAvailabilityPage() {
     const body = {
       slots,
       blocked_dates: blocks.map((b) => b.blocked_date),
+      blocked_slots: slotBlocks.map((slot) => ({
+        slot_starts_at: slot.slot_starts_at,
+        slot_ends_at: slot.slot_ends_at,
+        reason: slot.reason,
+      })),
     };
 
     try {
@@ -147,25 +242,23 @@ export default function CoachAvailabilityPage() {
         throw new Error(json.error ?? "Save failed");
       }
       setSaved(true);
+      showLobbToast({ type: "success", message: "Availability saved" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save. Try again.");
+      const message = err instanceof Error ? err.message : "Could not save. Try again.";
+      setError(message);
+      showLobbToast({ type: "error", message });
     } finally {
       setSaving(false);
     }
   };
 
-  // Min date for the date picker: tomorrow
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 1);
-  const minDateStr = minDate.toISOString().split("T")[0];
+  const dateOptions = upcomingDateOptions();
+  const slotBlockOptions = slotTimesForDate(slotBlockDate, days);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-32 pt-5 text-[var(--lobb-black)]">
-      <section className="mx-auto max-w-md">
-        <header className="mb-8 flex items-center gap-3">
-          <BackLink href="/coach/dashboard" label="Dashboard" />
-          <h1 className="font-black">My Availability</h1>
-        </header>
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-32 text-[var(--lobb-black)]">
+      <CoachFlowHeader title="Availability" eyebrow="Bookable slots" />
+      <section className="mx-auto max-w-md pt-5">
 
         {loading ? (
           <div className="space-y-3">
@@ -224,17 +317,22 @@ export default function CoachAvailabilityPage() {
                     </div>
 
                     {item.enabled ? (
-                      <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                        <TimeInput
-                          value={item.start}
-                          onChange={(v) => updateDay(index, { start: v })}
-                        />
-                        <span className="text-xs font-black text-[var(--lobb-muted)]">to</span>
-                        <TimeInput
-                          value={item.end}
-                          onChange={(v) => updateDay(index, { end: v })}
-                        />
-                      </div>
+                      <>
+                        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                          <TimeInput
+                            value={item.start}
+                            onChange={(v) => updateDay(index, { start: v })}
+                          />
+                          <span className="text-xs font-black text-[var(--lobb-muted)]">to</span>
+                          <TimeInput
+                            value={item.end}
+                            onChange={(v) => updateDay(index, { end: v })}
+                          />
+                        </div>
+                        <p className="mt-3 text-xs font-semibold text-[var(--lobb-muted)]">
+                          Next dates: {nextDatesForDow(item.dow)}
+                        </p>
+                      </>
                     ) : (
                       <p className="mt-4 text-sm font-semibold italic text-[var(--lobb-muted)]">
                         Closed
@@ -253,16 +351,22 @@ export default function CoachAvailabilityPage() {
               </p>
 
               <div className="mt-4 flex gap-2">
-                <label className="flex h-12 flex-1 items-center gap-2 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3">
-                  <CalendarPlus className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-                  <input
-                    type="date"
-                    value={newDate}
-                    min={minDateStr}
-                    onChange={(e) => setNewDate(e.target.value)}
-                    className="min-w-0 flex-1 border-0 bg-transparent p-0 text-sm font-black outline-none"
-                  />
-                </label>
+                <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto pb-1">
+                  {dateOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setNewDate(option.value)}
+                      className={`h-12 shrink-0 rounded-[14px] border px-3 text-left text-xs font-black ${
+                        newDate === option.value
+                          ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
+                          : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)]"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
                 <button
                   type="button"
                   onClick={addBlock}
@@ -310,12 +414,98 @@ export default function CoachAvailabilityPage() {
                 </>
               )}
             </section>
+
+            <section className="mt-9">
+              <h2 className="font-black">Block Individual Slots</h2>
+              <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
+                Remove one appointment time without closing the whole day.
+              </p>
+
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+                {dateOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setSlotBlockDate(option.value)}
+                    className={`h-12 shrink-0 rounded-[14px] border px-3 text-left text-xs font-black ${
+                      slotBlockDate === option.value
+                        ? "border-[var(--lobb-black)] bg-[var(--lobb-black)] text-white"
+                        : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)]"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+
+              {slotBlockDate && slotBlockOptions.length === 0 && (
+                <p className="mt-3 rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-semibold text-[var(--lobb-muted)]">
+                  No weekly window is open on this date.
+                </p>
+              )}
+
+              {slotBlockOptions.length > 0 && (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {slotBlockOptions.map((slot) => {
+                    const selected = slotBlocks.some((item) => item.slot_starts_at === slot.starts_at);
+                    return (
+                      <button
+                        key={slot.starts_at}
+                        type="button"
+                        onClick={() => toggleSlotBlock(slot)}
+                        className={`h-12 rounded-[14px] border text-xs font-black ${
+                          selected
+                            ? "border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay-dark)]"
+                            : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)]"
+                        }`}
+                      >
+                        {selected ? "Blocked " : ""}
+                        {slot.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {slotBlocks.length > 0 && (
+                <div className="mt-5 space-y-3">
+                  {slotBlocks.map((slot) => (
+                    <article
+                      key={slot.slot_starts_at}
+                      className="flex items-center justify-between gap-3 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-black">
+                          {new Date(slot.slot_starts_at).toLocaleDateString("en-NG", { weekday: "short", day: "numeric", month: "short", timeZone: "Africa/Lagos" })}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">
+                          {new Date(slot.slot_starts_at).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", timeZone: "Africa/Lagos" })} - {new Date(slot.slot_ends_at).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", timeZone: "Africa/Lagos" })}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSlotBlock(slot.slot_starts_at)}
+                        className="flex size-9 items-center justify-center rounded-full text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                        aria-label="Remove blocked slot"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
           </>
         )}
       </section>
 
       <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
         <div className="mx-auto max-w-md">
+          {(saved || error) && (
+            <p className={`mb-3 rounded-[14px] px-4 py-2 text-sm font-black ${error ? "bg-[#fff0e8] text-[var(--lobb-clay-dark)]" : "bg-[#e8f4ed] text-[var(--lobb-success)]"}`}>
+              {error || "Availability saved successfully."}
+            </p>
+          )}
           <button
             type="button"
             onClick={save}

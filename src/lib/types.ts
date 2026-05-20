@@ -22,11 +22,11 @@ export type CourtAccess = "coach_has_access" | "player_arranges" | "coach_can_re
 export type CoachRow = {
   id: string;
   full_name: string;
-  bio: string;
+  bio: string | null;
   headline: string | null;
-  hourly_rate_ngn: number;
+  hourly_rate_ngn: number | null;
   experience_years: number;
-  primary_location: string;
+  primary_location: string | null;
   service_areas: string[];
   skill_levels: string[];
   specializations: string[];
@@ -76,6 +76,16 @@ export type CoachAvailabilityBlock = {
   id: string;
   coach_id: string;
   blocked_date: string; // "YYYY-MM-DD"
+  reason: string | null;
+  created_at: string;
+};
+
+/** One concrete unavailable slot inside an otherwise open weekly window */
+export type CoachAvailabilitySlotBlock = {
+  id: string;
+  coach_id: string;
+  slot_starts_at: string;
+  slot_ends_at: string;
   reason: string | null;
   created_at: string;
 };

@@ -1,32 +1,42 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import type { CoachAvailabilityRow, CoachAvailabilityBlock } from "@/lib/types";
+import { requireRole } from "@/lib/api-auth";
+import type { CoachAvailabilityRow, CoachAvailabilityBlock, CoachAvailabilitySlotBlock } from "@/lib/types";
+
+function missingSlotBlockTable(error: { code?: string; message?: string } | null) {
+  return Boolean(
+    error &&
+      (error.code === "42P01" ||
+        error.code === "PGRST205" ||
+        error.message?.includes("coach_availability_slot_blocks"))
+  );
+}
 
 // ─── GET ──────────────────────────────────────────────────────────────────────
 
 export async function GET() {
   try {
-    const supabase = createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+    const auth = await requireRole(["coach", "admin"]);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const admin = createAdminClient();
-
-    const [slotsResult, blocksResult] = await Promise.all([
-      admin
+    const [slotsResult, blocksResult, slotBlocksResult] = await Promise.all([
+      auth.admin
         .from("coach_availability")
         .select("*")
-        .eq("coach_id", user.id)
+        .eq("coach_id", auth.user.id)
         .order("day_of_week")
         .order("starts_at"),
-      admin
+      auth.admin
         .from("coach_availability_blocks")
         .select("*")
-        .eq("coach_id", user.id)
+        .eq("coach_id", auth.user.id)
         .order("blocked_date"),
+      auth.admin
+        .from("coach_availability_slot_blocks")
+        .select("*")
+        .eq("coach_id", auth.user.id)
+        .order("slot_starts_at"),
     ]);
 
     if (slotsResult.error) {
@@ -35,10 +45,14 @@ export async function GET() {
     if (blocksResult.error) {
       return NextResponse.json({ error: blocksResult.error.message }, { status: 500 });
     }
+    if (slotBlocksResult.error && !missingSlotBlockTable(slotBlocksResult.error)) {
+      return NextResponse.json({ error: slotBlocksResult.error.message }, { status: 500 });
+    }
 
     return NextResponse.json({
       slots: (slotsResult.data ?? []) as CoachAvailabilityRow[],
       blocks: (blocksResult.data ?? []) as CoachAvailabilityBlock[],
+      slot_blocks: slotBlocksResult.error ? [] : ((slotBlocksResult.data ?? []) as CoachAvailabilitySlotBlock[]),
     });
   } catch {
     return NextResponse.json({ error: "Unable to load availability" }, { status: 500 });
@@ -50,25 +64,14 @@ export async function GET() {
 // Body: { slots: { day_of_week, starts_at, ends_at }[], blocked_dates: string[] }
 
 type SlotInput = { day_of_week: number; starts_at: string; ends_at: string };
-type PutBody  = { slots?: SlotInput[]; blocked_dates?: string[] };
+type SlotBlockInput = { slot_starts_at: string; slot_ends_at: string; reason?: string | null };
+type PutBody  = { slots?: SlotInput[]; blocked_dates?: string[]; blocked_slots?: SlotBlockInput[] };
 
 export async function PUT(request: Request) {
   try {
-    const supabase = createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
-    }
-
-    // Verify caller is a coach
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profile?.role !== "coach") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const auth = await requireRole(["coach", "admin"]);
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
     const body = (await request.json()) as PutBody;
@@ -102,22 +105,40 @@ export async function PUT(request: Request) {
       }
     }
 
-    const admin = createAdminClient();
+    // Validate blocked slots
+    const blockedSlots: SlotBlockInput[] = [];
+    if (Array.isArray(body.blocked_slots)) {
+      for (const s of body.blocked_slots) {
+        if (typeof s.slot_starts_at !== "string" || typeof s.slot_ends_at !== "string") {
+          return NextResponse.json({ error: "slot_starts_at and slot_ends_at must be strings" }, { status: 400 });
+        }
+        const starts = new Date(s.slot_starts_at).getTime();
+        const ends = new Date(s.slot_ends_at).getTime();
+        if (!Number.isFinite(starts) || !Number.isFinite(ends) || starts >= ends) {
+          return NextResponse.json({ error: "Invalid blocked slot time range" }, { status: 400 });
+        }
+        blockedSlots.push({
+          slot_starts_at: new Date(starts).toISOString(),
+          slot_ends_at: new Date(ends).toISOString(),
+          reason: typeof s.reason === "string" && s.reason.trim() ? s.reason.trim() : null,
+        });
+      }
+    }
 
     // Replace weekly slots: delete all then insert
-    const { error: deleteSlotErr } = await admin
+    const { error: deleteSlotErr } = await auth.admin
       .from("coach_availability")
       .delete()
-      .eq("coach_id", user.id);
+      .eq("coach_id", auth.user.id);
 
     if (deleteSlotErr) {
       return NextResponse.json({ error: deleteSlotErr.message }, { status: 500 });
     }
 
     if (slots.length > 0) {
-      const { error: insertSlotErr } = await admin
+      const { error: insertSlotErr } = await auth.admin
         .from("coach_availability")
-        .insert(slots.map((s) => ({ coach_id: user.id, ...s })));
+        .insert(slots.map((s) => ({ coach_id: auth.user.id, ...s })));
 
       if (insertSlotErr) {
         return NextResponse.json({ error: insertSlotErr.message }, { status: 500 });
@@ -125,22 +146,41 @@ export async function PUT(request: Request) {
     }
 
     // Replace blocked dates: delete all then insert
-    const { error: deleteBlockErr } = await admin
+    const { error: deleteBlockErr } = await auth.admin
       .from("coach_availability_blocks")
       .delete()
-      .eq("coach_id", user.id);
+      .eq("coach_id", auth.user.id);
 
     if (deleteBlockErr) {
       return NextResponse.json({ error: deleteBlockErr.message }, { status: 500 });
     }
 
     if (blockedDates.length > 0) {
-      const { error: insertBlockErr } = await admin
+      const { error: insertBlockErr } = await auth.admin
         .from("coach_availability_blocks")
-        .insert(blockedDates.map((d) => ({ coach_id: user.id, blocked_date: d })));
+        .insert(blockedDates.map((d) => ({ coach_id: auth.user.id, blocked_date: d })));
 
       if (insertBlockErr) {
         return NextResponse.json({ error: insertBlockErr.message }, { status: 500 });
+      }
+    }
+
+    const { error: deleteSlotBlockErr } = await auth.admin
+      .from("coach_availability_slot_blocks")
+      .delete()
+      .eq("coach_id", auth.user.id);
+
+    if (deleteSlotBlockErr && !missingSlotBlockTable(deleteSlotBlockErr)) {
+      return NextResponse.json({ error: deleteSlotBlockErr.message }, { status: 500 });
+    }
+
+    if (blockedSlots.length > 0 && !deleteSlotBlockErr) {
+      const { error: insertSlotBlockErr } = await auth.admin
+        .from("coach_availability_slot_blocks")
+        .insert(blockedSlots.map((s) => ({ coach_id: auth.user.id, ...s })));
+
+      if (insertSlotBlockErr) {
+        return NextResponse.json({ error: insertSlotBlockErr.message }, { status: 500 });
       }
     }
 

@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Bell, Circle, MapPin, Phone, User } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, MapPin, Phone, User, WalletCards } from "lucide-react";
 import { CoachBottomNav } from "@/components/coach-nav";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/components/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
 import { BookingCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
+import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { CoachKicker, CoachSurface } from "@/components/coach-surface";
 
 type CoachDashboardPayload = {
   upcoming_bookings: DashboardBooking[];
@@ -19,17 +21,10 @@ type CoachDashboardPayload = {
     pending_payout_ngn: number;
   } | null;
   profile_completion: { percent: number };
+  coach?: { status?: string | null } | null;
+  availability_slots_count?: number;
   reviews: Array<{ id: string; rating: number; comment: string | null; player_first_name: string; created_at: string }>;
 };
-
-function LobbMark({ size = 20 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <path d="M 8 56 C 8 4 56 4 56 56" stroke="currentColor" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="32" cy="17" r="7" fill="currentColor" />
-    </svg>
-  );
-}
 
 export default function CoachDashboardPage() {
   const [data, setData] = useState<CoachDashboardPayload | null>(null);
@@ -56,48 +51,84 @@ export default function CoachDashboardPage() {
   const upcoming = data?.upcoming_bookings ?? [];
   const nextSession = upcoming[0];
   const completion = data?.profile_completion?.percent ?? 0;
+  const coachStatus = data?.coach?.status ?? "draft";
+  const needsAvailability = coachStatus === "active" && !loading && (data?.availability_slots_count ?? 0) === 0;
+  const completionCard =
+    coachStatus === "pending_review"
+      ? {
+          icon: Clock3,
+          title: "Profile submitted for review",
+          detail: "We will notify you by SMS when your profile is approved.",
+          progress: 100,
+          tone: "var(--lobb-clay)",
+        }
+      : coachStatus === "active"
+      ? {
+          icon: CheckCircle2,
+          title: "Live on LOBB",
+          detail: "Players can find and book you now.",
+          progress: 100,
+          tone: "var(--lobb-success)",
+        }
+      : {
+          icon: AlertTriangle,
+          title: `Profile ${completion}% complete`,
+          detail: "Complete your profile to submit for review",
+          progress: completion,
+          tone: "var(--lobb-clay)",
+        };
+  const CompletionIcon = completionCard.icon;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
-      <header className="sticky top-0 z-40 flex h-[68px] items-center justify-between border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
-        <div className="flex items-center gap-2.5">
-          <LobbMark />
-          <span className="text-[13px] font-black tracking-[0.22em]">LOBB</span>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <button className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]" aria-label="Notifications">
-            <Bell className="size-4" />
-          </button>
-          <div className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
-            <User className="size-4 text-[var(--lobb-muted)]" />
-          </div>
-        </div>
-      </header>
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)]">
+      <CoachFlowHeader title="Coach Home" eyebrow="LOBB console" />
 
-      <section className="mx-auto max-w-md px-5 pt-5">
-        <Link href="/coach/profile" className="flex items-center justify-between rounded-[18px] border border-[var(--lobb-border)] border-l-4 border-l-[var(--lobb-clay)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
-          <div>
-            <p className="flex items-center gap-2 text-sm font-black">
-              <AlertTriangle className="size-4 text-[var(--lobb-clay)]" />
-              Profile {completion}% complete
-            </p>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--lobb-surface-2)]">
-              <div className="h-full bg-[var(--lobb-clay)]" style={{ width: `${completion}%` }} />
+      <section className="mx-auto max-w-md pt-5">
+        <Link
+          href="/coach/profile"
+          className="block rounded-[22px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]"
+          style={{ borderLeftColor: completionCard.tone }}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CoachKicker>Profile status</CoachKicker>
+              <p className="mt-3 flex items-center gap-2 text-lg font-black">
+                <CompletionIcon className="size-5" style={{ color: completionCard.tone }} />
+              {completionCard.title}
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-5 text-white/62">{completionCard.detail}</p>
             </div>
-            <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">Complete to go live →</p>
+            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black">{completionCard.progress}%</span>
+          </div>
+          <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/12">
+            <div className="h-full rounded-full" style={{ width: `${completionCard.progress}%`, backgroundColor: completionCard.tone }} />
           </div>
         </Link>
 
-        <h1 className="mt-8 text-lg font-black">This Week</h1>
-        <div className="mt-3 grid grid-cols-3 overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
-          <Stat value={String(upcoming.length)} label="Sessions Upcoming" />
-          <Stat value={money(data?.earnings?.net_this_week_ngn ?? 0)} label="Net This Week" bordered />
-          <Stat value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending Payout" bordered />
+        {needsAvailability && (
+          <Link
+            href="/coach/availability"
+            className="mt-4 block rounded-[18px] border border-[var(--lobb-clay)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]"
+          >
+            <p className="font-black text-[var(--lobb-clay)]">Set availability to receive bookings</p>
+            <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
+              Your profile is live, but players will not see bookable times until at least one weekly window is set.
+            </p>
+          </Link>
+        )}
+
+        <div className="mt-6 grid grid-cols-3 gap-3">
+          <Stat icon={CalendarDays} value={String(upcoming.length)} label="Upcoming" />
+          <Stat icon={WalletCards} value={money(data?.earnings?.net_this_week_ngn ?? 0)} label="Week" />
+          <Stat icon={Clock3} value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending" />
         </div>
 
-        <h2 className="mt-8 text-base font-black">Next Session</h2>
+        <div className="mt-8 flex items-center justify-between">
+          <h2 className="text-base font-black">Next Session</h2>
+          <Link href="/coach/availability" className="text-xs font-black text-[var(--lobb-clay)]">Availability</Link>
+        </div>
         {loading ? (
-          <div className="mt-3 rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5">
+          <CoachSurface className="mt-3 p-5">
             <SkeletonBlock className="h-4 w-40" />
             <div className="mt-6 flex items-center gap-3">
               <SkeletonBlock className="size-14 rounded-full" />
@@ -106,23 +137,23 @@ export default function CoachDashboardPage() {
                 <SkeletonBlock className="h-3 w-48" />
               </div>
             </div>
-          </div>
+          </CoachSurface>
         ) : nextSession ? (
-          <section className="mt-3 overflow-hidden rounded-[24px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]">
+          <section className="mt-3 overflow-hidden rounded-[22px] bg-[var(--lobb-surface)] p-5 shadow-[0_12px_28px_rgba(13,13,13,0.06)]">
           <p className="text-sm font-black">{formatBookingDate(nextSession.starts_at)}</p>
 
           <div className="mt-6 flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <div className="flex size-14 items-center justify-center rounded-full bg-white/10">
-              <User className="size-5 text-white/60" />
+            <div className="flex size-14 items-center justify-center rounded-full bg-[var(--lobb-surface-2)]">
+              <User className="size-5 text-[var(--lobb-muted)]" />
             </div>
             <div>
               <p className="text-lg font-black">{firstJoin(nextSession.players)?.full_name ?? "Player"}</p>
-              {nextSession.player_notes && <p className="mt-1 text-sm font-medium italic text-white/55">&quot;{nextSession.player_notes}&quot;</p>}
+              {nextSession.player_notes && <p className="mt-1 text-sm font-medium italic text-[var(--lobb-muted)]">&quot;{nextSession.player_notes}&quot;</p>}
             </div>
           </div>
 
-          <div className="mt-6 space-y-3 border-t border-white/15 pt-5 text-sm font-semibold text-white/80">
+          <div className="mt-6 space-y-3 border-t border-[var(--lobb-border)] pt-5 text-sm font-semibold text-[var(--lobb-muted)]">
             <p className="flex items-center gap-3">
               <Phone className="size-4 text-[var(--lobb-clay)]" />
               Player phone appears in booking confirmation SMS
@@ -134,9 +165,9 @@ export default function CoachDashboardPage() {
           </div>
         </section>
         ) : (
-          <section className="mt-3 rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 text-sm font-semibold text-[var(--lobb-muted)]">
+          <CoachSurface className="mt-3 p-5 text-sm font-semibold text-[var(--lobb-muted)]">
             No upcoming sessions yet.
-          </section>
+          </CoachSurface>
         )}
 
         <div className="mt-8 flex items-center justify-between">
@@ -171,10 +202,11 @@ export default function CoachDashboardPage() {
   );
 }
 
-function Stat({ value, label, bordered }: { value: string; label: string; bordered?: boolean }) {
+function Stat({ value, label, icon: Icon }: { value: string; label: string; icon: typeof CalendarDays }) {
   return (
-    <div className={`p-4 ${bordered ? "border-l border-[var(--lobb-border)]" : ""}`}>
-      <p className="truncate text-lg font-black">{value}</p>
+    <div className="rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-3 shadow-[0_10px_22px_rgba(13,13,13,0.04)]">
+      <Icon className="size-4 text-[var(--lobb-clay)]" />
+      <p className="mt-3 truncate text-base font-black">{value}</p>
       <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.1em] text-[var(--lobb-muted)]">{label}</p>
     </div>
   );

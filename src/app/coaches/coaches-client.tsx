@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Search, SlidersHorizontal, X } from "lucide-react";
 import { CoachListCard } from "@/components/coach-cards";
 import { PlayerBottomNav } from "@/components/player-nav";
 import { LobbEmptyState } from "@/components/lobb-empty-state";
@@ -47,7 +47,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
       // Location
       if (
         location !== "All" &&
-        !coach.primary_location.toLowerCase().includes(location.toLowerCase()) &&
+        !(coach.primary_location ?? "").toLowerCase().includes(location.toLowerCase()) &&
         !coach.service_areas.some((a) => a.toLowerCase().includes(location.toLowerCase()))
       ) {
         return false;
@@ -59,7 +59,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
         coach.headline ?? "",
         ...coach.specializations,
         ...coach.service_areas,
-        coach.primary_location,
+        coach.primary_location ?? "",
       ]
         .join(" ")
         .toLowerCase();
@@ -78,8 +78,8 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
 
       // Price range
       if (
-        coach.hourly_rate_ngn < activePrice.min ||
-        coach.hourly_rate_ngn > activePrice.max
+        (coach.hourly_rate_ngn ?? Infinity) < activePrice.min ||
+        (coach.hourly_rate_ngn ?? Infinity) > activePrice.max
       ) {
         return false;
       }
@@ -95,7 +95,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
     } else if (sort === "Most Reviewed") {
       list = [...list].sort((a, b) => b.review_count - a.review_count);
     } else if (sort === "Lowest Price") {
-      list = [...list].sort((a, b) => a.hourly_rate_ngn - b.hourly_rate_ngn);
+      list = [...list].sort((a, b) => (a.hourly_rate_ngn ?? Infinity) - (b.hourly_rate_ngn ?? Infinity));
     } else if (sort === "Newest on LOBB") {
       list = [...list].sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -123,9 +123,9 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
           <ArrowLeft className="size-5" />
         </Link>
         <div className="text-center">
-          <h1 className="font-black">Find a Coach</h1>
+          <h1 className="font-black">Book a Coach</h1>
           <p className="text-xs font-semibold text-[var(--lobb-muted)]">
-            Verified tennis coaches in Lagos
+            Pick a verified coach and reserve a slot
           </p>
         </div>
         <button
@@ -140,6 +140,37 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
           )}
         </button>
       </header>
+
+      <section className="px-5 pt-5">
+        <div className="overflow-hidden rounded-[24px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_16px_38px_rgba(13,13,13,0.16)]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Player booking desk</p>
+              <h2 className="mt-2 text-[26px] font-black leading-7">Find the right court session.</h2>
+              <p className="mt-2 max-w-[28rem] text-sm font-medium leading-6 text-white/58">
+                Compare coaches by area, price, and availability. Use Book to go straight to open slots.
+              </p>
+            </div>
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--lobb-clay)]">
+              <CalendarCheck className="size-5" />
+            </span>
+          </div>
+          <div className="mt-5 grid grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-3">
+            <div className="pr-3">
+              <p className="text-xl font-black">{initialCoaches.length}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">Coaches</p>
+            </div>
+            <div className="px-3">
+              <p className="text-xl font-black">{initialCoaches.filter((coach) => coach.has_availability).length}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">With slots</p>
+            </div>
+            <div className="pl-3">
+              <p className="text-xl font-black">{filterCount}</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">Filters</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Search */}
       <section className="px-5 pt-4">

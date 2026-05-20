@@ -104,6 +104,8 @@ export async function PATCH(request: Request) {
       const v = body.bio.trim();
       if (v.length < 50)
         return NextResponse.json({ error: "Bio must be at least 50 characters" }, { status: 400 });
+      if (v.length > 600)
+        return NextResponse.json({ error: "Bio must be 600 characters or less" }, { status: 400 });
       allowed.bio = v;
     }
     if (body.demo_video_url !== undefined) {

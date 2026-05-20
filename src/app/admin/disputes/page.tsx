@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Gavel, Phone } from "lucide-react";
 import { AdminBackHeader, AdminShell } from "@/components/admin-shell";
-import { adminBookings, money } from "@/lib/mock-data";
+import { adminBookings, money } from "@/lib/demo-content";
 
 type Resolution = "refund" | "release" | "split";
 

@@ -14,8 +14,8 @@ import { setPendingAuth } from "@/lib/auth-flow";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/client";
 
-// Only visible when NEXT_PUBLIC_LOBB_TEST_OTP is set (local dev)
-const IS_TEST_MODE = Boolean(process.env.NEXT_PUBLIC_LOBB_TEST_OTP);
+// Only visible when the dedicated dev-login switch is enabled.
+const IS_DEV_LOGIN_ENABLED = process.env.NEXT_PUBLIC_LOBB_DEV_LOGIN === "true";
 
 function nationalDigits(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -100,7 +100,6 @@ function DevLoginPanel() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mode = searchParams.get("mode") === "login" ? "login" : "signup";
   const nextPath = searchParams.get("next") || undefined;
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
@@ -132,7 +131,7 @@ function LoginForm() {
       return;
     }
 
-    setPendingAuth({ phone: e164Phone, mode, sentAt: Date.now(), nextPath });
+    setPendingAuth({ phone: e164Phone, mode: "login", sentAt: Date.now(), nextPath });
     router.push("/auth/verify");
   };
 
@@ -140,14 +139,14 @@ function LoginForm() {
     <OnboardingShell>
       <form onSubmit={submit} className="flex flex-1 flex-col pt-3">
         <section>
-          <OnboardingKicker>WhatsApp login</OnboardingKicker>
+          <OnboardingKicker>Secure phone sign-in</OnboardingKicker>
           <OnboardingTitle>
             Enter your
             <br />
             phone number
           </OnboardingTitle>
           <OnboardingCopy>
-            We&apos;ll send a 6-digit code to your WhatsApp. Nigeria only for the MVP.
+            We&apos;ll send a 6-digit WhatsApp code. If you&apos;re new, setup continues after verification.
           </OnboardingCopy>
         </section>
 
@@ -178,7 +177,7 @@ function LoginForm() {
           {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
         </section>
 
-        {IS_TEST_MODE && <DevLoginPanel />}
+        {IS_DEV_LOGIN_ENABLED && <DevLoginPanel />}
 
         <div className="mt-auto pb-8">
           <p className="mb-4 px-4 text-center text-xs font-semibold leading-4 text-[var(--lobb-muted)]">

@@ -90,7 +90,17 @@ export default function PlayerSetupPage() {
           <OnboardingCopy>Add your name so coaches know who they&apos;re preparing for.</OnboardingCopy>
         </section>
 
-        <div className="mt-10 flex flex-col items-center rounded-[28px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-6 shadow-[0_12px_40px_rgba(58,43,20,0.05)]">
+        <label className="mt-10 block">
+          <span className="text-sm font-bold text-[var(--lobb-black)]">Full name</span>
+          <input
+            value={fullName}
+            onChange={(event) => setFullName(event.target.value)}
+            placeholder="Enter your full name"
+            className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+          />
+        </label>
+
+        <div className="mt-6 flex flex-col items-center rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_12px_40px_rgba(58,43,20,0.05)]">
           <label className="group flex cursor-pointer flex-col items-center">
             <span className="flex size-24 items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] transition group-hover:border-[var(--lobb-black)]">
               {photoUrl ? (
@@ -115,33 +125,25 @@ export default function PlayerSetupPage() {
               }}
             />
           </label>
+          {photoUrl && (
+            <button
+              type="button"
+              className="mt-4 h-10 rounded-full px-4 text-sm font-bold text-[var(--lobb-muted)] transition hover:bg-white/50"
+              onClick={() => {
+                setPhotoUrl("");
+                setPhotoFile(null);
+              }}
+            >
+              Remove photo
+            </button>
+          )}
         </div>
-
-        <label className="mt-8 block">
-          <span className="text-sm font-bold text-[var(--lobb-black)]">Full name</span>
-          <input
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            placeholder="Enter your full name"
-            className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-          />
-        </label>
 
         <div className="mt-auto space-y-3 pb-8">
           {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
           <OnboardingButton type="submit" disabled={!fullName.trim()}>
             {saving ? "Saving..." : "Finish Setup"}
           </OnboardingButton>
-          <button
-            type="button"
-            className="h-12 w-full rounded-full text-sm font-bold text-[var(--lobb-muted)] transition hover:bg-white/50"
-            onClick={() => {
-              setPhotoUrl("");
-              setPhotoFile(null);
-            }}
-          >
-            Skip for now
-          </button>
         </div>
       </form>
     </OnboardingShell>

@@ -4,6 +4,7 @@ import type { UserRole } from "@/lib/types";
 
 export async function getAuthedUser() {
   const supabase = createClient();
+  const admin = createAdminClient();
   const {
     data: { user },
     error,
@@ -13,7 +14,7 @@ export async function getAuthedUser() {
     return { supabase, user: null, profile: null };
   }
 
-  const { data: profile } = await supabase
+  const { data: profile } = await admin
     .from("profiles")
     .select("id, role, phone_number, email, full_name, avatar_url, is_active")
     .eq("id", user.id)

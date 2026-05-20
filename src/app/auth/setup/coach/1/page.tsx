@@ -20,14 +20,17 @@ export default function CoachSetupStepOnePage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const canContinue = Boolean(fullName.trim() && headline.trim() && photoUrl);
+  const canContinue = Boolean(fullName.trim() && headline.trim() && photoUrl && photoFile);
 
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
+    setSubmitted(true);
 
     if (!canContinue) {
+      setError("Add your name, headline, and profile photo to continue.");
       return;
     }
 
@@ -49,37 +52,19 @@ export default function CoachSetupStepOnePage() {
     try {
       const uploadedPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "coach-avatar");
 
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .upsert({
-          id: user.id,
-          role: "coach",
-          full_name: fullName.trim(),
-          phone_number: user.phone || null,
-          avatar_url: uploadedPhotoUrl,
-        });
-
-      if (profileError) {
-        throw profileError;
-      }
-
-      const { error: coachError } = await supabase.from("coaches").upsert({
-        id: user.id,
-        full_name: fullName.trim(),
-        headline: headline.trim(),
-        bio: "Profile setup started in onboarding. Complete the full coach profile from the coach dashboard before going live.",
-        hourly_rate_ngn: 1000,
-        experience_years: 0,
-        primary_location: "Lagos",
-        service_areas: [],
-        skill_levels: [],
-        certifications: [],
-        profile_photo_url: uploadedPhotoUrl,
-        status: "pending_review",
+      const response = await fetch("/api/coaches/onboarding/step-1", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: fullName,
+          headline,
+          profile_photo_url: uploadedPhotoUrl,
+        }),
       });
 
-      if (coachError) {
-        throw coachError;
+      if (!response.ok) {
+        const result = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(result?.error || "Could not save your coach profile.");
       }
 
       router.push("/auth/setup/coach/2");
@@ -135,7 +120,7 @@ export default function CoachSetupStepOnePage() {
               }}
             />
           </label>
-          {!photoUrl && <p className="mt-4 text-center text-xs font-bold text-[#ba1a1a]">Profile photo required</p>}
+          {submitted && !photoUrl && <p className="mt-4 text-center text-xs font-bold text-[#ba1a1a]">Profile photo required</p>}
         </div>
 
         <div className="mt-8 space-y-5">
@@ -168,7 +153,7 @@ export default function CoachSetupStepOnePage() {
 
         <div className="mt-auto pb-8">
           {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!canContinue}>
+          <OnboardingButton type="submit" disabled={saving}>
             <span className="inline-flex items-center gap-2">
               {saving ? "Saving..." : "Next"} <ArrowRight className="size-4" />
             </span>

@@ -12,13 +12,6 @@ import {
 } from "@/components/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 
-const EXPERIENCE_OPTIONS = [
-  { value: 1, label: "1–2 years" },
-  { value: 3, label: "3–5 years" },
-  { value: 6, label: "6–10 years" },
-  { value: 11, label: "10+ years" },
-];
-
 export default function CoachSetupStep2Page() {
   const router = useRouter();
   const [bio, setBio] = useState("");
@@ -27,7 +20,7 @@ export default function CoachSetupStep2Page() {
   const [saving, setSaving] = useState(false);
 
   const bioLength = bio.trim().length;
-  const canContinue = bioLength >= 50 && experienceYears !== null;
+  const canContinue = bioLength >= 50 && experienceYears !== null && experienceYears >= 0 && experienceYears <= 60;
 
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -48,15 +41,23 @@ export default function CoachSetupStep2Page() {
       return;
     }
 
-    const { error: coachError } = await supabase
+    const { data: coach, error: coachError } = await supabase
       .from("coaches")
       .update({ bio: bio.trim(), experience_years: experienceYears })
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .select("id")
+      .maybeSingle();
 
     setSaving(false);
 
     if (coachError) {
       setError(coachError.message);
+      return;
+    }
+
+    if (!coach) {
+      setError("Start with step 1 so we can create your coach draft first.");
+      router.push("/auth/setup/coach/1");
       return;
     }
 
@@ -84,6 +85,9 @@ export default function CoachSetupStep2Page() {
             <span className="text-sm font-bold text-[var(--lobb-black)]">
               Bio <span className="text-[#ba1a1a]">*</span>
             </span>
+            <span className="mt-1 block text-xs font-semibold text-[var(--lobb-muted)]">
+              Minimum 50 characters. Aim for your coaching style, ideal player, and session structure.
+            </span>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
@@ -105,28 +109,29 @@ export default function CoachSetupStep2Page() {
             <span className="text-sm font-bold text-[var(--lobb-black)]">
               Years coaching tennis <span className="text-[#ba1a1a]">*</span>
             </span>
-            <div className="mt-2 grid grid-cols-2 gap-3">
-              {EXPERIENCE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setExperienceYears(opt.value)}
-                  className={`h-14 rounded-2xl border text-sm font-black transition ${
-                    experienceYears === opt.value
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={60}
+              step={1}
+              value={experienceYears ?? ""}
+              onChange={(event) => {
+                const value = event.target.value;
+                setExperienceYears(value === "" ? null : Number(value));
+              }}
+              placeholder="5"
+              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+            />
+            <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">
+              Enter the actual number of years, not a range.
+            </p>
           </div>
         </div>
 
         <div className="mt-auto pb-8">
           {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!canContinue}>
+          <OnboardingButton type="submit" disabled={!canContinue || saving}>
             <span className="inline-flex items-center gap-2">
               {saving ? "Saving..." : "Next"} <ArrowRight className="size-4" />
             </span>

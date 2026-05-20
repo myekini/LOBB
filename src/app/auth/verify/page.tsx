@@ -4,18 +4,23 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import {
-  OnboardingButton,
   OnboardingCopy,
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
 } from "@/components/onboarding-shell";
 import { clearPendingAuth, getPendingAuth } from "@/lib/auth-flow";
+import { showLobbToast } from "@/components/lobb-global-state";
 
-const testOtp =
-  process.env.NODE_ENV !== "production"
-    ? process.env.NEXT_PUBLIC_LOBB_TEST_OTP || "000000"
-    : "";
+const testOtp = process.env.NEXT_PUBLIC_LOBB_TEST_OTP || "";
+const testPhones = (process.env.NEXT_PUBLIC_LOBB_TEST_PHONE_NUMBERS ?? "")
+  .split(",")
+  .map((phone) => phone.trim())
+  .filter(Boolean);
+
+function isDevTestPhone(phone: string) {
+  return testPhones.includes(phone);
+}
 
 function displayPhone(phone: string) {
   return phone.replace("+234", "+234 ").replace(/(\d{4})(\d{3})(\d{3})$/, "$1 $2 $3");
@@ -150,7 +155,7 @@ export default function VerifyPage() {
       return;
     }
 
-    router.push("/auth/role");
+    router.push("/auth/setup/player");
   };
 
   const updateDigit = (index: number, value: string) => {
@@ -191,16 +196,24 @@ export default function VerifyPage() {
       return;
     }
 
-    await fetch("/api/auth/send-otp", {
+    const response = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ phone: pendingAuth.phone }),
     });
 
+    if (!response.ok) {
+      const result = (await response.json().catch(() => null)) as { error?: string } | null;
+      fail(result?.error || "Could not resend code. Try again.");
+      showLobbToast({ type: "error", message: "Could not resend code. Try again." });
+      return;
+    }
+
     setSeconds(60);
     setDigits(["", "", "", "", "", ""]);
     setError("");
     inputs.current[0]?.focus();
+    showLobbToast({ type: "success", message: "New WhatsApp code sent." });
   };
 
   return (
@@ -216,9 +229,9 @@ export default function VerifyPage() {
           <OnboardingCopy>
             Code sent to {pendingAuth ? displayPhone(pendingAuth.phone) : "+234"}. It expires shortly.
           </OnboardingCopy>
-          {testOtp && (
+          {testOtp && pendingAuth && isDevTestPhone(pendingAuth.phone) && (
             <p className="mt-4 rounded-2xl border border-[var(--lobb-border)] bg-white/60 px-4 py-3 text-sm font-bold text-[var(--lobb-muted)]">
-              Testing code: <span className="text-[var(--lobb-black)]">{testOtp}</span>
+              Dev account code: <span className="text-[var(--lobb-black)]">{testOtp}</span>
             </p>
           )}
         </div>
@@ -259,10 +272,10 @@ export default function VerifyPage() {
           {seconds > 0 ? `Resend code (0:${String(seconds).padStart(2, "0")})` : "Resend code"}
         </button>
 
-        <div className="mt-auto pb-8">
-          <OnboardingButton disabled={code.length !== 6} onClick={() => verify()}>
-            {verifying ? "Verifying..." : "Verify"}
-          </OnboardingButton>
+        <div className="mt-auto pb-8 text-center">
+          <p className="text-sm font-semibold text-[var(--lobb-muted)]">
+            {verifying ? "Checking your code..." : code.length === 6 ? "Submitting automatically..." : "Enter all 6 digits to continue."}
+          </p>
         </div>
       </section>
     </OnboardingShell>

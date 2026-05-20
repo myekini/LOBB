@@ -82,6 +82,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Coach not found" }, { status: 404 });
     }
 
+    const { data: slots, error: slotsErr } = await admin.rpc("get_coach_available_slots", {
+      p_coach_id: coach.id,
+    });
+
+    if (slotsErr) {
+      return NextResponse.json({ error: slotsErr.message }, { status: 500 });
+    }
+
+    const requestedSlotMs = new Date(slot_starts_at).getTime();
+    const slotIsAvailable = (slots ?? []).some(
+      (slot: { slot_starts_at: string }) => new Date(slot.slot_starts_at).getTime() === requestedSlotMs
+    );
+
+    if (!slotIsAvailable) {
+      return NextResponse.json({ error: "This slot is no longer available. Please choose another." }, { status: 409 });
+    }
+
     // ── Clean up expired locks for this coach/slot ────────────────────────────
     await admin
       .from("slot_locks")

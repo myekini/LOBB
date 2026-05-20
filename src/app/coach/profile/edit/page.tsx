@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, CheckCircle2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -17,7 +17,27 @@ import {
   type CoachRow,
   type CourtAccess,
 } from "@/lib/types";
-import { BackLink } from "@/components/back-link";
+import { CoachFlowHeader } from "@/components/coach-flow-header";
+
+type ProfileFormSnapshot = {
+  fullName: string;
+  headline: string;
+  bio: string;
+  demoVideoUrl: string;
+  hourlyRate: number;
+  primaryLocation: string;
+  serviceAreas: string[];
+  skillLevels: string[];
+  specializations: string[];
+  certifications: string[];
+  languages: string[];
+  courtAccess: CourtAccess;
+  photoUrl: string;
+};
+
+function formSnapshot(values: ProfileFormSnapshot) {
+  return JSON.stringify(values);
+}
 
 function SectionHead({ id, title }: { id: string; title: string }) {
   return (
@@ -64,7 +84,7 @@ export default function CoachProfileEditPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [initialSnapshot, setInitialSnapshot] = useState("");
 
   // Form state
   const [fullName, setFullName] = useState("");
@@ -82,11 +102,44 @@ export default function CoachProfileEditPage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
-  const wordCount = bio
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length;
-  const overWordLimit = wordCount > 300;
+  const bioLength = bio.trim().length;
+  const bioTooShort = bioLength < 50;
+  const bioTooLong = bioLength > 600;
+  const bioInvalid = bioTooShort || bioTooLong;
+  const currentSnapshot = useMemo(
+    () =>
+      formSnapshot({
+        fullName,
+        headline,
+        bio,
+        demoVideoUrl,
+        hourlyRate,
+        primaryLocation,
+        serviceAreas,
+        skillLevels,
+        specializations,
+        certifications,
+        languages,
+        courtAccess,
+        photoUrl,
+      }),
+    [
+      fullName,
+      headline,
+      bio,
+      demoVideoUrl,
+      hourlyRate,
+      primaryLocation,
+      serviceAreas,
+      skillLevels,
+      specializations,
+      certifications,
+      languages,
+      courtAccess,
+      photoUrl,
+    ]
+  );
+  const hasUnsavedChanges = Boolean(initialSnapshot) && (currentSnapshot !== initialSnapshot || Boolean(photoFile));
 
   useEffect(() => {
     const supabase = createClient();
@@ -105,29 +158,59 @@ export default function CoachProfileEditPage() {
         .then(({ data }) => {
           if (!data) return;
           const coach = data as CoachRow;
-          setFullName(coach.full_name);
-          setHeadline(coach.headline ?? "");
-          setBio(coach.bio);
-          setDemoVideoUrl(coach.demo_video_url ?? "");
-          setHourlyRate(coach.hourly_rate_ngn);
-          setPrimaryLocation(coach.primary_location);
-          setServiceAreas(coach.service_areas);
-          setSkillLevels(coach.skill_levels);
-          setSpecializations(coach.specializations);
-          setCertifications(coach.certifications);
-          setLanguages(coach.languages);
-          setCourtAccess(coach.court_access as CourtAccess);
-          setPhotoUrl(coach.profile_photo_url ?? "");
+          const loaded = {
+            fullName: coach.full_name ?? "",
+            headline: coach.headline ?? "",
+            bio: coach.bio ?? "",
+            demoVideoUrl: coach.demo_video_url ?? "",
+            hourlyRate: coach.hourly_rate_ngn ?? 10000,
+            primaryLocation: coach.primary_location ?? "",
+            serviceAreas: coach.service_areas ?? [],
+            skillLevels: coach.skill_levels ?? [],
+            specializations: coach.specializations ?? [],
+            certifications: coach.certifications ?? [],
+            languages: coach.languages ?? [],
+            courtAccess: coach.court_access ? (coach.court_access as CourtAccess) : "player_arranges",
+            photoUrl: coach.profile_photo_url ?? "",
+          };
+          setFullName(loaded.fullName);
+          setHeadline(loaded.headline);
+          setBio(loaded.bio);
+          setDemoVideoUrl(loaded.demoVideoUrl);
+          setHourlyRate(loaded.hourlyRate);
+          setPrimaryLocation(loaded.primaryLocation);
+          setServiceAreas(loaded.serviceAreas);
+          setSkillLevels(loaded.skillLevels);
+          setSpecializations(loaded.specializations);
+          setCertifications(loaded.certifications);
+          setLanguages(loaded.languages);
+          setCourtAccess(loaded.courtAccess);
+          setPhotoUrl(loaded.photoUrl);
+          setInitialSnapshot(formSnapshot(loaded));
           setLoading(false);
         });
     });
   }, [router]);
 
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+
+    const warnBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", warnBeforeUnload);
+    return () => window.removeEventListener("beforeunload", warnBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   const save = async () => {
-    if (overWordLimit) return;
+    if (bioInvalid) {
+      setError("Bio must be between 50 and 600 characters.");
+      return;
+    }
     setSaving(true);
     setError("");
-    setSuccess(false);
 
     const supabase = createClient();
     const {
@@ -141,10 +224,14 @@ export default function CoachProfileEditPage() {
     }
 
     let finalPhotoUrl = photoUrl;
+    let uploadedPhotoUrl: string | null = null;
 
     try {
       if (photoFile) {
-        finalPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "coach-avatar");
+        uploadedPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "coach-avatar");
+        finalPhotoUrl = uploadedPhotoUrl;
+        setPhotoUrl(uploadedPhotoUrl);
+        setPhotoFile(null);
       }
 
       const res = await fetch("/api/coaches/me", {
@@ -170,10 +257,31 @@ export default function CoachProfileEditPage() {
       const json = await res.json();
 
       if (!res.ok) {
-        setError(json.error ?? "Could not save profile.");
+        setError(
+          uploadedPhotoUrl
+            ? "Photo uploaded, but profile details were not saved. Press Save Profile again to link it."
+            : json.error ?? "Could not save profile."
+        );
       } else {
-        setSuccess(true);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        setInitialSnapshot(
+          formSnapshot({
+            fullName: fullName.trim(),
+            headline,
+            bio,
+            demoVideoUrl,
+            hourlyRate,
+            primaryLocation,
+            serviceAreas,
+            skillLevels,
+            specializations,
+            certifications,
+            languages,
+            courtAccess,
+            photoUrl: finalPhotoUrl,
+          })
+        );
+        router.push("/coach/profile");
+        router.refresh();
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -197,29 +305,16 @@ export default function CoachProfileEditPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 pt-7 text-[var(--lobb-black)]">
-      <div className="mx-auto max-w-md">
-        <div className="mb-8 flex items-center justify-between">
-          <div className="min-w-0">
-            <BackLink href="/coach/profile" label="Profile" className="mb-4" />
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
-              Coach Profile
-            </p>
-            <h1 className="text-[26px] font-black">Edit Profile</h1>
-          </div>
-          <a
-            href="/coach/profile/preview"
-            className="text-sm font-bold text-[var(--lobb-muted)]"
-          >
-            Preview
-          </a>
-        </div>
-
-        {success && (
-          <div className="mb-6 rounded-[18px] border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">
-            Profile saved successfully.
-          </div>
-        )}
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 text-[var(--lobb-black)]">
+      <CoachFlowHeader
+        title="Edit Profile"
+        eyebrow="Coach profile"
+        actionHref="/coach/profile/preview"
+        actionLabel="Preview"
+        confirmNavigation={hasUnsavedChanges}
+        confirmMessage="Discard unsaved profile changes?"
+      />
+      <div className="mx-auto max-w-md pt-5">
 
         <div className="space-y-10">
           {/* ── Photo ───────────────────────────────────────── */}
@@ -296,15 +391,16 @@ export default function CoachProfileEditPage() {
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={7}
+              maxLength={600}
               placeholder="Tell players about your coaching style, experience, and what to expect in a session..."
               className="w-full resize-none rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-3 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
             />
             <span
               className={`mt-1 block text-right text-xs font-bold ${
-                overWordLimit ? "text-[#ba1a1a]" : "text-[var(--lobb-muted)]"
+                bioInvalid ? "text-[#ba1a1a]" : "text-[var(--lobb-muted)]"
               }`}
             >
-              {wordCount}/300 words
+              Minimum 50 characters · {bio.length}/600
             </span>
           </section>
 
@@ -322,7 +418,7 @@ export default function CoachProfileEditPage() {
               />
             </label>
             <p className="mt-2 text-xs font-semibold text-[var(--lobb-muted)]">
-              30–60 seconds of coaching footage recommended. Required to go live.
+              Optional, but helps players trust your coaching style.
             </p>
           </section>
 
@@ -349,7 +445,7 @@ export default function CoachProfileEditPage() {
 
           {/* ── Locations ────────────────────────────────────── */}
           <section>
-            <SectionHead id="rate" title="Locations" />
+            <SectionHead id="locations" title="Locations" />
             <p className="mb-2 text-sm font-bold text-[var(--lobb-black)]">
               Primary location *
             </p>
@@ -380,7 +476,7 @@ export default function CoachProfileEditPage() {
 
           {/* ── Skill levels ─────────────────────────────────── */}
           <section>
-            <SectionHead id="specializations" title="Player Levels" />
+            <SectionHead id="skill-levels" title="Player Levels" />
             <div className="flex flex-wrap gap-2">
               {SKILL_LEVEL_OPTIONS.map((level) => (
                 <MultiChip
@@ -485,7 +581,7 @@ export default function CoachProfileEditPage() {
         <button
           type="button"
           onClick={save}
-          disabled={saving || overWordLimit || !fullName.trim()}
+          disabled={saving || bioInvalid || !fullName.trim()}
           className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-black)] text-sm font-black text-white shadow-[0_14px_30px_rgba(11,11,10,0.16)] transition hover:bg-black active:scale-[0.98] disabled:pointer-events-none disabled:bg-[#cfc6b8]"
         >
           {saving ? "Saving..." : "Save Profile"}

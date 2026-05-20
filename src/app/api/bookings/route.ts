@@ -105,6 +105,9 @@ export async function POST(request: Request) {
     if (new Date(lock.expires_at) < new Date()) {
       return NextResponse.json({ error: "Slot lock has expired. Please start over." }, { status: 410 });
     }
+    if (new Date(lock.slot_starts_at).getTime() !== new Date(slot_starts_at).getTime()) {
+      return NextResponse.json({ error: "Slot does not match the active lock. Please start over." }, { status: 400 });
+    }
 
     // ── Fetch coach details ────────────────────────────────────────────────────
     const { data: coach, error: coachErr } = await admin

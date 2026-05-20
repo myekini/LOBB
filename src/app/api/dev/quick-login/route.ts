@@ -3,12 +3,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// ─── Only active when LOBB_ENABLE_TEST_OTP=true ──────────────────────────────
+// ─── Only active when LOBB_ENABLE_DEV_LOGIN=true ─────────────────────────────
 // This route is a dev convenience — it NEVER ships to production in a live state
-// because isTestOtpEnabled() blocks it.
+// because isDevLoginEnabled() blocks it.
 
-function isTestMode() {
-  return process.env.LOBB_ENABLE_TEST_OTP === "true";
+function isDevLoginEnabled() {
+  return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
 }
 
 const TEST_PHONES: Record<"player" | "coach", string> = {
@@ -18,31 +18,49 @@ const TEST_PHONES: Record<"player" | "coach", string> = {
 
 const TEST_PROFILES: Record<"player" | "coach", Record<string, unknown>> = {
   player: {
-    full_name: "Test Player",
+    full_name: "Tobi Adeyemi",
     role: "player",
+    avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=512&q=80",
   },
   coach: {
-    full_name: "Test Coach Ada",
+    full_name: "Ada Okafor",
     role: "coach",
+    avatar_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
   },
 };
 
-const TEST_COACH_ROW = {
-  full_name:        "Test Coach Ada",
-  headline:         "ITF Certified · Lekki & VI",
-  bio:              "Test coach account for local development. Used to verify booking flows, availability management, and coach dashboard features end-to-end without affecting real data.",
-  hourly_rate_ngn:  15000,
-  primary_location: "Lekki",
-  service_areas:    ["Lekki", "Victoria Island", "Ikoyi"],
-  skill_levels:     ["Beginner", "Intermediate", "All levels"],
-  specializations:  ["Beginners", "Adults"],
-  certifications:   ["ITF Level 1"],
-  languages:        ["English"],
-  court_access:     "player_arranges",
-  status:           "active",
-  is_verified:      true,
-  slug:             "test-coach-ada",
+const TEST_PLAYER_ROW = {
+  full_name: "Tobi Adeyemi",
+  skill_level: "Intermediate",
+  preferred_locations: ["Lekki", "Victoria Island", "Ikoyi"],
 };
+
+const TEST_COACH_ROW = {
+  full_name:         "Ada Okafor",
+  headline:          "ITF Level 1 Coach · Footwork, beginners & match play",
+  bio:               "Ada is a patient Lagos tennis coach who helps beginners build clean fundamentals and intermediate players sharpen footwork, consistency, and match confidence.",
+  hourly_rate_ngn:   15000,
+  experience_years:  8,
+  primary_location:  "Lekki",
+  service_areas:     ["Lekki", "Victoria Island", "Ikoyi", "Oniru"],
+  skill_levels:      ["Beginner", "Intermediate", "All levels"],
+  specializations:   ["Beginners", "Adults", "Footwork", "Match Play"],
+  certifications:    ["ITF Level 1"],
+  languages:         ["English", "Yoruba"],
+  court_access:      "coach_can_recommend",
+  demo_video_url:    null,
+  profile_photo_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
+  status:            "active",
+  is_verified:       true,
+  slug:              "ada-okafor-dev",
+};
+
+const TEST_COACH_AVAILABILITY = [
+  { day_of_week: 1, starts_at: "08:00:00", ends_at: "12:00:00" },
+  { day_of_week: 2, starts_at: "16:00:00", ends_at: "20:00:00" },
+  { day_of_week: 4, starts_at: "16:00:00", ends_at: "20:00:00" },
+  { day_of_week: 6, starts_at: "08:00:00", ends_at: "13:00:00" },
+];
 
 function getSyntheticCredentials(phone: string) {
   const secret =
@@ -62,7 +80,7 @@ function getSyntheticCredentials(phone: string) {
 }
 
 export async function POST(request: Request) {
-  if (!isTestMode()) {
+  if (!isDevLoginEnabled()) {
     return NextResponse.json({ error: "Not available in production" }, { status: 403 });
   }
 
@@ -101,35 +119,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: createErr?.message ?? "Could not create test user" }, { status: 500 });
     }
 
-    // Seed the profile row
-    await admin.from("profiles").upsert(
-      { id: created.user.id, phone_number: phone, ...TEST_PROFILES[role] },
-      { onConflict: "id" }
-    );
-
-    // Seed coach row if needed
-    if (role === "coach") {
-      await admin.from("coaches").upsert(
-        { id: created.user.id, ...TEST_COACH_ROW },
-        { onConflict: "id" }
-      );
-    }
+    await seedDevAccount(admin, created.user.id, phone, role);
 
     signIn = await authClient.auth.signInWithPassword({ email, password });
   } else {
     // User exists — ensure profile + coach row are still correct (idempotent)
     const userId = signIn.data.user?.id;
     if (userId) {
-      await admin.from("profiles").upsert(
-        { id: userId, phone_number: phone, ...TEST_PROFILES[role] },
-        { onConflict: "id" }
-      );
-      if (role === "coach") {
-        await admin.from("coaches").upsert(
-          { id: userId, ...TEST_COACH_ROW },
-          { onConflict: "id" }
-        );
-      }
+      await seedDevAccount(admin, userId, phone, role);
     }
   }
 
@@ -138,4 +135,34 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ session: signIn.data.session, user: signIn.data.user, role, phone });
+}
+
+async function seedDevAccount(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+  phone: string,
+  role: "player" | "coach"
+) {
+  await admin.from("profiles").upsert(
+    { id: userId, phone_number: phone, ...TEST_PROFILES[role] },
+    { onConflict: "id" }
+  );
+
+  if (role === "player") {
+    await admin.from("players").upsert(
+      { id: userId, ...TEST_PLAYER_ROW },
+      { onConflict: "id" }
+    );
+    return;
+  }
+
+  await admin.from("coaches").upsert(
+    { id: userId, ...TEST_COACH_ROW },
+    { onConflict: "id" }
+  );
+
+  await admin.from("coach_availability").delete().eq("coach_id", userId);
+  await admin.from("coach_availability").insert(
+    TEST_COACH_AVAILABILITY.map((slot) => ({ coach_id: userId, ...slot }))
+  );
 }

@@ -45,13 +45,14 @@ function toggle(value: string, list: string[], setList: (v: string[]) => void) {
 export default function CoachSetupStep3Page() {
   const router = useRouter();
   const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [customRate, setCustomRate] = useState("");
   const [primaryLocation, setPrimaryLocation] = useState("");
   const [serviceAreas, setServiceAreas] = useState<string[]>([]);
   const [skillLevels, setSkillLevels] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const canContinue = hourlyRate !== null && Boolean(primaryLocation) && skillLevels.length > 0;
+  const canContinue = hourlyRate !== null && hourlyRate >= 1000 && Boolean(primaryLocation) && skillLevels.length > 0;
 
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -77,7 +78,7 @@ export default function CoachSetupStep3Page() {
       ? serviceAreas
       : [primaryLocation, ...serviceAreas];
 
-    const { error: coachError } = await supabase
+    const { data: coach, error: coachError } = await supabase
       .from("coaches")
       .update({
         hourly_rate_ngn: hourlyRate,
@@ -85,12 +86,20 @@ export default function CoachSetupStep3Page() {
         service_areas: allAreas,
         skill_levels: skillLevels,
       })
-      .eq("id", user.id);
+      .eq("id", user.id)
+      .select("id")
+      .maybeSingle();
 
     setSaving(false);
 
     if (coachError) {
       setError(coachError.message);
+      return;
+    }
+
+    if (!coach) {
+      setError("Start with step 1 so we can create your coach draft first.");
+      router.push("/auth/setup/coach/1");
       return;
     }
 
@@ -123,7 +132,10 @@ export default function CoachSetupStep3Page() {
                 <button
                   key={rate}
                   type="button"
-                  onClick={() => setHourlyRate(rate)}
+                  onClick={() => {
+                    setHourlyRate(rate);
+                    setCustomRate("");
+                  }}
                   className={`h-12 rounded-2xl border text-sm font-black transition ${
                     hourlyRate === rate
                       ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
@@ -134,6 +146,26 @@ export default function CoachSetupStep3Page() {
                 </button>
               ))}
             </div>
+            <label className="mt-3 block">
+              <span className="text-xs font-bold text-[var(--lobb-muted)]">Custom hourly rate</span>
+              <div className="mt-1 flex h-14 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
+                <span className="mr-2 font-black text-[var(--lobb-muted)]">₦</span>
+                <input
+                  inputMode="numeric"
+                  value={customRate}
+                  onChange={(event) => {
+                    const digits = event.target.value.replace(/\D/g, "").slice(0, 6);
+                    setCustomRate(digits);
+                    setHourlyRate(digits ? Number(digits) : null);
+                  }}
+                  placeholder="12000"
+                  className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-semibold text-[var(--lobb-black)] outline-none placeholder:text-[#9b958a] focus:ring-0"
+                />
+              </div>
+              {hourlyRate !== null && hourlyRate < 1000 && (
+                <p className="mt-1 text-xs font-bold text-[#ba1a1a]">Minimum rate is ₦1,000.</p>
+              )}
+            </label>
           </div>
 
           {/* Primary location */}
@@ -141,22 +173,18 @@ export default function CoachSetupStep3Page() {
             <span className="text-sm font-bold text-[var(--lobb-black)]">
               Primary location <span className="text-[#ba1a1a]">*</span>
             </span>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <select
+              value={primaryLocation}
+              onChange={(event) => setPrimaryLocation(event.target.value)}
+              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-black text-[var(--lobb-black)] outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+            >
+              <option value="">Choose primary area</option>
               {LAGOS_LOCATIONS.map((loc) => (
-                <button
-                  key={loc}
-                  type="button"
-                  onClick={() => setPrimaryLocation(loc)}
-                  className={`rounded-full border px-4 py-2 text-sm font-black transition ${
-                    primaryLocation === loc
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
-                  }`}
-                >
+                <option key={loc} value={loc}>
                   {loc}
-                </button>
+                </option>
               ))}
-            </div>
+            </select>
           </div>
 
           {/* Other service areas */}
@@ -209,7 +237,7 @@ export default function CoachSetupStep3Page() {
 
         <div className="mt-auto pb-8">
           {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!canContinue}>
+          <OnboardingButton type="submit" disabled={!canContinue || saving}>
             <span className="inline-flex items-center gap-2">
               {saving ? "Saving..." : "Next"} <ArrowRight className="size-4" />
             </span>

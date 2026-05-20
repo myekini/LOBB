@@ -9,7 +9,10 @@ function profileChecklistProgress(coach: Record<string, unknown> | null) {
     Boolean(coach?.profile_photo_url),
     typeof coach?.headline === "string" && coach.headline.length > 0,
     Array.isArray(coach?.skill_levels) && coach.skill_levels.length > 0,
+    Array.isArray(coach?.specializations) && coach.specializations.length > 0,
     Array.isArray(coach?.certifications) && coach.certifications.length > 0,
+    Array.isArray(coach?.languages) && coach.languages.length > 0,
+    Boolean(coach?.court_access),
     Boolean(coach?.primary_location),
     Number(coach?.hourly_rate_ngn) >= 1000,
   ];

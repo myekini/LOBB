@@ -28,6 +28,20 @@ export function CoachCardSkeleton() {
   );
 }
 
+export function SmallCoachCardSkeleton() {
+  return (
+    <div className="w-full overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]">
+      <SkeletonBlock className="h-[108px] w-full rounded-none rounded-t-[20px]" />
+      <div className="space-y-2 p-3">
+        <SkeletonBlock className="h-3 w-1/2" />
+        <SkeletonBlock className="h-4 w-3/4" />
+        <SkeletonBlock className="h-3 w-2/3" />
+        <SkeletonBlock className="h-4 w-1/2" />
+      </div>
+    </div>
+  );
+}
+
 export function BookingCardSkeleton() {
   return (
     <article className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
