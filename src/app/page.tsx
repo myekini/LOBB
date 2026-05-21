@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, Search, Trophy, User } from "lucide-react";
+import { ArrowRight, MapPin, Search, Trophy, User } from "lucide-react";
 import { coaches, courtImage, money } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav } from "@/components/player-nav";
-import { SmallCoachCard } from "@/components/coach-cards";
+import { CoachListCard } from "@/components/coach-cards";
 import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/lobb-skeleton";
 
 function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: string }) {
@@ -28,6 +28,15 @@ function getGreeting() {
   return "Good evening";
 }
 
+function PlayerHomeStat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="border-r border-white/10 px-3 py-3 last:border-r-0 md:border-b md:border-r-0 md:last:border-b-0">
+      <p className="truncate text-[19px] font-black leading-none">{value}</p>
+      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/42">{label}</p>
+    </div>
+  );
+}
+
 type HomeProfile = {
   role: "player" | "coach" | "admin";
   full_name: string | null;
@@ -40,6 +49,43 @@ export default function Home() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [liveCoaches, setLiveCoaches]       = useState<CoachPublicProfile[]>([]);
   const [loadingCoaches, setLoadingCoaches] = useState(true);
+  const [coachQuery, setCoachQuery]         = useState("");
+  const [coachLocation, setCoachLocation]   = useState("All");
+
+  const locationChips = useMemo(() => {
+    const locations = liveCoaches.flatMap((coach) => [
+      coach.primary_location,
+      ...coach.service_areas,
+    ]).filter(Boolean) as string[];
+
+    return ["All", ...Array.from(new Set(locations)).slice(0, 5)];
+  }, [liveCoaches]);
+
+  const filteredCoaches = useMemo(() => {
+    const query = coachQuery.trim().toLowerCase();
+
+    return liveCoaches.filter((coach) => {
+      const locationMatch =
+        coachLocation === "All" ||
+        (coach.primary_location ?? "").toLowerCase().includes(coachLocation.toLowerCase()) ||
+        coach.service_areas.some((area) => area.toLowerCase().includes(coachLocation.toLowerCase()));
+
+      if (!locationMatch) return false;
+
+      if (!query) return true;
+
+      const searchable = [
+        coach.full_name,
+        coach.headline ?? "",
+        coach.primary_location ?? "",
+        ...coach.service_areas,
+        ...coach.specializations,
+        ...coach.skill_levels,
+      ].join(" ").toLowerCase();
+
+      return searchable.includes(query);
+    });
+  }, [coachLocation, coachQuery, liveCoaches]);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,73 +194,131 @@ export default function Home() {
   /* ── Authenticated player home ── */
   if (profile?.role === "player" && profile.full_name) {
     const firstName = profile.full_name.split(" ")[0] || "there";
+    const featuredCoach = liveCoaches.find((coach) => coach.has_availability) ?? liveCoaches[0];
 
     return (
       <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
         {/* Header */}
-        <header className="sticky top-0 z-40 flex h-[68px] items-center justify-between border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
-          <div className="flex items-center gap-2.5">
-            <LobbMark size={20} />
-            <div>
-              <p className="text-[12px] font-black tracking-[0.2em] text-[var(--lobb-black)]">LOBB</p>
-              <p className="text-[10px] font-semibold text-[var(--lobb-muted)]">Lagos tennis</p>
+        <header className="sticky top-0 z-40 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 backdrop-blur-xl">
+          <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-5">
+            <div className="flex items-center gap-2.5">
+              <LobbMark size={20} />
+              <div>
+                <p className="text-[12px] font-black tracking-[0.2em] text-[var(--lobb-black)]">LOBB</p>
+                <p className="text-[10px] font-semibold text-[var(--lobb-muted)]">Lagos tennis</p>
+              </div>
             </div>
+            <Link
+              href="/profile"
+              aria-label="Your profile"
+              className="flex size-10 items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition hover:border-[var(--lobb-clay)]/40"
+            >
+              {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt="" className="size-full object-cover" />
+              ) : (
+                <User className="size-4" />
+              )}
+            </Link>
           </div>
-          <Link
-            href="/profile"
-            aria-label="Your profile"
-            className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] transition hover:border-[var(--lobb-clay)]/40"
-          >
-            {profile.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={profile.avatar_url} alt="" className="size-full object-cover" />
-            ) : (
-              <User className="size-4" />
-            )}
-          </Link>
         </header>
 
         {/* Hero card */}
-        <section className="px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)]">
-            <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[48px] bg-[var(--lobb-clay)]/20" aria-hidden="true" />
-            <div className="relative">
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/45">{getGreeting()}</p>
-              <h1 className="mt-1 text-[30px] font-black leading-none tracking-[-0.01em]">{firstName}.</h1>
-              <p className="mt-2 text-[13px] font-medium text-white/55">Ready to book a session?</p>
+        <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
+          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-7">
+            <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[56px] bg-[var(--lobb-clay)]/20" aria-hidden="true" />
+            <div className="relative grid gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/45">{getGreeting()}</p>
+                <h1 className="mt-2 text-[34px] font-black leading-[0.95] tracking-[-0.01em] sm:text-[48px]">
+                  {firstName}, find a coach and book the court.
+                </h1>
+                <p className="mt-3 max-w-xl text-[14px] font-medium leading-6 text-white/58">
+                  Search Lagos coaches by name, area, skill level, or session style. Book goes straight to open slots.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/10 bg-white/[0.06] md:grid-cols-1">
+                <PlayerHomeStat label="Coaches" value={liveCoaches.length} />
+                <PlayerHomeStat label="Open slots" value={liveCoaches.filter((coach) => coach.has_availability).length} />
+                <PlayerHomeStat label="Top area" value={featuredCoach?.primary_location ?? "Lagos"} />
+              </div>
             </div>
-            <Link
-              href="/coaches"
-              className="relative mt-5 flex h-[50px] items-center gap-3 rounded-[16px] border border-white/10 bg-white/[0.07] px-4 text-white/45 transition hover:bg-white/10"
-            >
-              <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-              <span className="text-[13px] font-semibold">Search coaches, areas, levels…</span>
-            </Link>
           </div>
         </section>
 
-        {/* Coaches grid */}
-        <section className="mt-6 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
-          <div className="mb-3 flex items-center justify-between px-5">
-            <h2 className="text-[15px] font-black">Top Coaches</h2>
-            <Link href="/coaches" className="text-[12px] font-bold text-[var(--lobb-muted)] transition hover:text-[var(--lobb-black)]">
-              See all →
+        {/* Search and location filters */}
+        <section className="sticky top-[68px] z-30 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/94 py-3 backdrop-blur-xl">
+          <div className="mx-auto max-w-6xl px-5">
+            <label className="flex h-[52px] items-center gap-3 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_10px_28px_rgba(58,43,20,0.05)]">
+              <Search className="size-5 shrink-0 text-[var(--lobb-clay)]" />
+              <input
+                value={coachQuery}
+                onChange={(event) => setCoachQuery(event.target.value)}
+                placeholder="Search coach, area, skill"
+                className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[#9b958a] focus:ring-0"
+              />
+            </label>
+            {locationChips.length > 1 && (
+              <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+                {locationChips.map((location) => (
+                  <button
+                    key={location}
+                    onClick={() => setCoachLocation(location)}
+                    className={`h-10 shrink-0 rounded-full px-4 text-sm font-black transition ${
+                      coachLocation === location
+                        ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_24px_rgba(13,13,13,0.14)]"
+                        : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"
+                    }`}
+                  >
+                    {location}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Coaches list */}
+        <section className="mx-auto mt-5 max-w-6xl px-5 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-[17px] font-black">Book a verified coach</h2>
+              <p className="mt-0.5 flex items-center gap-1.5 text-[12px] font-semibold text-[var(--lobb-muted)]">
+                <MapPin className="size-3.5 text-[var(--lobb-clay)]" />
+                {coachLocation === "All" ? "Lagos areas" : coachLocation}
+              </p>
+            </div>
+            <Link href="/coaches" className="shrink-0 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-2 text-[12px] font-black text-[var(--lobb-black)] transition hover:border-[var(--lobb-clay)]/40">
+              See all
             </Link>
           </div>
+
           {loadingCoaches ? (
-            <div className="grid grid-cols-2 gap-3 px-5 pb-2 sm:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <SmallCoachCardSkeleton key={i} />
               ))}
             </div>
           ) : liveCoaches.length === 0 ? (
-            <p className="px-5 text-[13px] font-semibold text-[var(--lobb-muted)]">
-              No coaches yet — check back soon.
-            </p>
+            <div className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 text-sm font-semibold text-[var(--lobb-muted)]">
+              No coaches yet. Check back soon.
+            </div>
+          ) : filteredCoaches.length === 0 ? (
+            <div className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5">
+              <p className="font-black text-[var(--lobb-black)]">No coaches match that search.</p>
+              <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">Try another area or clear your search.</p>
+              <button
+                onClick={() => { setCoachQuery(""); setCoachLocation("All"); }}
+                className="mt-4 inline-flex h-11 items-center rounded-full bg-[var(--lobb-black)] px-5 text-sm font-black text-white"
+              >
+                Clear search
+              </button>
+            </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 px-5 pb-2 sm:grid-cols-3">
-              {liveCoaches.map((coach) => (
-                <SmallCoachCard key={coach.slug} coach={coach} />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredCoaches.map((coach) => (
+                <CoachListCard key={coach.id} coach={coach} />
               ))}
             </div>
           )}
