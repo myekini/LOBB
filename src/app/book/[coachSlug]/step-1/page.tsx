@@ -9,21 +9,21 @@ import { CoachCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
 
 type DayGroup = {
-  dateStr: string;   // "YYYY-MM-DD"
-  label: string;     // "Mon 19 May"
-  shortLabel: string;// "Mon 19"
-  weekday: string;   // "Mon"
-  day: string;       // "19"
+  dateStr: string;
+  label: string;
+  shortLabel: string;
+  weekday: string;
+  day: string;
   slots: { iso: string; label: string }[];
 };
 
 function groupSlots(raw: AvailableSlot[]): DayGroup[] {
   const map = new Map<string, { iso: string; label: string }[]>();
   for (const s of raw) {
-    const d      = new Date(s.slot_starts_at);
-    const key    = d.toLocaleDateString("en-CA"); // "YYYY-MM-DD"
-    const label  = d.toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", hour12: true });
-    const arr    = map.get(key) ?? [];
+    const d     = new Date(s.slot_starts_at);
+    const key   = d.toLocaleDateString("en-CA");
+    const label = d.toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", hour12: true });
+    const arr   = map.get(key) ?? [];
     arr.push({ iso: s.slot_starts_at, label });
     map.set(key, arr);
   }
@@ -47,16 +47,15 @@ function BookingStep1Content() {
   const router = useRouter();
   const slug   = params.coachSlug;
 
-  const [coach,    setCoach]    = useState<CoachPublicProfile | null>(null);
-  const [groups,   setGroups]   = useState<DayGroup[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [locking,  setLocking]  = useState(false);
-  const [weekStart, setWeekStart] = useState(0); // 0 = first week, 7 = second week
+  const [coach,     setCoach]     = useState<CoachPublicProfile | null>(null);
+  const [groups,    setGroups]    = useState<DayGroup[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [locking,   setLocking]   = useState(false);
+  const [weekStart, setWeekStart] = useState(0);
 
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
 
-  // Load coach + slots
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -64,17 +63,14 @@ function BookingStep1Content() {
         fetch(`/api/coaches/${slug}`),
         fetch(`/api/coaches/${slug}/slots`),
       ]);
-
       if (coachRes.ok) {
         const { coach: c } = (await coachRes.json()) as { coach: CoachPublicProfile };
         setCoach(c);
       }
-
       if (slotsRes.ok) {
         const { slots } = (await slotsRes.json()) as { slots: AvailableSlot[] };
         const g = groupSlots(slots);
         setGroups(g);
-        // Pre-select first available day
         if (g.length > 0) setSelectedDate(g[0].dateStr);
       }
     } finally {
@@ -84,14 +80,11 @@ function BookingStep1Content() {
 
   useEffect(() => { load(); }, [load]);
 
-  // Show 7 days at a time (the 14-day window split into two weeks)
   const visibleGroups = useMemo(() => {
-    // Build a 7-day grid for the current week slice, marking days with/without slots
     const slotMap = new Map(groups.map((g) => [g.dateStr, g]));
     const days: (DayGroup | { dateStr: string; weekday: string; day: string; label: string; shortLabel: string; slots: never[] })[] = [];
     const base = new Date();
     base.setHours(0, 0, 0, 0);
-
     for (let i = weekStart; i < weekStart + 7; i++) {
       const d   = new Date(base.getTime() + i * 24 * 60 * 60 * 1000);
       const key = d.toLocaleDateString("en-CA");
@@ -114,7 +107,6 @@ function BookingStep1Content() {
     [groups, selectedDate]
   );
 
-  // Week range label
   const weekLabel = useMemo(() => {
     const base = new Date();
     base.setHours(0, 0, 0, 0);
@@ -126,7 +118,6 @@ function BookingStep1Content() {
 
   const handleContinue = async () => {
     if (!selectedSlot || locking) return;
-
     setLocking(true);
     try {
       const res = await fetch("/api/bookings/lock", {
@@ -134,14 +125,11 @@ function BookingStep1Content() {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ coach_slug: slug, slot_starts_at: selectedSlot }),
       });
-
       const json = (await res.json()) as { lock_id?: string; expires_at?: string; error?: string };
-
       if (!res.ok || !json.lock_id) {
         showLobbToast({ type: "error", message: json.error ?? "Slot unavailable. Choose another." });
         return;
       }
-
       showLobbToast({ type: "info", message: "Slot held for 10 minutes." });
       router.push(
         `/book/${slug}/step-2?slot=${encodeURIComponent(selectedSlot)}&lock=${json.lock_id}&expires=${encodeURIComponent(json.expires_at!)}`
@@ -159,12 +147,12 @@ function BookingStep1Content() {
         <div className="space-y-6">
           <CoachCardSkeleton />
           <SkeletonBlock className="h-5 w-36" />
-          <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: 7 }).map((_, index) => <SkeletonBlock key={index} className="h-14 rounded-2xl" />)}
+          <div className="grid grid-cols-7 gap-1.5">
+            {Array.from({ length: 7 }).map((_, i) => <SkeletonBlock key={i} className="h-16 rounded-2xl" />)}
           </div>
           <SkeletonBlock className="h-5 w-44" />
           <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 4 }).map((_, index) => <SkeletonBlock key={index} className="h-12 rounded-full" />)}
+            {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-12 rounded-full" />)}
           </div>
         </div>
       </BookingShell>
@@ -177,68 +165,81 @@ function BookingStep1Content() {
       {coach && (
         <section className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_14px_34px_rgba(58,43,20,0.07)]">
           <div className="flex items-center gap-3">
-            <div className="size-12 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
+            <div className="size-14 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
               {coach.profile_photo_url && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
               )}
             </div>
-            <div>
-              <h2 className="font-black">{coach.full_name}</h2>
-              <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach.headline}</p>
-              {coach.avg_rating != null && (
-                <p className="mt-1 flex items-center gap-1 text-xs font-black">
-                  <Star className="size-3 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
-                  {coach.avg_rating}
-                </p>
-              )}
+            <div className="flex-1 min-w-0">
+              <h2 className="font-black truncate">{coach.full_name}</h2>
+              <p className="text-sm font-medium text-[var(--lobb-muted)] truncate">{coach.headline}</p>
+              <div className="mt-1.5 flex items-center gap-3">
+                {coach.avg_rating != null && (
+                  <span className="flex items-center gap-1 text-xs font-black">
+                    <Star className="size-3 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
+                    {coach.avg_rating}
+                  </span>
+                )}
+                {coach.hourly_rate_ngn != null && (
+                  <span className="text-xs font-black text-[var(--lobb-clay)]">
+                    ₦{coach.hourly_rate_ngn.toLocaleString()}
+                    <span className="font-semibold text-[var(--lobb-muted)]">/hr</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </section>
       )}
 
       {/* Week navigation */}
-      <h2 className="mt-6 font-black">Select your date</h2>
-      <div className="mt-3 flex items-center justify-between text-sm font-bold text-[var(--lobb-muted)]">
-        <button
-          disabled={weekStart === 0}
-          onClick={() => { setWeekStart(0); setSelectedSlot(""); }}
-          className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] disabled:opacity-30"
-          aria-label="Previous week"
-        >
-          <ChevronLeft className="size-4" />
-        </button>
-        <p className="text-xs">{weekLabel}</p>
-        <button
-          disabled={weekStart === 7}
-          onClick={() => { setWeekStart(7); setSelectedSlot(""); }}
-          className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] disabled:opacity-30"
-          aria-label="Next week"
-        >
-          <ChevronRight className="size-4" />
-        </button>
+      <div className="mt-6 flex items-center justify-between">
+        <h2 className="font-black">Select a date</h2>
+        <div className="flex items-center gap-1">
+          <button
+            disabled={weekStart === 0}
+            onClick={() => { setWeekStart(0); setSelectedSlot(""); }}
+            className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] disabled:opacity-30"
+            aria-label="Previous week"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <span className="min-w-[90px] text-center text-xs font-bold text-[var(--lobb-muted)]">{weekLabel}</span>
+          <button
+            disabled={weekStart === 7}
+            onClick={() => { setWeekStart(7); setSelectedSlot(""); }}
+            className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] disabled:opacity-30"
+            aria-label="Next week"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+        </div>
       </div>
 
       {/* Day grid */}
-      <div className="mt-4 grid grid-cols-7 gap-1">
+      <div className="mt-3 grid grid-cols-7 gap-1.5">
         {visibleGroups.map((item) => {
           const hasSlots = item.slots.length > 0;
-          const isSelected = item.dateStr === selectedDate;
+          const isSelected = item.dateStr === selectedDate && hasSlots;
           return (
             <button
               key={item.dateStr}
               disabled={!hasSlots}
               onClick={() => { setSelectedDate(item.dateStr); setSelectedSlot(""); }}
-              className={`rounded-2xl border py-2 text-xs font-semibold ${
-                isSelected && hasSlots
-                  ? "border-[var(--lobb-black)] bg-[var(--lobb-black)] text-white"
+              className={`flex flex-col items-center gap-0.5 rounded-2xl py-3 text-xs font-semibold transition-colors ${
+                isSelected
+                  ? "bg-[var(--lobb-black)] text-white"
                   : hasSlots
-                  ? "border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
-                  : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[#9b958a]"
+                  ? "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-black)]"
+                  : "border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[#9b958a] opacity-40"
               }`}
             >
-              <span className="block font-bold">{item.weekday}</span>
-              {item.day}
+              <span className="font-bold">{item.weekday}</span>
+              <span>{item.day}</span>
+              {hasSlots && (
+                <span className={`mt-0.5 size-1 rounded-full ${isSelected ? "bg-white/50" : "bg-[var(--lobb-clay)]"}`} />
+              )}
             </button>
           );
         })}
@@ -247,16 +248,19 @@ function BookingStep1Content() {
       {/* Time slots */}
       {selectedGroup ? (
         <>
-          <h3 className="mt-6 font-black">Available times — {selectedGroup.label}</h3>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <h3 className="mt-6 font-black">
+            Available times
+            <span className="ml-2 text-sm font-semibold text-[var(--lobb-muted)]">— {selectedGroup.label}</span>
+          </h3>
+          <div className="mt-3 grid grid-cols-2 gap-3">
             {selectedGroup.slots.map((slot) => (
               <button
                 key={slot.iso}
                 onClick={() => setSelectedSlot(slot.iso)}
-                className={`h-12 rounded-full border text-sm font-black ${
+                className={`h-12 rounded-full border text-sm font-black transition-colors ${
                   selectedSlot === slot.iso
                     ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
+                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]"
                 }`}
               >
                 {slot.label}
@@ -265,28 +269,28 @@ function BookingStep1Content() {
           </div>
         </>
       ) : (
-        <p className="mt-6 text-sm font-semibold text-[var(--lobb-muted)]">
-          No slots available in this week. Try the next week →
-        </p>
+        <div className="mt-6 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 text-center">
+          <p className="text-sm font-black text-[var(--lobb-black)]">No slots this week</p>
+          <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">
+            {weekStart === 0 ? "Try the next week →" : "No availability in the next 2 weeks"}
+          </p>
+        </div>
       )}
 
       {/* Info strip */}
       <div className="mt-5 space-y-2 text-sm font-semibold text-[var(--lobb-muted)]">
         <p className="flex items-center gap-2">
-          <Clock3 className="size-4" /> Duration: 60 minutes
+          <Clock3 className="size-4 shrink-0" /> 60 minute session
         </p>
         {selectedSlot && (
           <p className="flex items-start gap-2 text-[var(--lobb-success)]">
             <LockKeyhole className="mt-0.5 size-4 shrink-0" />
-            Slot held for 10 minutes after you proceed.
+            Slot held for 10 minutes once you proceed.
           </p>
         )}
       </div>
 
-      <BookingButton
-        disabled={!selectedSlot || locking}
-        onClick={handleContinue}
-      >
+      <BookingButton disabled={!selectedSlot || locking} onClick={handleContinue}>
         {locking ? "Locking slot..." : "Continue →"}
       </BookingButton>
     </BookingShell>

@@ -92,7 +92,7 @@ export default function VerifyPage() {
     const response = await fetch("/api/auth/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: pendingAuth.phone, code: nextCode }),
+      body: JSON.stringify({ phone: pendingAuth.phone, code: nextCode, ...(pendingAuth.role ? { role: pendingAuth.role } : {}) }),
     });
     const payload = (await response.json()) as {
       error?: string;
@@ -145,17 +145,23 @@ export default function VerifyPage() {
       return;
     }
 
-    if (profile?.role === "coach" && profile.full_name) {
-      router.push("/coach/dashboard");
+    if (profile?.role === "coach") {
+      router.push(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
       return;
     }
 
-    if (profile?.role === "player" && profile.full_name) {
-      router.push("/");
+    if (profile?.role === "admin") {
+      router.push("/admin");
       return;
     }
 
-    router.push("/auth/setup/player");
+    if (profile?.role === "player") {
+      router.push(profile.full_name ? "/" : "/auth/setup/player");
+      return;
+    }
+
+    // No role yet — let them pick
+    router.push("/auth/role");
   };
 
   const updateDigit = (index: number, value: string) => {
@@ -199,7 +205,7 @@ export default function VerifyPage() {
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: pendingAuth.phone }),
+      body: JSON.stringify({ phone: pendingAuth.phone, ...(pendingAuth.role ? { role: pendingAuth.role } : {}) }),
     });
 
     if (!response.ok) {

@@ -25,7 +25,14 @@ function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
   if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  return "Good night";
+}
+
+function getSessionPrompt() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Ready for a clean morning hit?";
+  if (hour < 17) return "Find your next afternoon session.";
+  return "Line up a calm evening lesson.";
 }
 
 function PlayerHomeStat({ label, value }: { label: string; value: string | number }) {
@@ -105,6 +112,11 @@ export default function Home() {
 
         if (p?.role === "coach") {
           router.replace("/coach/dashboard");
+          return;
+        }
+
+        if (p?.role === "admin") {
+          router.replace("/admin");
           return;
         }
 
@@ -225,16 +237,19 @@ export default function Home() {
 
         {/* Hero card */}
         <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-7">
+          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-4 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-7">
             <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[56px] bg-[var(--lobb-clay)]/20" aria-hidden="true" />
-            <div className="relative grid gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
+            <div className="absolute -bottom-16 -left-12 h-32 w-32 rounded-full border border-white/10" aria-hidden="true" />
+            <div className="relative grid gap-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/45">{getGreeting()}</p>
-                <h1 className="mt-2 text-[34px] font-black leading-[0.95] tracking-[-0.01em] sm:text-[48px]">
-                  {firstName}, find a coach and book the court.
+                <p className="inline-flex max-w-full items-center rounded-full border border-white/10 bg-white/[0.07] px-3 py-1.5 text-[12px] font-black text-white/72">
+                  <span className="truncate">{getGreeting()}, {firstName}</span>
+                </p>
+                <h1 className="mt-4 max-w-[10ch] text-[36px] font-black leading-[0.92] sm:max-w-none sm:text-[52px]">
+                  {getSessionPrompt()}
                 </h1>
-                <p className="mt-3 max-w-xl text-[14px] font-medium leading-6 text-white/58">
-                  Search Lagos coaches by name, area, skill level, or session style. Book goes straight to open slots.
+                <p className="mt-3 max-w-xl text-[14px] font-semibold leading-6 text-white/58">
+                  Search verified Lagos coaches, pick an open slot, and keep the court details tidy in one flow.
                 </p>
               </div>
 
@@ -361,6 +376,9 @@ export default function Home() {
             <Link href="/coaches/join" className="rounded-full px-4 py-2 text-[13px] font-bold text-white/68 transition hover:bg-white/10 hover:text-white">
               Become a coach
             </Link>
+            <Link href="/auth/login" className="rounded-full px-4 py-2 text-[13px] font-bold text-white/68 transition hover:bg-white/10 hover:text-white">
+              Coach portal
+            </Link>
           </nav>
           <Link
             href="/auth/login"
@@ -397,6 +415,24 @@ export default function Home() {
                 className="inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] border border-white/14 bg-white/[0.07] px-6 text-[14px] font-black text-white/78 backdrop-blur transition hover:bg-white/12 hover:text-white active:scale-[0.98]"
               >
                 Sign up free
+              </Link>
+            </div>
+
+            {/* Coach entry point — visible on all screen sizes */}
+            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
+              <span className="text-[13px] font-semibold text-white/45">Are you a coach?</span>
+              <Link
+                href="/auth/login"
+                className="text-[13px] font-bold text-white/65 underline underline-offset-2 transition hover:text-white"
+              >
+                Log in to your portal →
+              </Link>
+              <span className="text-white/25">·</span>
+              <Link
+                href="/coaches/join"
+                className="text-[13px] font-bold text-white/65 transition hover:text-white"
+              >
+                Apply to join
               </Link>
             </div>
           </div>

@@ -6,7 +6,8 @@ const REQUEST_WINDOW_MS = 60 * 60 * 1000;
 const MAX_REQUESTS = 3;
 const MAX_ATTEMPTS = 5;
 const FALLBACK_TEST_OTP = "000000";
-const FALLBACK_TEST_PHONES = ["+2340000000001", "+2340000000002"];
+const FALLBACK_TEST_PHONES = ["+2348164555012", "+2340000000001", "+2340000000002"];
+type OtpRole = "player" | "coach" | "admin";
 
 function hashOtp(phone: string, code: string) {
   return createHash("sha256").update(`${phone}:${code}`).digest("hex");
@@ -38,7 +39,7 @@ export function shouldUseTestOtp(phone: string) {
   return isTestOtpEnabled() && isTestPhone(phone);
 }
 
-export async function createOtp(phone: string, role: "player" | "coach") {
+export async function createOtp(phone: string, role: OtpRole) {
   const supabase = createAdminClient();
   const now = Date.now();
   const windowStart = now - REQUEST_WINDOW_MS;
@@ -100,7 +101,7 @@ export async function verifyOtp(phone: string, code: string) {
       .maybeSingle();
 
     await supabase.from("otp_verifications").delete().eq("phone_number", phone);
-    return { ok: true as const, role: ((data?.role as string) ?? "player") as "player" | "coach" };
+    return { ok: true as const, role: ((data?.role as string) ?? "player") as OtpRole };
   }
 
   const { data: record } = await supabase
@@ -132,7 +133,7 @@ export async function verifyOtp(phone: string, code: string) {
   }
 
   await supabase.from("otp_verifications").delete().eq("phone_number", phone);
-  return { ok: true as const, role: record.role as "player" | "coach" };
+  return { ok: true as const, role: record.role as OtpRole };
 }
 
 function now() {

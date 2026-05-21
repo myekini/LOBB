@@ -16,6 +16,7 @@ import { createClient } from "@/lib/supabase/client";
 
 // Only visible when the dedicated dev-login switch is enabled.
 const IS_DEV_LOGIN_ENABLED = process.env.NEXT_PUBLIC_LOBB_DEV_LOGIN === "true";
+type LoginRole = "player" | "coach" | "admin";
 
 function nationalDigits(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -33,9 +34,9 @@ function formatNationalPhone(value: string) {
 // ─── Dev quick-login panel ────────────────────────────────────────────────────
 function DevLoginPanel() {
   const router = useRouter();
-  const [busy, setBusy] = useState<"player" | "coach" | null>(null);
+  const [busy, setBusy] = useState<LoginRole | null>(null);
 
-  const quickLogin = async (role: "player" | "coach") => {
+  const quickLogin = async (role: LoginRole) => {
     setBusy(role);
     try {
       const res = await fetch("/api/dev/quick-login", {
@@ -60,7 +61,7 @@ function DevLoginPanel() {
         refresh_token: json.session.refresh_token,
       });
 
-      router.push(role === "coach" ? "/coach/dashboard" : "/");
+      router.push(role === "admin" ? "/admin" : role === "coach" ? "/coach/dashboard" : "/");
     } catch {
       alert("Network error during quick login");
     } finally {
@@ -76,8 +77,8 @@ function DevLoginPanel() {
       <p className="mt-1 text-center text-[11px] font-semibold text-[var(--lobb-muted)]">
         One-click login — not visible in production
       </p>
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        {(["player", "coach"] as const).map((role) => (
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        {(["player", "coach", "admin"] as const).map((role) => (
           <button
             key={role}
             onClick={() => quickLogin(role)}
@@ -104,6 +105,7 @@ function LoginForm() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [devRole, setDevRole] = useState<LoginRole>("player");
 
   const digits = useMemo(() => nationalDigits(phone), [phone]);
   const formattedPhone = useMemo(() => formatNationalPhone(phone), [phone]);
@@ -120,7 +122,7 @@ function LoginForm() {
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: e164Phone }),
+      body: JSON.stringify({ phone: e164Phone, ...(IS_DEV_LOGIN_ENABLED ? { role: devRole } : {}) }),
     });
 
     setLoading(false);
@@ -131,7 +133,7 @@ function LoginForm() {
       return;
     }
 
-    setPendingAuth({ phone: e164Phone, mode: "login", sentAt: Date.now(), nextPath });
+    setPendingAuth({ phone: e164Phone, mode: "login", sentAt: Date.now(), nextPath, ...(IS_DEV_LOGIN_ENABLED ? { role: devRole } : {}) });
     router.push("/auth/verify");
   };
 
@@ -146,7 +148,7 @@ function LoginForm() {
             phone number
           </OnboardingTitle>
           <OnboardingCopy>
-            We&apos;ll send a 6-digit WhatsApp code. If you&apos;re new, setup continues after verification.
+            Works for players and coaches. We&apos;ll send a 6-digit WhatsApp code — if you&apos;re new, setup follows automatically.
           </OnboardingCopy>
         </section>
 
@@ -176,6 +178,30 @@ function LoginForm() {
           </div>
           {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
         </section>
+
+        {IS_DEV_LOGIN_ENABLED && (
+          <section className="mt-5 rounded-[18px] border border-[var(--lobb-border)] bg-white/55 p-3">
+            <p className="px-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
+              Test this phone as
+            </p>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {(["player", "coach", "admin"] as const).map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setDevRole(role)}
+                  className={`h-11 rounded-full border px-2 text-xs font-black capitalize transition ${
+                    devRole === role
+                      ? "border-[var(--lobb-black)] bg-[var(--lobb-black)] text-white"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         {IS_DEV_LOGIN_ENABLED && <DevLoginPanel />}
 

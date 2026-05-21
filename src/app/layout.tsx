@@ -115,6 +115,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", geistSans.variable, geistMono.variable)}>
       <body className="antialiased">
+        <div className="lobb-pwa-boot" aria-hidden="true">
+          <div className="lobb-pwa-boot-mark">
+            <svg width="54" height="54" viewBox="0 0 64 64" fill="none">
+              <path d="M 8 56 C 8 4 56 4 56 56" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
+              <circle cx="32" cy="17" r="6" fill="currentColor" />
+            </svg>
+            <span>LOBB</span>
+          </div>
+        </div>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

@@ -3,6 +3,7 @@ export type PendingAuth = {
   mode: "signup" | "login";
   sentAt: number;
   nextPath?: string;
+  role?: "player" | "coach" | "admin";
 };
 
 const pendingAuthKey = "lobb.pending-auth";

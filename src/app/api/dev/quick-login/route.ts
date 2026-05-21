@@ -7,16 +7,21 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // This route is a dev convenience — it NEVER ships to production in a live state
 // because isDevLoginEnabled() blocks it.
 
+type DevRole = "player" | "coach" | "admin";
+
 function isDevLoginEnabled() {
   return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
 }
 
-const TEST_PHONES: Record<"player" | "coach", string> = {
-  player: "+2340000000001",
-  coach:  "+2340000000002",
+const TEST_PHONE = "+2348164555012";
+
+const TEST_PHONES: Record<DevRole, string> = {
+  player: TEST_PHONE,
+  coach:  TEST_PHONE,
+  admin:  TEST_PHONE,
 };
 
-const TEST_PROFILES: Record<"player" | "coach", Record<string, unknown>> = {
+const TEST_PROFILES: Record<DevRole, Record<string, unknown>> = {
   player: {
     full_name: "Tobi Adeyemi",
     role: "player",
@@ -26,6 +31,11 @@ const TEST_PROFILES: Record<"player" | "coach", Record<string, unknown>> = {
     full_name: "Ada Okafor",
     role: "coach",
     avatar_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
+  },
+  admin: {
+    full_name: "LOBB Admin",
+    role: "admin",
+    avatar_url: null,
   },
 };
 
@@ -85,7 +95,7 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json().catch(() => ({}))) as { role?: string };
-  const role = body.role === "coach" ? "coach" : "player";
+  const role: DevRole = body.role === "coach" ? "coach" : body.role === "admin" ? "admin" : "player";
   const phone = TEST_PHONES[role];
   const { email, password } = getSyntheticCredentials(phone);
 
@@ -141,7 +151,7 @@ async function seedDevAccount(
   admin: ReturnType<typeof createAdminClient>,
   userId: string,
   phone: string,
-  role: "player" | "coach"
+  role: DevRole
 ) {
   await admin.from("profiles").upsert(
     { id: userId, phone_number: phone, ...TEST_PROFILES[role] },
@@ -153,6 +163,10 @@ async function seedDevAccount(
       { id: userId, ...TEST_PLAYER_ROW },
       { onConflict: "id" }
     );
+    return;
+  }
+
+  if (role === "admin") {
     return;
   }
 

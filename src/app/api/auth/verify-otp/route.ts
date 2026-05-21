@@ -55,6 +55,10 @@ function getSyntheticCredentials(phone: string) {
   };
 }
 
+function isDevRoleOverrideEnabled() {
+  return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { phone?: string; code?: string; otp?: string; role?: "player" | "coach" | "admin" };
@@ -117,7 +121,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not start your session" }, { status: 400 });
     }
 
-    if (adminClient && body.role && ["player", "coach", "admin"].includes(body.role)) {
+    if (adminClient && isDevRoleOverrideEnabled() && body.role && ["player", "coach", "admin"].includes(body.role)) {
       await adminClient
         .from("profiles")
         .update({ role: body.role })

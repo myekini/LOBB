@@ -15,30 +15,33 @@ type ActiveTab = "home" | "browse" | "bookings" | "profile";
 
 export function PlayerBottomNav({ active }: { active: ActiveTab }) {
   return (
-    <nav className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-[var(--lobb-border)] bg-[var(--lobb-surface)]/95 px-2 pb-5 pt-2 shadow-[0_-12px_32px_rgba(13,13,13,0.08)] backdrop-blur md:hidden">
-      {items.map((item) => {
-        const isActive = item.label.toLowerCase() === active;
-        const Icon = item.icon;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex min-w-[60px] flex-col items-center gap-0.5 rounded-[12px] px-3 py-1.5 text-[var(--lobb-muted)] transition",
-              isActive && "bg-[var(--lobb-black)] text-white shadow-[0_8px_20px_rgba(13,13,13,0.18)]"
-            )}
-          >
-            <Icon
-              className="size-[18px]"
-              strokeWidth={isActive ? 2.5 : 1.75}
-              fill={isActive ? "currentColor" : "none"}
-            />
-            <span className={cn("text-[10px] font-bold", isActive ? "text-white" : "text-[var(--lobb-muted)]")}>
-              {item.label}
-            </span>
-          </Link>
-        );
-      })}
+    <nav className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2 md:hidden">
+      <div className="mx-auto flex max-w-[430px] items-center justify-between rounded-[24px] border border-black/10 bg-[rgba(250,250,250,0.88)] p-1.5 shadow-[0_-10px_34px_rgba(13,13,13,0.13)] backdrop-blur-2xl">
+        {items.map((item) => {
+          const isActive = item.label.toLowerCase() === active;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "group flex h-[58px] flex-1 flex-col items-center justify-center gap-1 rounded-[18px] text-[var(--lobb-muted)] transition active:scale-[0.98]",
+                isActive && "bg-[var(--lobb-black)] text-white shadow-[0_10px_26px_rgba(13,13,13,0.2)]"
+              )}
+            >
+              <Icon
+                className="size-[19px]"
+                strokeWidth={isActive ? 2.45 : 1.85}
+                fill={isActive ? "currentColor" : "none"}
+              />
+              <span className={cn("text-[10px] font-black leading-none", isActive ? "text-white" : "text-[var(--lobb-muted)]")}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

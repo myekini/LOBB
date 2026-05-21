@@ -58,14 +58,14 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
   const experience = coach.experience_years > 0 ? `${coach.experience_years} yrs` : "New";
 
   return (
-    <article className="group overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_14px_34px_rgba(13,13,13,0.07)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_46px_rgba(13,13,13,0.12)]">
-      <div className="p-3">
-        <Link href={profileHref} className="relative block aspect-[16/10] overflow-hidden rounded-[20px] bg-[var(--lobb-surface-2)] md:aspect-[4/3]">
+    <article className="group overflow-hidden rounded-[26px] border border-black/[0.08] bg-[rgba(250,250,250,0.92)] shadow-[0_16px_38px_rgba(13,13,13,0.075)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_22px_52px_rgba(13,13,13,0.12)]">
+      <div className="p-2.5">
+        <Link href={profileHref} className="relative block aspect-[16/10] overflow-hidden rounded-[22px] bg-[var(--lobb-surface-2)] md:aspect-[4/3]">
           {coach.profile_photo_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={coach.profile_photo_url} alt={coach.full_name} className="size-full object-cover transition duration-300 group-hover:scale-[1.03]" />
           )}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/62 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute left-3 top-3">
             <LobbVerifiedBadge verified={coach.is_verified} size="small" />
           </div>
@@ -101,7 +101,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-3 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-white/50">
+        <div className="mt-4 grid grid-cols-3 overflow-hidden rounded-[18px] border border-black/[0.07] bg-[#F4F2EE]">
           <MiniMetric icon={<Trophy className="size-3.5" />} label="Sessions" value={coach.session_count || "New"} />
           <MiniMetric icon={<ShieldCheck className="size-3.5" />} label="Reviews" value={coach.review_count || "New"} />
           <MiniMetric icon={<CalendarCheck className="size-3.5" />} label="Status" value={coach.has_availability ? "Open" : "Ask"} />
@@ -110,13 +110,13 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
         <div className="mt-4 flex items-center gap-2">
           <Link
             href={profileHref}
-            className="flex h-12 flex-1 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-white/40 px-4 text-sm font-black text-[var(--lobb-black)] transition active:scale-[0.98]"
+            className="flex h-12 flex-1 items-center justify-center rounded-[16px] border border-black/[0.08] bg-white/60 px-4 text-sm font-black text-[var(--lobb-black)] transition active:scale-[0.98]"
           >
             Profile
           </Link>
           <Link
             href={bookingHref}
-            className="flex h-12 flex-[1.35] items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] px-4 text-sm font-black text-white shadow-[0_12px_26px_rgba(196,98,45,0.22)] transition active:scale-[0.98]"
+            className="flex h-12 flex-[1.35] items-center justify-center gap-2 rounded-[16px] bg-[var(--lobb-black)] px-4 text-sm font-black text-white shadow-[0_12px_26px_rgba(13,13,13,0.2)] transition active:scale-[0.98]"
           >
             Book Now <ArrowRight className="size-4" />
           </Link>

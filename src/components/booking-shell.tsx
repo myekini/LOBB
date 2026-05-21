@@ -3,6 +3,8 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+const STEP_LABELS = ["Choose slot", "Your details", "Review & pay"] as const;
+
 export function BookingShell({
   children,
   step,
@@ -13,7 +15,7 @@ export function BookingShell({
   backHref?: string;
 }) {
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] pb-8 text-[var(--lobb-black)]">
+    <main className="min-h-screen bg-[var(--lobb-bg)] pb-10 text-[var(--lobb-black)]">
       <header className="sticky top-0 z-40 flex h-[72px] items-center justify-center border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
         <Link
           href={backHref}
@@ -22,26 +24,55 @@ export function BookingShell({
         >
           <ArrowLeft className="size-5" />
         </Link>
-        <div className="text-center">
-          <h1 className="font-black">Book a Session</h1>
-        </div>
+        <h1 className="font-black">Book a Session</h1>
       </header>
+
       <div className="mx-auto max-w-md px-5 pt-5">
-        <div className="mb-6">
-          <p className="mb-2 text-center text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">Step {step} of 3</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className={`h-1.5 rounded-full ${item <= step ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-surface-2)]"}`} />
+        {/* Step progress */}
+        <div className="mb-7">
+          <div className="grid grid-cols-3 gap-1.5">
+            {([1, 2, 3] as const).map((s) => (
+              <div
+                key={s}
+                className={`h-1 rounded-full transition-colors duration-300 ${
+                  s <= step ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-surface-2)]"
+                }`}
+              />
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-3">
+            {STEP_LABELS.map((label, i) => (
+              <p
+                key={label}
+                className={`text-center text-[10px] font-bold uppercase tracking-wider transition-colors duration-300 ${
+                  i + 1 === step
+                    ? "text-[var(--lobb-clay)]"
+                    : i + 1 < step
+                    ? "text-[var(--lobb-muted)]"
+                    : "text-[var(--lobb-surface-2)]"
+                }`}
+              >
+                {label}
+              </p>
             ))}
           </div>
         </div>
+
         {children}
       </div>
     </main>
   );
 }
 
-export function BookingButton({ children, disabled, onClick }: { children: React.ReactNode; disabled?: boolean; onClick?: () => void }) {
+export function BookingButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  onClick?: () => void;
+}) {
   return (
     <button
       disabled={disabled}

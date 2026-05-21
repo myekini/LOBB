@@ -3,6 +3,12 @@ import { createOtp, shouldUseTestOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { sendOtpSms } from "@/lib/sms";
 
+function getRequestedRole(role: string | undefined) {
+  if (role === "coach") return "coach";
+  if (role === "admin" && process.env.LOBB_ENABLE_DEV_LOGIN === "true") return "admin";
+  return "player";
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as { phone?: string; role?: string };
@@ -12,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const phone = formatNigerianPhoneNumber(body.phone);
-    const role = body.role === "coach" ? "coach" : "player";
+    const role = getRequestedRole(body.role);
     const otp = await createOtp(phone, role);
 
     if ("error" in otp) {
