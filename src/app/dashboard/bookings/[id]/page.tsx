@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Circle, MapPin, Phone, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ShieldCheck, X } from "lucide-react";
 import { showLobbToast } from "@/components/lobb-global-state";
 import {
   durationMinutes,
@@ -12,8 +12,17 @@ import {
   money,
   type DashboardBooking,
 } from "@/lib/dashboard-client-types";
-import { fetchWithCache } from "@/lib/offline-cache";
 import { BookingCardSkeleton } from "@/components/lobb-skeleton";
+import { canCancelForFullRefund, cancellationPolicyNote } from "@/lib/lobb-money";
+
+function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
+  const profile = firstJoin(value);
+  return profile?.phone_number ?? null;
+}
+
+function toWhatsAppNumber(phone: string) {
+  return phone.replace(/[^0-9]/g, "");
+}
 
 export default function BookingDetailPage() {
   const params = useParams<{ id: string }>();
@@ -27,12 +36,11 @@ export default function BookingDetailPage() {
   useEffect(() => {
     let alive = true;
 
-    fetchWithCache<{ upcoming: DashboardBooking[]; past: DashboardBooking[] }>("lobb.dashboard.player", "/api/dashboard/player")
-      .then((payload) => {
-        const allBookings: DashboardBooking[] = [...(payload.upcoming ?? []), ...(payload.past ?? [])];
-        const found = allBookings.find((item) => item.id === params.id) ?? null;
-        if (!found) throw new Error("Booking not found");
-        if (alive) setBooking(found);
+    fetch(`/api/bookings/${params.id}`)
+      .then(async (response) => {
+        const payload = (await response.json()) as { booking?: DashboardBooking; error?: string };
+        if (!response.ok || !payload.booking) throw new Error(payload.error ?? "Booking not found");
+        if (alive) setBooking(payload.booking);
       })
       .catch((error) => {
         showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load booking" });
@@ -94,6 +102,9 @@ export default function BookingDetailPage() {
 
   const payment = booking.payments?.[0];
   const isUpcoming = booking.status === "confirmed";
+  const coachPhone = payment?.status === "paid" ? firstProfilePhone(booking.coach_profile) : null;
+  const fullRefund = canCancelForFullRefund(booking.starts_at);
+  const policyNote = cancellationPolicyNote(booking.starts_at);
 
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
@@ -107,11 +118,19 @@ export default function BookingDetailPage() {
 
         <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f4ed] px-3 py-1.5 text-xs font-black text-[var(--lobb-success)]">
           <Circle className="size-2 fill-current" />
-          Confirmed
+          {booking.status}
         </span>
 
-        <h2 className="mt-5 text-[22px] font-black">{formatBookingDate(booking.starts_at)}</h2>
-        <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">{durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid</p>
+        <section className="mt-5 overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)]">
+          <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/45">
+            <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
+            Session
+          </p>
+          <h2 className="mt-3 text-[27px] font-black leading-none">{formatBookingDate(booking.starts_at)}</h2>
+          <p className="mt-3 text-sm font-semibold text-white/58">
+            {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid
+          </p>
+        </section>
 
         <DetailSection title="Coach">
           <div className="flex items-center gap-3">
@@ -122,11 +141,15 @@ export default function BookingDetailPage() {
               <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || booking.location}</p>
             </div>
           </div>
-          {payment?.status === "paid" ? (
-            <p className="mt-4 flex items-center gap-2 text-sm font-black">
-              <Phone className="size-4 text-[var(--lobb-clay)]" />
-              Coach phone is available in your confirmation SMS
-            </p>
+          {coachPhone ? (
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[15px] bg-[var(--lobb-black)] text-xs font-black text-white">
+                <Phone className="size-4" /> Call
+              </a>
+              <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[15px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-xs font-black">
+                <MessageCircle className="size-4 text-[var(--lobb-clay)]" /> WhatsApp
+              </a>
+            </div>
           ) : (
             <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-muted)]">
               <Phone className="size-4 text-[var(--lobb-clay)]" />
@@ -149,6 +172,10 @@ export default function BookingDetailPage() {
         )}
 
         <DetailSection title="Payment">
+          <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
+            <CreditCard className="size-4 text-[var(--lobb-clay)]" />
+            {payment?.status ?? "pending"}
+          </p>
           <PaymentRow amount={booking.hourly_rate_ngn} label="Session fee" />
           <PaymentRow amount={booking.platform_fee_ngn} label="Convenience fee" />
           <PaymentRow amount={booking.total_amount_ngn} label="Total paid" strong />
@@ -156,7 +183,13 @@ export default function BookingDetailPage() {
         </DetailSection>
 
         <DetailSection title="Cancellation Policy">
-          <p className="text-sm font-semibold leading-6 text-[var(--lobb-muted)]">Free cancellation applies more than 24 hours before session start.</p>
+          <div className={`rounded-[20px] border p-4 ${fullRefund ? "border-[#cfe7d8] bg-[#eef8f2]" : "border-[#f1d2c1] bg-[#fff7f2]"}`}>
+            <p className="flex items-start gap-2 text-sm font-black">
+              <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
+              {fullRefund ? "Full refund window" : "Late cancellation window"}
+            </p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">{policyNote}</p>
+          </div>
         </DetailSection>
 
         {isUpcoming && (
@@ -178,7 +211,7 @@ export default function BookingDetailPage() {
               <button onClick={() => setShowCancel(false)} aria-label="Close"><X className="size-5" /></button>
             </div>
             <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-muted)]">
-              Since it&apos;s more than 24hrs before your session, you&apos;ll receive a full refund.
+              {policyNote}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button onClick={() => setShowCancel(false)} className="h-12 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white">

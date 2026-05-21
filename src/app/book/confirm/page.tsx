@@ -39,7 +39,7 @@ function toWhatsAppNumber(phone: string) {
 
 function BookingConfirmContent() {
   const search    = useSearchParams();
-  const reference = search.get("reference");
+  const reference = search.get("reference") ?? search.get("trxref");
 
   const [booking, setBooking] = useState<BookingWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,15 +48,36 @@ function BookingConfirmContent() {
   useEffect(() => {
     if (!reference) { setFailed(true); setLoading(false); return; }
 
-    fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`)
-      .then(async (res) => {
+    let cancelled = false;
+    let attempts = 0;
+
+    const verify = () => {
+      attempts += 1;
+      fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`)
+        .then(async (res) => {
         const json = (await res.json()) as { booking?: BookingWithDetails; error?: string };
         if (!res.ok || !json.booking) throw new Error(json.error ?? "Not found");
+        if (cancelled) return;
         setBooking(json.booking);
         showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
+        setLoading(false);
       })
-      .catch(() => setFailed(true))
-      .finally(() => setLoading(false));
+        .catch(() => {
+          if (cancelled) return;
+          if (attempts < 4) {
+            window.setTimeout(verify, attempts * 1400);
+            return;
+          }
+          setFailed(true);
+          setLoading(false);
+        });
+    };
+
+    verify();
+
+    return () => {
+      cancelled = true;
+    };
   }, [reference]);
 
   if (loading) {
@@ -76,9 +97,9 @@ function BookingConfirmContent() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[var(--lobb-bg)] p-5">
         <div className="w-full max-w-md text-center">
-          <p className="text-lg font-black text-[var(--lobb-black)]">Payment could not be confirmed</p>
+          <p className="text-lg font-black text-[var(--lobb-black)]">Payment is still being confirmed</p>
           <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">
-            If you were charged, contact us with reference:
+            If Paystack charged you, this reference lets us reconcile the booking:
           </p>
           {reference && (
             <p className="mt-1 rounded-lg bg-[var(--lobb-surface)] px-4 py-2 font-mono text-sm font-bold">

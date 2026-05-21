@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Clock3, LockKeyhole, Star } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, Clock3, LockKeyhole, Star } from "lucide-react";
 import { BookingButton, BookingShell } from "@/components/booking-shell";
 import { showLobbToast } from "@/components/lobb-global-state";
 import { CoachCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
@@ -194,31 +194,37 @@ function BookingStep1Content() {
       )}
 
       {/* Week navigation */}
-      <div className="mt-6 flex items-center justify-between">
-        <h2 className="font-black">Select a date</h2>
+      <div className="mt-6 rounded-[26px] border border-black/[0.08] bg-[rgba(250,250,250,0.88)] p-4 shadow-[0_14px_34px_rgba(13,13,13,0.06)]">
+        <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
+            <CalendarDays className="size-3.5 text-[var(--lobb-clay)]" />
+            Select a date
+          </p>
+          <h2 className="mt-1 text-lg font-black">{weekLabel}</h2>
+        </div>
         <div className="flex items-center gap-1">
           <button
             disabled={weekStart === 0}
             onClick={() => { setWeekStart(0); setSelectedSlot(""); }}
-            className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] disabled:opacity-30"
+            className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-white disabled:opacity-30"
             aria-label="Previous week"
           >
             <ChevronLeft className="size-4" />
           </button>
-          <span className="min-w-[90px] text-center text-xs font-bold text-[var(--lobb-muted)]">{weekLabel}</span>
           <button
             disabled={weekStart === 7}
             onClick={() => { setWeekStart(7); setSelectedSlot(""); }}
-            className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] disabled:opacity-30"
+            className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-white disabled:opacity-30"
             aria-label="Next week"
           >
             <ChevronRight className="size-4" />
           </button>
         </div>
-      </div>
+        </div>
 
       {/* Day grid */}
-      <div className="mt-3 grid grid-cols-7 gap-1.5">
+      <div className="mt-4 grid grid-cols-7 gap-1.5">
         {visibleGroups.map((item) => {
           const hasSlots = item.slots.length > 0;
           const isSelected = item.dateStr === selectedDate && hasSlots;
@@ -227,22 +233,23 @@ function BookingStep1Content() {
               key={item.dateStr}
               disabled={!hasSlots}
               onClick={() => { setSelectedDate(item.dateStr); setSelectedSlot(""); }}
-              className={`flex flex-col items-center gap-0.5 rounded-2xl py-3 text-xs font-semibold transition-colors ${
+              className={`relative flex min-h-[70px] flex-col items-center justify-center gap-1 rounded-[18px] text-xs font-semibold transition ${
                 isSelected
-                  ? "bg-[var(--lobb-black)] text-white"
+                  ? "bg-[var(--lobb-black)] text-white shadow-[0_12px_24px_rgba(13,13,13,0.18)]"
                   : hasSlots
-                  ? "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-black)]"
-                  : "border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[#9b958a] opacity-40"
+                  ? "border border-[var(--lobb-border)] bg-white hover:border-[var(--lobb-black)]"
+                  : "border border-transparent bg-[var(--lobb-surface-2)] text-[#9b958a] opacity-45"
               }`}
             >
-              <span className="font-bold">{item.weekday}</span>
-              <span>{item.day}</span>
+              <span className="text-[10px] font-black uppercase">{item.weekday}</span>
+              <span className="text-lg font-black leading-none">{item.day}</span>
               {hasSlots && (
-                <span className={`mt-0.5 size-1 rounded-full ${isSelected ? "bg-white/50" : "bg-[var(--lobb-clay)]"}`} />
+                <span className={`size-1.5 rounded-full ${isSelected ? "bg-white/60" : "bg-[var(--lobb-clay)]"}`} />
               )}
             </button>
           );
         })}
+      </div>
       </div>
 
       {/* Time slots */}
@@ -257,9 +264,9 @@ function BookingStep1Content() {
               <button
                 key={slot.iso}
                 onClick={() => setSelectedSlot(slot.iso)}
-                className={`h-12 rounded-full border text-sm font-black transition-colors ${
+                className={`h-14 rounded-[18px] border text-sm font-black transition ${
                   selectedSlot === slot.iso
-                    ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
+                    ? "border-[var(--lobb-black)] bg-[var(--lobb-black)] text-white shadow-[0_12px_24px_rgba(13,13,13,0.18)]"
                     : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]"
                 }`}
               >
@@ -285,7 +292,7 @@ function BookingStep1Content() {
         {selectedSlot && (
           <p className="flex items-start gap-2 text-[var(--lobb-success)]">
             <LockKeyhole className="mt-0.5 size-4 shrink-0" />
-            Slot held for 10 minutes once you proceed.
+            We reserve the slot for 10 minutes after you continue, then release it automatically if payment is not completed.
           </p>
         )}
       </div>

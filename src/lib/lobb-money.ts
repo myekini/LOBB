@@ -13,3 +13,11 @@ export function cancellationPolicyNote(startsAt: string) {
 
   return "Late cancellation: refund may be limited under the LOBB cancellation policy.";
 }
+
+export function hoursUntilSession(startsAt: string) {
+  return (new Date(startsAt).getTime() - Date.now()) / (60 * 60 * 1000);
+}
+
+export function canCancelForFullRefund(startsAt: string) {
+  return hoursUntilSession(startsAt) >= 24;
+}

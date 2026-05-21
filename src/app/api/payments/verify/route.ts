@@ -101,6 +101,8 @@ export async function GET(request: Request) {
       } else if (txn.status === "abandoned" || txn.status === "failed") {
         // Mark payment failed
         await admin.from("payments").update({ status: "failed" }).eq("id", payment.id);
+        await admin.from("bookings").update({ status: "cancelled", cancellation_reason: "Payment was not completed" }).eq("id", payment.booking_id).eq("status", "pending");
+        await admin.from("slot_locks").delete().eq("booking_id", payment.booking_id);
         return NextResponse.json({ error: "Payment was not completed" }, { status: 402 });
       }
     }

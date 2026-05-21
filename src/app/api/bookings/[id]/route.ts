@@ -10,7 +10,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   const { data: booking, error } = await auth.admin
     .from("bookings")
     .select(
-      "*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url, headline, primary_location), players!bookings_player_id_fkey(full_name), payments(status, paystack_reference, paid_at), reviews(id, rating, comment, removed_at)"
+      "*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url, headline, primary_location), coach_profile:profiles!bookings_coach_id_fkey(phone_number), player_profile:profiles!bookings_player_id_fkey(phone_number), players!bookings_player_id_fkey(full_name), payments(status, paystack_reference, paid_at), reviews(id, rating, comment, removed_at)"
     )
     .eq("id", params.id)
     .maybeSingle();

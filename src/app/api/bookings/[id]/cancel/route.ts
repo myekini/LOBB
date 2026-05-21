@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
-import { cancellationPolicyNote } from "@/lib/lobb-money";
+import { canCancelForFullRefund, cancellationPolicyNote } from "@/lib/lobb-money";
 import { cancelledMessage } from "@/lib/notification-messages";
 import { sendCancellationSmsBoth } from "@/lib/booking-sms";
+import { initiateRefund } from "@/lib/paystack";
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   const auth = await requireRole(["player", "coach", "admin"]);
@@ -15,7 +16,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const { data: booking, error: bookingError } = await auth.admin
     .from("bookings")
     .select(
-      "id, coach_id, player_id, starts_at, ends_at, location, player_notes, status, payments(paystack_reference), coaches!bookings_coach_id_fkey(full_name), players!bookings_player_id_fkey(full_name)"
+      "id, coach_id, player_id, starts_at, ends_at, location, player_notes, status, payments(paystack_reference, status), coaches!bookings_coach_id_fkey(full_name), players!bookings_player_id_fkey(full_name)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -34,6 +35,21 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const cancelledBy = isAdmin ? "admin" : booking.player_id === auth.user.id ? "player" : "coach";
   const refundNote = cancellationPolicyNote(booking.starts_at);
+  const fullRefund = canCancelForFullRefund(booking.starts_at);
+  const payment = booking.payments?.[0] as { paystack_reference?: string | null; status?: string | null } | undefined;
+
+  if (fullRefund && payment?.status === "paid" && payment.paystack_reference) {
+    try {
+      await initiateRefund(payment.paystack_reference);
+      await auth.admin.from("payments").update({ status: "refunded" }).eq("paystack_reference", payment.paystack_reference);
+    } catch (error) {
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : "Refund could not be started" },
+        { status: 502 }
+      );
+    }
+  }
+
   const now = new Date().toISOString();
 
   const { error: updateError } = await auth.admin
@@ -86,7 +102,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       startsAt: booking.starts_at,
       location: booking.location,
       playerNotes: booking.player_notes,
-      reference: booking.payments?.[0]?.paystack_reference ?? booking.id,
+      reference: payment?.paystack_reference ?? booking.id,
       coachPhone: coachProfile.data?.phone_number ?? null,
       playerPhone: playerProfile.data?.phone_number ?? null,
     },
@@ -94,5 +110,5 @@ export async function POST(request: Request, { params }: { params: { id: string 
     refundNote
   ).catch(() => null);
 
-  return NextResponse.json({ ok: true, refund_note: refundNote });
+  return NextResponse.json({ ok: true, refund_note: refundNote, refund_started: fullRefund && payment?.status === "paid" });
 }
