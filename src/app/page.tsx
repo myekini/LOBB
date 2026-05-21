@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, CalendarCheck, MapPin, Search, ShieldCheck, Star, Trophy, User } from "lucide-react";
+import { ArrowRight, Search, Trophy, User } from "lucide-react";
 import { coaches, courtImage, money } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav } from "@/components/player-nav";
@@ -20,17 +20,6 @@ function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: str
   );
 }
 
-const landingStats = [
-  { label: "Verified Lagos coaches", value: "24" },
-  { label: "Avg. coach rating", value: "4.9" },
-  { label: "Bookable in", value: "90s" },
-];
-
-const landingSteps = [
-  { icon: Search,       label: "Find a coach",  copy: "Filter by area, level, and session style." },
-  { icon: CalendarCheck, label: "Pick a slot",   copy: "See clear availability before you commit." },
-  { icon: ShieldCheck,  label: "Pay securely",  copy: "Payment and cancellation terms stay explicit." },
-];
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -351,21 +340,6 @@ export default function Home() {
                 Sign up free
               </Link>
             </div>
-            <p className="mt-4 text-[13px] font-semibold text-white/50 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-              Are you a coach?{" "}
-              <Link href="/coaches/join" className="font-bold text-white/80 underline underline-offset-2 transition hover:text-white">
-                Apply here →
-              </Link>
-            </p>
-
-            <div className="mt-10 grid max-w-2xl grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-4 animate-in fade-in-0 duration-700 delay-300 fill-mode-both">
-              {landingStats.map((stat) => (
-                <div key={stat.label} className="px-3 first:pl-0">
-                  <p className="text-[25px] font-black leading-none text-white">{stat.value}</p>
-                  <p className="mt-2 text-[11px] font-semibold leading-4 text-white/45">{stat.label}</p>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="relative mx-auto w-full max-w-[420px] md:mx-0 md:justify-self-end animate-in fade-in-0 slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both">
@@ -381,24 +355,6 @@ export default function Home() {
                 <div className="absolute bottom-4 left-4 right-4 text-white">
                   <p className="text-[12px] font-bold text-white/64">{coaches[0].headline}</p>
                   <h2 className="mt-1 text-[28px] font-black leading-none">{coaches[0].name}</h2>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 py-3">
-                <div className="rounded-[14px] bg-white p-3">
-                  <Star className="mb-2 size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
-                  <p className="text-[15px] font-black">{coaches[0].rating}</p>
-                  <p className="text-[10px] font-bold text-[var(--lobb-muted)]">Rating</p>
-                </div>
-                <div className="rounded-[14px] bg-white p-3">
-                  <CalendarCheck className="mb-2 size-4 text-[var(--lobb-clay)]" />
-                  <p className="text-[15px] font-black">{coaches[0].weekendSlots}</p>
-                  <p className="text-[10px] font-bold text-[var(--lobb-muted)]">Slots</p>
-                </div>
-                <div className="rounded-[14px] bg-white p-3">
-                  <MapPin className="mb-2 size-4 text-[var(--lobb-success)]" />
-                  <p className="text-[15px] font-black">VI</p>
-                  <p className="text-[10px] font-bold text-[var(--lobb-muted)]">Area</p>
                 </div>
               </div>
 
@@ -422,18 +378,6 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-2 sm:grid-cols-3 md:grid-cols-1 lg:grid-cols-3">
-              {landingSteps.map((step) => {
-                const Icon = step.icon;
-                return (
-                  <div key={step.label} className="rounded-[18px] border border-white/10 bg-white/[0.07] p-4 backdrop-blur">
-                    <Icon className="size-4 text-[var(--lobb-clay)]" />
-                    <p className="mt-3 text-[13px] font-black text-white">{step.label}</p>
-                    <p className="mt-1 text-[12px] leading-5 text-white/45">{step.copy}</p>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </section>
       </div>
