@@ -43,23 +43,14 @@ export default function Home() {
 
   useEffect(() => {
     let cancelled = false;
+    const supabase = createClient();
 
-    async function loadProfile() {
+    async function handleUserId(userId: string) {
       try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (cancelled) return;
-
-        if (!user) {
-          setProfile(null);
-          return;
-        }
-
         const { data } = await supabase
           .from("profiles")
           .select("role, full_name, avatar_url")
-          .eq("id", user.id)
+          .eq("id", userId)
           .maybeSingle();
 
         if (cancelled) return;
@@ -84,9 +75,22 @@ export default function Home() {
       }
     }
 
+    // onAuthStateChange fires immediately with the current session (INITIAL_SESSION)
+    // and again on any sign-in/sign-out — far more reliable than a one-shot getUser()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (cancelled) return;
+        if (session?.user) {
+          handleUserId(session.user.id);
+        } else {
+          setProfile(null);
+          setLoadingProfile(false);
+        }
+      }
+    );
+
     async function loadCoaches() {
       try {
-        const supabase = createClient();
         const { data } = await supabase
           .from("coach_profiles_public")
           .select("*")
@@ -99,10 +103,12 @@ export default function Home() {
       }
     }
 
-    loadProfile();
     loadCoaches();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [router]);
 
   /* ── Loading ── */
