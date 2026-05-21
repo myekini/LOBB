@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, MapPin, Star } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowRight, CalendarCheck, MapPin, ShieldCheck, Star, Trophy } from "lucide-react";
 import { LobbVerifiedBadge } from "@/components/lobb-badge";
 import type { CoachPublicProfile } from "@/lib/types";
 
@@ -53,83 +54,94 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
     coach.primary_location,
     ...coach.service_areas.filter((a) => a !== coach.primary_location),
   ].filter(Boolean).slice(0, 3);
+  const primarySkill = coach.specializations[0] ?? coach.skill_levels[0] ?? "Tennis Coach";
+  const experience = coach.experience_years > 0 ? `${coach.experience_years} yrs` : "New";
 
   return (
-    <article className="overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_14px_34px_rgba(13,13,13,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(13,13,13,0.11)]">
-      <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-4 p-4">
-        <Link href={profileHref} className="relative h-full min-h-[124px] overflow-hidden rounded-[18px] bg-[var(--lobb-surface-2)]">
+    <article className="group overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_14px_34px_rgba(13,13,13,0.07)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_46px_rgba(13,13,13,0.12)]">
+      <div className="p-3">
+        <Link href={profileHref} className="relative block aspect-[16/10] overflow-hidden rounded-[20px] bg-[var(--lobb-surface-2)] md:aspect-[4/3]">
           {coach.profile_photo_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={coach.profile_photo_url} alt={coach.full_name} className="size-full object-cover" />
+            <img src={coach.profile_photo_url} alt={coach.full_name} className="size-full object-cover transition duration-300 group-hover:scale-[1.03]" />
           )}
-          <div className="absolute bottom-2 left-2">
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/62 to-transparent" />
+          <div className="absolute left-3 top-3">
             <LobbVerifiedBadge verified={coach.is_verified} size="small" />
           </div>
-        </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
+          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3 text-white">
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <Link href={profileHref} className="truncate font-black text-[var(--lobb-black)] hover:text-[var(--lobb-clay)]">
-                  {coach.full_name}
-                </Link>
-              </div>
-              <p className="mt-0.5 line-clamp-2 text-[12px] font-medium leading-5 text-[var(--lobb-muted)]">
-                {coach.headline ?? (coach.certifications[0] || "Tennis Coach")}
-              </p>
+              <p className="truncate text-[11px] font-black uppercase tracking-[0.14em] text-white/64">{primarySkill}</p>
+              <h3 className="truncate text-[22px] font-black leading-none">{coach.full_name}</h3>
             </div>
-            <button
-              aria-label="Save coach"
-              className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--lobb-border)] text-[var(--lobb-muted)]"
-            >
-              ♡
-            </button>
-          </div>
-          <div className="mt-1.5 flex items-center gap-1 text-[12px]">
-            <Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
-            <span className="font-black">
+            <div className="flex shrink-0 items-center gap-1 rounded-full bg-white/92 px-2.5 py-1 text-[12px] font-black text-[var(--lobb-black)]">
+              <Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
               {coach.avg_rating != null ? coach.avg_rating : "New"}
-            </span>
-            <span className="font-medium text-[var(--lobb-muted)]">
-              · {coach.session_count} sessions
-            </span>
-          </div>
-
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <div className="rounded-[14px] bg-[var(--lobb-surface-2)] px-3 py-2">
-              <p className="font-[family-name:var(--font-mono)] text-[15px] font-black text-[var(--lobb-black)]">
-                {money(coach.hourly_rate_ngn)}
-              </p>
-              <p className="text-[10px] font-bold text-[var(--lobb-muted)]">per hour</p>
-            </div>
-            <div className="rounded-[14px] bg-[var(--lobb-surface-2)] px-3 py-2">
-              <p className="flex items-center gap-1 text-[12px] font-black text-[var(--lobb-black)]">
-                <CalendarCheck className="size-3.5 text-[var(--lobb-clay)]" />
-                {coach.has_availability ? "Slots open" : "Ask coach"}
-              </p>
-              <p className="text-[10px] font-bold text-[var(--lobb-muted)]">availability</p>
             </div>
           </div>
-        </div>
+        </Link>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-[var(--lobb-border)] bg-white/45 px-4 py-3">
-        <p className="flex min-w-0 items-center gap-1.5 text-[11px] font-bold text-[var(--lobb-muted)]">
-          <MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
-          <span className="truncate">{locations.length ? locations.join(" · ") : "Location pending"}</span>
-        </p>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link href={profileHref} className="hidden rounded-full border border-[var(--lobb-border)] px-3 py-2 text-[12px] font-black text-[var(--lobb-black)] sm:inline-flex">
+      <div className="px-4 pb-4 pt-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="line-clamp-2 text-[13px] font-semibold leading-5 text-[var(--lobb-muted)]">
+              {coach.headline ?? (coach.certifications[0] || "Focused tennis coaching for match-ready players.")}
+            </p>
+            <p className="mt-2 flex items-center gap-1.5 text-[12px] font-bold text-[var(--lobb-muted)]">
+              <MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
+              <span className="truncate">{locations.length ? locations.join(" · ") : "Location pending"}</span>
+            </p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p className="font-[family-name:var(--font-mono)] text-[18px] font-black text-[var(--lobb-black)]">
+              {money(coach.hourly_rate_ngn)}
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--lobb-muted)]">per hour</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-white/50">
+          <MiniMetric icon={<Trophy className="size-3.5" />} label="Sessions" value={coach.session_count || "New"} />
+          <MiniMetric icon={<ShieldCheck className="size-3.5" />} label="Reviews" value={coach.review_count || "New"} />
+          <MiniMetric icon={<CalendarCheck className="size-3.5" />} label="Status" value={coach.has_availability ? "Open" : "Ask"} />
+        </div>
+
+        <div className="mt-4 flex items-center gap-2">
+          <Link
+            href={profileHref}
+            className="flex h-12 flex-1 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-white/40 px-4 text-sm font-black text-[var(--lobb-black)] transition active:scale-[0.98]"
+          >
             Profile
           </Link>
           <Link
             href={bookingHref}
-            className="inline-flex items-center gap-1 rounded-full bg-[var(--lobb-clay)] px-4 py-2 text-[12px] font-black text-white transition active:scale-[0.97]"
+            className="flex h-12 flex-[1.35] items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] px-4 text-sm font-black text-white shadow-[0_12px_26px_rgba(196,98,45,0.22)] transition active:scale-[0.98]"
           >
-            Book <ArrowRight className="size-3.5" />
+            Book Now <ArrowRight className="size-4" />
           </Link>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {[primarySkill, experience].map((tag) => (
+            <div key={tag} className="rounded-full bg-[var(--lobb-surface-2)] px-3 py-1.5 text-[11px] font-black text-[var(--lobb-muted)]">
+              {tag}
+            </div>
+          ))}
         </div>
       </div>
     </article>
+  );
+}
+
+function MiniMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
+  return (
+    <div className="border-r border-[var(--lobb-border)] px-2.5 py-2.5 last:border-r-0">
+      <p className="flex items-center gap-1 text-[12px] font-black text-[var(--lobb-black)]">
+        <span className="text-[var(--lobb-clay)]">{icon}</span>
+        <span className="truncate">{value}</span>
+      </p>
+      <p className="mt-0.5 text-[9px] font-black uppercase tracking-[0.08em] text-[var(--lobb-muted)]">{label}</p>
+    </div>
   );
 }
