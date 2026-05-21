@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarCheck, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowLeft, CalendarCheck, Check, ChevronDown, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { CoachListCard } from "@/components/coach-cards";
 import { PlayerBottomNav } from "@/components/player-nav";
 import { LobbEmptyState } from "@/components/lobb-empty-state";
@@ -35,6 +35,8 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
   const [showSort,     setShowSort]     = useState(false);
 
   const activePrice = PRICE_RANGES.find((r) => r.label === priceLabel) ?? PRICE_RANGES[0];
+  const availableCount = initialCoaches.filter((coach) => coach.has_availability).length;
+  const topRatedCoach = initialCoaches.find((coach) => coach.avg_rating != null);
   const filterCount = [
     location !== "All",
     specs.length > 0,
@@ -114,93 +116,130 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
 
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
-      <header className="sticky top-0 z-40 flex h-[72px] items-center justify-between border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 px-5 backdrop-blur">
-        <Link
-          href="/"
-          aria-label="Go back"
-          className="-ml-2 flex size-10 items-center justify-center rounded-full border border-transparent hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface)]"
-        >
-          <ArrowLeft className="size-5" />
-        </Link>
-        <div className="text-center">
-          <h1 className="font-black">Book a Coach</h1>
-          <p className="text-xs font-semibold text-[var(--lobb-muted)]">
-            Pick a verified coach and reserve a slot
-          </p>
+      <header className="sticky top-0 z-40 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/92 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link
+            href="/"
+            aria-label="Go back"
+            className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition active:scale-[0.97]"
+          >
+            <ArrowLeft className="size-5" />
+          </Link>
+          <div className="text-center">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">LOBB coaches</p>
+            <h1 className="text-[17px] font-black leading-tight">Book a Coach</h1>
+          </div>
+          <button
+            onClick={() => setShowFilter(true)}
+            className="relative flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition active:scale-[0.97]"
+          >
+            <SlidersHorizontal className="size-5" />
+            {filterCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-[10px] font-black text-white ring-2 ring-[var(--lobb-bg)]">
+                {filterCount}
+              </span>
+            )}
+          </button>
         </div>
-        <button
-          onClick={() => setShowFilter(true)}
-          className="relative flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
-        >
-          <SlidersHorizontal className="size-5" />
-          {filterCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-[9px] font-black text-white">
-              {filterCount}
-            </span>
-          )}
-        </button>
       </header>
 
-      <section className="px-5 pt-5">
-        <div className="overflow-hidden rounded-[24px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_16px_38px_rgba(13,13,13,0.16)]">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Player booking desk</p>
-              <h2 className="mt-2 text-[26px] font-black leading-7">Find the right court session.</h2>
-              <p className="mt-2 max-w-[28rem] text-sm font-medium leading-6 text-white/58">
-                Compare coaches by area, price, and availability. Use Book to go straight to open slots.
-              </p>
+      <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 lg:pt-8">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
+          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-7">
+            <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[56px] bg-[var(--lobb-clay)]/20" />
+            <div className="relative flex items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.08] px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-white/58">
+                  <Sparkles className="size-3.5 text-[var(--lobb-clay)]" />
+                  Verified booking desk
+                </div>
+                <h2 className="mt-4 max-w-xl text-[31px] font-black leading-[0.94] tracking-[-0.01em] sm:text-[44px]">
+                  Find your next tennis coach in Lagos.
+                </h2>
+                <p className="mt-4 max-w-[36rem] text-[14px] font-medium leading-6 text-white/62 sm:text-[15px]">
+                  Search by area, compare price and session history, then book straight into an open slot.
+                </p>
+              </div>
+              <span className="hidden size-12 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--lobb-clay)] sm:flex">
+                <CalendarCheck className="size-6" />
+              </span>
             </div>
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--lobb-clay)]">
-              <CalendarCheck className="size-5" />
-            </span>
+            <div className="relative mt-6 grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/10 bg-white/[0.06]">
+              <Stat label="Coaches" value={initialCoaches.length} />
+              <Stat label="Slots" value={availableCount} />
+              <Stat label="Rating" value={topRatedCoach?.avg_rating?.toFixed(1) ?? "New"} />
+            </div>
           </div>
-          <div className="mt-5 grid grid-cols-3 divide-x divide-white/10 border-y border-white/10 py-3">
-            <div className="pr-3">
-              <p className="text-xl font-black">{initialCoaches.length}</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">Coaches</p>
+
+          <aside className="hidden rounded-[28px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_14px_34px_rgba(13,13,13,0.06)] lg:block">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">Quick filters</p>
+            <div className="mt-4 space-y-3">
+              <button
+                onClick={() => setAvailFilter((prev) => (prev === "Has availability" ? "Any" : "Has availability"))}
+                className={`flex w-full items-center justify-between rounded-[16px] border px-4 py-3 text-left text-sm font-black transition ${
+                  availFilter === "Has availability"
+                    ? "border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay-dark)]"
+                    : "border-[var(--lobb-border)] bg-white/50 text-[var(--lobb-black)]"
+                }`}
+              >
+                Slots open now
+                {availFilter === "Has availability" && <Check className="size-4" />}
+              </button>
+              <button
+                onClick={() => setSort("Highest Rated")}
+                className={`flex w-full items-center justify-between rounded-[16px] border px-4 py-3 text-left text-sm font-black transition ${
+                  sort === "Highest Rated"
+                    ? "border-[var(--lobb-black)] bg-[var(--lobb-black)] text-white"
+                    : "border-[var(--lobb-border)] bg-white/50 text-[var(--lobb-black)]"
+                }`}
+              >
+                Highest rated
+                {sort === "Highest Rated" && <Check className="size-4" />}
+              </button>
             </div>
-            <div className="px-3">
-              <p className="text-xl font-black">{initialCoaches.filter((coach) => coach.has_availability).length}</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">With slots</p>
-            </div>
-            <div className="pl-3">
-              <p className="text-xl font-black">{filterCount}</p>
-              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-white/42">Filters</p>
-            </div>
-          </div>
+            <p className="mt-5 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">
+              {results.length} matching coaches from {initialCoaches.length} active profiles.
+            </p>
+          </aside>
         </div>
       </section>
 
-      {/* Search */}
-      <section className="px-5 pt-4">
-        <label className="flex h-14 items-center gap-3 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-5 shadow-[0_12px_30px_rgba(58,43,20,0.06)]">
-          <Search className="size-5 text-[var(--lobb-clay)]" />
-          <input
-            autoFocus
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search coaches, areas..."
-            className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-semibold outline-none placeholder:text-[#9b958a] focus:ring-0"
-          />
-          {query && (
-            <button onClick={() => setQuery("")} aria-label="Clear search">
-              <X className="size-4 text-[var(--lobb-muted)]" />
-            </button>
-          )}
-        </label>
+      <section className="sticky top-16 z-30 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/94 py-3 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 sm:px-6">
+          <label className="flex h-[52px] flex-1 items-center gap-3 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_10px_28px_rgba(58,43,20,0.05)]">
+            <Search className="size-5 shrink-0 text-[var(--lobb-clay)]" />
+            <input
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search coach, area, skill"
+              className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[#9b958a] focus:ring-0"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} aria-label="Clear search" className="flex size-8 items-center justify-center rounded-full bg-[var(--lobb-surface-2)]">
+                <X className="size-4 text-[var(--lobb-muted)]" />
+              </button>
+            )}
+          </label>
+          <button
+            onClick={() => setShowSort(true)}
+            className="flex h-[52px] items-center gap-1.5 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3 text-sm font-black shadow-[0_10px_28px_rgba(58,43,20,0.05)]"
+          >
+            <span className="hidden sm:inline">Sort</span>
+            <ChevronDown className="size-4" />
+          </button>
+        </div>
       </section>
 
-      {/* Location chips */}
-      <section className="mt-5 px-5">
-        <div className="flex flex-wrap gap-2">
+      <section className="mx-auto mt-4 max-w-6xl px-4 sm:px-6">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
           {LOCATION_FILTERS.map((item) => (
             <button
               key={item}
               onClick={() => setLocation(item)}
-              className={`h-9 rounded-full px-4 text-sm font-bold ${
+              className={`h-10 shrink-0 rounded-full px-4 text-sm font-black transition ${
                 location === item
-                  ? "bg-[var(--lobb-black)] text-white"
+                  ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_24px_rgba(13,13,13,0.14)]"
                   : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"
               }`}
             >
@@ -210,34 +249,41 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
         </div>
       </section>
 
-      {/* Results row */}
-      <section className="mt-5 flex items-center justify-between px-5 text-sm text-[var(--lobb-muted)]">
-        <span className="font-semibold">{results.length} coaches found</span>
-        <button
-          onClick={() => setShowSort(true)}
-          className="rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3 py-1.5 font-bold text-[var(--lobb-black)]"
-        >
-          Sort: ↕ {sort.replace(" Match", "")}
-        </button>
+      <section className="mx-auto mt-5 flex max-w-6xl items-center justify-between px-4 text-sm sm:px-6">
+        <div>
+          <p className="font-black text-[var(--lobb-black)]">{results.length} coaches found</p>
+          <p className="text-xs font-semibold text-[var(--lobb-muted)]">
+            {filterCount > 0 ? `${filterCount} filter${filterCount === 1 ? "" : "s"} active` : "Ready when you are"}
+          </p>
+        </div>
+        {(filterCount > 0 || query) && (
+          <button
+            className="rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-2 text-xs font-black text-[var(--lobb-black)]"
+            onClick={() => { resetFilters(); setQuery(""); }}
+          >
+            Clear
+          </button>
+        )}
       </section>
 
-      {/* Coach cards */}
-      <section className="mt-4 space-y-4 px-5">
+      <section className="mx-auto mt-4 grid max-w-6xl gap-4 px-4 sm:px-6 md:grid-cols-2 xl:grid-cols-3">
         {results.length ? (
           results.map((coach) => <CoachListCard key={coach.id} coach={coach} />)
         ) : (
-          <LobbEmptyState
-            title="No coaches match your filters."
-            body="Try widening your search or check back soon."
-            action={
-              <button
-                className="rounded-full bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white"
-                onClick={() => { resetFilters(); setQuery(""); }}
-              >
-                Clear filters
-              </button>
-            }
-          />
+          <div className="md:col-span-2 xl:col-span-3">
+            <LobbEmptyState
+              title="No coaches match your filters."
+              body="Try widening your search or check back soon."
+              action={
+                <button
+                  className="rounded-full bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white"
+                  onClick={() => { resetFilters(); setQuery(""); }}
+                >
+                  Clear filters
+                </button>
+              }
+            />
+          </div>
         )}
       </section>
 
@@ -392,6 +438,15 @@ function ChipBlock({
   );
 }
 
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="border-r border-white/10 px-3 py-3 last:border-r-0 sm:px-4">
+      <p className="text-[21px] font-black leading-none">{value}</p>
+      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/42">{label}</p>
+    </div>
+  );
+}
+
 // ─── Bottom sheet wrapper ─────────────────────────────────────────────────────
 
 function BottomSheet({
@@ -404,7 +459,7 @@ function BottomSheet({
   return (
     <div className="fixed inset-0 z-[60] bg-black/35" onClick={onClose}>
       <div
-        className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-[var(--lobb-surface)] p-5 shadow-[0_-18px_40px_rgba(0,0,0,0.18)]"
+        className="absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-[28px] bg-[var(--lobb-surface)] p-5 shadow-[0_-18px_40px_rgba(0,0,0,0.18)] sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-[var(--lobb-border)]" />
