@@ -141,8 +141,7 @@ export default function Home() {
 
   /* ── Authenticated player home ── */
   if (profile?.role === "player" && profile.full_name) {
-    const featured   = liveCoaches[0];
-    const firstName  = profile.full_name.split(" ")[0] || "there";
+    const firstName = profile.full_name.split(" ")[0] || "there";
 
     return (
       <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
@@ -169,37 +168,29 @@ export default function Home() {
           </Link>
         </header>
 
-        {/* Hero card with search */}
+        {/* Hero card */}
         <section className="px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative h-[232px] overflow-visible rounded-[24px]">
-            <div className="absolute inset-0 overflow-hidden rounded-[24px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#0D0D0D] via-[#190e00] to-[#2c1500]" />
-              <div className="absolute -right-6 -top-6 size-48 rounded-full bg-[var(--lobb-clay)]/10 blur-2xl" aria-hidden="true" />
-              <div className="absolute -bottom-4 left-8 size-32 rounded-full bg-[var(--lobb-clay)]/6 blur-xl" aria-hidden="true" />
+          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)]">
+            <div className="absolute right-0 top-0 h-24 w-24 rounded-bl-[48px] bg-[var(--lobb-clay)]/20" aria-hidden="true" />
+            <div className="relative">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/45">{getGreeting()}</p>
+              <h1 className="mt-1 text-[30px] font-black leading-none tracking-[-0.01em]">{firstName}.</h1>
+              <p className="mt-2 text-[13px] font-medium text-white/55">Ready to book a session?</p>
             </div>
-            <div className="absolute bottom-12 left-4 right-4 text-white">
-              <h1 className="text-[26px] font-black leading-tight tracking-[-0.01em]">
-                {getGreeting()}, {firstName}
-              </h1>
-              <p className="mt-1 text-[13px] font-medium text-white/60">
-                Browse verified coaches and book a slot.
-              </p>
-            </div>
-            {/* Floating search bar */}
             <Link
               href="/coaches"
-              className="absolute -bottom-6 left-3 right-3 flex h-[52px] items-center gap-3 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-5 text-[var(--lobb-muted)] shadow-[0_16px_40px_rgba(13,13,13,0.14)] transition hover:border-[var(--lobb-clay)]/30 hover:shadow-[0_16px_40px_rgba(13,13,13,0.18)]"
+              className="relative mt-5 flex h-[50px] items-center gap-3 rounded-[16px] border border-white/10 bg-white/[0.07] px-4 text-white/45 transition hover:bg-white/10"
             >
-              <Search className="size-4 text-[var(--lobb-clay)]" />
+              <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="text-[13px] font-semibold">Search coaches, areas, levels…</span>
             </Link>
           </div>
         </section>
 
         {/* Coaches grid */}
-        <section className="mt-12 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
+        <section className="mt-6 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
           <div className="mb-3 flex items-center justify-between px-5">
-            <h2 className="text-[15px] font-black">Top Coaches in Lagos</h2>
+            <h2 className="text-[15px] font-black">Top Coaches</h2>
             <Link href="/coaches" className="text-[12px] font-bold text-[var(--lobb-muted)] transition hover:text-[var(--lobb-black)]">
               See all →
             </Link>
@@ -221,48 +212,6 @@ export default function Home() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Most booked coach */}
-        <section className="mt-6 px-5 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[15px] font-black">Most Booked</h2>
-            <Link href="/coaches" className="text-[12px] font-bold text-[var(--lobb-muted)] transition hover:text-[var(--lobb-black)]">
-              See all →
-            </Link>
-          </div>
-          {loadingCoaches ? (
-            <SkeletonBlock className="h-[168px] rounded-[22px]" />
-          ) : featured ? (
-            <div className="relative overflow-hidden rounded-[22px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_40px_rgba(13,13,13,0.2)]">
-              {featured.profile_photo_url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={featured.profile_photo_url}
-                  alt=""
-                  className="absolute bottom-0 right-0 h-full w-36 object-cover opacity-60 grayscale"
-                />
-              )}
-              <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-r from-[var(--lobb-black)] to-transparent" />
-              <div className="relative z-10 max-w-[68%]">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em]">
-                  <span className="size-1.5 rounded-full bg-white/60" />
-                  {featured.session_count > 0 ? `${featured.session_count} sessions` : "New coach"}
-                </span>
-                <p className="mt-3.5 text-[12px] font-bold text-white/70">
-                  {featured.avg_rating != null ? `★ ${featured.avg_rating}` : "New"} · {featured.hourly_rate_ngn == null ? "Rate pending" : `${money(featured.hourly_rate_ngn)}/hr`}
-                </p>
-                <h3 className="mt-1.5 text-[22px] font-black leading-tight">{featured.full_name}</h3>
-                <p className="mt-1 text-[12px] text-white/60">{featured.headline}</p>
-                <Link
-                  href={`/book/${featured.slug}/step-1`}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)] px-5 py-2.5 text-[12px] font-black transition-all duration-200 hover:bg-[#D8733C] hover:-translate-y-px active:scale-[0.97]"
-                >
-                  Book Now →
-                </Link>
-              </div>
-            </div>
-          ) : null}
         </section>
 
         <PlayerBottomNav active="home" />
