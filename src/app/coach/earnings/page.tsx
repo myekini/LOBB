@@ -79,24 +79,24 @@ export default function CoachEarningsPage() {
   const hasBank = Boolean(bank?.bank_name && bank?.bank_account_number);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Earnings" eyebrow="Coach wallet" actionHref="/coach/settings" actionLabel="Bank" actionIcon={Landmark} />
-      <section className="mx-auto max-w-md pt-5">
-        <section className="mt-6 rounded-[24px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]">
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)] sm:px-6">
+      <CoachFlowHeader title="Earnings" eyebrow="Coach wallet" active="earnings" actionHref="/coach/settings" actionLabel="Bank" actionIcon={Landmark} />
+      <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
+        <section className="mt-6 rounded-[28px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)] sm:p-8">
           <p className="text-xs font-black uppercase tracking-[0.16em] text-white/45">Total Paid + Pending</p>
           {loading ? <SkeletonBlock className="mx-auto mt-8 h-10 w-44 bg-white/15" /> : (
-            <p className="mt-8 text-center text-[32px] font-black leading-none">{money(summary?.net_all_time_ngn ?? 0)}</p>
+            <p className="mt-8 text-[38px] font-black leading-none sm:text-[54px]">{money(summary?.net_all_time_ngn ?? 0)}</p>
           )}
           <p className="mt-8 text-sm font-semibold text-white/50">Net coach earnings from completed sessions</p>
         </section>
 
-        <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+        <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)] lg:max-w-2xl">
           <StatCell value={loading ? null : money(summary?.net_this_week_ngn ?? 0)} label="This Week" />
           <StatCell value={loading ? null : money(summary?.pending_payout_ngn ?? 0)} label="Pending Payout" bordered />
         </div>
 
         <h2 className="mt-8 text-base font-black">Recent Payouts</h2>
-        <section className="mt-3 space-y-3">
+        <section className="mt-3 grid gap-3 lg:grid-cols-2">
           {loading ? (
             Array.from({ length: 3 }).map((_, index) => (
               <article key={index} className="rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">

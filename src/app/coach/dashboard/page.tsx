@@ -80,47 +80,51 @@ export default function CoachDashboardPage() {
   const CompletionIcon = completionCard.icon;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Coach Home" eyebrow="LOBB console" />
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)] sm:px-6">
+      <CoachFlowHeader title="Coach Home" eyebrow="LOBB console" active="home" />
 
-      <section className="mx-auto max-w-md pt-5">
-        <Link
-          href="/coach/profile"
-          className="block rounded-[22px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]"
-          style={{ borderLeftColor: completionCard.tone }}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <CoachKicker>Profile status</CoachKicker>
-              <p className="mt-3 flex items-center gap-2 text-lg font-black">
-                <CompletionIcon className="size-5" style={{ color: completionCard.tone }} />
-              {completionCard.title}
-              </p>
-              <p className="mt-2 text-sm font-semibold leading-5 text-white/62">{completionCard.detail}</p>
-            </div>
-            <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black">{completionCard.progress}%</span>
+      <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_360px] lg:items-start">
+          <div>
+            <Link
+              href="/coach/profile"
+              className="block rounded-[28px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)] sm:p-7"
+              style={{ borderLeftColor: completionCard.tone }}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CoachKicker>Profile status</CoachKicker>
+                  <p className="mt-3 flex items-center gap-2 text-[24px] font-black leading-tight sm:text-[34px]">
+                    <CompletionIcon className="size-6 shrink-0" style={{ color: completionCard.tone }} />
+                    {completionCard.title}
+                  </p>
+                  <p className="mt-3 max-w-xl text-sm font-semibold leading-6 text-white/62">{completionCard.detail}</p>
+                </div>
+                <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-black">{completionCard.progress}%</span>
+              </div>
+              <div className="mt-6 h-2 overflow-hidden rounded-full bg-white/12">
+                <div className="h-full rounded-full" style={{ width: `${completionCard.progress}%`, backgroundColor: completionCard.tone }} />
+              </div>
+            </Link>
+
+            {needsAvailability && (
+              <Link
+                href="/coach/availability"
+                className="mt-4 block rounded-[18px] border border-[var(--lobb-clay)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]"
+              >
+                <p className="font-black text-[var(--lobb-clay)]">Set availability to receive bookings</p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
+                  Your profile is live, but players will not see bookable times until at least one weekly window is set.
+                </p>
+              </Link>
+            )}
           </div>
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/12">
-            <div className="h-full rounded-full" style={{ width: `${completionCard.progress}%`, backgroundColor: completionCard.tone }} />
+
+          <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
+            <Stat icon={CalendarDays} value={String(upcoming.length)} label="Upcoming" />
+            <Stat icon={WalletCards} value={money(data?.earnings?.net_this_week_ngn ?? 0)} label="This week" />
+            <Stat icon={Clock3} value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending" />
           </div>
-        </Link>
-
-        {needsAvailability && (
-          <Link
-            href="/coach/availability"
-            className="mt-4 block rounded-[18px] border border-[var(--lobb-clay)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]"
-          >
-            <p className="font-black text-[var(--lobb-clay)]">Set availability to receive bookings</p>
-            <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
-              Your profile is live, but players will not see bookable times until at least one weekly window is set.
-            </p>
-          </Link>
-        )}
-
-        <div className="mt-6 grid grid-cols-3 gap-3">
-          <Stat icon={CalendarDays} value={String(upcoming.length)} label="Upcoming" />
-          <Stat icon={WalletCards} value={money(data?.earnings?.net_this_week_ngn ?? 0)} label="Week" />
-          <Stat icon={Clock3} value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending" />
         </div>
 
         <div className="mt-8 flex items-center justify-between">
@@ -174,7 +178,7 @@ export default function CoachDashboardPage() {
           <h2 className="text-base font-black">All Bookings</h2>
           <Link href="/coach/bookings" className="text-xs font-black text-[var(--lobb-clay)]">See all →</Link>
         </div>
-        <section className="mt-3 space-y-3">
+        <section className="mt-3 grid gap-3 lg:grid-cols-3">
           {loading ? Array.from({ length: 3 }).map((_, index) => (
             <BookingCardSkeleton key={index} />
           )) : (data?.recent_bookings ?? []).slice(0, 3).map((booking) => (

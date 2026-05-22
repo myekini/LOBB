@@ -1,13 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Home, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Home, type LucideIcon } from "lucide-react";
 import { CoachLogoutButton } from "@/components/common/coach-logout-button";
+import { CoachDesktopNav } from "@/components/layout/coach-nav";
 import { cn } from "@/lib/utils";
 
 type CoachFlowHeaderProps = {
   title: string;
   eyebrow?: string;
+  active?: "home" | "bookings" | "earnings" | "profile";
   actionHref?: string;
   actionLabel?: string;
   actionIcon?: LucideIcon;
@@ -20,6 +22,7 @@ type CoachFlowHeaderProps = {
 export function CoachFlowHeader({
   title,
   eyebrow,
+  active,
   actionHref,
   actionLabel,
   actionIcon: ActionIcon,
@@ -34,14 +37,13 @@ export function CoachFlowHeader({
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 -mx-5 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/92 px-5 py-3 backdrop-blur-xl",
+        "sticky top-0 z-40 -mx-5 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/92 px-5 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6",
         className
       )}
     >
-      <div className="mx-auto flex max-w-md items-center justify-between gap-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <IconButton label="Back" onClick={() => canNavigate() && router.back()} icon={ArrowLeft} />
-          <IconButton label="Forward" onClick={() => canNavigate() && router.forward()} icon={ArrowRight} />
           <button
             type="button"
             onClick={() => {
@@ -58,6 +60,8 @@ export function CoachFlowHeader({
           {eyebrow && <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">{eyebrow}</p>}
           <h1 className="truncate text-base font-black">{title}</h1>
         </div>
+
+        {active && <CoachDesktopNav active={active} />}
 
         <div className="flex items-center gap-2">
           {actionHref && actionLabel && (

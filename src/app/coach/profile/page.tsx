@@ -132,9 +132,11 @@ export default async function CoachProfilePage() {
   const statusInfo = STATUS_LABELS[coach.status] ?? STATUS_LABELS.draft;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Profile" eyebrow="Coach account" actionHref="/coach/profile/edit" actionLabel="Edit" actionIcon={Pencil} />
-      <section className="mx-auto max-w-md pt-5">
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 text-[var(--lobb-black)] sm:px-6">
+      <CoachFlowHeader title="Profile" eyebrow="Coach account" active="profile" actionHref="/coach/profile/edit" actionLabel="Edit" actionIcon={Pencil} />
+      <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
+        <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
+          <div>
         <section className="overflow-hidden rounded-[24px] bg-[var(--lobb-black)] text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]">
           <div className="p-5">
             <div className="flex items-start gap-4">
@@ -198,7 +200,9 @@ export default async function CoachProfilePage() {
             )}
           </div>
         </section>
+          </div>
 
+          <div>
         {/* Sections checklist */}
         <div className="mt-8 flex items-center justify-between">
           <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
@@ -281,6 +285,8 @@ export default async function CoachProfilePage() {
         {(coach.status === "draft" || coach.status === "rejected") && allDone && (
           <SubmitForReviewButton />
         )}
+          </div>
+        </div>
       </section>
 
       <CoachBottomNav active="profile" />

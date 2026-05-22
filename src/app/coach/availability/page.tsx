@@ -256,9 +256,9 @@ export default function CoachAvailabilityPage() {
   const slotBlockOptions = slotTimesForDate(slotBlockDate, days);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-32 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Availability" eyebrow="Bookable slots" />
-      <section className="mx-auto max-w-md pt-5">
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-32 text-[var(--lobb-black)] sm:px-6">
+      <CoachFlowHeader title="Availability" eyebrow="Bookable slots" active="bookings" />
+      <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
 
         {loading ? (
           <div className="space-y-3">
@@ -290,7 +290,7 @@ export default function CoachAvailabilityPage() {
                 these windows.
               </p>
 
-              <div className="mt-4 space-y-3">
+              <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 {days.map((item, index) => (
                   <article
                     key={item.dow}
@@ -344,7 +344,8 @@ export default function CoachAvailabilityPage() {
             </section>
 
             {/* ── Block specific dates ─────────────────────────────────── */}
-            <section className="mt-9">
+            <section className="mt-9 grid gap-6 lg:grid-cols-2 lg:items-start">
+              <div>
               <h2 className="font-black">Block Specific Dates</h2>
               <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
                 Mark days you can&apos;t coach — holidays, travel, etc.
@@ -413,9 +414,9 @@ export default function CoachAvailabilityPage() {
                   </div>
                 </>
               )}
-            </section>
+              </div>
 
-            <section className="mt-9">
+              <div>
               <h2 className="font-black">Block Individual Slots</h2>
               <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
                 Remove one appointment time without closing the whole day.
@@ -494,13 +495,14 @@ export default function CoachAvailabilityPage() {
                   ))}
                 </div>
               )}
+              </div>
             </section>
           </>
         )}
       </section>
 
       <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
-        <div className="mx-auto max-w-md">
+        <div className="mx-auto max-w-6xl">
           {(saved || error) && (
             <p className={`mb-3 rounded-[14px] px-4 py-2 text-sm font-black ${error ? "bg-[#fff0e8] text-[var(--lobb-clay-dark)]" : "bg-[#e8f4ed] text-[var(--lobb-success)]"}`}>
               {error || "Availability saved successfully."}

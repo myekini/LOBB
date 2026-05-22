@@ -38,10 +38,10 @@ export default async function CoachSettingsPage() {
   const coach = coachResult.data;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Settings" eyebrow="Coach account" />
-      <section className="mx-auto max-w-md pt-5">
-        <section className="space-y-3">
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)] sm:px-6">
+      <CoachFlowHeader title="Settings" eyebrow="Coach account" active="profile" />
+      <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
+        <section className="grid gap-3 lg:grid-cols-2">
           <SettingRow
             icon={<Smartphone className="size-5 text-[var(--lobb-clay)]" />}
             title="Phone number"

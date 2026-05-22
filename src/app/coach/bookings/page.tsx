@@ -55,16 +55,16 @@ export default function CoachBookingsPage() {
     .reduce((sum, booking) => sum + (booking.coach_payout_ngn ?? 0), 0);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Bookings" eyebrow="Coach schedule" actionHref="/coach/availability" actionLabel="Slots" actionIcon={CalendarDays} />
-      <section className="mx-auto max-w-md pt-5">
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)] sm:px-6">
+      <CoachFlowHeader title="Bookings" eyebrow="Coach schedule" active="bookings" actionHref="/coach/availability" actionLabel="Slots" actionIcon={CalendarDays} />
+      <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
         <CoachSurface className="grid grid-cols-3 overflow-hidden">
           <BookingStat label="Upcoming" value={String(confirmedCount)} />
           <BookingStat label="Done" value={String(completedCount)} bordered />
           <BookingStat label="Earned" value={money(completedValue)} bordered />
         </CoachSurface>
 
-        <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+        <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1 shadow-[0_12px_28px_rgba(13,13,13,0.05)] lg:max-w-xl">
           {tabs.map((item) => (
             <button
               key={item.value}
@@ -79,7 +79,7 @@ export default function CoachBookingsPage() {
           ))}
         </div>
 
-        <section className="mt-6 space-y-4">
+        <section className="mt-6 grid gap-4 lg:grid-cols-2">
           {loading ? (
             Array.from({ length: 3 }).map((_, index) => <BookingCardSkeleton key={index} />)
           ) : visibleBookings.length ? (
