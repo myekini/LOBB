@@ -42,6 +42,10 @@ pnpm-debug.log*
 .codex-logs/
 skills-lock.json
 
+# server process logs
+*.out.log
+*.err.log
+
 # supabase local/link metadata
 supabase/.temp/
 

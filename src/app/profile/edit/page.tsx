@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Camera, Loader2, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 function initials(name: string) {
   return name

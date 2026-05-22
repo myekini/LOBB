@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, CheckCircle2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import {
   CERTIFICATION_OPTIONS,
   COURT_ACCESS_OPTIONS,
@@ -17,7 +17,7 @@ import {
   type CoachRow,
   type CourtAccess,
 } from "@/lib/types";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 
 type ProfileFormSnapshot = {
   fullName: string;

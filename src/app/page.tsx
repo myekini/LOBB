@@ -7,9 +7,9 @@ import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, MapPin, Search, Trophy, User } from "lucide-react";
 import { coaches, courtImage, money } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
-import { PlayerBottomNav } from "@/components/player-nav";
-import { CoachListCard } from "@/components/coach-cards";
-import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/lobb-skeleton";
+import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { CoachListCard } from "@/features/coaches/coach-cards";
+import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/common/lobb-skeleton";
 
 function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: string }) {
   return (
@@ -25,7 +25,7 @@ function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
   if (hour < 17) return "Good afternoon";
-  return "Good night";
+  return "Good evening";
 }
 
 function getSessionPrompt() {
@@ -237,23 +237,26 @@ export default function Home() {
 
         {/* Hero card */}
         <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-4 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-7">
-            <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[56px] bg-[var(--lobb-clay)]/20" aria-hidden="true" />
-            <div className="absolute -bottom-16 -left-12 h-32 w-32 rounded-full border border-white/10" aria-hidden="true" />
-            <div className="relative grid gap-5 md:grid-cols-[minmax(0,1fr)_260px] md:items-end">
+          <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0d0d0d] via-[#161512] to-[#241a15] px-6 py-8 text-white shadow-[0_22px_56px_rgba(13,13,13,0.22)] sm:p-10">
+            <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[64px] bg-[var(--lobb-clay)]/10 blur-[1px]" aria-hidden="true" />
+            <div className="absolute -bottom-16 -left-12 h-36 w-36 rounded-full border border-white/5 bg-white/[0.01]" aria-hidden="true" />
+            <div className="relative grid gap-7 md:grid-cols-[minmax(0,1fr)_280px] md:items-end">
               <div>
-                <p className="inline-flex max-w-full items-center rounded-full border border-white/10 bg-white/[0.07] px-3 py-1.5 text-[12px] font-black text-white/72">
-                  <span className="truncate">{getGreeting()}, {firstName}</span>
-                </p>
-                <h1 className="mt-4 max-w-[10ch] text-[36px] font-black leading-[0.92] sm:max-w-none sm:text-[52px]">
+                <div className="flex items-center gap-2">
+                  <span className="text-base animate-bounce">👋</span>
+                  <span className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--lobb-clay)]">
+                    {getGreeting()}, {firstName}
+                  </span>
+                </div>
+                <h1 className="mt-4 text-[38px] font-black leading-[1.05] tracking-tight sm:max-w-none sm:text-[56px] text-white">
                   {getSessionPrompt()}
                 </h1>
-                <p className="mt-3 max-w-xl text-[14px] font-semibold leading-6 text-white/58">
+                <p className="mt-4 max-w-xl text-[14px] font-medium leading-[1.6] text-white/58">
                   Search verified Lagos coaches, pick an open slot, and keep the court details tidy in one flow.
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/10 bg-white/[0.06] md:grid-cols-1">
+              <div className="grid grid-cols-3 overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.05] shadow-inner md:grid-cols-1">
                 <PlayerHomeStat label="Coaches" value={liveCoaches.length} />
                 <PlayerHomeStat label="Open slots" value={liveCoaches.filter((coach) => coach.has_availability).length} />
                 <PlayerHomeStat label="Top area" value={featuredCoach?.primary_location ?? "Lagos"} />
@@ -376,9 +379,6 @@ export default function Home() {
             <Link href="/coaches/join" className="rounded-full px-4 py-2 text-[13px] font-bold text-white/68 transition hover:bg-white/10 hover:text-white">
               Become a coach
             </Link>
-            <Link href="/auth/login" className="rounded-full px-4 py-2 text-[13px] font-bold text-white/68 transition hover:bg-white/10 hover:text-white">
-              Coach portal
-            </Link>
           </nav>
           <Link
             href="/auth/login"
@@ -394,7 +394,7 @@ export default function Home() {
               <span className="size-1.5 rounded-full bg-[var(--lobb-clay)]" />
               Lagos tennis coaching, verified
             </div>
-            <h1 className="max-w-[11ch] text-[56px] font-black leading-[0.9] text-white sm:text-[76px] lg:text-[92px] animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-75 fill-mode-both">
+            <h1 className="max-w-[11ch] text-[56px] font-black leading-[1.05] text-white sm:text-[76px] lg:text-[92px] animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-75 fill-mode-both">
               Book the court session without the chase.
             </h1>
             <p className="mt-6 max-w-xl text-[16px] leading-7 text-white/64 sm:text-[18px] animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
@@ -418,23 +418,19 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Coach entry point — visible on all screen sizes */}
-            <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-              <span className="text-[13px] font-semibold text-white/45">Are you a coach?</span>
-              <Link
-                href="/auth/login"
-                className="text-[13px] font-bold text-white/65 underline underline-offset-2 transition hover:text-white"
-              >
-                Log in to your portal →
-              </Link>
-              <span className="text-white/25">·</span>
-              <Link
-                href="/coaches/join"
-                className="text-[13px] font-bold text-white/65 transition hover:text-white"
-              >
-                Apply to join
-              </Link>
-            </div>
+            <p className="mt-5 text-[13px] font-medium text-white/50 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
+              Are you a Lagos coach?{" "}
+              <Link href="/coaches/join" className="font-bold text-[var(--lobb-clay)] hover:underline">
+                Apply to teach
+              </Link>{" "}
+              or{" "}
+              <Link href="/auth/login" className="font-bold text-white hover:underline">
+                access your portal
+              </Link>.
+            </p>
+
+            {/* Spacing alignment */}
+            <div className="h-4" />
           </div>
 
           <div className="relative mx-auto w-full max-w-[420px] md:mx-0 md:justify-self-end animate-in fade-in-0 slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both">

@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarCheck, Check, ChevronDown, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
-import { CoachListCard } from "@/components/coach-cards";
-import { PlayerBottomNav } from "@/components/player-nav";
-import { LobbEmptyState } from "@/components/lobb-empty-state";
+import { CoachListCard } from "@/features/coaches/coach-cards";
+import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import type { CoachPublicProfile } from "@/lib/types";
 
 const LOCATION_FILTERS = ["All", "Lekki", "VI", "Ikoyi", "Ikeja", "Surulere", "Ajah", "Yaba"];

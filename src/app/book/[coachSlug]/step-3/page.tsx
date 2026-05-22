@@ -2,10 +2,10 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { CalendarDays, Clock3, Info, MapPin, ShieldCheck } from "lucide-react";
-import { BookingButton, BookingShell } from "@/components/booking-shell";
-import { showLobbToast } from "@/components/lobb-global-state";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
+import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { CoachPublicProfile } from "@/lib/types";
 
 const LOBB_FEE_RATE = 0.05;
@@ -134,83 +134,95 @@ function BookingStep3Content() {
         {formatCountdown(seconds)} remaining
       </p>
 
-      <h2 className="font-black">Order Summary</h2>
+      <h2 className="text-sm font-black uppercase tracking-wider text-[var(--lobb-black)]">Order Summary</h2>
 
-      <section className="mt-3 rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_14px_34px_rgba(58,43,20,0.07)]">
+      <section className="mt-3 rounded-3xl border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-5.5 shadow-[0_16px_40px_rgba(58,43,20,0.02)]">
         {/* Coach identity */}
         {coach && (
-          <div className="mb-4 flex items-center gap-3">
-            <div className="size-10 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
-              {coach.profile_photo_url && (
+          <div className="mb-4 flex items-center gap-3.5 pb-4 border-b border-[var(--lobb-border)]">
+            <div className="size-11 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
+              {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
+              ) : (
+                <div className="flex size-full items-center justify-center font-bold text-[var(--lobb-muted)] bg-[var(--lobb-surface-2)]">
+                  {coach.full_name?.charAt(0)}
+                </div>
               )}
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--lobb-muted)]">Session with</p>
-              <p className="font-black">{coach.full_name}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Tennis Professional</p>
+              <p className="text-base font-black text-[var(--lobb-black)] tracking-tight">{coach.full_name}</p>
             </div>
           </div>
         )}
 
         {/* Session details */}
-        <div className="space-y-2 text-sm font-semibold text-[var(--lobb-muted)]">
+        <div className="space-y-3 text-sm font-semibold text-[var(--lobb-muted)]">
           {slot && (
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-2.5">
               <CalendarDays className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-              {formatSlotShort(slot)} – {formatSlotEnd(slot)}
+              <span className="text-[var(--lobb-black)]">{formatSlotShort(slot)} – {formatSlotEnd(slot)}</span>
             </p>
           )}
-          <p className="flex items-center gap-2">
+          <p className="flex items-center gap-2.5">
             <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-            60 minutes
+            <span className="text-[var(--lobb-black)]">60 minutes standard session</span>
           </p>
           {location && (
-            <p className="flex items-start gap-2">
+            <p className="flex items-start gap-2.5">
               <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-              {location}
+              <span className="text-[var(--lobb-black)] leading-relaxed">{location}</span>
             </p>
           )}
         </div>
 
-        <div className="my-4 border-t border-[var(--lobb-border)]" />
+        <div className="my-5 border-t border-dashed border-[var(--lobb-border)]" />
 
         {/* Fee breakdown */}
         {coach ? (
-          <>
-            <div className="flex justify-between text-sm font-semibold">
+          <div className="space-y-3.5">
+            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-muted)]">
               <span>Session fee</span>
-              <span>{money(sessionFee)}</span>
+              <span className="text-[var(--lobb-black)] font-black">{money(sessionFee)}</span>
             </div>
-            <div className="mt-3 flex justify-between text-sm font-semibold text-[var(--lobb-muted)]">
-              <span>LOBB fee (5%)</span>
-              <span>{money(lobbFee)}</span>
+            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-muted)]">
+              <span>LOBB service fee (5%)</span>
+              <span className="text-[var(--lobb-black)] font-black">{money(lobbFee)}</span>
             </div>
-            <div className="mt-4 flex items-center justify-between rounded-xl bg-[var(--lobb-bg)] px-4 py-3">
-              <span className="font-black">Total</span>
-              <span className="font-black text-[var(--lobb-clay)]">{money(total)}</span>
+            <div className="pt-2">
+              <div className="flex items-center justify-between rounded-2xl bg-[var(--lobb-clay)]/5 px-4.5 py-3.5 border border-[var(--lobb-clay)]/15">
+                <span className="text-xs font-black uppercase tracking-wider text-[var(--lobb-black)]">Total to Pay</span>
+                <span className="text-xl font-black text-[var(--lobb-clay)]">{money(total)}</span>
+              </div>
             </div>
-          </>
+          </div>
         ) : (
           <div className="space-y-3 py-2">
             <SkeletonBlock className="h-4 w-full" />
             <SkeletonBlock className="h-4 w-3/4" />
-            <SkeletonBlock className="h-10 w-full rounded-xl" />
+            <SkeletonBlock className="h-12 w-full rounded-2xl" />
           </div>
         )}
       </section>
 
-      <p className="mt-5 flex items-start gap-2 text-xs font-semibold leading-5 text-[var(--lobb-muted)]">
-        <Info className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-        Payment is held in escrow until after your session. Full refund if cancelled 24 hrs before.
-      </p>
+      {/* Escrow Shield Trust Banner */}
+      <div className="mt-5 rounded-2xl bg-emerald-500/[0.04] p-4.5 border border-emerald-500/10 flex gap-3 items-start text-xs font-semibold text-emerald-950 leading-relaxed shadow-sm">
+        <ShieldCheck className="size-5 shrink-0 text-emerald-600 mt-0.5 animate-pulse" />
+        <div>
+          <p className="font-black text-emerald-900 uppercase tracking-wider text-[10px]">Escrow Protection Active</p>
+          <p className="mt-1 text-emerald-800 font-medium">
+            Your payment is safely held in escrow and only released to the coach after your session is completed. Cancel for free up to 24 hours prior.
+          </p>
+        </div>
+      </div>
 
       <BookingButton disabled={!coach || paying} onClick={handlePay}>
-        {paying ? "Redirecting to payment..." : coach ? `Pay ${money(total)} securely` : "Loading…"}
+        {paying ? "Redirecting to Paystack..." : coach ? `Pay ${money(total)} Securely` : "Loading Booking Summary…"}
       </BookingButton>
 
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11px] font-bold text-[var(--lobb-muted)]">
-        <ShieldCheck className="size-3.5" /> Secured by Paystack · Powered by LOBB
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-black uppercase tracking-wider text-[var(--lobb-muted)]">
+        Secured by Paystack · Powered by LOBB
       </p>
     </BookingShell>
   );

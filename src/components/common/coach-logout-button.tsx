@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { LogOut } from "lucide-react";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 export function CoachLogoutButton({ compact = false }: { compact?: boolean }) {
   const [busy, setBusy] = useState(false);

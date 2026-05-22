@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Clock3, Landmark, WalletCards, XCircle } from "lucide-react";
-import { CoachBottomNav } from "@/components/coach-nav";
-import { showLobbToast } from "@/components/lobb-global-state";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { money } from "@/lib/dashboard-client-types";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 
 type Payout = {
   id: string;

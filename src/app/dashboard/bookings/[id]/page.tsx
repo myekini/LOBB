@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ShieldCheck, X } from "lucide-react";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   durationMinutes,
   firstJoin,
@@ -12,8 +12,8 @@ import {
   money,
   type DashboardBooking,
 } from "@/lib/dashboard-client-types";
-import { BookingCardSkeleton } from "@/components/lobb-skeleton";
-import { canCancelForFullRefund, cancellationPolicyNote } from "@/lib/lobb-money";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { cancellationPolicy } from "@/lib/lobb-money";
 
 function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
   const profile = firstJoin(value);
@@ -103,8 +103,9 @@ export default function BookingDetailPage() {
   const payment = booking.payments?.[0];
   const isUpcoming = booking.status === "confirmed";
   const coachPhone = payment?.status === "paid" ? firstProfilePhone(booking.coach_profile) : null;
-  const fullRefund = canCancelForFullRefund(booking.starts_at);
-  const policyNote = cancellationPolicyNote(booking.starts_at);
+  const policy = cancellationPolicy(booking.starts_at, "player");
+  const fullRefund = policy.refundPercent === 100;
+  const policyNote = policy.note;
 
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
@@ -183,10 +184,10 @@ export default function BookingDetailPage() {
         </DetailSection>
 
         <DetailSection title="Cancellation Policy">
-          <div className={`rounded-[20px] border p-4 ${fullRefund ? "border-[#cfe7d8] bg-[#eef8f2]" : "border-[#f1d2c1] bg-[#fff7f2]"}`}>
+          <div className={`rounded-[20px] border p-4 ${fullRefund ? "border-[#cfe7d8] bg-[#eef8f2]" : policy.refundPercent === 50 ? "border-[#ffe0b2] bg-[#fff7f2]" : "border-[#f1d2c1] bg-[#fff0ee]"}`}>
             <p className="flex items-start gap-2 text-sm font-black">
               <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
-              {fullRefund ? "Full refund window" : "Late cancellation window"}
+              {policy.label}
             </p>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">{policyNote}</p>
           </div>
@@ -211,7 +212,7 @@ export default function BookingDetailPage() {
               <button onClick={() => setShowCancel(false)} aria-label="Close"><X className="size-5" /></button>
             </div>
             <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-muted)]">
-              {policyNote}
+              <strong>{policy.label}.</strong> {policyNote}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button onClick={() => setShowCancel(false)} className="h-12 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white">

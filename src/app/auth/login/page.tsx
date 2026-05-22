@@ -9,7 +9,7 @@ import {
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
-} from "@/components/onboarding-shell";
+} from "@/features/auth/onboarding-shell";
 import { setPendingAuth } from "@/lib/auth-flow";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/client";
@@ -70,25 +70,34 @@ function DevLoginPanel() {
   };
 
   return (
-    <div className="mt-8 rounded-[20px] border-2 border-dashed border-[var(--lobb-clay)]/40 bg-[#fff8f4] p-4">
-      <p className="text-center text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
-        Dev test accounts
+    <div className="mt-8 rounded-3xl border border-[var(--lobb-clay)]/20 bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.03] p-5 shadow-[0_12px_36px_rgba(196,98,45,0.06)] animate-in fade-in duration-300">
+      <div className="flex items-center justify-center gap-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--lobb-clay)]"></span>
+        </span>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
+          Dev Test Suite
+        </p>
+      </div>
+      <p className="mt-1.5 text-center text-xs font-semibold text-[var(--lobb-muted)]">
+        One-click bypass — completely hidden in production
       </p>
-      <p className="mt-1 text-center text-[11px] font-semibold text-[var(--lobb-muted)]">
-        One-click login — not visible in production
-      </p>
-      <div className="mt-3 grid grid-cols-3 gap-2">
+      <div className="mt-4 grid grid-cols-3 gap-2">
         {(["player", "coach", "admin"] as const).map((role) => (
           <button
             key={role}
             onClick={() => quickLogin(role)}
             disabled={busy !== null}
-            className="flex h-11 items-center justify-center gap-2 rounded-full border border-[var(--lobb-clay)] text-sm font-black text-[var(--lobb-clay)] disabled:opacity-50"
+            className="group flex h-[46px] flex-col items-center justify-center rounded-2xl border border-[var(--lobb-border)] bg-white text-[11px] font-black tracking-tight text-[var(--lobb-black)] shadow-[0_4px_12px_rgba(13,13,13,0.03)] transition-all hover:border-[var(--lobb-clay)]/40 hover:shadow-[0_8px_20px_rgba(196,98,45,0.08)] active:scale-[0.96] disabled:opacity-50"
           >
             {busy === role ? (
-              <Loader2 className="size-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />
             ) : (
-              `Login as ${role.charAt(0).toUpperCase() + role.slice(1)}`
+              <>
+                <span className="capitalize">{role}</span>
+                <span className="text-[9px] font-medium text-[var(--lobb-muted)] group-hover:text-[var(--lobb-clay)] transition-colors">Bypass ⚡</span>
+              </>
             )}
           </button>
         ))}
@@ -150,9 +159,41 @@ function LoginForm() {
           <OnboardingCopy>
             Works for players and coaches. We&apos;ll send a 6-digit WhatsApp code — if you&apos;re new, setup follows automatically.
           </OnboardingCopy>
+
+          {IS_DEV_LOGIN_ENABLED && (
+            <div className="mt-6 rounded-2xl border border-[var(--lobb-border)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.02] p-2.5 shadow-[0_8px_30px_rgba(58,43,20,0.04)] animate-in fade-in duration-300">
+              <p className="px-2 pt-1 pb-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                Active Test Role Selection
+              </p>
+              <div className="grid grid-cols-3 gap-1 bg-[var(--lobb-surface-2)] p-1 rounded-xl">
+                {(["player", "coach", "admin"] as const).map((role) => {
+                  const isActive = devRole === role;
+                  return (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => setDevRole(role)}
+                      className={`flex h-9 items-center justify-center rounded-[10px] text-[11px] font-black capitalize transition-all active:scale-[0.98] ${
+                        isActive
+                          ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_12px_rgba(196,98,45,0.15)]"
+                          : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                      }`}
+                    >
+                      {role}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2.5 px-2 text-[10px] font-semibold leading-relaxed text-[var(--lobb-muted)] transition-all duration-300">
+                {devRole === "player" && "🔑 Verifies Tobi Adeyemi (Player): browse, pick availability slots, check custom court fees."}
+                {devRole === "coach" && "🎾 Verifies Ada Okafor (Coach): preview profile setup steps, configure public timeslots."}
+                {devRole === "admin" && "⚡ Verifies System Admin: full dashboard view, review queue management, dispute states."}
+              </p>
+            </div>
+          )}
         </section>
 
-        <section className="mt-9">
+        <section className="mt-8">
           <label className="flex h-16 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_12px_40px_rgba(58,43,20,0.06)] transition focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
             <span className="flex items-center gap-2 border-r border-[var(--lobb-border)] pr-3 text-sm font-black text-[var(--lobb-black)]">
               <span aria-hidden="true">🇳🇬</span>
@@ -178,30 +219,6 @@ function LoginForm() {
           </div>
           {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
         </section>
-
-        {IS_DEV_LOGIN_ENABLED && (
-          <section className="mt-5 rounded-[18px] border border-[var(--lobb-border)] bg-white/55 p-3">
-            <p className="px-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
-              Test this phone as
-            </p>
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {(["player", "coach", "admin"] as const).map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setDevRole(role)}
-                  className={`h-11 rounded-full border px-2 text-xs font-black capitalize transition ${
-                    devRole === role
-                      ? "border-[var(--lobb-black)] bg-[var(--lobb-black)] text-white"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"
-                  }`}
-                >
-                  {role}
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
 
         {IS_DEV_LOGIN_ENABLED && <DevLoginPanel />}
 

@@ -12,8 +12,8 @@ import {
   MessageCircle,
   Phone,
 } from "lucide-react";
-import { showLobbToast } from "@/components/lobb-global-state";
-import { BookingCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import { BookingCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { BookingWithDetails } from "@/lib/types";
 
 function money(v: number) { return `₦${v.toLocaleString()}`; }
@@ -125,36 +125,45 @@ function BookingConfirmContent() {
       <section className="w-full max-w-md">
         {/* Success header */}
         <div className="text-center">
-          <CheckCircle className="mx-auto size-20 animate-[successPop_0.35s_ease-out] fill-[#d7f3e4] text-[var(--lobb-success)]" />
-          <h1 className="mt-5 text-3xl font-black">You&apos;re booked!</h1>
-          <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">Details sent to your phone</p>
+          <div className="inline-flex size-20 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_12px_24px_rgba(16,185,129,0.15)] animate-[successPop_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+            <CheckCircle className="size-10 text-[var(--lobb-success)]" />
+          </div>
+          <h1 className="mt-6 text-2.5xl font-black tracking-tight text-[var(--lobb-black)]">Booking Confirmed!</h1>
+          <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-muted)] uppercase tracking-wider">Details sent to your phone</p>
         </div>
 
         {/* Booking receipt */}
-        <div className="mt-7 rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_18px_44px_rgba(58,43,20,0.10)]">
+        <div className="mt-7 rounded-[32px] border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-6 shadow-[0_24px_50px_rgba(58,43,20,0.04)]">
           {/* Session time */}
-          <p className="flex items-start gap-2 font-black">
-            <CalendarDays className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-            {formatDateTime(booking.starts_at)}
-          </p>
-          <p className="ml-6 mt-1 text-sm font-medium text-[var(--lobb-muted)]">
-            – {formatEndTime(booking.starts_at)} · 60 minutes
-          </p>
+          <div>
+            <p className="flex items-center gap-2 text-sm font-black text-[var(--lobb-black)]">
+              <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
+              {formatDateTime(booking.starts_at)}
+            </p>
+            <p className="ml-6 mt-1 text-xs font-bold text-[var(--lobb-muted)] uppercase tracking-wider">
+              {formatEndTime(booking.starts_at)} · 60 minutes session
+            </p>
+          </div>
 
-          <div className="my-4 border-t border-[var(--lobb-border)]" />
+          <div className="my-5 border-t border-dashed border-[var(--lobb-border)]" />
 
           {/* Coach */}
-          <div className="flex items-center gap-3">
-            <div className="size-12 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
-              {booking.coach_profile_photo_url && (
+          <div className="flex items-center gap-4">
+            <div className="size-12 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] shadow-sm">
+              {booking.coach_profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={booking.coach_profile_photo_url} alt="" className="size-full object-cover" />
+              ) : (
+                <div className="flex size-full items-center justify-center font-bold text-[var(--lobb-muted)] bg-[var(--lobb-surface-2)]">
+                  {booking.coach_full_name?.charAt(0)}
+                </div>
               )}
             </div>
             <div>
-              <p className="font-black">{booking.coach_full_name}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Your Coach</p>
+              <p className="font-black text-base text-[var(--lobb-black)] tracking-tight">{booking.coach_full_name}</p>
               {booking.coach_slug && (
-                <Link href={`/coaches/${booking.coach_slug}`} className="text-sm font-semibold text-[var(--lobb-clay)]">
+                <Link href={`/coaches/${booking.coach_slug}`} className="text-xs font-semibold text-[var(--lobb-clay)] hover:underline">
                   View profile →
                 </Link>
               )}
@@ -163,18 +172,18 @@ function BookingConfirmContent() {
 
           {/* Coach contact */}
           {booking.coach_phone && (
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex gap-2.5">
               <a
                 href={`tel:${booking.coach_phone.replace(/\s/g, "")}`}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-bg)] py-2 text-xs font-bold"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-white py-2.5 text-xs font-black shadow-sm transition-all hover:bg-[var(--lobb-surface)] active:scale-95 text-[var(--lobb-black)]"
               >
-                <Phone className="size-3.5 text-[var(--lobb-clay)]" /> Call
+                <Phone className="size-3.5 text-[var(--lobb-clay)]" /> Call Coach
               </a>
               <a
                 href={`https://wa.me/${toWhatsAppNumber(booking.coach_phone)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-bg)] py-2 text-xs font-bold"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-white py-2.5 text-xs font-black shadow-sm transition-all hover:bg-[var(--lobb-surface)] active:scale-95 text-[var(--lobb-black)]"
               >
                 <MessageCircle className="size-3.5 text-[var(--lobb-clay)]" /> WhatsApp
               </a>
@@ -184,39 +193,43 @@ function BookingConfirmContent() {
           {/* Location */}
           {booking.location && (
             <>
-              <div className="my-4 border-t border-[var(--lobb-border)]" />
-              <p className="flex items-start gap-2 text-sm font-semibold">
+              <div className="my-5 border-t border-dashed border-[var(--lobb-border)]" />
+              <p className="flex items-start gap-2.5 text-xs font-semibold text-[var(--lobb-muted)]">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-                {booking.location}
+                <span className="text-[var(--lobb-black)] leading-relaxed">{booking.location}</span>
               </p>
             </>
           )}
 
-          <div className="my-4 border-t border-[var(--lobb-border)]" />
+          <div className="my-5 border-t border-dashed border-[var(--lobb-border)]" />
 
           {/* Payment */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm font-semibold">
+          <div className="space-y-3.5">
+            <div className="flex items-center justify-between text-sm font-semibold text-[var(--lobb-muted)]">
               <span className="flex items-center gap-2">
-                <CreditCard className="size-4 text-[var(--lobb-clay)]" /> Total paid
+                <CreditCard className="size-4 text-[var(--lobb-clay)]" /> Total Paid
               </span>
-              <span className="font-black">{money(booking.total_amount_ngn)}</span>
+              <span className="font-black text-[var(--lobb-black)] text-base">{money(booking.total_amount_ngn)}</span>
             </div>
-            <p className="flex items-center gap-2 text-xs font-semibold text-[var(--lobb-muted)]">
-              <ClipboardList className="size-4 text-[var(--lobb-clay)]" />
-              Ref: {booking.paystack_reference ?? reference}
-            </p>
+            <div className="flex items-center justify-between rounded-xl bg-[var(--lobb-surface-2)]/60 px-3.5 py-2.5 text-xs border border-[var(--lobb-border)]/50">
+              <span className="flex items-center gap-1.5 font-bold text-[var(--lobb-muted)]">
+                <ClipboardList className="size-3.5 text-[var(--lobb-clay)]" /> Reference
+              </span>
+              <span className="font-mono text-[var(--lobb-black)] font-black text-[11px] select-all">
+                {booking.paystack_reference ?? reference}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* CTAs */}
         <Link
           href="/dashboard"
-          className="mt-7 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)]"
+          className="mt-7 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.18)] transition-all hover:opacity-90 active:scale-98"
         >
           View My Bookings
         </Link>
-        <Link href="/" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-muted)]">
+        <Link href="/" className="mt-4 block text-center text-xs font-black uppercase tracking-wider text-[var(--lobb-muted)] hover:text-[var(--lobb-clay)] transition-all">
           Back to Home
         </Link>
       </section>

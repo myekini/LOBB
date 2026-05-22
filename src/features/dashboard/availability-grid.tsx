@@ -1,1 +1,1 @@
-export { AvailabilityCalendar as AvailabilityGrid } from "@/components/availability-calendar";
+export { AvailabilityCalendar as AvailabilityGrid } from "@/features/coaches/availability-calendar";

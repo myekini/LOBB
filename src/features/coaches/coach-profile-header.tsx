@@ -1,4 +1,4 @@
-import { LobbVerifiedBadge } from "@/components/lobb-badge";
+import { LobbVerifiedBadge } from "@/components/common/lobb-badge";
 import type { CoachPublicProfile } from "@/lib/types";
 
 export function CoachProfileHeader({ coach }: { coach: CoachPublicProfile }) {

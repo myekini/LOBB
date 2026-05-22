@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { CalendarDays } from "lucide-react";
-import { LobbEmptyState } from "@/components/lobb-empty-state";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { LobbEmptyState } from "@/components/common/lobb-empty-state";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { AvailableSlot } from "@/lib/types";
 
 type DayGroup = {

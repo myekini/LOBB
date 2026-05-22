@@ -8,9 +8,9 @@ import {
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
-} from "@/components/onboarding-shell";
+} from "@/features/auth/onboarding-shell";
 import { clearPendingAuth, getPendingAuth } from "@/lib/auth-flow";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 const testOtp = process.env.NEXT_PUBLIC_LOBB_TEST_OTP || "";
 const testPhones = (process.env.NEXT_PUBLIC_LOBB_TEST_PHONE_NUMBERS ?? "")
@@ -226,7 +226,20 @@ export default function VerifyPage() {
     <OnboardingShell>
       <section className="flex flex-1 flex-col pt-3">
         <div>
-          <OnboardingKicker>WhatsApp code</OnboardingKicker>
+          <div className="flex items-center justify-between">
+            <OnboardingKicker>WhatsApp code</OnboardingKicker>
+            {pendingAuth?.role && (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)]/10 px-2.5 py-1 border border-[var(--lobb-clay)]/20 animate-in fade-in duration-300">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--lobb-clay)]"></span>
+                </span>
+                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                  {pendingAuth.role}
+                </span>
+              </div>
+            )}
+          </div>
           <OnboardingTitle>
             Check your
             <br />
@@ -260,8 +273,8 @@ export default function VerifyPage() {
                     inputs.current[index - 1]?.focus();
                   }
                 }}
-                className={`h-14 rounded-2xl border bg-[var(--lobb-surface)] text-center text-xl font-black text-[var(--lobb-black)] shadow-[0_10px_24px_rgba(58,43,20,0.05)] outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5 ${
-                  error ? "border-red-600" : "border-[var(--lobb-border)]"
+                className={`h-14 rounded-2xl border bg-[var(--lobb-surface)] text-center text-xl font-black text-[var(--lobb-black)] shadow-[0_10px_24px_rgba(58,43,20,0.02)] outline-none transition-all duration-200 focus:scale-105 focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10 focus:shadow-[0_0_15px_rgba(196,98,45,0.15)] ${
+                  error ? "border-red-600 focus:border-red-600 focus:ring-red-600/10 focus:shadow-none" : "border-[var(--lobb-border)]"
                 }`}
               />
             ))}

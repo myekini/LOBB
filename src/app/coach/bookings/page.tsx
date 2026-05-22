@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Circle, MapPin, User, WalletCards } from "lucide-react";
-import { CoachBottomNav } from "@/components/coach-nav";
-import { LobbEmptyState } from "@/components/lobb-empty-state";
-import { BookingCardSkeleton } from "@/components/lobb-skeleton";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { LobbEmptyState } from "@/components/common/lobb-empty-state";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { showLobbToast } from "@/components/lobb-global-state";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
-import { CoachKicker, CoachSurface } from "@/components/coach-surface";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { CoachKicker, CoachSurface } from "@/components/common/coach-surface";
 
 type BookingTab = "confirmed" | "completed" | "cancelled";
 

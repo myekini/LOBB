@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
-import { canCancelForFullRefund, cancellationPolicyNote } from "@/lib/lobb-money";
-import { cancelledMessage } from "@/lib/notification-messages";
+import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
 import { sendCancellationSmsBoth } from "@/lib/booking-sms";
 import { initiateRefund } from "@/lib/paystack";
 
@@ -16,7 +15,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const { data: booking, error: bookingError } = await auth.admin
     .from("bookings")
     .select(
-      "id, coach_id, player_id, starts_at, ends_at, location, player_notes, status, payments(paystack_reference, status), coaches!bookings_coach_id_fkey(full_name), players!bookings_player_id_fkey(full_name)"
+      "id, coach_id, player_id, starts_at, ends_at, location, player_notes, status, total_amount_ngn, payments(paystack_reference, status), coaches!bookings_coach_id_fkey(full_name), players!bookings_player_id_fkey(full_name)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -34,14 +33,25 @@ export async function POST(request: Request, { params }: { params: { id: string 
   }
 
   const cancelledBy = isAdmin ? "admin" : booking.player_id === auth.user.id ? "player" : "coach";
-  const refundNote = cancellationPolicyNote(booking.starts_at);
-  const fullRefund = canCancelForFullRefund(booking.starts_at);
+  const policy = cancellationPolicy(booking.starts_at, cancelledBy);
+  const totalPaidNgn = booking.total_amount_ngn ?? 0;
+  const refundNgn = refundAmountNgn(totalPaidNgn, policy.refundPercent);
   const payment = booking.payments?.[0] as { paystack_reference?: string | null; status?: string | null } | undefined;
 
-  if (fullRefund && payment?.status === "paid" && payment.paystack_reference) {
+  // Issue refund via Paystack
+  if (policy.refundPercent > 0 && payment?.status === "paid" && payment.paystack_reference) {
     try {
-      await initiateRefund(payment.paystack_reference);
-      await auth.admin.from("payments").update({ status: "refunded" }).eq("paystack_reference", payment.paystack_reference);
+      const refundKobo = policy.refundPercent === 100
+        ? undefined                                          // full refund — omit amount
+        : Math.round(refundNgn * 100);                       // partial — specify kobo amount
+
+      await initiateRefund(payment.paystack_reference, refundKobo);
+
+      const newPaymentStatus = policy.refundPercent === 100 ? "refunded" : "partial_refund";
+      await auth.admin
+        .from("payments")
+        .update({ status: newPaymentStatus })
+        .eq("paystack_reference", payment.paystack_reference);
     } catch (error) {
       return NextResponse.json(
         { error: error instanceof Error ? error.message : "Refund could not be started" },
@@ -58,17 +68,24 @@ export async function POST(request: Request, { params }: { params: { id: string 
       status: "cancelled",
       cancelled_by: cancelledBy,
       cancelled_at: now,
-      cancellation_reason: body.reason?.trim() || refundNote,
+      cancellation_reason: body.reason?.trim() || policy.note,
     })
     .eq("id", params.id);
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
+  // Fetch phone numbers for notifications
   const [coachProfile, playerProfile] = await Promise.all([
     auth.admin.from("profiles").select("phone_number, full_name").eq("id", booking.coach_id).single(),
     auth.admin.from("profiles").select("phone_number, full_name").eq("id", booking.player_id).single(),
   ]);
 
+  // Build a clear refund summary for SMS
+  const refundSummary = policy.refundPercent === 0
+    ? policy.note
+    : `${policy.label} of ₦${refundNgn.toLocaleString("en-NG")} will arrive in 5–7 business days. ${policy.note}`;
+
+  // Queue SMS jobs
   const smsJobs: Array<Record<string, unknown>> = [];
   if (playerProfile.data?.phone_number) {
     smsJobs.push({
@@ -77,7 +94,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       recipient_phone: playerProfile.data.phone_number,
       booking_id: booking.id,
       coach_id: booking.coach_id,
-      message: cancelledMessage(booking.starts_at, refundNote),
+      message: `LOBB: Session cancelled.\n${refundSummary}`,
     });
   }
   if (coachProfile.data?.phone_number) {
@@ -87,14 +104,14 @@ export async function POST(request: Request, { params }: { params: { id: string 
       recipient_phone: coachProfile.data.phone_number,
       booking_id: booking.id,
       coach_id: booking.coach_id,
-      message: cancelledMessage(booking.starts_at, refundNote),
+      message: `LOBB: Booking on ${booking.starts_at} was cancelled by ${cancelledBy}.`,
     });
   }
-
   if (smsJobs.length > 0) {
     await auth.admin.from("sms_jobs").insert(smsJobs);
   }
 
+  // Send SMS immediately
   await sendCancellationSmsBoth(
     {
       coachName: coachProfile.data?.full_name ?? "Your coach",
@@ -107,8 +124,14 @@ export async function POST(request: Request, { params }: { params: { id: string 
       playerPhone: playerProfile.data?.phone_number ?? null,
     },
     cancelledBy === "coach" ? "coach" : "player",
-    refundNote
+    refundSummary
   ).catch(() => null);
 
-  return NextResponse.json({ ok: true, refund_note: refundNote, refund_started: fullRefund && payment?.status === "paid" });
+  return NextResponse.json({
+    ok: true,
+    cancelled_by: cancelledBy,
+    refund_percent: policy.refundPercent,
+    refund_ngn: refundNgn,
+    refund_label: policy.label,
+  });
 }

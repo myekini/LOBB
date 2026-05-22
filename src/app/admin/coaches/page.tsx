@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, PlayCircle, X } from "lucide-react";
-import { AdminBackHeader, AdminShell } from "@/components/admin-shell";
+import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
 import { money } from "@/lib/dashboard-client-types";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { CoachCardSkeleton } from "@/components/lobb-skeleton";
+import { CoachCardSkeleton } from "@/components/common/lobb-skeleton";
 
 type CoachApproval = {
   id: string;

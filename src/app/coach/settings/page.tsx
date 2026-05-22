@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type React from "react";
 import { Bell, Landmark, Shield, Smartphone } from "lucide-react";
-import { CoachBottomNav } from "@/components/coach-nav";
-import { CoachLogoutButton } from "@/components/coach-logout-button";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { CoachLogoutButton } from "@/components/common/coach-logout-button";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 
 function maskedAccount(account: string | null | undefined) {
   if (!account) return "Not connected";

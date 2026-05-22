@@ -1,4 +1,4 @@
-import { CoachCardSkeleton } from "@/components/lobb-skeleton";
+import { CoachCardSkeleton } from "@/components/common/lobb-skeleton";
 
 export default function CoachesLoading() {
   return (

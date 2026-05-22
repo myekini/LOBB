@@ -5,7 +5,7 @@ import {
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
-} from "@/components/onboarding-shell";
+} from "@/features/auth/onboarding-shell";
 
 export default function CoachSubmittedPage() {
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/features/admin/admin-shell";
 import { adminBookings, adminStats, money } from "@/lib/demo-content";
 
 export default function AdminEarningsPage() {

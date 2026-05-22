@@ -1,4 +1,4 @@
-import { CoachListCard } from "@/components/coach-cards";
+import { CoachListCard } from "@/features/coaches/coach-cards";
 import type { CoachPublicProfile } from "@/lib/types";
 
 export function CoachGrid({ coaches }: { coaches: CoachPublicProfile[] }) {

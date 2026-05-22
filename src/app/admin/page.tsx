@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ChevronRight, Gavel, UserCheck } from "lucide-react";
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/features/admin/admin-shell";
 import { money } from "@/lib/dashboard-client-types";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 type AdminDashboardPayload = {
   metrics: {

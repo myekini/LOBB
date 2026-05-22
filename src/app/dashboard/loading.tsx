@@ -1,4 +1,4 @@
-import { BookingCardSkeleton } from "@/components/lobb-skeleton";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 
 export default function DashboardLoading() {
   return (

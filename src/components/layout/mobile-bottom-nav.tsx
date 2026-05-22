@@ -1,1 +1,1 @@
-export { PlayerBottomNav as MobileBottomNav } from "@/components/player-nav";
+export { PlayerBottomNav as MobileBottomNav } from "@/components/layout/player-nav";

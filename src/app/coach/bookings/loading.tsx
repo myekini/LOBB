@@ -1,6 +1,6 @@
-import { BookingCardSkeleton } from "@/components/lobb-skeleton";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
-import { CoachSurface } from "@/components/coach-surface";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { CoachSurface } from "@/components/common/coach-surface";
 
 export default function CoachBookingsLoading() {
   return (

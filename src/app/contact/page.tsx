@@ -1,5 +1,5 @@
 import { Mail, MessageCircle } from "lucide-react";
-import { SimpleInfoPage } from "@/components/simple-info-page";
+import { SimpleInfoPage } from "@/components/common/simple-info-page";
 
 const supportPhone = process.env.NEXT_PUBLIC_LOBB_SUPPORT_WHATSAPP || "2348000000000";
 const supportEmail = process.env.NEXT_PUBLIC_LOBB_SUPPORT_EMAIL || "support@lobb.ng";

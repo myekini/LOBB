@@ -64,7 +64,7 @@ export async function sendCoachBookingNotificationSms(info: BookingInfo): Promis
 export async function sendCancellationSmsBoth(
   info: BookingInfo,
   cancelledBy: "player" | "coach",
-  refundNote: string
+  refundSummary: string
 ): Promise<void> {
   const dateLabel = formatDate(info.startsAt);
 
@@ -73,7 +73,7 @@ export async function sendCancellationSmsBoth(
       `LOBB: Session cancelled.`,
       `Coach: ${info.coachName}`,
       `Date: ${dateLabel}`,
-      refundNote,
+      refundSummary,
       `Ref: ${info.reference}`,
     ]
       .filter(Boolean)
@@ -82,11 +82,12 @@ export async function sendCancellationSmsBoth(
   }
 
   if (info.coachPhone) {
-    const who = cancelledBy === "player" ? info.playerName : "You";
+    const who = cancelledBy === "player" ? `${info.playerName} (player)` : "you";
     const msg = [
-      `LOBB: Session cancelled by ${who}.`,
-      `Player: ${info.playerName}`,
-      `Date: ${dateLabel}`,
+      `LOBB: Session on ${dateLabel} was cancelled by ${who}.`,
+      cancelledBy === "player"
+        ? `The player's refund has been processed.`
+        : `A full refund was issued to the player.`,
       `Ref: ${info.reference}`,
     ]
       .filter(Boolean)

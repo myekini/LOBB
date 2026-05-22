@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, ChevronRight, Clock3, Eye, Pencil, Settings, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { CoachBottomNav } from "@/components/coach-nav";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
 import type { CoachRow } from "@/lib/types";
 import { SubmitForReviewButton } from "./submit-button";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
-import { CoachKicker, CoachSurface } from "@/components/coach-surface";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { CoachKicker, CoachSurface } from "@/components/common/coach-surface";
 
 type Section = {
   label: string;

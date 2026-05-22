@@ -1,3 +1,3 @@
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 export { SkeletonBlock as Skeleton };

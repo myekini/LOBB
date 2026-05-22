@@ -1,1 +1,1 @@
-export { AvailabilityCalendar as CoachAvailabilityCalendar } from "@/components/availability-calendar";
+export { AvailabilityCalendar as CoachAvailabilityCalendar } from "@/features/coaches/availability-calendar";

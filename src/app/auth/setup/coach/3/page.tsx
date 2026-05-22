@@ -9,7 +9,7 @@ import {
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
-} from "@/components/onboarding-shell";
+} from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 
 const LAGOS_LOCATIONS = [

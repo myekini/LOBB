@@ -1,4 +1,4 @@
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 export default function AdminBookingsLoading() {
   return (

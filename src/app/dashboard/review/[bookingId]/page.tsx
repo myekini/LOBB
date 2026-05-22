@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { firstJoin, formatBookingDate, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { BookingCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
+import { BookingCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 export default function LeaveReviewPage() {
   const params = useParams<{ bookingId: string }>();

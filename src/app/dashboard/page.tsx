@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Star } from "lucide-react";
-import { PlayerBottomNav } from "@/components/player-nav";
-import { LobbEmptyState } from "@/components/lobb-empty-state";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { LobbEmptyState } from "@/components/common/lobb-empty-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { firstJoin, formatBookingDate, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { BookingCardSkeleton } from "@/components/lobb-skeleton";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 
 type BookingTab = "upcoming" | "past";
 

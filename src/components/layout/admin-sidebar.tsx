@@ -1,1 +1,1 @@
-export { AdminShell as AdminSidebar } from "@/components/admin-shell";
+export { AdminShell as AdminSidebar } from "@/features/admin/admin-shell";

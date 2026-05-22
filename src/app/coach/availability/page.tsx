@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Clock3, X } from "lucide-react";
 import type { CoachAvailabilityRow, CoachAvailabilityBlock, CoachAvailabilitySlotBlock } from "@/lib/types";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
-import { showLobbToast } from "@/components/lobb-global-state";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 
 // 0 = Sunday … 6 = Saturday (matches JS Date.getDay / Postgres DOW)
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

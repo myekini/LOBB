@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Circle } from "lucide-react";
-import { AdminShell } from "@/components/admin-shell";
+import { AdminShell } from "@/features/admin/admin-shell";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { BookingCardSkeleton } from "@/components/lobb-skeleton";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 
 type Filter = "all" | "pending" | "confirmed" | "completed" | "disputed" | "cancelled";
 

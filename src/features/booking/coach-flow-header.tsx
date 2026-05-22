@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Home, type LucideIcon } from "lucide-react";
-import { CoachLogoutButton } from "@/components/coach-logout-button";
+import { CoachLogoutButton } from "@/components/common/coach-logout-button";
 import { cn } from "@/lib/utils";
 
 type CoachFlowHeaderProps = {

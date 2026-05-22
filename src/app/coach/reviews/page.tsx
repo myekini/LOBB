@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Star } from "lucide-react";
-import { CoachBottomNav } from "@/components/coach-nav";
-import { showLobbToast } from "@/components/lobb-global-state";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 
 type Review = {
   id: string;

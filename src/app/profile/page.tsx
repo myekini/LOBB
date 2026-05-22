@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, User } from "lucide-react";
-import { PlayerBottomNav } from "@/components/player-nav";
+import { PlayerBottomNav } from "@/components/layout/player-nav";
 import { createClient } from "@/lib/supabase/client";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 type ProfileData = {
   full_name: string | null;

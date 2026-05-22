@@ -9,7 +9,7 @@ import {
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
-} from "@/components/onboarding-shell";
+} from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 
 type UserRole = "player" | "coach";
@@ -104,37 +104,41 @@ export default function RolePage() {
                 key={option.role}
                 type="button"
                 onClick={() => setSelected(option.role)}
-                className={`relative flex min-h-[152px] w-full flex-col justify-center rounded-[24px] border p-5 text-left shadow-[0_12px_40px_rgba(58,43,20,0.04)] transition ${
+                className={`relative flex min-h-[152px] w-full flex-col justify-center rounded-[24px] border p-5 text-left shadow-[0_12px_40px_rgba(58,43,20,0.02)] transition-all duration-300 active:scale-[0.98] ${
                   isSelected
-                    ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8]"
-                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-black)]"
+                    ? "border-[var(--lobb-clay)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.04] shadow-[0_16px_36px_rgba(196,98,45,0.06)]"
+                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40 hover:bg-white"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <span
-                    className={`flex size-12 shrink-0 items-center justify-center rounded-2xl ${
-                      isSelected ? "bg-[var(--lobb-clay)] text-white" : "bg-[var(--lobb-surface-2)] text-[var(--lobb-black)]"
+                    className={`flex size-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ${
+                      isSelected
+                        ? "bg-[var(--lobb-clay)] text-white shadow-[0_8px_20px_rgba(196,98,45,0.25)]"
+                        : "bg-[var(--lobb-surface-2)] text-[var(--lobb-black)]"
                     }`}
                     aria-hidden="true"
                   >
-                    <Icon className="size-6" />
+                    <Icon className="size-6 animate-pulse" style={{ animationDuration: isSelected ? '3s' : '0s' }} />
                   </span>
-                  <span>
-                    <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
                       {option.meta}
                     </span>
-                    <h2 className="mt-1 text-xl font-black leading-6 tracking-normal text-[var(--lobb-black)]">
+                    <h2 className="mt-1 text-lg font-black leading-6 tracking-normal text-[var(--lobb-black)]">
                       {option.title}
                     </h2>
-                    <p className="mt-2 text-[15px] leading-6 text-[var(--lobb-muted)]">{option.body}</p>
-                  </span>
+                    <p className="mt-1.5 text-sm leading-relaxed text-[var(--lobb-muted)]">{option.body}</p>
+                  </div>
                 </div>
                 <span
-                  className={`absolute right-4 top-4 flex size-6 items-center justify-center rounded-full border-2 ${
-                    isSelected ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white" : "border-[var(--lobb-border)]"
+                  className={`absolute right-5 top-5 flex size-6 items-center justify-center rounded-full border transition-all duration-300 ${
+                    isSelected
+                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white scale-110 shadow-[0_4px_10px_rgba(196,98,45,0.2)]"
+                      : "border-[var(--lobb-border)] bg-transparent scale-100"
                   }`}
                 >
-                  {isSelected && <Check className="size-4" />}
+                  {isSelected && <Check className="size-3.5 stroke-[3]" />}
                 </span>
               </button>
             );

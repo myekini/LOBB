@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { LobbToaster, OfflineState } from "@/components/lobb-global-state";
+import { LobbToaster, OfflineState } from "@/providers/lobb-global-state";
+import { DevRoleSwitcher } from "@/components/dev/dev-role-switcher";
 
 const siteUrl = "https://lobb.ng";
 const siteDescription =
@@ -117,11 +118,29 @@ export default function RootLayout({
       <body className="antialiased">
         <div className="lobb-pwa-boot" aria-hidden="true">
           <div className="lobb-pwa-boot-mark">
-            <svg width="54" height="54" viewBox="0 0 64 64" fill="none">
-              <path d="M 8 56 C 8 4 56 4 56 56" stroke="currentColor" strokeWidth="4.5" strokeLinecap="round" />
-              <circle cx="32" cy="17" r="6" fill="currentColor" />
+            <svg width="68" height="68" viewBox="0 0 64 64" fill="none" className="lobb-boot-svg">
+              <path
+                d="M 8 56 C 8 4 56 4 56 56"
+                stroke="url(#boot-logo-grad)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                className="lobb-boot-path"
+              />
+              <circle
+                cx="32"
+                cy="17"
+                r="6.5"
+                fill="var(--lobb-clay)"
+                className="lobb-boot-circle"
+              />
+              <defs>
+                <linearGradient id="boot-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#C4622D" />
+                  <stop offset="100%" stopColor="#E2824C" />
+                </linearGradient>
+              </defs>
             </svg>
-            <span>LOBB</span>
+            <span className="lobb-boot-title">LOBB</span>
           </div>
         </div>
         <script
@@ -130,6 +149,7 @@ export default function RootLayout({
         />
         <LobbToaster />
         <OfflineState />
+        <DevRoleSwitcher />
         {children}
       </body>
     </html>

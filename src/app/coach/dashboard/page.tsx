@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, MapPin, Phone, User, WalletCards } from "lucide-react";
-import { CoachBottomNav } from "@/components/coach-nav";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
-import { BookingCardSkeleton, SkeletonBlock } from "@/components/lobb-skeleton";
-import { CoachFlowHeader } from "@/components/coach-flow-header";
-import { CoachKicker, CoachSurface } from "@/components/coach-surface";
+import { BookingCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { CoachKicker, CoachSurface } from "@/components/common/coach-surface";
 
 type CoachDashboardPayload = {
   upcoming_bookings: DashboardBooking[];

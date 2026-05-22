@@ -1,4 +1,4 @@
-import { SimpleInfoPage } from "@/components/simple-info-page";
+import { SimpleInfoPage } from "@/components/common/simple-info-page";
 
 export default function PrivacyPage() {
   return (

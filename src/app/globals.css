@@ -31,7 +31,9 @@
 }
 
 @keyframes successPop {
-  0%   { transform: scale(0.82); opacity: 0; }
+  0%   { transform: scale(0.5); opacity: 0; }
+  65%  { transform: scale(1.12); }
+  85%  { transform: scale(0.96); }
   100% { transform: scale(1);    opacity: 1; }
 }
 
@@ -52,14 +54,45 @@
 
 @keyframes pwaBootFade {
   0%   { opacity: 1; visibility: visible; }
-  72%  { opacity: 1; visibility: visible; }
+  85%  { opacity: 1; visibility: visible; }
   100% { opacity: 0; visibility: hidden; }
 }
 
 @keyframes pwaBootMark {
-  0%   { transform: translateY(8px) scale(0.94); opacity: 0; }
-  42%  { transform: translateY(0) scale(1); opacity: 1; }
-  100% { transform: translateY(-4px) scale(0.98); opacity: 0; }
+  0%   { transform: scale(0.92); opacity: 0; filter: blur(6px); }
+  22%  { transform: scale(1); opacity: 1; filter: blur(0); }
+  85%  { transform: scale(1); opacity: 1; filter: blur(0); }
+  100% { transform: scale(1.04); opacity: 0; filter: blur(10px); }
+}
+
+@keyframes pwaPathDraw {
+  0% {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+  }
+  100% {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pwaCirclePop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  48% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  75% {
+    transform: scale(1.22);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @layer base {
@@ -164,25 +197,43 @@
     place-items: center;
     pointer-events: none;
     background:
-      radial-gradient(circle at 50% 42%, rgba(196, 98, 45, 0.16), transparent 34%),
+      radial-gradient(circle at 50% 45%, rgba(196, 98, 45, 0.18), transparent 38%),
       var(--lobb-black);
     color: white;
-    animation: pwaBootFade 1.05s ease forwards;
+    animation: pwaBootFade 1.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   .lobb-pwa-boot-mark {
-    display: grid;
-    justify-items: center;
-    gap: 0.7rem;
-    color: var(--lobb-clay);
-    animation: pwaBootMark 1.05s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.9rem;
+    animation: pwaBootMark 1.65s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
-  .lobb-pwa-boot-mark span {
+  .lobb-boot-svg {
+    filter: drop-shadow(0 8px 24px rgba(196, 98, 45, 0.25));
+  }
+
+  .lobb-boot-path {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: pwaPathDraw 1.25s cubic-bezier(0.4, 0, 0.2, 1) 0.05s forwards;
+  }
+
+  .lobb-boot-circle {
+    transform-origin: 32px 17px;
+    animation: pwaCirclePop 1.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s forwards;
+  }
+
+  .lobb-boot-title {
     color: white;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     font-weight: 900;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.32em;
+    text-indent: 0.32em;
+    opacity: 0.88;
+    text-shadow: 0 2px 10px rgba(255, 255, 255, 0.05);
   }
 }
 

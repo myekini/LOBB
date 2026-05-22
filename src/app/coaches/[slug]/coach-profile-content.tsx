@@ -20,9 +20,9 @@ import {
   Star,
   Zap,
 } from "lucide-react";
-import { LobbEmptyState } from "@/components/lobb-empty-state";
-import { SkeletonBlock } from "@/components/lobb-skeleton";
-import { showLobbToast } from "@/components/lobb-global-state";
+import { LobbEmptyState } from "@/components/common/lobb-empty-state";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
 
 type Tab = "about" | "availability" | "reviews";
