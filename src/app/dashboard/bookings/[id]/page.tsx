@@ -77,8 +77,8 @@ export default function BookingDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
-        <section className="mx-auto max-w-md">
+      <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-10 pt-5 text-[var(--lobb-black)] sm:px-6 lg:pt-8">
+        <section className="mx-auto max-w-5xl">
           <BookingCardSkeleton />
           <div className="mt-7 space-y-4">
             <BookingCardSkeleton />
@@ -91,8 +91,8 @@ export default function BookingDetailPage() {
 
   if (!booking) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 py-10 text-[var(--lobb-black)]">
-        <section className="mx-auto max-w-md">
+      <main className="min-h-screen bg-[var(--lobb-bg)] px-4 py-10 text-[var(--lobb-black)] sm:px-6">
+        <section className="mx-auto max-w-3xl">
           <h1 className="text-xl font-black">Booking not found</h1>
           <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
@@ -108,36 +108,39 @@ export default function BookingDetailPage() {
   const policyNote = policy.note;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
-      <section className="mx-auto max-w-md">
-        <header className="mb-7 flex items-center gap-3">
-          <Link href="/dashboard/bookings" className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-10 pt-5 text-[var(--lobb-black)] sm:px-6 lg:pt-8">
+      <section className="mx-auto max-w-5xl">
+        <header className="mb-7 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
+          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_8px_22px_rgba(13,13,13,0.05)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
-          <h1 className="font-black">Booking Detail</h1>
+          <h1 className="truncate text-center font-black">Booking Detail</h1>
+          <div aria-hidden="true" />
         </header>
 
-        <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f4ed] px-3 py-1.5 text-xs font-black text-[var(--lobb-success)]">
-          <Circle className="size-2 fill-current" />
-          {booking.status}
-        </span>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-start">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f4ed] px-3 py-1.5 text-xs font-black text-[var(--lobb-success)]">
+              <Circle className="size-2 fill-current" />
+              {booking.status}
+            </span>
 
-        <section className="mt-5 overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)]">
-          <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/45">
-            <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
-            Session
-          </p>
-          <h2 className="mt-3 text-[27px] font-black leading-none">{formatBookingDate(booking.starts_at)}</h2>
-          <p className="mt-3 text-sm font-semibold text-white/58">
-            {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid
-          </p>
-        </section>
+            <section className="mt-5 overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-6">
+              <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/45">
+                <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
+                Session
+              </p>
+              <h2 className="mt-3 text-[27px] font-black leading-none sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-3 text-sm font-semibold text-white/58">
+                {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid
+              </p>
+            </section>
 
-        <DetailSection title="Coach">
-          <div className="flex items-center gap-3">
+            <DetailSection title="Coach">
+              <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={coach?.profile_photo_url || "/favicon.svg"} alt="" className="size-14 rounded-full object-cover" />
-            <div>
+            <div className="min-w-0">
               <p className="font-black">{coach?.full_name ?? "Coach"}</p>
               <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || booking.location}</p>
             </div>
@@ -157,22 +160,24 @@ export default function BookingDetailPage() {
               Coach phone unlocks after payment
             </p>
           )}
-        </DetailSection>
+            </DetailSection>
 
-        <DetailSection title="Location">
-          <p className="flex items-center gap-2 text-sm font-semibold text-[var(--lobb-muted)]">
-            <MapPin className="size-4 text-[var(--lobb-clay)]" />
-            {booking.location || "Location not specified"}
-          </p>
-        </DetailSection>
+            <DetailSection title="Location">
+              <p className="flex items-start gap-2 text-sm font-semibold text-[var(--lobb-muted)]">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
+                {booking.location || "Location not specified"}
+              </p>
+            </DetailSection>
 
-        {booking.player_notes && (
-          <DetailSection title="Your Note to Coach">
-            <p className="text-sm font-medium leading-6 text-[var(--lobb-muted)]">&quot;{booking.player_notes}&quot;</p>
-          </DetailSection>
-        )}
+            {booking.player_notes && (
+              <DetailSection title="Your Note to Coach">
+                <p className="text-sm font-medium leading-6 text-[var(--lobb-muted)]">&quot;{booking.player_notes}&quot;</p>
+              </DetailSection>
+            )}
+          </div>
 
-        <DetailSection title="Payment">
+          <aside className="rounded-[28px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_14px_34px_rgba(13,13,13,0.06)] lg:sticky lg:top-6">
+        <DetailSection title="Payment" compact>
           <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
             <CreditCard className="size-4 text-[var(--lobb-clay)]" />
             {payment?.status ?? "pending"}
@@ -180,7 +185,7 @@ export default function BookingDetailPage() {
           <PaymentRow amount={booking.hourly_rate_ngn} label="Session fee" />
           <PaymentRow amount={booking.platform_fee_ngn} label="Convenience fee" />
           <PaymentRow amount={booking.total_amount_ngn} label="Total paid" strong />
-          <p className="mt-3 text-xs font-bold text-[var(--lobb-muted)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
+          <p className="mt-3 break-all text-xs font-bold text-[var(--lobb-muted)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
         </DetailSection>
 
         <DetailSection title="Cancellation Policy">
@@ -202,6 +207,8 @@ export default function BookingDetailPage() {
         <Link href="/dashboard" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
           Back to My Bookings
         </Link>
+          </aside>
+        </div>
       </section>
 
       {showCancel && (
@@ -229,9 +236,9 @@ export default function BookingDetailPage() {
   );
 }
 
-function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+function DetailSection({ title, children, compact }: { title: string; children: React.ReactNode; compact?: boolean }) {
   return (
-    <section className="mt-7">
+    <section className={compact ? "" : "mt-7"}>
       <div className="mb-4 flex items-center gap-3">
         <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">{title}</span>
         <span className="h-px flex-1 bg-[var(--lobb-border)]" />

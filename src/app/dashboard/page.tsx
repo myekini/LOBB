@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, Star } from "lucide-react";
+import { AlertCircle, CheckCircle2, Circle, Clock3, Star } from "lucide-react";
 import { PlayerBottomNav } from "@/components/layout/player-nav";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -42,11 +42,19 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 pt-7 text-[var(--lobb-black)]">
-      <section className="mx-auto max-w-md">
-        <h1 className="text-[22px] font-black">My Bookings</h1>
+    <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-28 pt-7 text-[var(--lobb-black)] sm:px-6 lg:pt-10">
+      <section className="mx-auto max-w-5xl">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">Player dashboard</p>
+            <h1 className="mt-1 text-[26px] font-black tracking-tight sm:text-[34px]">My Bookings</h1>
+          </div>
+          <Link href="/coaches" className="hidden h-11 items-center justify-center rounded-full bg-[var(--lobb-black)] px-5 text-sm font-black text-white shadow-[0_10px_26px_rgba(13,13,13,0.14)] sm:flex">
+            Find a Coach
+          </Link>
+        </div>
 
-        <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+        <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1 shadow-[0_12px_28px_rgba(13,13,13,0.05)] sm:max-w-md">
           {(["upcoming", "past"] as const).map((item) => (
             <button
               key={item}
@@ -66,11 +74,11 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <section className="space-y-4">
+          <section className="grid gap-4 lg:grid-cols-2">
             {Array.from({ length: 3 }).map((_, index) => <BookingCardSkeleton key={index} />)}
           </section>
         ) : bookings.length ? (
-          <section className="space-y-4">
+          <section className="grid gap-4 lg:grid-cols-2">
             {bookings.map((booking) => (
               <BookingCard key={booking.id} booking={booking} />
             ))}
@@ -87,12 +95,33 @@ export default function DashboardPage() {
 
 function BookingCard({ booking }: { booking: DashboardBooking }) {
   const coach = firstJoin(booking.coaches);
-  const isUpcoming = booking.status === "confirmed";
+  const isConfirmed = booking.status === "confirmed";
+  const isUpcoming = isConfirmed || booking.status === "pending" || booking.status === "pending_payment";
+  const payment = booking.payments?.[0];
   const image = coach?.profile_photo_url || "/favicon.svg";
+  const statusLabel = isConfirmed
+    ? "Confirmed"
+    : payment?.status === "paid"
+      ? "Confirming"
+      : booking.status === "pending" || booking.status === "pending_payment"
+        ? "Pending payment"
+        : booking.status;
 
   return (
-    <article className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.06)]">
-      <p className="text-[15px] font-black">{formatBookingDate(booking.starts_at)}</p>
+    <article className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.06)] sm:p-5">
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[15px] font-black leading-5 sm:text-base">{formatBookingDate(booking.starts_at)}</p>
+        <p className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black ${
+          isConfirmed
+            ? "bg-[#e8f4ed] text-[var(--lobb-success)]"
+            : isUpcoming
+              ? "bg-[#fff7e0] text-[var(--lobb-warning)]"
+              : "bg-[var(--lobb-surface-2)] text-[var(--lobb-black)]"
+        }`}>
+          {isConfirmed ? <Circle className="size-2 fill-current" /> : isUpcoming ? <Clock3 className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
+          {statusLabel}
+        </p>
+      </div>
 
       <div className="mt-5 flex items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -107,12 +136,14 @@ function BookingCard({ booking }: { booking: DashboardBooking }) {
         </div>
       </div>
 
-      <p className={`mt-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black ${
-        isUpcoming ? "bg-[#e8f4ed] text-[var(--lobb-success)]" : "bg-[var(--lobb-surface-2)] text-[var(--lobb-black)]"
-      }`}>
-        {isUpcoming ? <Circle className="size-2 fill-current" /> : <CheckCircle2 className="size-3.5" />}
-        {isUpcoming ? "Confirmed" : "Completed"}
-      </p>
+      {!isConfirmed && isUpcoming && (
+        <p className="mt-4 flex items-start gap-2 rounded-2xl border border-[#ffe0b2] bg-[#fffaf0] p-3 text-xs font-semibold leading-5 text-[#7c4a03]">
+          <AlertCircle className="mt-0.5 size-4 shrink-0" />
+          {payment?.status === "paid"
+            ? "Payment is recorded. We are finalizing this booking confirmation."
+            : "This booking is waiting for payment confirmation."}
+        </p>
+      )}
 
       <div className="mt-5 flex gap-2">
         {isUpcoming ? (
@@ -120,7 +151,7 @@ function BookingCard({ booking }: { booking: DashboardBooking }) {
             <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-full border border-[var(--lobb-border)] text-xs font-black">
               View Details
             </Link>
-            <button className="h-10 flex-1 rounded-full border border-[var(--lobb-border)] text-xs font-black text-[var(--lobb-muted)]">
+            <button disabled={!isConfirmed} className="h-10 flex-1 rounded-full border border-[var(--lobb-border)] text-xs font-black text-[var(--lobb-muted)] disabled:opacity-45">
               Cancel
             </button>
           </>

@@ -14,9 +14,10 @@ export async function GET() {
   }
 
   const now = Date.now();
+  const visibleUpcomingStatuses = new Set(["confirmed", "pending", "pending_payment"]);
   const bookings = (data ?? []).map((booking) => ({
     ...booking,
-    is_upcoming: new Date(booking.starts_at).getTime() >= now && booking.status === "confirmed",
+    is_upcoming: new Date(booking.starts_at).getTime() >= now && visibleUpcomingStatuses.has(booking.status),
     can_leave_review: canLeaveReview(booking),
     coach_phone_visible: booking.payments?.[0]?.status === "paid",
   }));
