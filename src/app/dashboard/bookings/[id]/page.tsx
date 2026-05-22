@@ -143,6 +143,11 @@ export default function BookingDetailPage() {
             <div className="min-w-0">
               <p className="font-black">{coach?.full_name ?? "Coach"}</p>
               <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || booking.location}</p>
+              {coach?.slug && (
+                <Link href={`/coaches/${coach.slug}`} className="mt-0.5 inline-block text-xs font-semibold text-[var(--lobb-clay)] hover:underline">
+                  View profile →
+                </Link>
+              )}
             </div>
           </div>
           {coachPhone ? (

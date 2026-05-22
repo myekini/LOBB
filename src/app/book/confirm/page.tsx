@@ -55,13 +55,17 @@ function BookingConfirmContent() {
       attempts += 1;
       fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`)
         .then(async (res) => {
-        const json = (await res.json()) as { booking?: BookingWithDetails; error?: string };
-        if (!res.ok || !json.booking) throw new Error(json.error ?? "Not found");
-        if (cancelled) return;
-        setBooking(json.booking);
-        showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
-        setLoading(false);
-      })
+          const json = (await res.json()) as { booking?: BookingWithDetails; error?: string };
+          if (!res.ok || !json.booking) throw new Error(json.error ?? "Not found");
+          // If payment landed but webhook hasn't confirmed the booking yet, keep retrying
+          if (json.booking.status !== "confirmed" && json.booking.payment_status !== "paid") {
+            throw new Error("Payment still processing");
+          }
+          if (cancelled) return;
+          setBooking(json.booking);
+          showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
+          setLoading(false);
+        })
         .catch(() => {
           if (cancelled) return;
           if (attempts < 4) {

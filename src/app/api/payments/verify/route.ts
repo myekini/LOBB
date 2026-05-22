@@ -41,14 +41,16 @@ export async function GET(request: Request) {
     // ── If booking not yet confirmed, call Paystack to double-check ────────────
     // (webhook may not have arrived yet)
     if (payment.status !== "paid") {
-      let txn;
+      let txn: Awaited<ReturnType<typeof verifyTransaction>> | null = null;
       try {
         txn = await verifyTransaction(reference);
       } catch {
-        return NextResponse.json({ error: "Payment verification failed" }, { status: 502 });
+        // Paystack unreachable — fall through and return current booking state.
+        // If the webhook has already fired, the booking will be confirmed. If not,
+        // the client retries until it is.
       }
 
-      if (txn.status === "success") {
+      if (txn?.status === "success") {
         // Mark payment paid + confirm booking (idempotent via status checks)
         const { error: updatePaymentErr } = await admin
           .from("payments")
@@ -115,13 +117,15 @@ export async function GET(request: Request) {
             );
           }
         }
-      } else if (txn.status === "abandoned" || txn.status === "failed") {
+      } else if (txn?.status === "abandoned" || txn?.status === "failed") {
         // Mark payment failed
         await admin.from("payments").update({ status: "failed" }).eq("id", payment.id);
         await admin.from("bookings").update({ status: "cancelled", cancellation_reason: "Payment was not completed" }).eq("id", payment.booking_id).eq("status", "pending");
         await admin.from("slot_locks").delete().eq("booking_id", payment.booking_id);
         return NextResponse.json({ error: "Payment was not completed" }, { status: 402 });
       }
+      // txn null (Paystack unreachable) or status "pending" → fall through and return
+      // current booking state so the client can display it and retry if needed
     }
 
     // ── Return full booking details ────────────────────────────────────────────
@@ -130,8 +134,6 @@ export async function GET(request: Request) {
       .select(`
         *,
         coach:coaches ( full_name, profile_photo_url, slug ),
-        coach_profile:profiles!bookings_coach_id_fkey ( phone_number ),
-        player_profile:profiles!bookings_player_id_fkey ( full_name, phone_number, avatar_url ),
         payment:payments ( paystack_reference, status, paid_at )
       `)
       .eq("id", payment.booking_id)
@@ -141,25 +143,29 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    // Flatten into BookingWithDetails shape
-    const coach         = booking.coach         as { full_name: string; profile_photo_url: string | null; slug: string | null } | null;
-    const coachProfile  = booking.coach_profile as { phone_number: string | null } | null;
-    const playerProfile = booking.player_profile as { full_name: string; phone_number: string | null; avatar_url: string | null } | null;
-    const pmt           = Array.isArray(booking.payment) ? booking.payment[0] : booking.payment as { paystack_reference: string | null; status: string | null; paid_at: string | null } | null;
-
+    // Fetch profiles directly by id — avoids FK hint ambiguity with coaches/players tables
     const base = booking as unknown as BookingRow;
+    const [{ data: coachProfile }, { data: playerProfile }] = await Promise.all([
+      admin.from("profiles").select("phone_number").eq("id", base.coach_id).maybeSingle(),
+      admin.from("profiles").select("full_name, phone_number, avatar_url").eq("id", base.player_id).maybeSingle(),
+    ]);
+
+    // Flatten into BookingWithDetails shape
+    const coach = booking.coach as { full_name: string; profile_photo_url: string | null; slug: string | null } | null;
+    const pmt   = Array.isArray(booking.payment) ? booking.payment[0] : booking.payment as { paystack_reference: string | null; status: string | null; paid_at: string | null } | null;
+
     const detail: BookingWithDetails = {
       ...base,
-      coach_full_name:          coach?.full_name          ?? "",
-      coach_phone:              coachProfile?.phone_number ?? null,
-      coach_profile_photo_url:  coach?.profile_photo_url  ?? null,
-      coach_slug:               coach?.slug               ?? null,
-      player_full_name:         playerProfile?.full_name   ?? "",
-      player_phone:             playerProfile?.phone_number ?? null,
-      player_avatar_url:        playerProfile?.avatar_url  ?? null,
-      paystack_reference:       pmt?.paystack_reference   ?? null,
+      coach_full_name:          coach?.full_name                ?? "",
+      coach_phone:              coachProfile?.phone_number      ?? null,
+      coach_profile_photo_url:  coach?.profile_photo_url        ?? null,
+      coach_slug:               coach?.slug                     ?? null,
+      player_full_name:         playerProfile?.full_name        ?? "",
+      player_phone:             playerProfile?.phone_number     ?? null,
+      player_avatar_url:        playerProfile?.avatar_url       ?? null,
+      paystack_reference:       pmt?.paystack_reference         ?? null,
       payment_status:           (pmt?.status as BookingWithDetails["payment_status"]) ?? null,
-      paid_at:                  pmt?.paid_at              ?? null,
+      paid_at:                  pmt?.paid_at                    ?? null,
     };
 
     return NextResponse.json({ booking: detail });

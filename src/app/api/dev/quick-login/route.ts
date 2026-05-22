@@ -4,8 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 // ─── Only active when LOBB_ENABLE_DEV_LOGIN=true ─────────────────────────────
-// This route is a dev convenience — it NEVER ships to production in a live state
-// because isDevLoginEnabled() blocks it.
+// Seeds the account exactly ONCE (on first creation). After that, quick-login
+// just authenticates — all state persists identically to production.
+// Go-live cleanup: delete these 3 rows from auth.users + profiles.
 
 type DevRole = "player" | "coach" | "admin";
 
@@ -13,12 +14,14 @@ function isDevLoginEnabled() {
   return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
 }
 
+// Synthetic numbers that can never collide with real Nigerian subscribers.
 const TEST_PHONES: Record<DevRole, string> = {
-  player: "+2348164555012",
-  coach:  "+2348164555013",
-  admin:  "+2348164555014",
+  player: "+2340000000001",
+  coach:  "+2340000000002",
+  admin:  "+2340000000003",
 };
 
+// Seed data is intentionally realistic — same fields a real user fills in via the UI.
 const TEST_PROFILES: Record<DevRole, Record<string, unknown>> = {
   player: {
     full_name: "Tobi Adeyemi",
@@ -110,11 +113,10 @@ export async function POST(request: Request) {
   });
   const admin = createAdminClient();
 
-  // Try to sign in; create account if it doesn't exist yet
   let signIn = await authClient.auth.signInWithPassword({ email, password });
 
   if (signIn.error) {
-    // First time — create the Supabase user
+    // First time — create the Supabase user and seed the profile once.
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
       password,
@@ -127,16 +129,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: createErr?.message ?? "Could not create test user" }, { status: 500 });
     }
 
-    await seedDevAccount(admin, created.user.id, phone, role);
+    await seedOnce(admin, created.user.id, phone, role);
 
     signIn = await authClient.auth.signInWithPassword({ email, password });
-  } else {
-    // User exists — ensure profile + coach row are still correct (idempotent)
-    const userId = signIn.data.user?.id;
-    if (userId) {
-      await seedDevAccount(admin, userId, phone, role);
-    }
   }
+  // Existing account — just authenticate. State is preserved exactly as the user left it.
 
   if (signIn.error || !signIn.data.session) {
     return NextResponse.json({ error: signIn.error?.message ?? "Sign-in failed" }, { status: 500 });
@@ -145,7 +142,7 @@ export async function POST(request: Request) {
   return NextResponse.json({ session: signIn.data.session, user: signIn.data.user, role, phone });
 }
 
-async function seedDevAccount(
+async function seedOnce(
   admin: ReturnType<typeof createAdminClient>,
   userId: string,
   phone: string,
@@ -173,7 +170,6 @@ async function seedDevAccount(
     { onConflict: "id" }
   );
 
-  await admin.from("coach_availability").delete().eq("coach_id", userId);
   await admin.from("coach_availability").insert(
     TEST_COACH_AVAILABILITY.map((slot) => ({ coach_id: userId, ...slot }))
   );

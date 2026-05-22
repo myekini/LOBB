@@ -107,14 +107,23 @@ function DevLoginPanel() {
 }
 
 // ─── Login form ───────────────────────────────────────────────────────────────
+function getIntentRole(searchParams: ReturnType<typeof useSearchParams>): LoginRole | undefined {
+  const raw = searchParams.get("role");
+  // Admin intent is dev-only; coach is production-safe (public join flow)
+  if (raw === "coach") return "coach";
+  if (raw === "admin" && IS_DEV_LOGIN_ENABLED) return "admin";
+  return undefined;
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || undefined;
+  const intentRole = getIntentRole(searchParams);
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devRole, setDevRole] = useState<LoginRole>("player");
+  const [devRole, setDevRole] = useState<LoginRole>(intentRole ?? "player");
 
   const digits = useMemo(() => nationalDigits(phone), [phone]);
   const formattedPhone = useMemo(() => formatNationalPhone(phone), [phone]);
@@ -128,10 +137,13 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
+    // role sent for: (a) any coach intent from URL, (b) all roles when dev panel active
+    const roleToSend: LoginRole | undefined = IS_DEV_LOGIN_ENABLED ? devRole : intentRole;
+
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: e164Phone, ...(IS_DEV_LOGIN_ENABLED ? { role: devRole } : {}) }),
+      body: JSON.stringify({ phone: e164Phone, ...(roleToSend ? { role: roleToSend } : {}) }),
     });
 
     setLoading(false);
@@ -142,7 +154,7 @@ function LoginForm() {
       return;
     }
 
-    setPendingAuth({ phone: e164Phone, mode: "login", sentAt: Date.now(), nextPath, ...(IS_DEV_LOGIN_ENABLED ? { role: devRole } : {}) });
+    setPendingAuth({ phone: e164Phone, mode: "login", sentAt: Date.now(), nextPath, ...(roleToSend ? { role: roleToSend } : {}) });
     router.push("/auth/verify");
   };
 

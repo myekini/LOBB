@@ -39,7 +39,13 @@ export default function AdminBookingsPage() {
 
   return (
     <AdminShell active="All Bookings">
-      <h1 className="text-2xl font-black">All Bookings</h1>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">Operations</p>
+          <h1 className="mt-1 text-2xl font-black">All Bookings</h1>
+        </div>
+        <p className="text-sm font-black text-[var(--lobb-muted)]">{bookings.length} records</p>
+      </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         {filters.map((item) => (
@@ -49,15 +55,15 @@ export default function AdminBookingsPage() {
         ))}
       </div>
 
-      <section className="mt-6 space-y-3">
+      <section className="mt-6 grid gap-3 xl:grid-cols-2">
         {loading ? (
           <>
             {Array.from({ length: 5 }).map((_, index) => <BookingCardSkeleton key={index} />)}
           </>
         ) : bookings.map((booking) => (
-          <article key={booking.id} className="rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_10px_22px_rgba(13,13,13,0.04)] md:grid md:grid-cols-[180px_1fr_auto] md:items-center md:gap-6">
+          <article key={booking.id} className="rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_10px_22px_rgba(13,13,13,0.04)] md:grid md:grid-cols-[150px_1fr_auto] md:items-center md:gap-5">
             <div>
-              <p className="font-mono text-xs font-black text-[var(--lobb-muted)]">#{booking.id}</p>
+              <p className="truncate font-mono text-xs font-black text-[var(--lobb-muted)]">#{booking.id}</p>
               <p className="mt-1 text-sm font-black">{formatBookingDate(booking.starts_at)}</p>
             </div>
             <p className="mt-3 w-fit rounded-[12px] bg-[var(--lobb-bg)] px-3 py-2 text-sm font-black md:mt-0">

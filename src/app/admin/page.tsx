@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ChevronRight, Gavel, UserCheck } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronRight, Gavel, ShieldCheck, UserCheck } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
 import { money } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -48,10 +48,19 @@ export default function AdminDashboardPage() {
   return (
     <AdminShell active="Dashboard">
       <section>
-        <h1 className="text-2xl font-black">Platform Overview</h1>
+        <div className="rounded-[28px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)] sm:p-8">
+          <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
+            <ShieldCheck className="size-4" />
+            Platform command center
+          </p>
+          <h1 className="mt-4 text-[32px] font-black leading-tight sm:text-[44px]">Platform Overview</h1>
+          <p className="mt-3 max-w-2xl text-sm font-semibold leading-6 text-white/58">
+            Monitor coaches, bookings, disputes, and revenue from one operational surface.
+          </p>
+        </div>
 
         {loading ? (
-          <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]">
+          <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
               <div key={index} className="border-l border-t border-[var(--lobb-border)] p-5 first:border-l-0">
                 <SkeletonBlock className="h-7 w-20" />
@@ -60,28 +69,28 @@ export default function AdminDashboardPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+          <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)] lg:grid-cols-3">
             <Stat value={String(metrics?.active_coaches ?? 0)} label="Active Coaches" />
             <Stat value={money(metrics?.gmv_ngn ?? 0)} label="Total GMV" bordered />
-            <Stat value={String(metrics?.total_bookings ?? 0)} label="Total Bookings" top />
-            <Stat value={String(metrics?.pending_coach_approvals ?? 0)} label="Pending Approvals" bordered top clay />
-            <Stat value={String(metrics?.active_players ?? 0)} label="Active Players" top />
+            <Stat value={String(metrics?.total_bookings ?? 0)} label="Total Bookings" bordered />
+            <Stat value={String(metrics?.pending_coach_approvals ?? 0)} label="Pending Approvals" top clay />
+            <Stat value={String(metrics?.active_players ?? 0)} label="Active Players" bordered top />
             <Stat value={money(metrics?.lobb_earnings_ngn ?? 0)} label="LOBB Earnings" bordered top />
           </div>
         )}
 
         <SectionTitle title="Action Items" />
-        <div className="space-y-3">
+        <div className="grid gap-3 lg:grid-cols-2">
           <ActionRow href="/admin/coaches" icon={<UserCheck className="size-5" />} title={`${metrics?.pending_coach_approvals ?? 0} coaches pending review`} />
           <ActionRow href="/admin/disputes" icon={<Gavel className="size-5" />} title={`${metrics?.open_disputes ?? 0} disputes open`} danger />
         </div>
 
         <SectionTitle title="Navigation" />
-        <div className="overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]">
-          <NavRow href="/admin/coaches" label="Coach Approvals" />
-          <NavRow href="/admin/bookings" label="All Bookings" />
-          <NavRow href="/admin/disputes" label="Disputes" />
-          <NavRow href="/admin/earnings" label="Platform Earnings" />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <NavRow href="/admin/coaches" label="Coach Approvals" icon={<UserCheck className="size-5" />} />
+          <NavRow href="/admin/bookings" label="All Bookings" icon={<CalendarDays className="size-5" />} />
+          <NavRow href="/admin/disputes" label="Disputes" icon={<Gavel className="size-5" />} />
+          <NavRow href="/admin/earnings" label="Platform Earnings" icon={<ShieldCheck className="size-5" />} />
         </div>
       </section>
     </AdminShell>
@@ -115,10 +124,13 @@ function ActionRow({ href, icon, title, danger }: { href: string; icon: React.Re
   );
 }
 
-function NavRow({ href, label }: { href: string; label: string }) {
+function NavRow({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) {
   return (
-    <Link href={href} className="flex items-center justify-between border-b border-[var(--lobb-border)] px-4 py-4 text-sm font-black last:border-b-0">
-      {label}
+    <Link href={href} className="flex items-center justify-between rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-black shadow-[0_10px_22px_rgba(13,13,13,0.04)]">
+      <span className="flex items-center gap-3">
+        <span className="text-[var(--lobb-clay)]">{icon}</span>
+        {label}
+      </span>
       <ChevronRight className="size-4 text-[var(--lobb-muted)]" />
     </Link>
   );

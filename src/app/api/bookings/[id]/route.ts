@@ -10,7 +10,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   const { data: booking, error } = await auth.admin
     .from("bookings")
     .select(
-      "*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url, headline, primary_location), coach_profile:profiles!bookings_coach_id_fkey(phone_number), player_profile:profiles!bookings_player_id_fkey(phone_number), players!bookings_player_id_fkey(full_name), payments(status, paystack_reference, paid_at), reviews(id, rating, comment, removed_at)"
+      "*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url, headline, primary_location), players!bookings_player_id_fkey(full_name), payments(status, paystack_reference, paid_at), reviews(id, rating, comment, removed_at)"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -23,5 +23,17 @@ export async function GET(_request: Request, { params }: { params: { id: string 
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ booking });
+  // Fetch phone numbers directly by profile id — avoids FK hint ambiguity with coaches/players tables
+  const [{ data: coachProfile }, { data: playerProfile }] = await Promise.all([
+    auth.admin.from("profiles").select("phone_number").eq("id", booking.coach_id).maybeSingle(),
+    auth.admin.from("profiles").select("phone_number").eq("id", booking.player_id).maybeSingle(),
+  ]);
+
+  return NextResponse.json({
+    booking: {
+      ...booking,
+      coach_profile: coachProfile ? [coachProfile] : [],
+      player_profile: playerProfile ? [playerProfile] : [],
+    },
+  });
 }

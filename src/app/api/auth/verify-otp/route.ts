@@ -1,5 +1,5 @@
 import { createHmac } from "crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { verifyOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
@@ -53,10 +53,6 @@ function getSyntheticCredentials(phone: string) {
     email: `lobb.phone.${localPart}@${domain}`,
     password,
   };
-}
-
-function isDevRoleOverrideEnabled() {
-  return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
 }
 
 export async function POST(request: Request) {
@@ -121,10 +117,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not start your session" }, { status: 400 });
     }
 
-    if (adminClient && isDevRoleOverrideEnabled() && body.role && ["player", "coach", "admin"].includes(body.role)) {
-      await seedDevAccount(adminClient, user.id, phone, body.role);
-    }
-
     return NextResponse.json({
       session,
       user,
@@ -138,89 +130,3 @@ export async function POST(request: Request) {
   }
 }
 
-type DevRole = "player" | "coach" | "admin";
-
-const TEST_PROFILES: Record<DevRole, Record<string, unknown>> = {
-  player: {
-    full_name: "Tobi Adeyemi",
-    role: "player",
-    avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=512&q=80",
-  },
-  coach: {
-    full_name: "Ada Okafor",
-    role: "coach",
-    avatar_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
-  },
-  admin: {
-    full_name: "LOBB Admin",
-    role: "admin",
-    avatar_url: null,
-  },
-};
-
-const TEST_PLAYER_ROW = {
-  full_name: "Tobi Adeyemi",
-  skill_level: "Intermediate",
-  preferred_locations: ["Lekki", "Victoria Island", "Ikoyi"],
-};
-
-const TEST_COACH_ROW = {
-  full_name:         "Ada Okafor",
-  headline:          "ITF Level 1 Coach · Footwork, beginners & match play",
-  bio:               "Ada is a patient Lagos tennis coach who helps beginners build clean fundamentals and intermediate players sharpen footwork, consistency, and match confidence.",
-  hourly_rate_ngn:   15000,
-  experience_years:  8,
-  primary_location:  "Lekki",
-  service_areas:     ["Lekki", "Victoria Island", "Ikoyi", "Oniru"],
-  skill_levels:      ["Beginner", "Intermediate", "All levels"],
-  specializations:   ["Beginners", "Adults", "Footwork", "Match Play"],
-  certifications:    ["ITF Level 1"],
-  languages:         ["English", "Yoruba"],
-  court_access:      "coach_can_recommend",
-  demo_video_url:    null,
-  profile_photo_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
-  status:            "active",
-  is_verified:       true,
-  slug:              "ada-okafor-dev",
-};
-
-const TEST_COACH_AVAILABILITY = [
-  { day_of_week: 1, starts_at: "08:00:00", ends_at: "12:00:00" },
-  { day_of_week: 2, starts_at: "16:00:00", ends_at: "20:00:00" },
-  { day_of_week: 4, starts_at: "16:00:00", ends_at: "20:00:00" },
-  { day_of_week: 6, starts_at: "08:00:00", ends_at: "13:00:00" },
-];
-
-async function seedDevAccount(
-  admin: SupabaseClient,
-  userId: string,
-  phone: string,
-  role: DevRole
-) {
-  await admin.from("profiles").upsert(
-    { id: userId, phone_number: phone, ...TEST_PROFILES[role] },
-    { onConflict: "id" }
-  );
-
-  if (role === "player") {
-    await admin.from("players").upsert(
-      { id: userId, ...TEST_PLAYER_ROW },
-      { onConflict: "id" }
-    );
-    return;
-  }
-
-  if (role === "admin") {
-    return;
-  }
-
-  await admin.from("coaches").upsert(
-    { id: userId, ...TEST_COACH_ROW },
-    { onConflict: "id" }
-  );
-
-  await admin.from("coach_availability").delete().eq("coach_id", userId);
-  await admin.from("coach_availability").insert(
-    TEST_COACH_AVAILABILITY.map((slot) => ({ coach_id: userId, ...slot }))
-  );
-}

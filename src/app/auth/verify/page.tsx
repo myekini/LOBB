@@ -160,7 +160,18 @@ export default function VerifyPage() {
       return;
     }
 
-    // No role yet — let them pick
+    // No role yet — if we have clear intent from the login flow, set it and skip the picker
+    const intendedRole = pendingAuth.role;
+    if (intendedRole === "coach" || intendedRole === "player") {
+      await supabase.from("profiles").upsert(
+        { id: userId, role: intendedRole, phone_number: pendingAuth.phone },
+        { onConflict: "id" }
+      );
+      router.push(intendedRole === "coach" ? "/auth/setup/coach/1" : "/auth/setup/player");
+      return;
+    }
+
+    // No role, no intent — show the picker
     router.push("/auth/role");
   };
 

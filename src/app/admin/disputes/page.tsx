@@ -15,7 +15,7 @@ export default function AdminDisputesPage() {
     <AdminShell active="Disputes">
       <AdminBackHeader title={`Dispute #${booking.id}`} />
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <section className="space-y-6">
           <Block title="Booking Details">
             <div className="rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
@@ -44,7 +44,7 @@ export default function AdminDisputesPage() {
           </div>
         </section>
 
-        <section className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+        <section className="rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_12px_28px_rgba(13,13,13,0.05)] xl:sticky xl:top-24">
           <h2 className="text-lg font-black">Resolution</h2>
           <div className="mt-5 space-y-3">
             <ResolutionOption value="refund" selected={resolution} setSelected={setResolution} title="Refund player in full" />

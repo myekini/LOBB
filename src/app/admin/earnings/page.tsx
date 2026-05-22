@@ -8,10 +8,11 @@ export default function AdminEarningsPage() {
 
   return (
     <AdminShell active="Platform Earnings">
-      <h1 className="text-2xl font-black">Platform Earnings</h1>
-      <section className="mt-6 rounded-[24px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)]">
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">Finance</p>
+      <h1 className="mt-1 text-2xl font-black">Platform Earnings</h1>
+      <section className="mt-6 rounded-[28px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)] sm:p-8">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-white/45">Total GMV</p>
-        <p className="mt-5 text-[32px] font-black">{money(adminStats.totalGmv)}</p>
+        <p className="mt-5 text-[38px] font-black leading-none sm:text-[54px]">{money(adminStats.totalGmv)}</p>
         <p className="mt-3 text-sm font-semibold text-white/55">{money(commission)} estimated platform fee</p>
       </section>
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -20,7 +21,7 @@ export default function AdminEarningsPage() {
         <Stat label="Pending Approvals" value={String(adminStats.pendingApprovals)} />
       </div>
       <h2 className="mt-8 font-black">Recent Revenue</h2>
-      <section className="mt-3 space-y-3">
+      <section className="mt-3 grid gap-3 xl:grid-cols-2">
         {adminBookings.slice(0, 4).map((booking) => (
           <article key={booking.id} className="flex items-center justify-between rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
             <div>

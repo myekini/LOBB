@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, GraduationCap, Trophy } from "lucide-react";
 import {
@@ -10,6 +10,7 @@ import {
   OnboardingShell,
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
+import { getPendingAuth } from "@/lib/auth-flow";
 import { createClient } from "@/lib/supabase/client";
 
 type UserRole = "player" | "coach";
@@ -44,6 +45,13 @@ export default function RolePage() {
   const [selected, setSelected] = useState<UserRole | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const pending = getPendingAuth();
+    if (pending?.role === "coach" || pending?.role === "player") {
+      setSelected(pending.role);
+    }
+  }, []);
 
   const continueFlow = async () => {
     if (!selected) {

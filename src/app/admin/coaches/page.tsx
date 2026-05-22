@@ -71,7 +71,7 @@ export default function AdminCoachApprovalsPage() {
     <AdminShell active="Coach Approvals">
       <AdminBackHeader title={`Coach Approvals (${coaches.length} pending)`} />
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid gap-4 xl:grid-cols-2">
         {loading ? (
           <>
             {Array.from({ length: 4 }).map((_, index) => <CoachCardSkeleton key={index} />)}
@@ -87,7 +87,7 @@ export default function AdminCoachApprovalsPage() {
               </div>
             </div>
 
-            <dl className="mt-5 grid gap-3 text-sm">
+            <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <Info label="Headline" value={coach.headline || "Not set"} />
               <Info label="Locations" value={[coach.primary_location, ...coach.service_areas].filter(Boolean).join(", ")} />
               <Info label="Rate" value={`${money(coach.hourly_rate_ngn)}/hr`} />

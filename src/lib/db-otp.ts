@@ -6,7 +6,7 @@ const REQUEST_WINDOW_MS = 60 * 60 * 1000;
 const MAX_REQUESTS = 3;
 const MAX_ATTEMPTS = 5;
 const FALLBACK_TEST_OTP = "000000";
-const FALLBACK_TEST_PHONES = ["+2348164555012", "+2340000000001", "+2340000000002"];
+const FALLBACK_TEST_PHONES = ["+2340000000001", "+2340000000002", "+2340000000003"];
 type OtpRole = "player" | "coach" | "admin";
 
 function hashOtp(phone: string, code: string) {
