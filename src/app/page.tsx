@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, MapPin, Search, Trophy, User } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, LogOut, MapPin, Moon, Search, Sun, Sunrise, Trophy, User } from "lucide-react";
 import { coaches, courtImage, money } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
-import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
 import { CoachListCard } from "@/features/coaches/coach-cards";
 import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/common/lobb-skeleton";
 
@@ -28,11 +28,33 @@ function getGreeting() {
   return "Good evening";
 }
 
-function getSessionPrompt() {
+function getTimeMood() {
   const hour = new Date().getHours();
-  if (hour < 12) return "Ready for a clean morning hit?";
-  if (hour < 17) return "Find your next afternoon session.";
-  return "Line up a calm evening lesson.";
+  if (hour < 12) {
+    return {
+      Icon: Sunrise,
+      label: "Morning court window",
+      prompt: "Set up a clean morning hit.",
+      detail: "Early sessions are best for focused drills, lighter heat, and a calmer court.",
+      accent: "from-[#f7c56b]/18",
+    };
+  }
+  if (hour < 17) {
+    return {
+      Icon: Sun,
+      label: "Afternoon match prep",
+      prompt: "Find your next focused lesson.",
+      detail: "Compare coaches by area, price, and availability before the day gets crowded.",
+      accent: "from-[#d8a557]/16",
+    };
+  }
+  return {
+    Icon: Moon,
+    label: "Evening recovery session",
+    prompt: "Line up a calm evening lesson.",
+    detail: "Book ahead, keep the court details clear, and arrive with the plan already settled.",
+    accent: "from-[#7b8fc7]/18",
+  };
 }
 
 function PlayerHomeStat({ label, value }: { label: string; value: string | number }) {
@@ -58,6 +80,7 @@ export default function Home() {
   const [loadingCoaches, setLoadingCoaches] = useState(true);
   const [coachQuery, setCoachQuery]         = useState("");
   const [coachLocation, setCoachLocation]   = useState("All");
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   const locationChips = useMemo(() => {
     const locations = liveCoaches.flatMap((coach) => [
@@ -207,6 +230,14 @@ export default function Home() {
   if (profile?.role === "player" && profile.full_name) {
     const firstName = profile.full_name.split(" ")[0] || "there";
     const featuredCoach = liveCoaches.find((coach) => coach.has_availability) ?? liveCoaches[0];
+    const mood = getTimeMood();
+    const MoodIcon = mood.Icon;
+    const signOut = async () => {
+      const supabase = createClient();
+      await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+      await supabase.auth.signOut();
+      router.push("/auth/login");
+    };
 
     return (
       <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
@@ -220,46 +251,106 @@ export default function Home() {
                 <p className="text-[10px] font-semibold text-[var(--lobb-muted)]">Lagos tennis</p>
               </div>
             </div>
-            <Link
-              href="/profile"
-              aria-label="Your profile"
-              className="flex size-10 items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition hover:border-[var(--lobb-clay)]/40"
-            >
-              {profile.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.avatar_url} alt="" className="size-full object-cover" />
-              ) : (
-                <User className="size-4" />
-              )}
-            </Link>
+            <div className="flex items-center gap-3">
+              <PlayerDesktopNav active="home" />
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileMenuOpen((open) => !open)}
+                  aria-expanded={profileMenuOpen}
+                  aria-label="Open profile menu"
+                  className="flex h-11 items-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] py-1 pl-1 pr-3 text-[var(--lobb-black)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition hover:border-[var(--lobb-clay)]/40"
+                >
+                  <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)]">
+                    {profile.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={profile.avatar_url} alt="" className="size-full object-cover" />
+                    ) : (
+                      <User className="size-4" />
+                    )}
+                  </span>
+                  <span className="hidden max-w-24 truncate text-xs font-black md:block">{firstName}</span>
+                  <ChevronDown className="size-3.5 text-[var(--lobb-muted)]" />
+                </button>
+
+                {profileMenuOpen && (
+                  <div className="absolute right-0 top-[calc(100%+10px)] z-50 w-64 overflow-hidden rounded-[22px] border border-[var(--lobb-border)] bg-white p-2 shadow-[0_24px_58px_rgba(13,13,13,0.16)]">
+                    <div className="flex items-center gap-3 border-b border-[var(--lobb-border)] p-3">
+                      <span className="flex size-11 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)]">
+                        {profile.avatar_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={profile.avatar_url} alt="" className="size-full object-cover" />
+                        ) : (
+                          <User className="size-4" />
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-black">{profile.full_name}</p>
+                        <p className="text-[11px] font-semibold text-[var(--lobb-muted)]">Player account</p>
+                      </div>
+                    </div>
+                    <ProfileMenuLink href="/dashboard" icon={<CalendarDays className="size-4" />} label="My bookings" />
+                    <ProfileMenuLink href="/coaches" icon={<Search className="size-4" />} label="Browse coaches" />
+                    <ProfileMenuLink href="/profile" icon={<User className="size-4" />} label="Profile settings" />
+                    <button
+                      type="button"
+                      onClick={signOut}
+                      className="mt-1 flex h-11 w-full items-center gap-3 rounded-[14px] px-3 text-left text-sm font-black text-red-700 transition hover:bg-red-50"
+                    >
+                      <LogOut className="size-4" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </header>
 
         {/* Hero card */}
         <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-[#0d0d0d] via-[#161512] to-[#241a15] px-6 py-8 text-white shadow-[0_22px_56px_rgba(13,13,13,0.22)] sm:p-10">
-            <div className="absolute right-0 top-0 h-32 w-32 rounded-bl-[64px] bg-[var(--lobb-clay)]/10 blur-[1px]" aria-hidden="true" />
-            <div className="absolute -bottom-16 -left-12 h-36 w-36 rounded-full border border-white/5 bg-white/[0.01]" aria-hidden="true" />
-            <div className="relative grid gap-7 md:grid-cols-[minmax(0,1fr)_280px] md:items-end">
+          <div className="relative overflow-hidden rounded-[32px] bg-[#0d0d0d] px-6 py-8 text-white shadow-[0_22px_56px_rgba(13,13,13,0.22)] sm:p-10">
+            <div className={`absolute inset-0 bg-gradient-to-br ${mood.accent} via-transparent to-[var(--lobb-clay)]/10`} aria-hidden="true" />
+            <div className="absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_42%)]" aria-hidden="true" />
+            <div className="relative grid gap-7 md:grid-cols-[minmax(0,1fr)_320px] md:items-end">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-base animate-bounce">👋</span>
+                  <span className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-[var(--lobb-clay)]">
+                    <MoodIcon className="size-4.5" />
+                  </span>
                   <span className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--lobb-clay)]">
                     {getGreeting()}, {firstName}
                   </span>
                 </div>
                 <h1 className="mt-4 text-[38px] font-black leading-[1.05] tracking-tight sm:max-w-none sm:text-[56px] text-white">
-                  {getSessionPrompt()}
+                  {mood.prompt}
                 </h1>
                 <p className="mt-4 max-w-xl text-[14px] font-medium leading-[1.6] text-white/58">
-                  Search verified Lagos coaches, pick an open slot, and keep the court details tidy in one flow.
+                  {mood.detail}
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 overflow-hidden rounded-[20px] border border-white/10 bg-white/[0.05] shadow-inner md:grid-cols-1">
-                <PlayerHomeStat label="Coaches" value={liveCoaches.length} />
-                <PlayerHomeStat label="Open slots" value={liveCoaches.filter((coach) => coach.has_availability).length} />
-                <PlayerHomeStat label="Top area" value={featuredCoach?.primary_location ?? "Lagos"} />
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-4 shadow-inner backdrop-blur">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">{mood.label}</p>
+                    <p className="mt-2 text-2xl font-black text-white">{liveCoaches.filter((coach) => coach.has_availability).length}</p>
+                    <p className="mt-1 text-xs font-semibold text-white/50">coaches with open booking windows</p>
+                  </div>
+                  <span className="flex size-12 items-center justify-center rounded-2xl bg-white text-[var(--lobb-black)]">
+                    <MoodIcon className="size-5 text-[var(--lobb-clay)]" />
+                  </span>
+                </div>
+                <div className="mt-4 grid grid-cols-2 overflow-hidden rounded-[18px] border border-white/10">
+                  <PlayerHomeStat label="Verified" value={liveCoaches.length} />
+                  <PlayerHomeStat label="Top area" value={featuredCoach?.primary_location ?? "Lagos"} />
+                </div>
+                <Link
+                  href="/dashboard"
+                  className="mt-4 flex h-11 items-center justify-center rounded-[14px] bg-white text-xs font-black text-[var(--lobb-black)] transition hover:bg-white/90"
+                >
+                  View My Bookings
+                </Link>
               </div>
             </div>
           </div>
@@ -473,5 +564,17 @@ export default function Home() {
         </section>
       </div>
     </main>
+  );
+}
+
+function ProfileMenuLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="mt-1 flex h-11 items-center gap-3 rounded-[14px] px-3 text-sm font-black text-[var(--lobb-black)] transition hover:bg-[var(--lobb-surface)]"
+    >
+      <span className="text-[var(--lobb-clay)]">{icon}</span>
+      {label}
+    </Link>
   );
 }

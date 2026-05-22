@@ -50,3 +50,30 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
     </nav>
   );
 }
+
+export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
+  return (
+    <nav className="hidden items-center gap-1 md:flex" aria-label="Player navigation">
+      {items.map((item) => {
+        const isActive = item.label.toLowerCase() === active;
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-black transition",
+              isActive
+                ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_24px_rgba(13,13,13,0.14)]"
+                : "text-[var(--lobb-muted)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-black)]"
+            )}
+          >
+            <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

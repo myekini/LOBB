@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarCheck, Check, ChevronDown, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { CoachListCard } from "@/features/coaches/coach-cards";
-import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import type { CoachPublicProfile } from "@/lib/types";
 
@@ -117,7 +117,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
       <header className="sticky top-0 z-40 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/92 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link
             href="/"
             aria-label="Go back"
@@ -129,17 +129,20 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">LOBB coaches</p>
             <h1 className="text-[17px] font-black leading-tight">Book a Coach</h1>
           </div>
-          <button
-            onClick={() => setShowFilter(true)}
-            className="relative flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition active:scale-[0.97]"
-          >
-            <SlidersHorizontal className="size-5" />
-            {filterCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-[10px] font-black text-white ring-2 ring-[var(--lobb-bg)]">
-                {filterCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <PlayerDesktopNav active="browse" />
+            <button
+              onClick={() => setShowFilter(true)}
+              className="relative flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] shadow-[0_8px_22px_rgba(13,13,13,0.05)] transition active:scale-[0.97]"
+            >
+              <SlidersHorizontal className="size-5" />
+              {filterCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex size-5 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-[10px] font-black text-white ring-2 ring-[var(--lobb-bg)]">
+                  {filterCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </header>
 

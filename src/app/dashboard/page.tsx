@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, Circle, Clock3, Star } from "lucide-react";
-import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { firstJoin, formatBookingDate, type DashboardBooking } from "@/lib/dashboard-client-types";
@@ -44,14 +44,12 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-28 pt-7 text-[var(--lobb-black)] sm:px-6 lg:pt-10">
       <section className="mx-auto max-w-5xl">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">Player dashboard</p>
             <h1 className="mt-1 text-[26px] font-black tracking-tight sm:text-[34px]">My Bookings</h1>
           </div>
-          <Link href="/coaches" className="hidden h-11 items-center justify-center rounded-full bg-[var(--lobb-black)] px-5 text-sm font-black text-white shadow-[0_10px_26px_rgba(13,13,13,0.14)] sm:flex">
-            Find a Coach
-          </Link>
+          <PlayerDesktopNav active="bookings" />
         </div>
 
         <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1 shadow-[0_12px_28px_rgba(13,13,13,0.05)] sm:max-w-md">
