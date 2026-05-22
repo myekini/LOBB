@@ -15,7 +15,8 @@ Lagos tennis coach booking platform. Verified coaches, real availability, secure
 7. [Coach Payout](#7-coach-payout)
 8. [Coach Onboarding & Approval](#8-coach-onboarding--approval)
 9. [Admin Tools](#9-admin-tools)
-10. [Infrastructure & Cron Jobs](#10-infrastructure--cron-jobs)
+10. [Responsive UX & PWA Experience](#10-responsive-ux--pwa-experience)
+11. [Infrastructure & Cron Jobs](#11-infrastructure--cron-jobs)
 
 ---
 
@@ -36,6 +37,13 @@ Phone-first, passwordless. No email required.
 |------|-------|-----|
 | Player | +2340000000001 | 000000 |
 | Coach | +2340000000002 | 000000 |
+
+**Dev quick-login (local/dev only):**
+- Gated by `LOBB_ENABLE_DEV_LOGIN=true` and `NEXT_PUBLIC_LOBB_DEV_LOGIN=true`
+- `/auth/login` exposes a dev panel for one-click Player, Coach, and Admin login
+- Test role switching is also available from the in-app dev switcher
+- Dev role accounts are seeded with profile, coach/player rows, and coach availability
+- Dev-only APIs return `403` unless explicitly enabled
 
 **Session routing after OTP verification:**
 
@@ -64,6 +72,15 @@ One phone number = one role. Role is set once and stored on `profiles.role`.
 ## 3. Booking Flow (Player)
 
 Three-step wizard at `/book/[coachSlug]/step-1` → `step-2` → `step-3`.
+
+**Browse & profile discovery:**
+- Players browse coaches from `/` and `/coaches`
+- Coach cards show photo, verified badge, primary skill, rating, rate, location, session/review/slot signals
+- Cards include explicit actions:
+  - **View profile** → `/coaches/[slug-or-id]`
+  - **Book** → `/book/[coachSlug]/step-1`
+- Coach profile routes and APIs resolve by either `slug` or `id`, so profile viewing still works if a slug is missing
+- Desktop player navigation includes Home, Browse, Bookings, Profile
 
 ### Step 1 — Choose a slot
 - Player selects a date from a 14-day window (7 days visible, toggled by week)
@@ -99,6 +116,18 @@ Three-step wizard at `/book/[coachSlug]/step-1` → `step-2` → `step-3`.
 - Shows: date, coach photo, coach call/WhatsApp buttons, location, total paid, reference
 - Primary CTA: **View My Bookings** (→ `/dashboard`)
 
+### Player bookings dashboard
+- Path: `/dashboard` and `/dashboard/bookings`
+- Shows upcoming and past booking tabs
+- Future bookings with `confirmed`, `pending`, or `pending_payment` status remain visible so checkout/verification delays do not hide a booking
+- Status language:
+  - `Confirmed`
+  - `Confirming` when payment is paid but booking finalization is still settling
+  - `Pending payment`
+- Booking cards link to `/dashboard/bookings/[id]`
+- Desktop layout uses a wider responsive grid; PWA/mobile keeps the bottom navigation
+- Booking detail page includes coach info, contact unlock state, location, notes, payment reference, and cancellation policy
+
 ---
 
 ## 4. Payment & Escrow
@@ -130,6 +159,13 @@ Cron: release-escrow runs 2 hrs after session ends
         ↓
 Admin triggers payout to coach bank account
 ```
+
+**Verification resilience:**
+- Webhook and `/api/payments/verify` both confirm successful transactions
+- Webhook signature verification uses Paystack HMAC-SHA512
+- Verification accepts both `pending` and `pending_payment` bookings
+- If payment is already `paid`, verification repairs booking status to `confirmed` and clears related slot locks
+- `paystack_events` prevents duplicate webhook/SMS processing
 
 **Subaccount split (when coach has a Paystack subaccount):**
 - LOBB charges 15% commission (`platform_commission = session_fee × 0.15`)
@@ -245,6 +281,29 @@ After step 4 → profile submitted for admin review (status: `pending`).
 
 **Middleware guards:** incomplete coach profiles are redirected to the correct unfinished step on every request.
 
+### Coach console
+
+Coach workspace paths:
+
+| Page | What it does |
+|------|-------------|
+| `/coach/dashboard` | Profile status, next session, earnings snapshot, recent bookings, reviews |
+| `/coach/bookings` | Booking list by upcoming/completed/cancelled |
+| `/coach/bookings/[id]` | Booking detail and cancellation flow |
+| `/coach/availability` | Weekly windows, blocked dates, blocked individual slots |
+| `/coach/earnings` | Total earnings, weekly earnings, pending payout, payout history, bank link |
+| `/coach/profile` | Profile completion checklist, status banner, preview/edit/settings links |
+| `/coach/profile/edit` | Editable coach profile, media, rates, bank details |
+| `/coach/settings` | Phone, bank, notifications, account status, logout |
+
+**Coach UX improvements:**
+- Mobile/PWA uses bottom navigation
+- Desktop uses top navigation matching the player/admin pattern
+- Shared coach header supports back/home/action buttons
+- Console pages use responsive grids instead of narrow phone-only columns on desktop
+- Availability screen supports weekly windows plus one-off date/slot blocks
+- Profile checklist helps coaches understand what is missing before review
+
 ---
 
 ## 9. Admin Tools
@@ -259,11 +318,57 @@ All at `/admin` (role: `admin` only).
 | `/admin/disputes` | Dispute queue |
 | `/admin/earnings` | Trigger payouts per coach |
 
+**Admin console UX:**
+- Desktop admin shell includes polished top navigation and sticky sidebar
+- Mobile/tablet keeps a compact responsive layout
+- Admin logout is available from the shell
+- Dashboard hero summarizes platform control-room status
+- Metrics include active coaches, active players, total bookings, GMV, LOBB earnings, pending approvals, and open disputes
+- Action cards highlight pending coach reviews and disputes
+- Booking management supports status filtering and responsive booking records
+- Coach approvals show profile photo, headline, locations, rate, certifications, demo video, full public profile link, approve/reject actions
+- Dispute resolution page separates booking evidence from resolution controls
+- Earnings page summarizes platform GMV, estimated platform fee, booking count, active coaches, pending approvals, and recent revenue
+
 **Admin audit log:** every approve/reject/suspend/payout action is written to `admin_audit_log` with admin ID, action, target, and metadata.
 
 ---
 
-## 10. Infrastructure & Cron Jobs
+## 10. Responsive UX & PWA Experience
+
+LOBB has three role-specific experiences with a shared visual language:
+
+| Role | Mobile/PWA | Desktop web |
+|------|------------|-------------|
+| Player | Bottom nav, marketplace-first flow | Top nav, responsive coach grid, dashboard grid |
+| Coach | Bottom nav, task-focused console | Top nav, wider dashboard/booking/availability grids |
+| Admin | Compact operational pages | Top nav + sticky sidebar control room |
+
+**Player UX details:**
+- Player home has a time-aware premium greeting card:
+  - Morning → sunrise icon
+  - Afternoon → sun icon
+  - Evening → moon icon
+- Greeting card uses useful marketplace signals, not random tennis imagery:
+  - coaches with open slots
+  - verified coach count
+  - top active area
+  - direct "View My Bookings" CTA
+- Avatar opens an account dropdown instead of forcing navigation:
+  - My bookings
+  - Browse coaches
+  - Profile settings
+  - Sign out
+
+**Responsive alignment standards:**
+- Booking step headers use aligned back button + centered title layout
+- Booking flow content expands on desktop (`max-w-3xl`) while staying compact on mobile
+- Player, coach, and admin dashboards use wider desktop grids
+- Cards avoid nested-card clutter and prioritize primary actions
+
+---
+
+## 11. Infrastructure & Cron Jobs
 
 **Stack:** Next.js 14 (App Router) · Supabase (Postgres + Auth + Storage) · Paystack · Twilio WhatsApp · Vercel
 
