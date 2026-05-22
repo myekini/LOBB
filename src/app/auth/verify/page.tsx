@@ -12,16 +12,6 @@ import {
 import { clearPendingAuth, getPendingAuth } from "@/lib/auth-flow";
 import { showLobbToast } from "@/providers/lobb-global-state";
 
-const testOtp = process.env.NEXT_PUBLIC_LOBB_TEST_OTP || "";
-const testPhones = (process.env.NEXT_PUBLIC_LOBB_TEST_PHONE_NUMBERS ?? "")
-  .split(",")
-  .map((phone) => phone.trim())
-  .filter(Boolean);
-
-function isDevTestPhone(phone: string) {
-  return testPhones.includes(phone);
-}
-
 function displayPhone(phone: string) {
   return phone.replace("+234", "+234 ").replace(/(\d{4})(\d{3})(\d{3})$/, "$1 $2 $3");
 }
@@ -259,9 +249,9 @@ export default function VerifyPage() {
           <OnboardingCopy>
             Code sent to {pendingAuth ? displayPhone(pendingAuth.phone) : "+234"}. It expires shortly.
           </OnboardingCopy>
-          {testOtp && pendingAuth && isDevTestPhone(pendingAuth.phone) && (
+          {pendingAuth?.devCode && (
             <p className="mt-4 rounded-2xl border border-[var(--lobb-border)] bg-white/60 px-4 py-3 text-sm font-bold text-[var(--lobb-muted)]">
-              Dev account code: <span className="text-[var(--lobb-black)]">{testOtp}</span>
+              Dev account code: <span className="text-[var(--lobb-black)]">{pendingAuth.devCode}</span>
             </p>
           )}
         </div>

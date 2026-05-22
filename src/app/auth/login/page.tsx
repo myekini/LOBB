@@ -148,13 +148,24 @@ function LoginForm() {
 
     setLoading(false);
 
+    const result = (await response.json().catch(() => null)) as {
+      error?: string;
+      devCode?: string;
+    } | null;
+
     if (!response.ok) {
-      const result = (await response.json().catch(() => null)) as { error?: string } | null;
       setError(result?.error || "Could not send code. Try again.");
       return;
     }
 
-    setPendingAuth({ phone: e164Phone, mode: "login", sentAt: Date.now(), nextPath, ...(roleToSend ? { role: roleToSend } : {}) });
+    setPendingAuth({
+      phone: e164Phone,
+      mode: "login",
+      sentAt: Date.now(),
+      nextPath,
+      ...(roleToSend ? { role: roleToSend } : {}),
+      ...(result?.devCode ? { devCode: result.devCode } : {}),
+    });
     router.push("/auth/verify");
   };
 
