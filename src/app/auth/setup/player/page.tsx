@@ -16,6 +16,7 @@ import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 export default function PlayerSetupPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -24,7 +25,14 @@ export default function PlayerSetupPage() {
   const finish = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!fullName.trim()) {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!fullName.trim() || !normalizedEmail) {
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError("Enter a valid email address.");
       return;
     }
 
@@ -56,6 +64,7 @@ export default function PlayerSetupPage() {
           id: user.id,
           role: "player",
           full_name: fullName.trim(),
+          email: normalizedEmail,
           phone_number: user.phone || null,
           avatar_url: uploadedPhotoUrl || null,
         });
@@ -96,6 +105,17 @@ export default function PlayerSetupPage() {
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
             placeholder="e.g. Fola Adeola"
+            className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition-all duration-200 placeholder:text-[#9b958a] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+          />
+        </label>
+
+        <label className="mt-5 block">
+          <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Email</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
             className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition-all duration-200 placeholder:text-[#9b958a] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
           />
         </label>
@@ -152,7 +172,7 @@ export default function PlayerSetupPage() {
 
         <div className="mt-auto space-y-3 pb-8">
           {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!fullName.trim()}>
+          <OnboardingButton type="submit" disabled={!fullName.trim() || !email.trim()}>
             {saving ? "Saving..." : "Finish Setup"}
           </OnboardingButton>
         </div>

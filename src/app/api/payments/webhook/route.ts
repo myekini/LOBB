@@ -2,17 +2,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/paystack";
 import {
-  sendPlayerBookingConfirmedSms,
-  sendCoachBookingNotificationSms,
-} from "@/lib/booking-sms";
-import {
-  bookingConfirmedCoachMessage,
-  bookingConfirmedPlayerMessage,
-  reminderCoachMessage,
-  reminderPlayerMessage,
-  reviewRequestMessage,
   type NotificationBookingInfo,
 } from "@/lib/notification-messages";
+import { queueBookingReminderEmails, sendBookingConfirmedEmails } from "@/lib/email-notifications";
 
 // Paystack requires raw body for signature verification — do NOT parse via middleware
 export const dynamic = "force-dynamic";
@@ -120,12 +112,12 @@ export async function POST(request: Request) {
     const [coachProfile, playerProfile] = await Promise.all([
       admin
         .from("profiles")
-        .select("phone_number, full_name")
+        .select("id, phone_number, email, email_notifications_enabled, full_name")
         .eq("id", booking.coach_id)
         .single(),
       admin
         .from("profiles")
-        .select("phone_number, full_name")
+        .select("id, phone_number, email, email_notifications_enabled, full_name")
         .eq("id", booking.player_id)
         .single(),
     ]);
@@ -147,66 +139,9 @@ export async function POST(request: Request) {
     const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
     const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
 
-    const smsJobs: Array<Record<string, unknown>> = [];
-    if (notificationInfo.playerPhone) {
-      smsJobs.push({
-        type: "booking_confirmed_player",
-        recipient_user_id: booking.player_id,
-        recipient_phone: notificationInfo.playerPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        message: bookingConfirmedPlayerMessage(notificationInfo),
-        status: "sent",
-        sent_at: new Date().toISOString(),
-      });
-      smsJobs.push({
-        type: "booking_24h_reminder_player",
-        recipient_user_id: booking.player_id,
-        recipient_phone: notificationInfo.playerPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        scheduled_for: reminderAt,
-        message: reminderPlayerMessage(notificationInfo),
-      });
-      smsJobs.push({
-        type: "review_request_player",
-        recipient_user_id: booking.player_id,
-        recipient_phone: notificationInfo.playerPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        scheduled_for: reviewAt,
-        message: reviewRequestMessage(notificationInfo),
-      });
-    }
-    if (notificationInfo.coachPhone) {
-      smsJobs.push({
-        type: "booking_confirmed_coach",
-        recipient_user_id: booking.coach_id,
-        recipient_phone: notificationInfo.coachPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        message: bookingConfirmedCoachMessage(notificationInfo),
-        status: "sent",
-        sent_at: new Date().toISOString(),
-      });
-      smsJobs.push({
-        type: "booking_24h_reminder_coach",
-        recipient_user_id: booking.coach_id,
-        recipient_phone: notificationInfo.coachPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        scheduled_for: reminderAt,
-        message: reminderCoachMessage(notificationInfo),
-      });
-    }
-
-    if (smsJobs.length > 0) {
-      await admin.from("sms_jobs").upsert(smsJobs, { onConflict: "booking_id,type", ignoreDuplicates: true });
-    }
-
     await Promise.allSettled([
-      sendPlayerBookingConfirmedSms(info),
-      sendCoachBookingNotificationSms(info),
+      sendBookingConfirmedEmails(admin, notificationInfo, playerProfile.data, coachProfile.data),
+      queueBookingReminderEmails(admin, notificationInfo, playerProfile.data, coachProfile.data, reminderAt, reviewAt),
     ]);
   }
 

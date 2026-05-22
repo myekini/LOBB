@@ -172,6 +172,9 @@ export type ProfileRow = {
   id: string;
   phone_number: string | null;
   email: string | null;
+  email_verified_at: string | null;
+  email_notifications_enabled: boolean;
+  marketing_emails_enabled: boolean;
   role: UserRole;
   full_name: string | null;
   avatar_url: string | null;

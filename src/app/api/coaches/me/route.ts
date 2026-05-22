@@ -21,7 +21,7 @@ type CoachUpdatePayload = Partial<
     | "court_access"
     | "profile_photo_url"
   >
->;
+> & { email?: string | null };
 
 const ALLOWED_COURT_ACCESS = new Set<CourtAccess>([
   "coach_has_access",
@@ -144,25 +144,38 @@ export async function PATCH(request: Request) {
       allowed.profile_photo_url = body.profile_photo_url.trim() || null;
     }
 
-    if (Object.keys(allowed).length === 0) {
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : undefined;
+    if (email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
+    }
+
+    if (Object.keys(allowed).length === 0 && email === undefined) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
     }
 
-    const { error: updateError } = await supabase
-      .from("coaches")
-      .update(allowed)
-      .eq("id", user.id);
+    if (Object.keys(allowed).length > 0) {
+      const { error: updateError } = await supabase
+        .from("coaches")
+        .update(allowed)
+        .eq("id", user.id);
 
-    if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 });
+      if (updateError) {
+        return NextResponse.json({ error: updateError.message }, { status: 500 });
+      }
     }
 
-    // Also sync full_name to profiles table when updated
-    if (allowed.full_name) {
-      await supabase
+    const profileUpdate: { full_name?: string; email?: string } = {};
+    if (allowed.full_name) profileUpdate.full_name = allowed.full_name;
+    if (email !== undefined) profileUpdate.email = email;
+    if (Object.keys(profileUpdate).length > 0) {
+      const { error: profileError } = await supabase
         .from("profiles")
-        .update({ full_name: allowed.full_name })
+        .update(profileUpdate)
         .eq("id", user.id);
+
+      if (profileError) {
+        return NextResponse.json({ error: profileError.message }, { status: 500 });
+      }
     }
 
     return NextResponse.json({ ok: true });

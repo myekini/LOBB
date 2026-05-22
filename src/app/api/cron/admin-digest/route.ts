@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendOtpSms } from "@/lib/sms";
-import { adminPendingDigestMessage } from "@/lib/notification-messages";
+import { sendAdminDigestEmail } from "@/lib/email-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -35,21 +34,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ sent: false, reason: "no pending approvals" });
   }
 
-  // Find all admin phone numbers
+  // Find all admin email addresses
   const { data: admins } = await admin
     .from("profiles")
-    .select("phone_number")
+    .select("id, email, email_notifications_enabled")
     .eq("role", "admin")
-    .not("phone_number", "is", null);
+    .not("email", "is", null);
 
   if (!admins || admins.length === 0) {
-    return NextResponse.json({ sent: false, reason: "no admin phone numbers configured" });
+    return NextResponse.json({ sent: false, reason: "no admin emails configured" });
   }
 
-  const message = adminPendingDigestMessage(pendingCount);
-
   const results = await Promise.allSettled(
-    admins.map((a) => sendOtpSms({ phone: a.phone_number!, message }))
+    admins
+      .filter((adminProfile) => adminProfile.email_notifications_enabled !== false)
+      .map((adminProfile) => sendAdminDigestEmail(admin, adminProfile.id, adminProfile.email, pendingCount))
   );
 
   const sent = results.filter((r) => r.status === "fulfilled").length;

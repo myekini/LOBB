@@ -123,7 +123,6 @@ function LoginForm() {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [devRole, setDevRole] = useState<LoginRole>(intentRole ?? "player");
 
   const digits = useMemo(() => nationalDigits(phone), [phone]);
   const formattedPhone = useMemo(() => formatNationalPhone(phone), [phone]);
@@ -137,8 +136,8 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    // role sent for: (a) any coach intent from URL, (b) all roles when dev panel active
-    const roleToSend: LoginRole | undefined = IS_DEV_LOGIN_ENABLED ? devRole : intentRole;
+    // Coach intent is carried from public coach sign-up links. Local test roles use the Dev Test Suite.
+    const roleToSend: LoginRole | undefined = intentRole;
 
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
@@ -183,37 +182,6 @@ function LoginForm() {
             Works for players and coaches. We&apos;ll send a 6-digit WhatsApp code — if you&apos;re new, setup follows automatically.
           </OnboardingCopy>
 
-          {IS_DEV_LOGIN_ENABLED && (
-            <div className="mt-6 rounded-2xl border border-[var(--lobb-border)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.02] p-2.5 shadow-[0_8px_30px_rgba(58,43,20,0.04)] animate-in fade-in duration-300">
-              <p className="px-2 pt-1 pb-1.5 text-[9px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
-                Active Test Role Selection
-              </p>
-              <div className="grid grid-cols-3 gap-1 bg-[var(--lobb-surface-2)] p-1 rounded-xl">
-                {(["player", "coach", "admin"] as const).map((role) => {
-                  const isActive = devRole === role;
-                  return (
-                    <button
-                      key={role}
-                      type="button"
-                      onClick={() => setDevRole(role)}
-                      className={`flex h-9 items-center justify-center rounded-[10px] text-[11px] font-black capitalize transition-all active:scale-[0.98] ${
-                        isActive
-                          ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_12px_rgba(196,98,45,0.15)]"
-                          : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
-                      }`}
-                    >
-                      {role}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-2.5 px-2 text-[10px] font-semibold leading-relaxed text-[var(--lobb-muted)] transition-all duration-300">
-                {devRole === "player" && "🔑 Verifies Tobi Adeyemi (Player): browse, pick availability slots, check custom court fees."}
-                {devRole === "coach" && "🎾 Verifies Ada Okafor (Coach): preview profile setup steps, configure public timeslots."}
-                {devRole === "admin" && "⚡ Verifies System Admin: full dashboard view, review queue management, dispute states."}
-              </p>
-            </div>
-          )}
         </section>
 
         <section className="mt-8">

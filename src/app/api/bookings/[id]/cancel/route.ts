@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
-import { sendCancellationSmsBoth } from "@/lib/booking-sms";
+import { sendBookingCancelledEmails } from "@/lib/email-notifications";
 import { initiateRefund } from "@/lib/paystack";
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
@@ -74,10 +74,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
 
-  // Fetch phone numbers for notifications
+  // Fetch contact details for notifications
   const [coachProfile, playerProfile] = await Promise.all([
-    auth.admin.from("profiles").select("phone_number, full_name").eq("id", booking.coach_id).single(),
-    auth.admin.from("profiles").select("phone_number, full_name").eq("id", booking.player_id).single(),
+    auth.admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", booking.coach_id).single(),
+    auth.admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", booking.player_id).single(),
   ]);
 
   // Build a clear refund summary for SMS
@@ -85,35 +85,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
     ? policy.note
     : `${policy.label} of ₦${refundNgn.toLocaleString("en-NG")} will arrive in 5–7 business days. ${policy.note}`;
 
-  // Queue SMS jobs
-  const smsJobs: Array<Record<string, unknown>> = [];
-  if (playerProfile.data?.phone_number) {
-    smsJobs.push({
-      type: "booking_cancelled_player",
-      recipient_user_id: booking.player_id,
-      recipient_phone: playerProfile.data.phone_number,
-      booking_id: booking.id,
-      coach_id: booking.coach_id,
-      message: `LOBB: Session cancelled.\n${refundSummary}`,
-    });
-  }
-  if (coachProfile.data?.phone_number) {
-    smsJobs.push({
-      type: "booking_cancelled_coach",
-      recipient_user_id: booking.coach_id,
-      recipient_phone: coachProfile.data.phone_number,
-      booking_id: booking.id,
-      coach_id: booking.coach_id,
-      message: `LOBB: Booking on ${booking.starts_at} was cancelled by ${cancelledBy}.`,
-    });
-  }
-  if (smsJobs.length > 0) {
-    await auth.admin.from("sms_jobs").insert(smsJobs);
-  }
-
-  // Send SMS immediately
-  await sendCancellationSmsBoth(
+  await sendBookingCancelledEmails(
+    auth.admin,
     {
+      bookingId: booking.id,
       coachName: coachProfile.data?.full_name ?? "Your coach",
       playerName: playerProfile.data?.full_name ?? "Your player",
       startsAt: booking.starts_at,
@@ -123,7 +98,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
       coachPhone: coachProfile.data?.phone_number ?? null,
       playerPhone: playerProfile.data?.phone_number ?? null,
     },
-    cancelledBy === "coach" ? "coach" : "player",
+    playerProfile.data,
+    coachProfile.data,
+    cancelledBy,
     refundSummary
   ).catch(() => null);
 

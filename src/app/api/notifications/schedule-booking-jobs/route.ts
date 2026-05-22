@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  reminderCoachMessage,
-  reminderPlayerMessage,
-  reviewRequestMessage,
-  type NotificationBookingInfo,
-} from "@/lib/notification-messages";
+import type { NotificationBookingInfo } from "@/lib/notification-messages";
+import { queueBookingReminderEmails } from "@/lib/email-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +38,8 @@ export async function POST(request: Request) {
 
   for (const booking of bookings ?? []) {
     const [coachProfile, playerProfile] = await Promise.all([
-      admin.from("profiles").select("phone_number, full_name").eq("id", booking.coach_id).single(),
-      admin.from("profiles").select("phone_number, full_name").eq("id", booking.player_id).single(),
+      admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", booking.coach_id).single(),
+      admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", booking.player_id).single(),
     ]);
 
     const info: NotificationBookingInfo = {
@@ -61,46 +57,8 @@ export async function POST(request: Request) {
     const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
     const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
 
-    const jobs: Array<Record<string, unknown>> = [];
-    if (info.playerPhone) {
-      jobs.push({
-        type: "booking_24h_reminder_player",
-        recipient_user_id: booking.player_id,
-        recipient_phone: info.playerPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        scheduled_for: reminderAt,
-        message: reminderPlayerMessage(info),
-      });
-      jobs.push({
-        type: "review_request_player",
-        recipient_user_id: booking.player_id,
-        recipient_phone: info.playerPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        scheduled_for: reviewAt,
-        message: reviewRequestMessage(info),
-      });
-    }
-    if (info.coachPhone) {
-      jobs.push({
-        type: "booking_24h_reminder_coach",
-        recipient_user_id: booking.coach_id,
-        recipient_phone: info.coachPhone,
-        booking_id: booking.id,
-        coach_id: booking.coach_id,
-        scheduled_for: reminderAt,
-        message: reminderCoachMessage(info),
-      });
-    }
-
-    if (jobs.length > 0) {
-      const { error: insertError } = await admin.from("sms_jobs").upsert(jobs, {
-        onConflict: "booking_id,type",
-        ignoreDuplicates: true,
-      });
-      if (!insertError) created += jobs.length;
-    }
+    await queueBookingReminderEmails(admin, info, playerProfile.data, coachProfile.data, reminderAt, reviewAt);
+    created += Number(Boolean(playerProfile.data?.email)) * 2 + Number(Boolean(coachProfile.data?.email));
   }
 
   return NextResponse.json({ ok: true, attempted: created });

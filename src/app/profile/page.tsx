@@ -10,6 +10,7 @@ import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 type ProfileData = {
   full_name: string | null;
+  email: string | null;
   phone_number: string | null;
   avatar_url: string | null;
 };
@@ -34,7 +35,7 @@ export default function ProfilePage() {
       if (!user) { router.push("/auth/login"); return; }
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, phone_number, avatar_url")
+        .select("full_name, email, phone_number, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
       setProfile(data);
@@ -82,13 +83,18 @@ export default function ProfilePage() {
                     {profile.phone_number}
                   </p>
                 )}
+                {profile?.email && (
+                  <p className="mt-0.5 text-sm font-semibold text-[var(--lobb-muted)]">
+                    {profile.email}
+                  </p>
+                )}
               </div>
             </>
           )}
         </div>
 
         <ProfileSection title="Account">
-          <ProfileRow href="/profile/edit" label="Edit name / photo" />
+          <ProfileRow href="/profile/edit" label="Edit profile" />
         </ProfileSection>
 
         <ProfileSection title="Support">

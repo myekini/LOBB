@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 
 type StepOnePayload = {
   full_name?: string;
+  email?: string;
   headline?: string;
   profile_photo_url?: string;
 };
@@ -13,6 +14,7 @@ type PreviousProfile = {
   phone_number: string | null;
   role: "player" | "coach" | "admin";
   full_name: string | null;
+  email: string | null;
   avatar_url: string | null;
 };
 
@@ -29,17 +31,22 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => ({}))) as StepOnePayload;
   const fullName = body.full_name?.trim();
+  const email = body.email?.trim().toLowerCase();
   const headline = body.headline?.trim();
   const profilePhotoUrl = body.profile_photo_url?.trim();
 
-  if (!fullName || !headline || !profilePhotoUrl) {
-    return NextResponse.json({ error: "Name, headline, and profile photo are required." }, { status: 400 });
+  if (!fullName || !email || !headline || !profilePhotoUrl) {
+    return NextResponse.json({ error: "Name, email, headline, and profile photo are required." }, { status: 400 });
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
 
   const admin = createAdminClient();
   const { data: previousProfile } = await admin
     .from("profiles")
-    .select("id, phone_number, role, full_name, avatar_url")
+    .select("id, phone_number, role, full_name, email, avatar_url")
     .eq("id", user.id)
     .maybeSingle<PreviousProfile>();
 
@@ -48,6 +55,7 @@ export async function POST(request: Request) {
     role: "coach" as const,
     full_name: fullName,
     phone_number: user.phone || previousProfile?.phone_number || null,
+    email,
     avatar_url: profilePhotoUrl,
   };
 
@@ -81,6 +89,7 @@ export async function POST(request: Request) {
           phone_number: previousProfile.phone_number,
           role: previousProfile.role,
           full_name: previousProfile.full_name,
+          email: previousProfile.email,
           avatar_url: previousProfile.avatar_url,
         });
     } else {

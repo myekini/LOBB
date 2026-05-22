@@ -22,6 +22,7 @@ export default function EditProfilePage() {
 
   const [userId, setUserId] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -35,10 +36,11 @@ export default function EditProfilePage() {
       setUserId(user.id);
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, avatar_url")
+        .select("full_name, email, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
       setName(data?.full_name ?? "");
+      setEmail(data?.email ?? "");
       setAvatarUrl(data?.avatar_url ?? null);
       setLoading(false);
     });
@@ -52,7 +54,12 @@ export default function EditProfilePage() {
   };
 
   const save = async () => {
-    if (!userId || !name.trim()) return;
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!userId || !name.trim() || !normalizedEmail) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      showLobbToast({ type: "error", message: "Enter a valid email address." });
+      return;
+    }
     setSaving(true);
     try {
       const supabase = createClient();
@@ -64,7 +71,7 @@ export default function EditProfilePage() {
 
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: name.trim(), avatar_url: finalAvatarUrl })
+        .update({ full_name: name.trim(), email: normalizedEmail, avatar_url: finalAvatarUrl })
         .eq("id", userId);
 
       if (error) throw error;
@@ -133,9 +140,19 @@ export default function EditProfilePage() {
               />
             </label>
 
+            <label className="mt-5 block">
+              <span className="text-sm font-black">Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none focus:border-[var(--lobb-black)]"
+              />
+            </label>
+
             <button
               onClick={save}
-              disabled={saving || !name.trim()}
+              disabled={saving || !name.trim() || !email.trim()}
               className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white disabled:opacity-60"
             >
               {saving ? <Loader2 className="size-4 animate-spin" /> : "Save Changes"}

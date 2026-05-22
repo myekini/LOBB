@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
-import { payoutProcessedMessage } from "@/lib/notification-messages";
-import { sendOtpSms } from "@/lib/sms";
+import { sendPayoutProcessedEmail } from "@/lib/email-notifications";
 
 export async function POST(request: Request) {
   const auth = await requireRole("admin");
@@ -50,20 +49,12 @@ export async function POST(request: Request) {
 
   const { data: profile } = await auth.admin
     .from("profiles")
-    .select("phone_number")
+    .select("email, email_notifications_enabled")
     .eq("id", body.coach_id)
     .maybeSingle();
 
-  if (profile?.phone_number) {
-    const message = payoutProcessedMessage(amount, rows.length);
-    await auth.admin.from("sms_jobs").insert({
-      type: "payout_processed_coach",
-      recipient_user_id: body.coach_id,
-      recipient_phone: profile.phone_number,
-      coach_id: body.coach_id,
-      message,
-    });
-    await sendOtpSms({ phone: profile.phone_number, message }).catch(() => null);
+  if (profile?.email && profile.email_notifications_enabled !== false) {
+    await sendPayoutProcessedEmail(auth.admin, body.coach_id, profile.email, amount, rows.length);
   }
 
   await auth.admin.from("admin_audit_log").insert({

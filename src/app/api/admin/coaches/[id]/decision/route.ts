@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
-import { coachApprovedMessage, coachRejectedMessage } from "@/lib/notification-messages";
-import { sendOtpSms } from "@/lib/sms";
+import { sendCoachDecisionEmail } from "@/lib/email-notifications";
 
 type DecisionAction = "approve" | "reject" | "suspend" | "unsuspend";
 
@@ -77,28 +76,12 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const { data: profile } = await auth.admin
     .from("profiles")
-    .select("phone_number")
+    .select("email, email_notifications_enabled")
     .eq("id", params.id)
     .maybeSingle();
 
-  if (profile?.phone_number) {
-    const message =
-      action === "approve"
-        ? coachApprovedMessage()
-        : action === "reject"
-          ? coachRejectedMessage(reason!, needsDirectContact)
-          : null;
-
-    if (message) {
-      await auth.admin.from("sms_jobs").insert({
-        type: action === "approve" ? "coach_approved" : "coach_rejected",
-        recipient_user_id: params.id,
-        recipient_phone: profile.phone_number,
-        coach_id: params.id,
-        message,
-      });
-      await sendOtpSms({ phone: profile.phone_number, message }).catch(() => null);
-    }
+  if ((action === "approve" || action === "reject") && profile?.email && profile.email_notifications_enabled !== false) {
+    await sendCoachDecisionEmail(auth.admin, params.id, profile.email, action, reason, needsDirectContact);
   }
 
   return NextResponse.json({ ok: true, coach, needs_direct_contact: needsDirectContact });

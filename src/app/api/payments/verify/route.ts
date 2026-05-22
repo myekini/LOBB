@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
-import {
-  sendPlayerBookingConfirmedSms,
-  sendCoachBookingNotificationSms,
-} from "@/lib/booking-sms";
+import { queueBookingReminderEmails, sendBookingConfirmedEmails } from "@/lib/email-notifications";
 import type { BookingRow, BookingWithDetails } from "@/lib/types";
 
 export async function GET(request: Request) {
@@ -82,10 +79,10 @@ export async function GET(request: Request) {
         if (updatedBooking) {
           await admin.from("slot_locks").delete().eq("booking_id", updatedBooking.id);
 
-          // Send SMSes (webhook may not have fired yet)
+          // Send and schedule transactional emails (webhook may not have fired yet)
           const [cp, pp] = await Promise.all([
-            admin.from("profiles").select("phone_number, full_name").eq("id", updatedBooking.coach_id).single(),
-            admin.from("profiles").select("phone_number, full_name").eq("id", updatedBooking.player_id).single(),
+            admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", updatedBooking.coach_id).single(),
+            admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", updatedBooking.player_id).single(),
           ]);
 
           const eventRecorded = await admin
@@ -96,7 +93,11 @@ export async function GET(request: Request) {
 
           // Only send if webhook hasn't processed this yet
           if (!eventRecorded.data?.processed_at) {
+            const startMs = new Date(updatedBooking.starts_at).getTime();
+            const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
+            const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
             const info = {
+              bookingId:    updatedBooking.id,
               coachName:   cp.data?.full_name  ?? "Your coach",
               playerName:  pp.data?.full_name  ?? "Your player",
               startsAt:    updatedBooking.starts_at,
@@ -107,8 +108,8 @@ export async function GET(request: Request) {
               playerPhone: pp.data?.phone_number ?? null,
             };
             await Promise.allSettled([
-              sendPlayerBookingConfirmedSms(info),
-              sendCoachBookingNotificationSms(info),
+              sendBookingConfirmedEmails(admin, info, pp.data, cp.data),
+              queueBookingReminderEmails(admin, info, pp.data, cp.data, reminderAt, reviewAt),
             ]);
             // Record as processed to prevent webhook double-fire
             await admin.from("paystack_events").upsert(

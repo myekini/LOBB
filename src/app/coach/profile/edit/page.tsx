@@ -21,6 +21,7 @@ import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 
 type ProfileFormSnapshot = {
   fullName: string;
+  email: string;
   headline: string;
   bio: string;
   demoVideoUrl: string;
@@ -88,6 +89,7 @@ export default function CoachProfileEditPage() {
 
   // Form state
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [headline, setHeadline] = useState("");
   const [bio, setBio] = useState("");
   const [demoVideoUrl, setDemoVideoUrl] = useState("");
@@ -110,6 +112,7 @@ export default function CoachProfileEditPage() {
     () =>
       formSnapshot({
         fullName,
+        email,
         headline,
         bio,
         demoVideoUrl,
@@ -125,6 +128,7 @@ export default function CoachProfileEditPage() {
       }),
     [
       fullName,
+      email,
       headline,
       bio,
       demoVideoUrl,
@@ -150,16 +154,15 @@ export default function CoachProfileEditPage() {
         return;
       }
 
-      supabase
-        .from("coaches")
-        .select("*")
-        .eq("id", user.id)
-        .single()
-        .then(({ data }) => {
+      Promise.all([
+        supabase.from("coaches").select("*").eq("id", user.id).single(),
+        supabase.from("profiles").select("email").eq("id", user.id).maybeSingle(),
+      ]).then(([{ data }, profileResult]) => {
           if (!data) return;
           const coach = data as CoachRow;
           const loaded = {
             fullName: coach.full_name ?? "",
+            email: profileResult.data?.email ?? "",
             headline: coach.headline ?? "",
             bio: coach.bio ?? "",
             demoVideoUrl: coach.demo_video_url ?? "",
@@ -174,6 +177,7 @@ export default function CoachProfileEditPage() {
             photoUrl: coach.profile_photo_url ?? "",
           };
           setFullName(loaded.fullName);
+          setEmail(loaded.email);
           setHeadline(loaded.headline);
           setBio(loaded.bio);
           setDemoVideoUrl(loaded.demoVideoUrl);
@@ -209,6 +213,11 @@ export default function CoachProfileEditPage() {
       setError("Bio must be between 50 and 600 characters.");
       return;
     }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError("Enter a valid email address.");
+      return;
+    }
     setSaving(true);
     setError("");
 
@@ -239,6 +248,7 @@ export default function CoachProfileEditPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           full_name: fullName,
+          email: normalizedEmail,
           headline,
           bio,
           demo_video_url: demoVideoUrl || null,
@@ -266,6 +276,7 @@ export default function CoachProfileEditPage() {
         setInitialSnapshot(
           formSnapshot({
             fullName: fullName.trim(),
+            email: normalizedEmail,
             headline,
             bio,
             demoVideoUrl,
@@ -362,6 +373,15 @@ export default function CoachProfileEditPage() {
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
+                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+                />
+              </label>
+              <label className="block">
+                <span className="text-sm font-bold">Email *</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
                 />
               </label>
@@ -581,7 +601,7 @@ export default function CoachProfileEditPage() {
         <button
           type="button"
           onClick={save}
-          disabled={saving || bioInvalid || !fullName.trim()}
+          disabled={saving || bioInvalid || !fullName.trim() || !email.trim()}
           className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-black)] text-sm font-black text-white shadow-[0_14px_30px_rgba(11,11,10,0.16)] transition hover:bg-black active:scale-[0.98] disabled:pointer-events-none disabled:bg-[#cfc6b8]"
         >
           {saving ? "Saving..." : "Save Profile"}

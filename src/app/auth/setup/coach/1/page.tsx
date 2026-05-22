@@ -16,6 +16,7 @@ import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 export default function CoachSetupStepOnePage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [headline, setHeadline] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -23,14 +24,20 @@ export default function CoachSetupStepOnePage() {
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const canContinue = Boolean(fullName.trim() && headline.trim() && photoUrl && photoFile);
+  const canContinue = Boolean(fullName.trim() && email.trim() && headline.trim() && photoUrl && photoFile);
 
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
     setSubmitted(true);
 
     if (!canContinue) {
-      setError("Add your name, headline, and profile photo to continue.");
+      setError("Add your name, email, headline, and profile photo to continue.");
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError("Enter a valid email address.");
       return;
     }
 
@@ -57,6 +64,7 @@ export default function CoachSetupStepOnePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           full_name: fullName,
+          email: normalizedEmail,
           headline,
           profile_photo_url: uploadedPhotoUrl,
         }),
@@ -132,6 +140,19 @@ export default function CoachSetupStepOnePage() {
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               placeholder="Enter your full name"
+              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-sm font-bold text-[var(--lobb-black)]">
+              Email <span className="text-[#ba1a1a]">*</span>
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
               className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
             />
           </label>
