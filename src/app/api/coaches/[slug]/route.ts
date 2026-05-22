@@ -18,7 +18,7 @@ export async function GET(
     const { data, error } = await supabase
       .from("coach_profiles_public")
       .select("*")
-      .eq("slug", slug)
+      .or(`slug.eq.${slug},id.eq.${slug}`)
       .eq("status", "active")
       .maybeSingle();
 

@@ -97,9 +97,9 @@ export async function POST(request: Request) {
     .from("bookings")
     .update({ status: "confirmed" })
     .eq("id", payment.booking_id)
-    .eq("status", "pending")
+    .in("status", ["pending", "pending_payment"])
     .select("id, coach_id, player_id, starts_at, ends_at, location, player_notes")
-    .single();
+    .maybeSingle();
 
   // ── Remove slot lock ───────────────────────────────────────────────────────
   if (booking) {

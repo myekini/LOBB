@@ -15,11 +15,11 @@ export async function GET(
   try {
     const admin = createAdminClient();
 
-    // Resolve slug → coach id (must be active)
+    // Resolve slug/id → coach id (must be active)
     const { data: coach, error: coachErr } = await admin
       .from("coaches")
       .select("id")
-      .eq("slug", slug)
+      .or(`slug.eq.${slug},id.eq.${slug}`)
       .eq("status", "active")
       .maybeSingle();
 

@@ -137,7 +137,7 @@ export async function createSubaccount(input: CreateSubaccountInput): Promise<Cr
 // ─── Webhook signature ─────────────────────────────────────────────────────────
 
 export function verifyWebhookSignature(rawBody: string, signature: string): boolean {
-  const secret = process.env.PAYSTACK_WEBHOOK_SECRET;
+  const secret = process.env.PAYSTACK_WEBHOOK_SECRET || process.env.PAYSTACK_SECRET_KEY;
   if (!secret) return false;
   const hash = crypto.createHmac("sha512", secret).update(rawBody).digest("hex");
   return hash === signature;

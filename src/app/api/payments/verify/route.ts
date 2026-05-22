@@ -29,6 +29,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
+    if (payment.status === "paid") {
+      await admin
+        .from("bookings")
+        .update({ status: "confirmed" })
+        .eq("id", payment.booking_id)
+        .in("status", ["pending", "pending_payment"]);
+      await admin.from("slot_locks").delete().eq("booking_id", payment.booking_id);
+    }
+
     // ── If booking not yet confirmed, call Paystack to double-check ────────────
     // (webhook may not have arrived yet)
     if (payment.status !== "paid") {
@@ -41,7 +50,7 @@ export async function GET(request: Request) {
 
       if (txn.status === "success") {
         // Mark payment paid + confirm booking (idempotent via status checks)
-        await admin
+        const { error: updatePaymentErr } = await admin
           .from("payments")
           .update({
             status:      "paid",
@@ -49,15 +58,23 @@ export async function GET(request: Request) {
             raw_payload: txn,
           })
           .eq("id", payment.id)
-          .eq("status", "pending");
+          .neq("status", "paid");
 
-        const { data: updatedBooking } = await admin
+        if (updatePaymentErr) {
+          return NextResponse.json({ error: updatePaymentErr.message }, { status: 500 });
+        }
+
+        const { data: updatedBooking, error: updateBookingErr } = await admin
           .from("bookings")
           .update({ status: "confirmed" })
           .eq("id", payment.booking_id)
-          .eq("status", "pending")
+          .in("status", ["pending", "pending_payment"])
           .select("id, coach_id, player_id, starts_at, location, player_notes")
-          .single();
+          .maybeSingle();
+
+        if (updateBookingErr) {
+          return NextResponse.json({ error: updateBookingErr.message }, { status: 500 });
+        }
 
         // Remove slot lock
         if (updatedBooking) {

@@ -13,12 +13,10 @@ function isDevLoginEnabled() {
   return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
 }
 
-const TEST_PHONE = "+2348164555012";
-
 const TEST_PHONES: Record<DevRole, string> = {
-  player: TEST_PHONE,
-  coach:  TEST_PHONE,
-  admin:  TEST_PHONE,
+  player: "+2348164555012",
+  coach:  "+2348164555013",
+  admin:  "+2348164555014",
 };
 
 const TEST_PROFILES: Record<DevRole, Record<string, unknown>> = {

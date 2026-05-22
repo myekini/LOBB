@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const { data } = await supabase
     .from("coach_profiles_public")
     .select("full_name, headline, primary_location")
-    .eq("slug", params.slug)
+    .or(`slug.eq.${params.slug},id.eq.${params.slug}`)
     .eq("status", "active")
     .maybeSingle();
 
@@ -28,7 +28,7 @@ export default async function CoachSlugPage({ params }: { params: { slug: string
   const { data } = await supabase
     .from("coach_profiles_public")
     .select("*")
-    .eq("slug", params.slug)
+    .or(`slug.eq.${params.slug},id.eq.${params.slug}`)
     .eq("status", "active")
     .maybeSingle();
 

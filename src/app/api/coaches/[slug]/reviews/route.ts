@@ -7,7 +7,7 @@ export async function GET(_request: Request, { params }: { params: { slug: strin
   const { data: coach, error: coachError } = await admin
     .from("coaches")
     .select("id")
-    .eq("slug", params.slug)
+    .or(`slug.eq.${params.slug},id.eq.${params.slug}`)
     .eq("status", "active")
     .maybeSingle();
 
