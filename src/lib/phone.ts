@@ -12,6 +12,3 @@ export function formatNigerianPhoneNumber(value: string) {
   return `+234${digits}`;
 }
 
-export function toTermiiPhoneNumber(value: string) {
-  return formatNigerianPhoneNumber(value).replace(/^\+/, "");
-}

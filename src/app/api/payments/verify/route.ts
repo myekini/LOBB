@@ -68,16 +68,32 @@ export async function GET(request: Request) {
           .update({ status: "confirmed" })
           .eq("id", payment.booking_id)
           .in("status", ["pending", "pending_payment"])
-          .select("id, coach_id, player_id, starts_at, location, player_notes")
+          .select("id, coach_id, player_id, starts_at, ends_at, location, player_notes, location_venue_id, location_court_id")
           .maybeSingle();
 
         if (updateBookingErr) {
           return NextResponse.json({ error: updateBookingErr.message }, { status: 500 });
         }
 
-        // Remove slot lock
+        // Remove slot lock and reserve court slot if applicable
         if (updatedBooking) {
           await admin.from("slot_locks").delete().eq("booking_id", updatedBooking.id);
+
+          // Reserve the National Stadium court slot to prevent double-booking
+          if (updatedBooking.location_venue_id === "national_stadium" && updatedBooking.location_court_id) {
+            await admin.from("court_slot_bookings").upsert(
+              {
+                court_id:      updatedBooking.location_court_id,
+                venue_id:      updatedBooking.location_venue_id,
+                booking_id:    updatedBooking.id,
+                coach_id:      updatedBooking.coach_id,
+                player_id:     updatedBooking.player_id,
+                slot_starts_at: updatedBooking.starts_at,
+                slot_ends_at:   updatedBooking.ends_at,
+              },
+              { onConflict: "court_id,slot_starts_at", ignoreDuplicates: true }
+            );
+          }
 
           // Send and schedule transactional emails (webhook may not have fired yet)
           const [cp, pp] = await Promise.all([

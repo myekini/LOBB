@@ -16,7 +16,7 @@ type ActiveTab = "home" | "browse" | "bookings" | "profile";
 export function PlayerBottomNav({ active }: { active: ActiveTab }) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 md:hidden">
-      <div className="mx-auto flex max-w-[390px] items-center justify-between rounded-[28px] border border-black/[0.06] bg-white/80 p-1.5 shadow-[0_16px_48px_rgba(13,13,13,0.16)] backdrop-blur-3xl animate-in slide-in-from-bottom-5 duration-500 fill-mode-both">
+      <div className="mx-auto flex max-w-[390px] items-center justify-between rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1.5 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-3xl animate-in slide-in-from-bottom-5 duration-500 fill-mode-both">
         {items.map((item) => {
           const isActive = item.label.toLowerCase() === active;
           const Icon = item.icon;
@@ -26,8 +26,8 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative flex h-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-[22px] text-[var(--lobb-muted)] transition-all duration-300 active:scale-[0.95]",
-                isActive ? "text-[var(--lobb-black)] bg-black/[0.03]" : "hover:text-[var(--lobb-black)]"
+                "group relative flex h-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-[18px] text-[var(--lobb-text-tertiary)] transition-all duration-300 active:scale-[0.95]",
+                isActive ? "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]" : "hover:text-[var(--lobb-text-primary)]"
               )}
             >
               <Icon
@@ -36,7 +36,7 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
               />
               <span className={cn(
                 "text-[9px] font-black tracking-wider uppercase leading-none transition-colors",
-                isActive ? "text-[var(--lobb-black)]" : "text-[var(--lobb-muted)]"
+                isActive ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-tertiary)]"
               )}>
                 {item.label}
               </span>
@@ -52,9 +52,10 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
 }
 
 export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
+  const desktopItems = items.filter((item) => item.label !== "Profile");
   return (
     <nav className="hidden items-center gap-1 md:flex" aria-label="Player navigation">
-      {items.map((item) => {
+      {desktopItems.map((item) => {
         const isActive = item.label.toLowerCase() === active;
         const Icon = item.icon;
         return (
@@ -65,8 +66,8 @@ export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
             className={cn(
               "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-black transition",
               isActive
-                ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_24px_rgba(13,13,13,0.14)]"
-                : "text-[var(--lobb-muted)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-black)]"
+                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
+                : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"
             )}
           >
             <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />

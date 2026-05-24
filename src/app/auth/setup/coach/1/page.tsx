@@ -174,9 +174,9 @@ export default function CoachSetupStepOnePage() {
 
         <div className="mt-auto pb-8">
           {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={saving}>
+          <OnboardingButton type="submit" disabled={saving} loading={saving}>
             <span className="inline-flex items-center gap-2">
-              {saving ? "Saving..." : "Next"} <ArrowRight className="size-4" />
+              {saving ? "Saving" : "Next"} {!saving && <ArrowRight className="size-4" />}
             </span>
           </OnboardingButton>
         </div>

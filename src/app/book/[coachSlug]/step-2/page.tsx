@@ -2,10 +2,11 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, useMemo } from "react";
-import { CalendarDays, CheckCircle2, Clock3, MapPin, Timer, HelpCircle } from "lucide-react";
+import { AlertCircle, CalendarDays, CheckCircle2, Clock3, Info, Lock, MapPin, Timer, Users } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { CoachPublicProfile } from "@/lib/types";
+import { LAGOS_COURTS, NATIONAL_STADIUM_COURTS } from "@/lib/types";
 
 function formatCountdown(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -31,14 +32,29 @@ function formatSlotEndTime(iso: string) {
 function countdownStyle(seconds: number) {
   if (seconds <= 120) return "bg-red-50 text-[var(--lobb-error)]";
   if (seconds <= 240) return "bg-[#fff7e0] text-[var(--lobb-warning)]";
-  return "bg-[#fff0e8] text-[var(--lobb-clay)]";
+  return "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]";
 }
 
+function isWeekday(iso: string) {
+  const day = new Date(iso).getDay(); // 0=Sun, 6=Sat
+  return day >= 1 && day <= 5;
+}
+
+function slotHour(iso: string) {
+  return new Date(iso).getHours();
+}
+
+function isMemberCourtPubliclyAccessible(iso: string) {
+  return isWeekday(iso) && slotHour(iso) < 16;
+}
+
+type CourtPickerMode = "curated" | "custom";
+
 function BookingStep2Content() {
-  const params = useParams<{ coachSlug: string }>();
-  const search = useSearchParams();
-  const router = useRouter();
-  const slug   = params.coachSlug;
+  const params  = useParams<{ coachSlug: string }>();
+  const search  = useSearchParams();
+  const router  = useRouter();
+  const slug    = params.coachSlug;
 
   const slot      = search.get("slot")    ?? "";
   const lockId    = search.get("lock")    ?? "";
@@ -49,14 +65,14 @@ function BookingStep2Content() {
     if (!expiresAt) return 10 * 60;
     return Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
   });
-
   const warnedRef = useRef(false);
 
-  // Advanced structured court options
-  const [courtOption, setCourtOption] = useState<"coach_provided" | "coach_recommend" | "player_provided">("player_provided");
-  const [selectedArea, setSelectedArea] = useState("");
-  const [customAddress, setCustomAddress] = useState("");
-  const [note, setNote] = useState("");
+  // Location state
+  const [mode, setMode]                     = useState<CourtPickerMode>("curated");
+  const [selectedCourtId, setSelectedCourtId] = useState<string>("");
+  const [selectedStadiumCourtId, setSelectedStadiumCourtId] = useState<string>("");
+  const [customAddress, setCustomAddress]   = useState("");
+  const [note, setNote]                     = useState("");
 
   useEffect(() => {
     if (!slot || !lockId || !expiresAt) router.replace(`/coaches/${slug}`);
@@ -64,33 +80,13 @@ function BookingStep2Content() {
 
   useEffect(() => {
     let cancelled = false;
-
     fetch(`/api/coaches/${slug}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((payload: { coach?: CoachPublicProfile } | null) => {
-        if (!cancelled && payload?.coach) {
-          const c = payload.coach;
-          setCoach(c);
-
-          // Set default option based on coach availability and court access settings
-          if (c.court_access === "coach_has_access") {
-            setCourtOption("coach_provided");
-          } else if (c.court_access === "coach_can_recommend") {
-            setCourtOption("coach_recommend");
-          } else {
-            setCourtOption("player_provided");
-          }
-
-          // Set default area to primary location
-          const primaryLoc = c.primary_location || c.service_areas[0] || "";
-          setSelectedArea(primaryLoc);
-        }
+        if (!cancelled && payload?.coach) setCoach(payload.coach);
       })
       .catch(() => undefined);
-
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [slug]);
 
   useEffect(() => {
@@ -111,43 +107,58 @@ function BookingStep2Content() {
     }
   }, [seconds]);
 
-  // Compute unique locations covered by the coach
-  const coachLocations = useMemo(() => {
-    if (!coach) return [];
-    const list = [coach.primary_location, ...coach.service_areas].filter(Boolean) as string[];
-    return Array.from(new Set(list));
+  // Filter courts to the coach's service areas
+  const relevantCourts = useMemo(() => {
+    if (!coach) return LAGOS_COURTS;
+    const coachAreas = [coach.primary_location, ...coach.service_areas].filter(Boolean).map((a) => a!.toLowerCase());
+    if (coachAreas.length === 0) return LAGOS_COURTS;
+    return LAGOS_COURTS.filter((c) => coachAreas.some((a) => c.area.toLowerCase().includes(a) || a.includes(c.area.toLowerCase())));
   }, [coach]);
 
-  // Compile final court string
-  const finalCourtString = useMemo(() => {
-    if (courtOption === "coach_provided") {
-      return `Coach-provided court in ${selectedArea}`;
+  const selectedCourt = useMemo(() => LAGOS_COURTS.find((c) => c.id === selectedCourtId) ?? null, [selectedCourtId]);
+
+  const isNatStadiumSelected = selectedCourtId === "national_stadium";
+
+  // National Stadium member court accessibility for the selected slot
+  const memberCourtsAccessible = useMemo(() => isMemberCourtPubliclyAccessible(slot), [slot]);
+  const isWeekendSlot = useMemo(() => !isWeekday(slot), [slot]);
+
+  // Compile final location string
+  const finalLocation = useMemo(() => {
+    if (mode === "custom") return customAddress.trim();
+    if (!selectedCourt) return "";
+    if (isNatStadiumSelected && selectedStadiumCourtId) {
+      const sc = NATIONAL_STADIUM_COURTS.find((c) => c.id === selectedStadiumCourtId);
+      return sc ? `${sc.label} — National Stadium, Surulere` : `National Stadium Tennis Courts, Surulere`;
     }
-    if (courtOption === "coach_recommend") {
-      return `Coach to recommend a court near ${selectedArea}`;
-    }
-    return `${customAddress.trim()}${selectedArea ? ` (${selectedArea})` : ""}`;
-  }, [courtOption, selectedArea, customAddress]);
+    return `${selectedCourt.name}, ${selectedCourt.area}`;
+  }, [mode, customAddress, selectedCourt, isNatStadiumSelected, selectedStadiumCourtId]);
 
   const isContinueDisabled = useMemo(() => {
-    if (courtOption === "player_provided" && customAddress.trim().length === 0) {
-      return true;
-    }
-    if (!selectedArea) {
-      return true;
-    }
+    if (mode === "custom") return customAddress.trim().length === 0;
+    if (!selectedCourtId) return true;
+    if (isNatStadiumSelected && !selectedStadiumCourtId) return true;
     return false;
-  }, [courtOption, selectedArea, customAddress]);
+  }, [mode, customAddress, selectedCourtId, isNatStadiumSelected, selectedStadiumCourtId]);
 
   const handleContinue = () => {
-    router.push(
-      `/book/${slug}/step-3?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}&location=${encodeURIComponent(finalCourtString)}&note=${encodeURIComponent(note.trim())}`
-    );
+    const venueId  = mode === "curated" && selectedCourtId ? selectedCourtId : "";
+    const courtId  = isNatStadiumSelected ? selectedStadiumCourtId : "";
+    const params = new URLSearchParams({
+      slot, lock: lockId, expires: expiresAt,
+      location: finalLocation,
+      note: note.trim(),
+      ...(venueId  ? { venue_id: venueId }   : {}),
+      ...(courtId  ? { court_id: courtId }   : {}),
+    });
+    router.push(`/book/${slug}/step-3?${params.toString()}`);
   };
+
+  const courtsToShow = relevantCourts.length > 0 ? relevantCourts : LAGOS_COURTS;
 
   return (
     <BookingShell step={2} backHref={`/book/${slug}/step-1`}>
-      {/* Compact slot recap */}
+      {/* Slot recap */}
       {slot && (
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3 py-1.5 text-xs font-bold animate-in fade-in-0 slide-in-from-top-1 duration-300">
@@ -170,119 +181,210 @@ function BookingStep2Content() {
         {formatCountdown(seconds)} remaining
       </p>
 
-      {/* Where to play */}
+      {/* Location header */}
       <div className="mt-6">
         <span className="flex items-center gap-2 text-sm font-black text-[var(--lobb-black)] uppercase tracking-wider">
           <MapPin className="size-4 text-[var(--lobb-clay)]" />
           Where will you play? <span className="text-[var(--lobb-error)]">*</span>
         </span>
 
-        {coach && (
-          <div className="mt-3 space-y-4">
-            {/* Strategy Toggles */}
-            <div className="grid gap-2.5">
-              {coach.court_access === "coach_has_access" && (
+        {/* Mode toggle */}
+        <div className="mt-3 flex gap-2 rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5">
+          <button
+            type="button"
+            onClick={() => setMode("curated")}
+            className={`flex-1 rounded-xl py-2 text-xs font-black transition-all duration-200 ${
+              mode === "curated" ? "bg-white shadow-sm text-[var(--lobb-clay)]" : "text-[var(--lobb-muted)]"
+            }`}
+          >
+            Choose a court
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("custom")}
+            className={`flex-1 rounded-xl py-2 text-xs font-black transition-all duration-200 ${
+              mode === "custom" ? "bg-white shadow-sm text-[var(--lobb-clay)]" : "text-[var(--lobb-muted)]"
+            }`}
+          >
+            Enter address
+          </button>
+        </div>
+
+        {/* Curated court picker */}
+        {mode === "curated" && (
+          <div className="mt-3 space-y-2.5 animate-in fade-in-0 duration-200">
+            {courtsToShow.map((court) => {
+              const isSelected = selectedCourtId === court.id;
+              const isLocked = court.accessRule === "members_only";
+              return (
                 <button
+                  key={court.id}
                   type="button"
-                  onClick={() => setCourtOption("coach_provided")}
-                  className={`rounded-2xl border p-4 text-left transition-all duration-300 active:scale-[0.99] ${
-                    courtOption === "coach_provided"
-                      ? "border-[var(--lobb-clay)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.03] text-[var(--lobb-black)] shadow-[0_12px_32px_rgba(196,98,45,0.06)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/30 hover:bg-white text-[var(--lobb-black)]"
+                  onClick={() => {
+                    if (isLocked) return;
+                    setSelectedCourtId(court.id);
+                    setSelectedStadiumCourtId(""); // reset stadium sub-court on change
+                  }}
+                  disabled={isLocked}
+                  className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 active:scale-[0.99] ${
+                    isLocked
+                      ? "opacity-50 cursor-not-allowed border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
+                      : isSelected
+                      ? "border-[var(--lobb-clay)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.03] shadow-[0_8px_24px_rgba(196,98,45,0.07)]"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/30 hover:bg-white"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`size-4.5 transition-colors duration-300 ${courtOption === "coach_provided" ? "text-[var(--lobb-clay)]" : "text-transparent border border-[var(--lobb-border)] rounded-full bg-white"}`} />
-                    <span className="text-sm font-black">Use coach-provided court</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <CheckCircle2
+                        className={`size-4.5 shrink-0 transition-colors ${
+                          isSelected ? "text-[var(--lobb-clay)]" : "text-transparent"
+                        }`}
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm font-black truncate">{court.name}</p>
+                        <p className="text-xs font-semibold text-[var(--lobb-muted)]">{court.area} · {court.courtCount ?? "?"} courts</p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {court.isNationalStadium && (
+                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-black text-amber-700 border border-amber-200">
+                          GRANOLA
+                        </span>
+                      )}
+                      {isLocked && <Lock className="size-3.5 text-[var(--lobb-muted)]" />}
+                      {court.accessRule === "members_weekday_restricted" && (
+                        <Users className="size-3.5 text-amber-600" />
+                      )}
+                    </div>
                   </div>
-                  <p className="mt-1 text-xs font-semibold leading-relaxed text-[var(--lobb-muted)]">
-                    {coach.full_name} will arrange the court in their operating area. Exact club/venue confirmed post-booking.
-                  </p>
+                  {court.publicNote && !isLocked && (
+                    <p className="mt-1.5 ml-6 text-xs font-semibold text-[var(--lobb-muted)] leading-relaxed">
+                      {court.publicNote}
+                    </p>
+                  )}
+                  {isLocked && (
+                    <p className="mt-1.5 ml-6 text-xs font-semibold text-[var(--lobb-muted)]">
+                      Members and guests only
+                    </p>
+                  )}
                 </button>
-              )}
+              );
+            })}
+          </div>
+        )}
 
-              {coach.court_access === "coach_can_recommend" && (
-                <button
-                  type="button"
-                  onClick={() => setCourtOption("coach_recommend")}
-                  className={`rounded-2xl border p-4 text-left transition-all duration-300 active:scale-[0.99] ${
-                    courtOption === "coach_recommend"
-                      ? "border-[var(--lobb-clay)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.03] text-[var(--lobb-black)] shadow-[0_12px_32px_rgba(196,98,45,0.06)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/30 hover:bg-white text-[var(--lobb-black)]"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`size-4.5 transition-colors duration-300 ${courtOption === "coach_recommend" ? "text-[var(--lobb-clay)]" : "text-transparent border border-[var(--lobb-border)] rounded-full bg-white"}`} />
-                    <span className="text-sm font-black">Let coach recommend a court</span>
-                  </div>
-                  <p className="mt-1 text-xs font-semibold leading-relaxed text-[var(--lobb-muted)]">
-                    {coach.full_name} will suggest a suitable court nearby.
-                  </p>
-                </button>
-              )}
+        {/* Custom address input */}
+        {mode === "custom" && (
+          <div className="mt-3 animate-in fade-in-0 duration-200">
+            <textarea
+              value={customAddress}
+              onChange={(e) => setCustomAddress(e.target.value)}
+              placeholder="e.g. Lekki Phase 1 Tennis Club, Court 2, Lagos"
+              rows={3}
+              className="w-full resize-none rounded-2xl border border-[var(--lobb-border)] bg-white p-4 text-sm font-semibold outline-none placeholder:text-[#b4ad9e] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10 shadow-sm transition-all duration-200"
+            />
+          </div>
+        )}
 
-              <button
-                type="button"
-                onClick={() => setCourtOption("player_provided")}
-                className={`rounded-2xl border p-4 text-left transition-all duration-300 active:scale-[0.99] ${
-                  courtOption === "player_provided"
-                    ? "border-[var(--lobb-clay)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.03] text-[var(--lobb-black)] shadow-[0_12px_32px_rgba(196,98,45,0.06)]"
-                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/30 hover:bg-white text-[var(--lobb-black)]"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className={`size-4.5 transition-colors duration-300 ${courtOption === "player_provided" ? "text-[var(--lobb-clay)]" : "text-transparent border border-[var(--lobb-border)] rounded-full bg-white"}`} />
-                  <span className="text-sm font-black">I will arrange the court</span>
-                </div>
-                <p className="mt-1 text-xs font-semibold leading-relaxed text-[var(--lobb-muted)]">
-                  You provide the venue (your club, estate, or booked court) and the coach meets you there.
-                </p>
-              </button>
+        {/* National Stadium granola sub-picker */}
+        {mode === "curated" && isNatStadiumSelected && (
+          <div className="mt-4 rounded-[24px] border border-amber-200 bg-amber-50/60 p-4 animate-in fade-in-0 slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertCircle className="size-4 text-amber-600 shrink-0" />
+              <p className="text-xs font-black text-amber-800 uppercase tracking-wider">Select a specific court</p>
             </div>
 
-            {/* Selection Grid for Coach Locations */}
-            <div className="rounded-[24px] border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-5 animate-in fade-in-50 duration-300 shadow-sm">
-              <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--lobb-clay)] mb-3">
-                {courtOption === "player_provided"
-                  ? "Select travel area for the coach:"
-                  : "Select court location area:"}
-              </span>
+            {/* Saturday / peak warning */}
+            {isWeekendSlot && (
+              <div className="mb-3 rounded-xl border border-amber-300 bg-amber-100 px-3 py-2.5 flex items-start gap-2">
+                <Info className="size-4 shrink-0 text-amber-700 mt-0.5" />
+                <p className="text-xs font-semibold text-amber-800 leading-relaxed">
+                  Saturday mornings are peak hours at National Stadium. Courts fill quickly — sessions are strictly 60 minutes. The venue typically clears by 12pm when the sun becomes intense.
+                </p>
+              </div>
+            )}
 
-              <div className="flex flex-wrap gap-2">
-                {coachLocations.map((loc) => {
-                  const isSelected = selectedArea === loc;
+            {/* Section: Front courts (members) */}
+            <div>
+              <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-amber-700">
+                Front Courts — Members
+                {memberCourtsAccessible ? (
+                  <span className="ml-2 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 normal-case tracking-normal font-black">Open now</span>
+                ) : (
+                  <span className="ml-2 rounded-full bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 normal-case tracking-normal font-semibold">
+                    {isWeekendSlot ? "Closed weekends" : "Closed after 4pm"}
+                  </span>
+                )}
+              </p>
+              <div className="space-y-1.5">
+                {NATIONAL_STADIUM_COURTS.filter((c) => c.isMemberCourt).map((sc) => {
+                  const isLocked = !memberCourtsAccessible;
+                  const isSelected = selectedStadiumCourtId === sc.id;
                   return (
-                    <button
-                      key={loc}
-                      type="button"
-                      onClick={() => setSelectedArea(loc)}
-                      className={`rounded-full px-4 py-2 text-xs font-black transition-all duration-300 active:scale-[0.96] ${
-                        isSelected
-                          ? "bg-[var(--lobb-clay)] text-white shadow-[0_6px_14px_rgba(196,98,45,0.2)] scale-105"
-                          : "border border-[var(--lobb-border)] bg-white text-[var(--lobb-black)] hover:border-[var(--lobb-clay)]/40 hover:bg-[var(--lobb-surface)]"
+                    <button key={sc.id} type="button" disabled={isLocked}
+                      onClick={() => { if (!isLocked) setSelectedStadiumCourtId(sc.id); }}
+                      className={`w-full rounded-xl border p-3 text-left transition-all duration-200 ${
+                        isLocked ? "opacity-40 cursor-not-allowed border-amber-200 bg-white/40"
+                          : isSelected ? "border-amber-400 bg-white shadow-sm"
+                          : "border-amber-200 bg-white hover:border-amber-400"
                       }`}
                     >
-                      {loc}
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`size-4 shrink-0 ${isSelected ? "text-amber-600" : "text-transparent"}`} />
+                        <span className="text-sm font-black">{sc.label}</span>
+                      </div>
                     </button>
                   );
                 })}
               </div>
-
-              {courtOption === "player_provided" && (
-                <div className="mt-4 pt-4 border-t border-[var(--lobb-border)] animate-in fade-in-0 duration-300">
-                  <span className="block text-[10px] font-black uppercase tracking-wider text-[var(--lobb-clay)] mb-2">
-                    Enter exact court name or address: <span className="text-[var(--lobb-error)]">*</span>
-                  </span>
-                  <textarea
-                    value={customAddress}
-                    onChange={(e) => setCustomAddress(e.target.value)}
-                    placeholder="e.g. Lagos Country Club Court 2, Lekki Phase 1 Tennis Club, or estate name..."
-                    rows={2}
-                    className="w-full resize-none rounded-2xl border border-[var(--lobb-border)] bg-white p-3 text-sm font-semibold outline-none placeholder:text-[#b4ad9e] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10 shadow-sm transition-all duration-200"
-                  />
-                </div>
-              )}
             </div>
+
+            {/* Section: Center court */}
+            <div>
+              <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-amber-700">Center Court</p>
+              {NATIONAL_STADIUM_COURTS.filter((c) => c.id === "nat_center").map((sc) => {
+                const isSelected = selectedStadiumCourtId === sc.id;
+                return (
+                  <button key={sc.id} type="button" onClick={() => setSelectedStadiumCourtId(sc.id)}
+                    className={`w-full rounded-xl border p-3 text-left transition-all duration-200 ${
+                      isSelected ? "border-amber-400 bg-white shadow-sm" : "border-amber-200 bg-white hover:border-amber-400"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className={`size-4 shrink-0 ${isSelected ? "text-amber-600" : "text-transparent"}`} />
+                      <span className="text-sm font-black">{sc.label}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Section: Back courts */}
+            <div>
+              <p className="mb-1.5 text-[10px] font-black uppercase tracking-widest text-amber-700">Back Courts</p>
+              <div className="space-y-1.5">
+                {NATIONAL_STADIUM_COURTS.filter((c) => c.id.startsWith("nat_back")).map((sc) => {
+                  const isSelected = selectedStadiumCourtId === sc.id;
+                  return (
+                    <button key={sc.id} type="button" onClick={() => setSelectedStadiumCourtId(sc.id)}
+                      className={`w-full rounded-xl border p-3 text-left transition-all duration-200 ${
+                        isSelected ? "border-amber-400 bg-white shadow-sm" : "border-amber-200 bg-white hover:border-amber-400"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`size-4 shrink-0 ${isSelected ? "text-amber-600" : "text-transparent"}`} />
+                        <span className="text-sm font-black">{sc.label}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <p className="mt-3 text-[10px] font-semibold text-amber-700 leading-relaxed">
+              Sessions are 60 minutes. Coaches must clear the court on time. Arriving with multiple clients per session is not permitted — LOBB bookings are 1-on-1.
+            </p>
           </div>
         )}
       </div>
@@ -302,18 +404,20 @@ function BookingStep2Content() {
         />
       </label>
 
-      {/* Structured dynamic message display */}
-      <div className="mt-5 rounded-2xl bg-[var(--lobb-clay)]/[0.03] p-4 border border-[var(--lobb-clay)]/10 animate-in fade-in-50 duration-300">
-        <div className="flex gap-3 items-start">
-          <HelpCircle className="size-5 text-[var(--lobb-clay)] shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-black text-[var(--lobb-black)] uppercase tracking-wider">Selected Location Summary</p>
-            <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)] italic leading-relaxed">
-              &ldquo;{finalCourtString || "Please complete court selections above"}&rdquo;
-            </p>
+      {/* Location preview */}
+      {finalLocation && (
+        <div className="mt-5 rounded-2xl bg-[var(--lobb-clay)]/[0.03] p-4 border border-[var(--lobb-clay)]/10 animate-in fade-in-50 duration-300">
+          <div className="flex gap-3 items-start">
+            <MapPin className="size-4 text-[var(--lobb-clay)] shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-black text-[var(--lobb-black)] uppercase tracking-wider">Location confirmed</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)] italic leading-relaxed">
+                &ldquo;{finalLocation}&rdquo;
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <BookingButton disabled={isContinueDisabled} onClick={handleContinue}>
         Continue to Review & Pay →

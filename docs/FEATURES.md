@@ -312,23 +312,106 @@ All at `/admin` (role: `admin` only).
 
 | Page | What it does |
 |------|-------------|
-| `/admin` | Dashboard overview |
-| `/admin/coaches` | Review pending profiles, approve/reject/suspend |
-| `/admin/bookings` | View all bookings, resolve disputes |
-| `/admin/disputes` | Dispute queue |
-| `/admin/earnings` | Trigger payouts per coach |
+| `/admin` | LOBB operations dashboard with approvals, bookings, and revenue snapshot |
+| `/admin/coaches` | Review pending coach applications, approve/reject/suspend |
+| `/admin/bookings` | View booking records by status |
+| `/admin/earnings` | Review platform revenue and recent paid sessions |
+| `/admin/disputes` | Coming soon placeholder; dispute workflow is parked for post-MVP |
 
-**Admin console UX:**
-- Desktop admin shell includes polished top navigation and sticky sidebar
-- Mobile/tablet keeps a compact responsive layout
+### Admin console UX
+
+- Desktop admin shell uses a clean SaaS-style app canvas with rounded warm-grey page chrome
+- Top navigation contains only core admin areas: Dashboard, Coaches, Bookings, Earnings
+- Mobile/PWA admin uses a compact bottom nav for the same core areas
 - Admin logout is available from the shell
-- Dashboard hero summarizes platform control-room status
-- Metrics include active coaches, active players, total bookings, GMV, LOBB earnings, pending approvals, and open disputes
-- Action cards highlight pending coach reviews and disputes
-- Booking management supports status filtering and responsive booking records
-- Coach approvals show profile photo, headline, locations, rate, certifications, demo video, full public profile link, approve/reject actions
-- Dispute resolution page separates booking evidence from resolution controls
-- Earnings page summarizes platform GMV, estimated platform fee, booking count, active coaches, pending approvals, and recent revenue
+- LOBB mark/brand tokens are used where useful: black command surfaces, clay primary actions, warm surfaces, quiet borders
+- Dashboard copy is operational and organization-facing, not prototype language
+- Removed non-actionable dashboard widgets and placeholder controls
+
+### Admin dashboard
+
+The `/admin` dashboard is the main LOBB headquarters view.
+
+It includes:
+- Dark **Operations Dashboard** command card with key chips:
+  - Coach queue
+  - Bookings
+  - Platform fees
+- **Priority** card showing whether coach applications need action
+- Metric cards:
+  - Coach Queue
+  - Bookings
+  - Platform Fees
+  - Verified Coaches
+- **Recent bookings** table with:
+  - client/player avatar or initials
+  - booking ID
+  - session date/time
+  - coach photo or initials
+  - status badge
+  - amount
+- **Applications** right rail with pending coach photos, locations/headlines, and an Open action
+- **Revenue** right rail card with:
+  - gross booking value
+  - platform fees earned
+  - bookings created
+  - link to full Earnings page
+
+### Admin data wiring
+
+- `/api/admin/dashboard` returns real admin metrics from `admin_core_metrics`
+- Dashboard recent bookings are loaded from real `bookings`
+- Dashboard booking rows join:
+  - coach name, slug, and `profile_photo_url`
+  - player name
+  - player avatar from `profiles.avatar_url`
+  - payment status/reference
+- Pending coach approvals come from real `coaches` rows with `status = pending_review`
+- `/admin/coaches` now uses `/api/admin/coaches/pending` directly instead of reusing the dashboard payload
+- `/admin/earnings` uses `/api/admin/earnings`; it no longer reads demo/mock content
+- Demo admin data has been removed from the active admin pages
+
+### Coach approvals
+
+Admin review at `/admin/coaches`:
+- Shows pending count
+- Shows coach profile photo, name, submitted date, headline, locations, rate, certifications, demo video, and public profile link
+- Approve action sends the coach live
+- Reject action opens a reason modal and notifies the coach
+- Empty state is shown when no coaches are waiting
+- Approve/reject actions use inline button loaders
+
+### Booking management
+
+Admin booking records at `/admin/bookings`:
+- Uses real `/api/admin/bookings`
+- Supports compact status filtering:
+  - All
+  - Pending
+  - Confirmed
+  - Completed
+  - Cancelled
+- Disputed bookings are not emphasized in the MVP admin UI
+- Empty state is shown when a selected filter has no records
+
+### Earnings
+
+Admin earnings at `/admin/earnings`:
+- Uses real `/api/admin/earnings`
+- Shows LOBB earnings from completed booking commission/convenience fees
+- Shows total GMV, booking count, active coaches
+- Shows recent confirmed/completed revenue rows
+- Each revenue row includes booking participants, date, total amount, and platform fee
+
+### Disputes
+
+Disputes are intentionally parked for MVP.
+
+- `/admin/disputes` remains available so links do not break
+- Page shows a concise "Coming soon" state
+- Complex dispute resolution UI has been removed
+- Admin dispute resolve API endpoints have been removed from the active MVP surface
+- Full dispute evidence, refund split, and resolution workflow can be reintroduced later
 
 **Admin audit log:** every approve/reject/suspend/payout action is written to `admin_audit_log` with admin ID, action, target, and metadata.
 
@@ -342,7 +425,7 @@ LOBB has three role-specific experiences with a shared visual language:
 |------|------------|-------------|
 | Player | Bottom nav, marketplace-first flow | Top nav, responsive coach grid, dashboard grid |
 | Coach | Bottom nav, task-focused console | Top nav, wider dashboard/booking/availability grids |
-| Admin | Compact operational pages | Top nav + sticky sidebar control room |
+| Admin | Bottom admin nav, compact operational cards | Top nav, app-canvas dashboard, table + right rail layout |
 
 **Player UX details:**
 - Player home has a time-aware premium greeting card:
@@ -365,6 +448,34 @@ LOBB has three role-specific experiences with a shared visual language:
 - Booking flow content expands on desktop (`max-w-3xl`) while staying compact on mobile
 - Player, coach, and admin dashboards use wider desktop grids
 - Cards avoid nested-card clutter and prioritize primary actions
+
+### Loading states
+
+LOBB uses an enterprise loading pattern:
+
+| Loading type | Used for | Examples |
+|--------------|----------|----------|
+| Skeletons | Page/data loading where layout is known | dashboards, booking lists, coach cards, admin tables |
+| Inline action loaders | User-triggered actions | save profile, save availability, approve/reject coach, payment redirect |
+| LOBB brand loader | Secure bridge states only | PWA cold start, payment verification, auth/session transitions |
+| Lazy loading | Heavy secondary content | reviews, media/video embeds, future dispute module, long-history sections |
+
+Implemented shared loading primitives:
+- `SkeletonBlock`
+- `PageHeaderSkeleton`
+- `MetricGridSkeleton`
+- `TableRowsSkeleton`
+- `BookingCardSkeleton`
+- `CoachCardSkeleton`
+- `InlineActionLoader`
+- `LobbBrandLoader`
+
+Rules:
+- Do not use full-screen spinners for dashboard data
+- Do not use the LOBB brand loader for ordinary table/list fetches
+- Keep button loading local to the clicked action
+- Preserve layout during loading to avoid content jumps
+- Use branded loader only when LOBB is moving the user through a secure or system-level state
 
 ---
 
@@ -391,7 +502,6 @@ LOBB has three role-specific experiences with a shared visual language:
 | `PAYSTACK_SECRET_KEY` | Paystack API (server only) |
 | `PAYSTACK_PUBLIC_KEY` | Paystack API (client) |
 | `PAYSTACK_WEBHOOK_SECRET` | HMAC signature verification for webhooks |
-| `SMS_PROVIDER` | `twilio_whatsapp` (prod) or `termii` |
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` | Twilio credentials |
 | `TWILIO_FROM_NUMBER` | Trial SMS number (+17622167722) |
 | `TWILIO_WHATSAPP_FROM` | WhatsApp sandbox (+14155238886) |

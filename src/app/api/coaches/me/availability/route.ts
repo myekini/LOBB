@@ -67,6 +67,11 @@ type SlotInput = { day_of_week: number; starts_at: string; ends_at: string };
 type SlotBlockInput = { slot_starts_at: string; slot_ends_at: string; reason?: string | null };
 type PutBody  = { slots?: SlotInput[]; blocked_dates?: string[]; blocked_slots?: SlotBlockInput[] };
 
+function timeToMinutes(value: string) {
+  const [hour, minute] = value.slice(0, 5).split(":").map(Number);
+  return hour * 60 + minute;
+}
+
 export async function PUT(request: Request) {
   try {
     const auth = await requireRole(["coach", "admin"]);
@@ -91,6 +96,18 @@ export async function PUT(request: Request) {
           return NextResponse.json({ error: "starts_at must be before ends_at" }, { status: 400 });
         }
         slots.push({ day_of_week: dow, starts_at: s.starts_at, ends_at: s.ends_at });
+      }
+    }
+
+    for (let dow = 0; dow <= 6; dow += 1) {
+      const daySlots = slots
+        .filter((slot) => slot.day_of_week === dow)
+        .sort((a, b) => a.starts_at.localeCompare(b.starts_at));
+
+      for (let index = 1; index < daySlots.length; index += 1) {
+        if (timeToMinutes(daySlots[index].starts_at) < timeToMinutes(daySlots[index - 1].ends_at)) {
+          return NextResponse.json({ error: "Availability windows cannot overlap." }, { status: 400 });
+        }
       }
     }
 
@@ -138,7 +155,7 @@ export async function PUT(request: Request) {
     if (slots.length > 0) {
       const { error: insertSlotErr } = await auth.admin
         .from("coach_availability")
-        .insert(slots.map((s) => ({ coach_id: auth.user.id, ...s })));
+        .insert(slots.map((s) => ({ coach_id: auth.user.id, is_active: true, ...s })));
 
       if (insertSlotErr) {
         return NextResponse.json({ error: insertSlotErr.message }, { status: 500 });

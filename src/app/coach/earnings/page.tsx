@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Clock3, Landmark, WalletCards, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Landmark, WalletCards, XCircle } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { money } from "@/lib/dashboard-client-types";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { CoachSurface } from "@/components/common/coach-surface";
 
 type Payout = {
   id: string;
@@ -79,29 +80,49 @@ export default function CoachEarningsPage() {
   const hasBank = Boolean(bank?.bank_name && bank?.bank_account_number);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 text-[var(--lobb-black)] sm:px-6">
-      <CoachFlowHeader title="Earnings" eyebrow="Coach wallet" active="earnings" actionHref="/coach/settings" actionLabel="Bank" actionIcon={Landmark} />
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
+      <CoachFlowHeader title="Earnings" eyebrow="Coach wallet" active="earnings" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <section className="mt-6 rounded-[28px] bg-[var(--lobb-black)] p-6 text-white shadow-[0_18px_40px_rgba(13,13,13,0.22)] sm:p-8">
-          <p className="text-xs font-black uppercase tracking-[0.16em] text-white/45">Total Paid + Pending</p>
-          {loading ? <SkeletonBlock className="mx-auto mt-8 h-10 w-44 bg-white/15" /> : (
-            <p className="mt-8 text-[38px] font-black leading-none sm:text-[54px]">{money(summary?.net_all_time_ngn ?? 0)}</p>
-          )}
-          <p className="mt-8 text-sm font-semibold text-white/50">Net coach earnings from completed sessions</p>
-        </section>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
+          <section className="rounded-[24px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Total coach earnings</p>
+            {loading ? <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" /> : (
+              <p className="mt-6 text-[38px] font-black leading-none sm:text-[48px]">{money(summary?.net_all_time_ngn ?? 0)}</p>
+            )}
+            <p className="mt-3 text-sm font-semibold text-white/55">Paid and pending earnings from completed sessions.</p>
+            <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-white/10">
+              <WalletStat value={loading ? null : money(summary?.net_this_week_ngn ?? 0)} label="This week" />
+              <WalletStat value={loading ? null : money(summary?.pending_payout_ngn ?? 0)} label="Pending" bordered />
+            </div>
+          </section>
 
-        <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)] lg:max-w-2xl">
-          <StatCell value={loading ? null : money(summary?.net_this_week_ngn ?? 0)} label="This Week" />
-          <StatCell value={loading ? null : money(summary?.pending_payout_ngn ?? 0)} label="Pending Payout" bordered />
+          <Link href="/coach/settings" className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-card)]">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex size-12 items-center justify-center rounded-[16px] bg-[var(--lobb-clay-light)]">
+                <Landmark className="size-5 text-[var(--lobb-clay)]" />
+              </div>
+              <ArrowRight className="size-4 text-[var(--lobb-text-tertiary)]" />
+            </div>
+            <p className="mt-5 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Bank account</p>
+            <p className="mt-2 text-lg font-black">{hasBank ? bank?.bank_name : "No bank connected"}</p>
+            <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">{maskedAccount(bank?.bank_account_number)}</p>
+            <p className="mt-5 text-xs font-black text-[var(--lobb-clay)]">{hasBank ? "Manage payout bank" : "Add payout bank"}</p>
+          </Link>
         </div>
 
-        <h2 className="mt-8 text-base font-black">Recent Payouts</h2>
-        <section className="mt-3 grid gap-3 lg:grid-cols-2">
+        <div className="mt-7 flex items-center justify-between">
+          <div>
+            <h2 className="font-black">Recent payouts</h2>
+            <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">Settlements sent or queued for your bank.</p>
+          </div>
+        </div>
+
+        <section className="mt-3 grid gap-3">
           {loading ? (
             Array.from({ length: 3 }).map((_, index) => (
-              <article key={index} className="rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
+              <article key={index} className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <SkeletonBlock className="h-5 w-32" />
-                <SkeletonBlock className="mt-3 h-12 w-full" />
+                <SkeletonBlock className="mt-3 h-10 w-full" />
               </article>
             ))
           ) : payload?.payouts.length ? (
@@ -109,48 +130,32 @@ export default function CoachEarningsPage() {
               const meta = statusMeta[payout.status] ?? statusMeta.pending;
               const Icon = meta.icon;
               return (
-                <article key={payout.id} className="rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_10px_22px_rgba(13,13,13,0.04)]">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex gap-3">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-[var(--lobb-surface-2)]">
-                        <WalletCards className="size-4 text-[var(--lobb-clay)]" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-black">{payoutDate(payout)}</p>
-                        <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">
-                          {payout.session_count} {payout.session_count === 1 ? "session" : "sessions"}
-                        </p>
-                        <p className="mt-2 text-sm font-black">{money(payout.amount_ngn)} <span className="text-[var(--lobb-muted)]">to your bank</span></p>
-                      </div>
+                <article key={payout.id} className="grid gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
+                  <div className="flex min-w-0 gap-3">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-bg-secondary)]">
+                      <WalletCards className="size-4 text-[var(--lobb-clay)]" />
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--lobb-surface-2)] px-2.5 py-1 text-[10px] font-black uppercase text-[var(--lobb-muted)]">
-                      <Icon className="size-3" style={{ color: meta.color }} />
-                      {meta.label}
-                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-black">{payoutDate(payout)}</p>
+                      <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                        {payout.session_count} {payout.session_count === 1 ? "session" : "sessions"}
+                      </p>
+                    </div>
                   </div>
+                  <p className="text-sm font-black sm:text-right">{money(payout.amount_ngn)}</p>
+                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[var(--lobb-bg-secondary)] px-2.5 py-1 text-[10px] font-black uppercase text-[var(--lobb-text-secondary)] sm:justify-self-end">
+                    <Icon className="size-3" style={{ color: meta.color }} />
+                    {meta.label}
+                  </span>
                 </article>
               );
             })
           ) : (
-            <p className="rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-semibold text-[var(--lobb-muted)]">
+            <CoachSurface className="p-5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
               No payouts yet. Completed sessions ready for payout will appear here.
-            </p>
+            </CoachSurface>
           )}
         </section>
-
-        <h2 className="mt-8 text-base font-black">Bank account</h2>
-        <Link href="/coach/settings" className="mt-3 flex items-center justify-between rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-[14px] bg-white">
-              <Landmark className="size-5 text-[var(--lobb-clay)]" />
-            </div>
-            <div>
-              <p className="font-black">{hasBank ? bank?.bank_name : "No bank account connected"}</p>
-              <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">{maskedAccount(bank?.bank_account_number)}</p>
-            </div>
-          </div>
-          <span className="text-xs font-black text-[var(--lobb-clay)]">Manage</span>
-        </Link>
       </section>
 
       <CoachBottomNav active="earnings" />
@@ -158,11 +163,11 @@ export default function CoachEarningsPage() {
   );
 }
 
-function StatCell({ value, label, bordered }: { value: string | null; label: string; bordered?: boolean }) {
+function WalletStat({ value, label, bordered }: { value: string | null; label: string; bordered?: boolean }) {
   return (
-    <div className={`p-4 ${bordered ? "border-l border-[var(--lobb-border)]" : ""}`}>
-      {value ? <p className="text-lg font-black">{value}</p> : <SkeletonBlock className="h-6 w-24" />}
-      <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-[var(--lobb-muted)]">{label}</p>
+    <div className={`p-4 ${bordered ? "border-l border-white/10" : ""}`}>
+      {value ? <p className="truncate text-lg font-black text-white">{value}</p> : <SkeletonBlock className="h-6 w-24 bg-white/15" />}
+      <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-white/45">{label}</p>
     </div>
   );
 }

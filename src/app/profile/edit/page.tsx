@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Camera, Loader2, User } from "lucide-react";
+import { ArrowLeft, Bell, BellOff, Camera, Loader2, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -23,6 +23,7 @@ export default function EditProfilePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -36,11 +37,12 @@ export default function EditProfilePage() {
       setUserId(user.id);
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, email, avatar_url")
+        .select("full_name, email, avatar_url, email_notifications_enabled")
         .eq("id", user.id)
         .maybeSingle();
       setName(data?.full_name ?? "");
       setEmail(data?.email ?? "");
+      setEmailNotifications(data?.email_notifications_enabled ?? true);
       setAvatarUrl(data?.avatar_url ?? null);
       setLoading(false);
     });
@@ -54,24 +56,31 @@ export default function EditProfilePage() {
   };
 
   const save = async () => {
+    if (!userId || !name.trim()) return;
+
     const normalizedEmail = email.trim().toLowerCase();
-    if (!userId || !name.trim() || !normalizedEmail) return;
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (normalizedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       showLobbToast({ type: "error", message: "Enter a valid email address." });
       return;
     }
+
     setSaving(true);
     try {
       const supabase = createClient();
       let finalAvatarUrl = avatarUrl;
 
       if (photoFile) {
-        finalAvatarUrl = await uploadProfilePhoto(supabase, userId, photoFile, "player-avatar");
+        finalAvatarUrl = await uploadProfilePhoto(supabase, userId, photoFile, "player-avatar", "user-media");
       }
 
       const { error } = await supabase
         .from("profiles")
-        .update({ full_name: name.trim(), email: normalizedEmail, avatar_url: finalAvatarUrl })
+        .update({
+          full_name: name.trim(),
+          email: normalizedEmail || null,
+          avatar_url: finalAvatarUrl,
+          email_notifications_enabled: emailNotifications,
+        })
         .eq("id", userId);
 
       if (error) throw error;
@@ -142,17 +151,59 @@ export default function EditProfilePage() {
 
             <label className="mt-5 block">
               <span className="text-sm font-black">Email</span>
+              <span className="ml-2 text-xs font-semibold text-[var(--lobb-muted)]">(optional)</span>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none focus:border-[var(--lobb-black)]"
+                placeholder="you@example.com"
+                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none focus:border-[var(--lobb-black)] placeholder:text-[#b4ad9e]"
               />
+              <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-muted)] leading-relaxed">
+                Used for booking confirmations, 24-hour reminders, and session reviews.
+              </p>
             </label>
+
+            {email.trim() && (
+              <button
+                type="button"
+                onClick={() => setEmailNotifications((v) => !v)}
+                className={`mt-4 flex w-full items-center justify-between rounded-2xl border p-4 transition-colors ${
+                  emailNotifications
+                    ? "border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay)]/[0.03]"
+                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {emailNotifications ? (
+                    <Bell className="size-5 text-[var(--lobb-clay)]" />
+                  ) : (
+                    <BellOff className="size-5 text-[var(--lobb-muted)]" />
+                  )}
+                  <div className="text-left">
+                    <p className="text-sm font-black">Email notifications</p>
+                    <p className="text-xs font-semibold text-[var(--lobb-muted)]">
+                      {emailNotifications ? "Booking updates sent to your email" : "Email notifications are off"}
+                    </p>
+                  </div>
+                </div>
+                <div
+                  className={`relative h-6 w-11 rounded-full transition-colors ${
+                    emailNotifications ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-border)]"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${
+                      emailNotifications ? "translate-x-5.5" : "translate-x-0.5"
+                    }`}
+                  />
+                </div>
+              </button>
+            )}
 
             <button
               onClick={save}
-              disabled={saving || !name.trim() || !email.trim()}
+              disabled={saving || !name.trim()}
               className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white disabled:opacity-60"
             >
               {saving ? <Loader2 className="size-4 animate-spin" /> : "Save Changes"}

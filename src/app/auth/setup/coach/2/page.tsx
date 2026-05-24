@@ -131,10 +131,8 @@ export default function CoachSetupStep2Page() {
 
         <div className="mt-auto pb-8">
           {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!canContinue || saving}>
-            <span className="inline-flex items-center gap-2">
-              {saving ? "Saving..." : "Next"} <ArrowRight className="size-4" />
-            </span>
+          <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
+            {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>
         </div>
       </form>

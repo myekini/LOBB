@@ -172,8 +172,8 @@ export default function PlayerSetupPage() {
 
         <div className="mt-auto space-y-3 pb-8">
           {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!fullName.trim() || !email.trim()}>
-            {saving ? "Saving..." : "Finish Setup"}
+          <OnboardingButton type="submit" disabled={!fullName.trim() || !email.trim()} loading={saving}>
+            {saving ? "Saving" : "Finish Setup"}
           </OnboardingButton>
         </div>
       </form>

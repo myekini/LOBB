@@ -46,10 +46,31 @@ function money(value: number) {
   return `₦${value.toLocaleString("en-NG")}`;
 }
 
+const BRAND = {
+  clay: "#C4622D",
+  clayLight: "#F5E6DC",
+  ink: "#1A1714",
+  muted: "#6B6560",
+  faint: "#A09890",
+  bg: "#FAF8F5",
+  surface: "#FFFFFF",
+  line: "#E8E3DC",
+  success: "#2D6A4F",
+};
+
+const SOCIAL_LINKS = [
+  { label: "Instagram", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng" },
+  { label: "X", href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng" },
+  { label: "Website", href: appUrl("/") },
+];
+
 function shell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
   const ctaHtml = cta
-    ? `<a href="${escapeHtml(cta.href)}" style="display:inline-block;margin-top:26px;border-radius:999px;background:#0f0e0c;color:#ffffff;font:800 14px Arial,sans-serif;text-decoration:none;padding:14px 22px;">${escapeHtml(cta.label)}</a>`
+    ? `<div style="margin-top:28px;"><a href="${escapeHtml(cta.href)}" style="display:inline-block;border-radius:14px;background:${BRAND.ink};color:#ffffff;font:800 14px Arial,Helvetica,sans-serif;text-decoration:none;padding:15px 22px;box-shadow:0 10px 24px rgba(26,23,20,0.16);">${escapeHtml(cta.label)}</a></div>`
     : "";
+  const socialHtml = SOCIAL_LINKS.map(
+    (item) => `<a href="${escapeHtml(item.href)}" style="color:#F5E6DC;text-decoration:none;font:800 12px Arial,Helvetica,sans-serif;">${escapeHtml(item.label)}</a>`
+  ).join(`<span style="color:#6B6560;">·</span>`);
 
   return `<!doctype html>
 <html>
@@ -58,20 +79,43 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
   </head>
-  <body style="margin:0;background:#f7f3ec;padding:28px 14px;color:#17130f;font-family:Arial,Helvetica,sans-serif;">
+  <body style="margin:0;background:${BRAND.bg};padding:32px 14px;color:${BRAND.ink};font-family:Arial,Helvetica,sans-serif;">
     <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;">${escapeHtml(preview)}</div>
-    <main style="max-width:620px;margin:0 auto;background:#fffaf2;border:1px solid #eadfce;border-radius:22px;overflow:hidden;box-shadow:0 18px 48px rgba(44,32,18,0.08);">
-      <header style="padding:28px 30px 20px;border-bottom:1px solid #eadfce;background:#ffffff;">
-        <p style="margin:0 0 10px;color:#b85f32;font:900 12px Arial,sans-serif;letter-spacing:0.18em;text-transform:uppercase;">LOBB</p>
-        <h1 style="margin:0;color:#17130f;font:900 28px/1.1 Arial,sans-serif;letter-spacing:0;">${escapeHtml(title)}</h1>
+    <main style="max-width:640px;margin:0 auto;background:${BRAND.surface};border:1px solid ${BRAND.line};border-radius:26px;overflow:hidden;box-shadow:0 18px 54px rgba(90,60,30,0.10);">
+      <header style="padding:28px 30px 24px;border-bottom:1px solid ${BRAND.line};background:${BRAND.surface};">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+          <tr>
+            <td>
+              <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="width:34px;height:34px;border-radius:12px;background:${BRAND.ink};text-align:center;vertical-align:middle;">
+                    <span style="display:inline-block;color:${BRAND.clay};font:900 15px Arial,Helvetica,sans-serif;line-height:34px;">L</span>
+                  </td>
+                  <td style="padding-left:10px;">
+                    <p style="margin:0;color:${BRAND.ink};font:900 13px Arial,Helvetica,sans-serif;letter-spacing:0.18em;text-transform:uppercase;">LOBB</p>
+                    <p style="margin:2px 0 0;color:${BRAND.faint};font:700 11px Arial,Helvetica,sans-serif;">Lagos tennis, booked cleanly</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td align="right">
+              <span style="display:inline-block;border:1px solid ${BRAND.line};border-radius:999px;padding:7px 10px;color:${BRAND.clay};font:900 10px Arial,Helvetica,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">Court update</span>
+            </td>
+          </tr>
+        </table>
+        <h1 style="margin:26px 0 0;color:${BRAND.ink};font:900 30px/1.08 Arial,Helvetica,sans-serif;letter-spacing:-0.01em;">${escapeHtml(title)}</h1>
+        <p style="margin:10px 0 0;color:${BRAND.muted};font:700 14px/1.6 Arial,Helvetica,sans-serif;">${escapeHtml(preview)}</p>
       </header>
-      <section style="padding:28px 30px 32px;">
+      <section style="padding:28px 30px 34px;">
         ${body}
         ${ctaHtml}
       </section>
-      <footer style="padding:20px 30px;background:#17130f;color:#d8d0c3;">
-        <p style="margin:0;font:700 13px/1.6 Arial,sans-serif;">LOBB connects Lagos players and coaches with secure booking, payment, and session updates.</p>
-        <p style="margin:14px 0 0;font:600 12px/1.5 Arial,sans-serif;color:#a79d8e;">Need help? Reply to this email or contact support@lobb.ng.</p>
+      <footer style="padding:24px 30px;background:${BRAND.ink};color:#F5E6DC;">
+        <p style="margin:0;color:#ffffff;font:900 14px Arial,Helvetica,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">LOBB</p>
+        <p style="margin:10px 0 0;font:700 13px/1.7 Arial,Helvetica,sans-serif;color:#D8D0C3;">Secure tennis booking, coach operations, payments, and session updates for Lagos courts.</p>
+        <p style="margin:16px 0 0;">${socialHtml}</p>
+        <p style="margin:16px 0 0;font:600 12px/1.6 Arial,Helvetica,sans-serif;color:#A09890;">Need help? Reply to this email or contact <a href="mailto:support@lobb.ng" style="color:#F5E6DC;text-decoration:none;font-weight:800;">support@lobb.ng</a>.</p>
+        <p style="margin:12px 0 0;font:600 11px/1.6 Arial,Helvetica,sans-serif;color:#6B6560;">You are receiving this because email notifications are enabled on your LOBB account.</p>
       </footer>
     </main>
   </body>
@@ -84,15 +128,28 @@ function detailRows(rows: Array<[string, string | null | undefined]>) {
     .map(
       ([label, value]) => `
         <tr>
-          <td style="padding:12px 0;color:#756b5d;font:800 12px Arial,sans-serif;text-transform:uppercase;letter-spacing:0.12em;">${escapeHtml(label)}</td>
-          <td style="padding:12px 0;color:#17130f;font:800 15px Arial,sans-serif;text-align:right;">${escapeHtml(value)}</td>
+          <td style="padding:13px 0;color:${BRAND.muted};font:800 11px Arial,Helvetica,sans-serif;text-transform:uppercase;letter-spacing:0.12em;">${escapeHtml(label)}</td>
+          <td style="padding:13px 0;color:${BRAND.ink};font:900 14px Arial,Helvetica,sans-serif;text-align:right;">${escapeHtml(value)}</td>
         </tr>`
     )
     .join("");
 }
 
 function detailTable(rows: Array<[string, string | null | undefined]>) {
-  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:22px;border-collapse:collapse;border-top:1px solid #eadfce;border-bottom:1px solid #eadfce;">${detailRows(rows)}</table>`;
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:22px;border-collapse:collapse;border-top:1px solid ${BRAND.line};border-bottom:1px solid ${BRAND.line};">${detailRows(rows)}</table>`;
+}
+
+function noteCard(title: string, body: string, tone: "default" | "success" | "warning" = "default") {
+  const colors = tone === "success"
+    ? { bg: "#E8F4ED", border: "rgba(45,106,79,0.20)", title: BRAND.success }
+    : tone === "warning"
+    ? { bg: BRAND.clayLight, border: "rgba(196,98,45,0.30)", title: BRAND.clay }
+    : { bg: BRAND.bg, border: BRAND.line, title: BRAND.ink };
+
+  return `<div style="margin-top:22px;border:1px solid ${colors.border};border-radius:18px;background:${colors.bg};padding:16px 18px;">
+    <p style="margin:0;color:${colors.title};font:900 13px Arial,Helvetica,sans-serif;">${escapeHtml(title)}</p>
+    <p style="margin:6px 0 0;color:${BRAND.muted};font:700 13px/1.6 Arial,Helvetica,sans-serif;">${escapeHtml(body)}</p>
+  </div>`;
 }
 
 export function bookingConfirmedPlayerEmail(info: EmailBookingInfo): EmailTemplate {
@@ -127,7 +184,7 @@ export function bookingConfirmedCoachEmail(info: EmailBookingInfo): EmailTemplat
   const html = shell(
     "New booking",
     preview,
-    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,sans-serif;"><strong>${escapeHtml(info.playerName)}</strong> booked a session with you.</p>
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;"><strong style="color:${BRAND.ink};">${escapeHtml(info.playerName)}</strong> booked a session with you. Review the session details and arrive with court logistics clear.</p>
     ${detailTable([
       ["Player", info.playerName],
       ["Date", formatDate(info.startsAt)],
@@ -136,7 +193,8 @@ export function bookingConfirmedCoachEmail(info: EmailBookingInfo): EmailTemplat
       ["Player phone", info.playerPhone],
       ["Note", info.playerNotes],
       ["Reference", info.reference],
-    ])}`,
+    ])}
+    ${noteCard("Coach checklist", "Confirm the location, review the player note, and keep your availability current after the session.", "success")}`,
     { label: "Open coach booking", href: appUrl(`/coach/bookings/${info.bookingId}`) }
   );
 
@@ -156,13 +214,14 @@ export function bookingReminderEmail(info: EmailBookingInfo, recipient: "player"
   const html = shell(
     title,
     preview,
-    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,sans-serif;">A quick reminder for your upcoming LOBB session.</p>
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">A quick reminder for your upcoming LOBB session.</p>
     ${detailTable([
       [isCoach ? "Player" : "Coach", isCoach ? info.playerName : info.coachName],
       ["Date", formatDate(info.startsAt)],
       ["Location", info.location],
       ["Duration", "60 minutes"],
-    ])}`,
+    ])}
+    ${isCoach ? noteCard("Before the session", "Check the player note, arrive early, and keep your phone available for coordination.", "warning") : ""}`,
     { label: isCoach ? "View booking" : "View booking", href: appUrl(isCoach ? `/coach/bookings/${info.bookingId}` : `/dashboard/bookings/${info.bookingId}`) }
   );
 
@@ -207,14 +266,15 @@ export function bookingCancelledEmail(
   const html = shell(
     "Booking cancelled",
     preview,
-    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,sans-serif;">This session has been cancelled by ${escapeHtml(cancelledBy)}.</p>
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">This session has been cancelled by <strong style="color:${BRAND.ink};">${escapeHtml(cancelledBy)}</strong>.</p>
     ${detailTable([
       ["Coach", info.coachName],
       ["Player", info.playerName],
       ["Date", formatDate(info.startsAt)],
       ["Refund", refundSummary],
       ["Reference", info.reference],
-    ])}`,
+    ])}
+    ${recipient === "coach" ? noteCard("Schedule updated", "This slot is no longer booked. Review your availability if you want to reopen or block nearby times.", "warning") : ""}`,
     { label: recipient === "coach" ? "Open booking" : "View booking", href: appUrl(recipient === "coach" ? `/coach/bookings/${info.bookingId}` : `/dashboard/bookings/${info.bookingId}`) }
   );
 
@@ -238,11 +298,11 @@ export function coachDecisionEmail(
     approved ? "You're live" : "Profile updates needed",
     preview,
     approved
-      ? `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,sans-serif;">Your coach profile has been approved. Players can now find and book your sessions.</p>`
-      : `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,sans-serif;">Your profile needs a few updates before it can go live.</p>${detailTable([
+      ? `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your coach profile has been approved. Players can now find and book your sessions.</p>${noteCard("Next step", "Set accurate availability so players can book times you can confidently deliver.", "success")}`
+      : `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your profile needs a few updates before it can go live.</p>${detailTable([
           ["Reason", reason],
           ["Next step", needsDirectContact ? "Contact LOBB support directly" : "Edit and resubmit your profile"],
-        ])}`,
+        ])}${noteCard("Review tip", needsDirectContact ? "Reply to this email and our team will help you resolve the profile review." : "Update only the requested items, then submit again from your coach profile.", "warning")}`,
     { label: approved ? "Set availability" : "Edit profile", href: appUrl(approved ? "/coach/availability" : "/coach/profile/edit") }
   );
 
@@ -260,11 +320,12 @@ export function payoutProcessedEmail(amount: number, sessionCount: number): Emai
   const html = shell(
     "Payout processed",
     preview,
-    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,sans-serif;">Your coach payout has been processed.</p>
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your coach payout has been processed.</p>
     ${detailTable([
       ["Amount", money(amount)],
       ["Sessions", String(sessionCount)],
-    ])}`,
+    ])}
+    ${noteCard("Payout record", "You can review recent payouts and pending balances from your coach earnings page.", "success")}`,
     { label: "View earnings", href: appUrl("/coach/earnings") }
   );
 

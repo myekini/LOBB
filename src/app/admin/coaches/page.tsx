@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, PlayCircle, X } from "lucide-react";
+import { Check, Loader2, PlayCircle, X } from "lucide-react";
 import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
 import { money } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -32,9 +32,9 @@ export default function AdminCoachApprovalsPage() {
 
   const loadCoaches = () => {
     setLoading(true);
-    fetchWithCache<{ pending_coach_approvals: CoachApproval[] }>("lobb.admin.dashboard", "/api/admin/dashboard")
+    fetchWithCache<{ coaches: CoachApproval[] }>("lobb.admin.coaches.pending", "/api/admin/coaches/pending")
       .then((payload) => {
-        setCoaches(payload.pending_coach_approvals ?? []);
+        setCoaches(payload.coaches ?? []);
       })
       .catch((error) => {
         showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load coach approvals" });
@@ -69,14 +69,18 @@ export default function AdminCoachApprovalsPage() {
 
   return (
     <AdminShell active="Coach Approvals">
-      <AdminBackHeader title={`Coach Approvals (${coaches.length} pending)`} />
+      <AdminBackHeader title="Coach Approvals" />
+      <div className="mb-5 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_10px_22px_rgba(13,13,13,0.03)]">
+        <p className="text-2xl font-black">{coaches.length}</p>
+        <p className="mt-1 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">Pending review</p>
+      </div>
 
       <section className="grid gap-4 xl:grid-cols-2">
         {loading ? (
           <>
             {Array.from({ length: 4 }).map((_, index) => <CoachCardSkeleton key={index} />)}
           </>
-        ) : coaches.map((coach) => (
+        ) : coaches.length ? coaches.map((coach) => (
           <article key={coach.id} className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.06)]">
             <div className="flex gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -106,8 +110,8 @@ export default function AdminCoachApprovalsPage() {
 
             <div className="mt-5 grid grid-cols-2 gap-3">
               <button disabled={busyId === coach.id} onClick={() => decide(coach, "approve")} className="flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--lobb-success)] text-sm font-black text-white disabled:opacity-60">
-                <Check className="size-4" />
-                Approve
+                {busyId === coach.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+                {busyId === coach.id ? "Working" : "Approve"}
               </button>
               <button disabled={busyId === coach.id} onClick={() => setRejecting(coach)} className="flex h-12 items-center justify-center gap-2 rounded-full border border-red-300 text-sm font-black text-red-700 disabled:opacity-60">
                 <X className="size-4" />
@@ -115,7 +119,12 @@ export default function AdminCoachApprovalsPage() {
               </button>
             </div>
           </article>
-        ))}
+        )) : (
+          <div className="rounded-[22px] border border-dashed border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center xl:col-span-2">
+            <p className="text-lg font-black">No coaches waiting</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm font-semibold leading-6 text-[var(--lobb-muted)]">New coach applications will appear here once they submit their profile for review.</p>
+          </div>
+        )}
       </section>
 
       {rejecting && (
@@ -129,8 +138,9 @@ export default function AdminCoachApprovalsPage() {
               placeholder="Tell the coach what they need to fix."
               className="mt-4 h-28 w-full resize-none rounded-[18px] border border-[var(--lobb-border)] bg-white p-4 text-sm font-medium outline-none focus:border-[var(--lobb-black)]"
             />
-            <button disabled={!reason.trim() || busyId === rejecting.id} onClick={() => decide(rejecting, "reject")} className="mt-4 h-12 w-full rounded-full bg-[var(--lobb-black)] text-sm font-black text-white disabled:bg-[#cfc6b8]">
-              {busyId === rejecting.id ? "Sending..." : "Send Rejection"}
+            <button disabled={!reason.trim() || busyId === rejecting.id} onClick={() => decide(rejecting, "reject")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white disabled:bg-[#cfc6b8]">
+              {busyId === rejecting.id && <Loader2 className="size-4 animate-spin" />}
+              {busyId === rejecting.id ? "Sending" : "Send Rejection"}
             </button>
           </section>
         </div>

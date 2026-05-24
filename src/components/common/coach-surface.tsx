@@ -11,7 +11,7 @@ export function CoachSurface({
   return (
     <section
       className={cn(
-        "rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_12px_28px_rgba(13,13,13,0.05)]",
+        "rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-[var(--lobb-shadow-card)]",
         className
       )}
     >
@@ -21,5 +21,5 @@ export function CoachSurface({
 }
 
 export function CoachKicker({ children }: { children: React.ReactNode }) {
-  return <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">{children}</p>;
+  return <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-secondary)]">{children}</p>;
 }

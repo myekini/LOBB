@@ -10,7 +10,7 @@ import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 
 type Filter = "all" | "pending" | "confirmed" | "completed" | "disputed" | "cancelled";
 
-const filters: Filter[] = ["all", "pending", "confirmed", "completed", "disputed", "cancelled"];
+const filters: Filter[] = ["all", "pending", "confirmed", "completed", "cancelled"];
 
 export default function AdminBookingsPage() {
   const [filter, setFilter] = useState<Filter>("all");
@@ -42,14 +42,14 @@ export default function AdminBookingsPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">Operations</p>
-          <h1 className="mt-1 text-2xl font-black">All Bookings</h1>
+          <h1 className="mt-1 text-3xl font-black tracking-tight">Bookings</h1>
         </div>
         <p className="text-sm font-black text-[var(--lobb-muted)]">{bookings.length} records</p>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
         {filters.map((item) => (
-          <button key={item} onClick={() => setFilter(item)} className={`h-10 rounded-full px-4 text-sm font-black capitalize ${filter === item ? "bg-[var(--lobb-black)] text-white" : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"}`}>
+          <button key={item} onClick={() => setFilter(item)} className={`h-10 shrink-0 rounded-full px-4 text-sm font-black capitalize ${filter === item ? "bg-[var(--lobb-black)] text-white" : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"}`}>
             {item === "all" ? "All" : item}
           </button>
         ))}
@@ -60,14 +60,14 @@ export default function AdminBookingsPage() {
           <>
             {Array.from({ length: 5 }).map((_, index) => <BookingCardSkeleton key={index} />)}
           </>
-        ) : bookings.map((booking) => (
+        ) : bookings.length ? bookings.map((booking) => (
           <article key={booking.id} className="rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_10px_22px_rgba(13,13,13,0.04)] md:grid md:grid-cols-[150px_1fr_auto] md:items-center md:gap-5">
             <div>
-              <p className="truncate font-mono text-xs font-black text-[var(--lobb-muted)]">#{booking.id}</p>
+              <p className="truncate font-mono text-xs font-black text-[var(--lobb-muted)]">#{booking.id.slice(0, 8)}</p>
               <p className="mt-1 text-sm font-black">{formatBookingDate(booking.starts_at)}</p>
             </div>
             <p className="mt-3 w-fit rounded-[12px] bg-[var(--lobb-bg)] px-3 py-2 text-sm font-black md:mt-0">
-              {firstJoin(booking.coaches)?.full_name ?? "Coach"} ← {firstJoin(booking.players)?.full_name ?? "Player"}
+              {firstJoin(booking.coaches)?.full_name ?? "Coach"} {"->"} {firstJoin(booking.players)?.full_name ?? "Player"}
             </p>
             <div className="mt-3 flex items-center justify-between gap-4 md:mt-0 md:justify-end">
               <p className="inline-flex items-center gap-2 text-sm font-black capitalize">
@@ -77,7 +77,12 @@ export default function AdminBookingsPage() {
               <p className="font-black">{money(booking.total_amount_ngn)}</p>
             </div>
           </article>
-        ))}
+        )) : (
+          <div className="rounded-[22px] border border-dashed border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center xl:col-span-2">
+            <p className="text-lg font-black">No booking records</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm font-semibold leading-6 text-[var(--lobb-muted)]">Try another status filter, or wait for new paid sessions to arrive.</p>
+          </div>
+        )}
       </section>
     </AdminShell>
   );

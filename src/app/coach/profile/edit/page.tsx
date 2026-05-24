@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, CheckCircle2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
-import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import {
   CERTIFICATION_OPTIONS,
   COURT_ACCESS_OPTIONS,
@@ -44,7 +44,7 @@ function SectionHead({ id, title }: { id: string; title: string }) {
   return (
     <h2
       id={id}
-      className="mb-4 text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)] scroll-mt-6"
+      className="mb-4 scroll-mt-6 text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]"
     >
       {title}
     </h2>
@@ -67,7 +67,7 @@ function MultiChip({
       className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-bold transition ${
         selected
           ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-          : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+          : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
       }`}
     >
       {selected && <CheckCircle2 className="size-3.5" />}
@@ -303,7 +303,7 @@ export default function CoachProfileEditPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 pt-7">
+      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-36 pt-7">
         <section className="mx-auto max-w-md space-y-5">
           <SkeletonBlock className="h-8 w-44" />
           <SkeletonBlock className="h-28 w-full rounded-[20px]" />
@@ -316,7 +316,7 @@ export default function CoachProfileEditPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-36 text-[var(--lobb-black)]">
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-36 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader
         title="Edit Profile"
         eyebrow="Coach profile"
@@ -325,14 +325,14 @@ export default function CoachProfileEditPage() {
         confirmNavigation={hasUnsavedChanges}
         confirmMessage="Discard unsaved profile changes?"
       />
-      <div className="mx-auto max-w-md pt-5">
+      <div className="mx-auto max-w-3xl pt-5 lg:pt-7">
 
         <div className="space-y-10">
           {/* ── Photo ───────────────────────────────────────── */}
           <section>
             <SectionHead id="photo" title="Profile Photo" />
             <label className="group relative mx-auto flex w-fit cursor-pointer flex-col items-center">
-              <span className="flex size-32 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] transition group-hover:border-[var(--lobb-black)]">
+              <span className="flex size-32 overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)] transition group-hover:border-[var(--lobb-clay)]">
                 {photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={photoUrl} alt="" className="size-full object-cover" />
@@ -340,7 +340,7 @@ export default function CoachProfileEditPage() {
                   <Camera className="m-auto size-9" />
                 )}
               </span>
-              <span className="absolute bottom-0 right-0 flex size-9 items-center justify-center rounded-full border-4 border-[var(--lobb-bg)] bg-[var(--lobb-black)] text-white">
+              <span className="absolute bottom-0 right-0 flex size-9 items-center justify-center rounded-full border-4 border-[var(--lobb-bg-primary)] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]">
                 <Plus className="size-4" />
               </span>
               <input
@@ -359,7 +359,7 @@ export default function CoachProfileEditPage() {
                 }}
               />
             </label>
-            <p className="mt-3 text-center text-xs font-semibold text-[var(--lobb-muted)]">
+            <p className="mt-3 text-center text-xs font-semibold text-[var(--lobb-text-secondary)]">
               Max 2 MB · JPEG, PNG or WebP
             </p>
           </section>
@@ -373,7 +373,7 @@ export default function CoachProfileEditPage() {
                 <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
                 />
               </label>
               <label className="block">
@@ -382,22 +382,22 @@ export default function CoachProfileEditPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
                 />
               </label>
               <label className="block">
                 <span className="text-sm font-bold">
                   Headline{" "}
-                  <span className="font-semibold text-[var(--lobb-muted)]">(max 150 chars)</span>
+                  <span className="font-semibold text-[var(--lobb-text-secondary)]">(max 150 chars)</span>
                 </span>
                 <input
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
                   maxLength={150}
                   placeholder="ITF Certified · 8 Years · Lekki & VI"
-                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
                 />
-                <span className="mt-1 block text-right text-xs font-bold text-[var(--lobb-muted)]">
+                <span className="mt-1 block text-right text-xs font-bold text-[var(--lobb-text-secondary)]">
                   {headline.length}/150
                 </span>
               </label>
@@ -413,11 +413,11 @@ export default function CoachProfileEditPage() {
               rows={7}
               maxLength={600}
               placeholder="Tell players about your coaching style, experience, and what to expect in a session..."
-              className="w-full resize-none rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-3 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+              className="w-full resize-none rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 py-3 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
             />
             <span
               className={`mt-1 block text-right text-xs font-bold ${
-                bioInvalid ? "text-[#ba1a1a]" : "text-[var(--lobb-muted)]"
+                bioInvalid ? "text-[var(--lobb-error)]" : "text-[var(--lobb-text-secondary)]"
               }`}
             >
               Minimum 50 characters · {bio.length}/600
@@ -434,10 +434,10 @@ export default function CoachProfileEditPage() {
                 value={demoVideoUrl}
                 onChange={(e) => setDemoVideoUrl(e.target.value)}
                 placeholder="https://youtube.com/..."
-                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
+                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
               />
             </label>
-            <p className="mt-2 text-xs font-semibold text-[var(--lobb-muted)]">
+            <p className="mt-2 text-xs font-semibold text-[var(--lobb-text-secondary)]">
               Optional, but helps players trust your coaching style.
             </p>
           </section>
@@ -454,7 +454,7 @@ export default function CoachProfileEditPage() {
                   className={`h-12 rounded-2xl border text-sm font-black transition ${
                     hourlyRate === rate
                       ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
                   ₦{(rate / 1000).toFixed(rate % 1000 === 0 ? 0 : 1)}k
@@ -466,7 +466,7 @@ export default function CoachProfileEditPage() {
           {/* ── Locations ────────────────────────────────────── */}
           <section>
             <SectionHead id="locations" title="Locations" />
-            <p className="mb-2 text-sm font-bold text-[var(--lobb-black)]">
+            <p className="mb-2 text-sm font-bold text-[var(--lobb-text-primary)]">
               Primary location *
             </p>
             <div className="flex flex-wrap gap-2">
@@ -479,7 +479,7 @@ export default function CoachProfileEditPage() {
                 />
               ))}
             </div>
-            <p className="mb-2 mt-5 text-sm font-bold text-[var(--lobb-black)]">
+            <p className="mb-2 mt-5 text-sm font-bold text-[var(--lobb-text-primary)]">
               Other areas covered
             </p>
             <div className="flex flex-wrap gap-2">
@@ -546,7 +546,7 @@ export default function CoachProfileEditPage() {
                   className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-black transition ${
                     certifications.includes(cert)
                       ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
                   {cert}
@@ -583,7 +583,7 @@ export default function CoachProfileEditPage() {
                   className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-sm font-black transition ${
                     courtAccess === opt.value
                       ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
                   {opt.label}
@@ -602,9 +602,9 @@ export default function CoachProfileEditPage() {
           type="button"
           onClick={save}
           disabled={saving || bioInvalid || !fullName.trim() || !email.trim()}
-          className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-black)] text-sm font-black text-white shadow-[0_14px_30px_rgba(11,11,10,0.16)] transition hover:bg-black active:scale-[0.98] disabled:pointer-events-none disabled:bg-[#cfc6b8]"
+          className="mt-8 flex h-14 w-full items-center justify-center rounded-[16px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
         >
-          {saving ? "Saving..." : "Save Profile"}
+          {saving ? <InlineActionLoader label="Saving" /> : "Save Profile"}
         </button>
       </div>
     </main>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   OnboardingCopy,
@@ -46,6 +47,8 @@ export default function VerifyPage() {
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
   const pendingAuth = useMemo(() => (typeof window === "undefined" ? null : getPendingAuth()), []);
   const code = digits.join("");
+  const roleLabel = pendingAuth?.role === "coach" ? "Coach signup" : pendingAuth?.role === "admin" ? "Admin access" : "Player sign in";
+  const RoleIcon = pendingAuth?.role === "coach" ? GraduationCap : Trophy;
 
   useEffect(() => {
     if (!pendingAuth) {
@@ -135,6 +138,8 @@ export default function VerifyPage() {
       return;
     }
 
+    const intendedRole = pendingAuth.role;
+
     if (profile?.role === "coach") {
       router.push(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
       return;
@@ -146,12 +151,22 @@ export default function VerifyPage() {
     }
 
     if (profile?.role === "player") {
+      // DB triggers often create a default player profile on first sign-up.
+      // If the user explicitly chose "coach" and has never completed onboarding,
+      // correct the role and send them to coach setup.
+      if (intendedRole === "coach" && !profile.full_name) {
+        await supabase
+          .from("profiles")
+          .update({ role: "coach" })
+          .eq("id", userId);
+        router.push("/auth/setup/coach/1");
+        return;
+      }
       router.push(profile.full_name ? "/" : "/auth/setup/player");
       return;
     }
 
-    // No role yet — if we have clear intent from the login flow, set it and skip the picker
-    const intendedRole = pendingAuth.role;
+    // No profile row yet — set role from intent and route directly.
     if (intendedRole === "coach" || intendedRole === "player") {
       await supabase.from("profiles").upsert(
         { id: userId, role: intendedRole, phone_number: pendingAuth.phone },
@@ -236,7 +251,7 @@ export default function VerifyPage() {
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--lobb-clay)]"></span>
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
-                  {pendingAuth.role}
+                  {roleLabel}
                 </span>
               </div>
             )}
@@ -247,11 +262,24 @@ export default function VerifyPage() {
             WhatsApp
           </OnboardingTitle>
           <OnboardingCopy>
-            Code sent to {pendingAuth ? displayPhone(pendingAuth.phone) : "+234"}. It expires shortly.
+            Code sent to {pendingAuth ? displayPhone(pendingAuth.phone) : "+234"}.
           </OnboardingCopy>
+          <div className="mt-5 flex items-start gap-3 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]">
+              <RoleIcon className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-black text-[var(--lobb-text-primary)]">{roleLabel}</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                {pendingAuth?.role === "coach"
+                  ? "After verification you will complete coach profile, email, availability, and review details."
+                  : "After verification you will finish your player profile and add email for booking updates."}
+              </p>
+            </div>
+          </div>
           {pendingAuth?.devCode && (
-            <p className="mt-4 rounded-2xl border border-[var(--lobb-border)] bg-white/60 px-4 py-3 text-sm font-bold text-[var(--lobb-muted)]">
-              Dev account code: <span className="text-[var(--lobb-black)]">{pendingAuth.devCode}</span>
+            <p className="mt-4 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-4 py-3 text-sm font-bold text-[var(--lobb-text-secondary)]">
+              Dev account code: <span className="text-[var(--lobb-text-primary)]">{pendingAuth.devCode}</span>
             </p>
           )}
         </div>
@@ -274,26 +302,27 @@ export default function VerifyPage() {
                     inputs.current[index - 1]?.focus();
                   }
                 }}
-                className={`h-14 rounded-2xl border bg-[var(--lobb-surface)] text-center text-xl font-black text-[var(--lobb-black)] shadow-[0_10px_24px_rgba(58,43,20,0.02)] outline-none transition-all duration-200 focus:scale-105 focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10 focus:shadow-[0_0_15px_rgba(196,98,45,0.15)] ${
-                  error ? "border-red-600 focus:border-red-600 focus:ring-red-600/10 focus:shadow-none" : "border-[var(--lobb-border)]"
+                className={`h-14 rounded-[12px] border bg-[var(--lobb-bg-elevated)] text-center text-xl font-black text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] outline-none transition-all duration-200 focus:scale-105 focus:border-[var(--lobb-border-focus)] focus:ring-3 focus:ring-[var(--lobb-clay)]/15 ${
+                  error ? "border-[var(--lobb-border-error)] focus:border-[var(--lobb-border-error)] focus:ring-[var(--lobb-error)]/10 focus:shadow-none" : "border-[var(--lobb-border-subtle)]"
                 }`}
               />
             ))}
           </div>
-          {error && <p className="mt-4 text-sm font-semibold text-red-700">{error}</p>}
+          {error && <p className="mt-4 text-sm font-semibold text-[var(--lobb-error)]">{error}</p>}
         </div>
 
         <button
           type="button"
           disabled={seconds > 0}
           onClick={resend}
-          className="mt-6 rounded-full py-3 text-center text-sm font-bold text-[var(--lobb-clay)] transition hover:bg-white/50 disabled:cursor-default disabled:text-[var(--lobb-muted)] disabled:opacity-70"
+          className="mt-6 rounded-full py-3 text-center text-sm font-bold text-[var(--lobb-clay)] transition hover:bg-[var(--lobb-bg-secondary)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)] disabled:opacity-70"
         >
           {seconds > 0 ? `Resend code (0:${String(seconds).padStart(2, "0")})` : "Resend code"}
         </button>
 
         <div className="mt-auto pb-8 text-center">
-          <p className="text-sm font-semibold text-[var(--lobb-muted)]">
+          <p className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+            {verifying && <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />}
             {verifying ? "Checking your code..." : code.length === 6 ? "Submitting automatically..." : "Enter all 6 digits to continue."}
           </p>
         </div>

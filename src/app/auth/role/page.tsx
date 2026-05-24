@@ -155,8 +155,8 @@ export default function RolePage() {
 
         <div className="mt-auto pb-8">
           {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton disabled={!selected} onClick={continueFlow}>
-            {saving ? "Saving..." : "Continue"}
+          <OnboardingButton disabled={!selected} loading={saving} onClick={continueFlow}>
+            {saving ? "Saving" : "Continue"}
           </OnboardingButton>
         </div>
       </section>

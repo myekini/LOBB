@@ -38,8 +38,9 @@
 }
 
 @keyframes toastSlideDown {
-  0%   { transform: translateY(-18px); opacity: 0; }
-  100% { transform: translateY(0);     opacity: 1; }
+  0%   { transform: scale(0.88); opacity: 0; }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
 @keyframes lobbShimmer {
@@ -97,22 +98,44 @@
 
 @layer base {
   :root {
-    /* ── LOBB Brand Tokens (aligned to brand kit) ── */
-    --lobb-black:    #0D0D0D;
-    --lobb-clay:     #C4622D;
-    --lobb-clay-dark:#9A4820;
-    --lobb-surface:  #FAFAFA;
-    --lobb-bg:       #F2F1EF;
-    --lobb-surface-2:#E8E4DD;
-    --lobb-border:   #E5E3DF;
-    --lobb-muted:    #8A8A8A;
-    --lobb-success:  #2D6A4F;
-    --lobb-error:    #BA1A1A;
-    --lobb-warning:  #F4A228;
-    --lobb-star:     #F4A228;
-    /* Legacy aliases kept for components */
-    --lobb-ink:      #171613;
-    --lobb-green:    #0F3D2E;
+    /* ── LOBB Light Mode: "Saturday Morning Court" ── */
+    --lobb-bg-primary:       #FAF8F5;
+    --lobb-bg-secondary:     #F2EFE9;
+    --lobb-bg-elevated:      #FFFFFF;
+    --lobb-bg-inverse:       #0D0D0D;
+
+    --lobb-clay:             #C4622D;
+    --lobb-clay-light:       #F5E6DC;
+    --lobb-clay-dark:        #A3501F;
+
+    --lobb-text-primary:     #1A1714;
+    --lobb-text-secondary:   #6B6560;
+    --lobb-text-tertiary:    #A09890;
+    --lobb-text-inverse:     #FFFFFF;
+    --lobb-text-link:        var(--lobb-clay);
+
+    --lobb-border-subtle:    #E8E3DC;
+    --lobb-border-focus:     var(--lobb-clay);
+    --lobb-border-error:     #D64045;
+
+    --lobb-star:             #F4A228;
+    --lobb-success:          #2D6A4F;
+    --lobb-error:            #D64045;
+    --lobb-warning:          #F4A228;
+
+    --lobb-shadow-card:      0 2px 16px rgba(90, 60, 30, 0.08);
+    --lobb-shadow-sheet:     0 -4px 24px rgba(90, 60, 30, 0.10);
+    --lobb-shadow-modal:     0 8px 40px rgba(90, 60, 30, 0.14);
+
+    /* Legacy aliases kept so existing components migrate safely. */
+    --lobb-black:            var(--lobb-bg-inverse);
+    --lobb-surface:          var(--lobb-bg-elevated);
+    --lobb-bg:               var(--lobb-bg-primary);
+    --lobb-surface-2:        var(--lobb-bg-secondary);
+    --lobb-border:           var(--lobb-border-subtle);
+    --lobb-muted:            var(--lobb-text-secondary);
+    --lobb-ink:              var(--lobb-text-primary);
+    --lobb-green:            #0F3D2E;
 
     /* ── shadcn/ui base tokens ── */
     --background:          oklch(1 0 0);
@@ -134,6 +157,26 @@
     --input:               oklch(0.922 0 0);
     --ring:                oklch(0.708 0 0);
     --radius:              0.625rem;
+  }
+
+  [data-theme="dark"] {
+    --lobb-bg-primary:       #0D0D0D;
+    --lobb-bg-secondary:     #1A1714;
+    --lobb-bg-elevated:      #242018;
+    --lobb-bg-inverse:       #FAF8F5;
+
+    --lobb-clay-light:       rgba(196, 98, 45, 0.15);
+    --lobb-clay-dark:        #E2824C;
+
+    --lobb-text-primary:     #FAF8F5;
+    --lobb-text-secondary:   #A09890;
+    --lobb-text-tertiary:    #6B6560;
+    --lobb-text-inverse:     #0D0D0D;
+
+    --lobb-border-subtle:    #2E2924;
+    --lobb-shadow-card:      0 2px 16px rgba(0, 0, 0, 0.30);
+    --lobb-shadow-sheet:     0 -4px 24px rgba(0, 0, 0, 0.40);
+    --lobb-shadow-modal:     0 8px 40px rgba(0, 0, 0, 0.50);
   }
 
   * {

@@ -7,6 +7,8 @@ const bookingSelect = `
   starts_at,
   ends_at,
   location,
+  location_venue_id,
+  location_court_id,
   status,
   hourly_rate_ngn,
   platform_fee_ngn,

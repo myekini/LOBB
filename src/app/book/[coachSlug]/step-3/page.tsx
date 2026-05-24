@@ -30,7 +30,7 @@ function formatSlotEnd(iso: string) {
 function countdownStyle(seconds: number) {
   if (seconds <= 120) return "bg-red-50 text-[var(--lobb-error)]";
   if (seconds <= 240) return "bg-[#fff7e0] text-[var(--lobb-warning)]";
-  return "bg-[#fff0e8] text-[var(--lobb-clay)]";
+  return "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]";
 }
 
 function money(v: number) { return `₦${v.toLocaleString()}`; }
@@ -46,6 +46,8 @@ function BookingStep3Content() {
   const expiresAt = search.get("expires")  ?? "";
   const location  = search.get("location") ?? "";
   const note      = search.get("note")     ?? "";
+  const venueId   = search.get("venue_id") ?? "";
+  const courtId   = search.get("court_id") ?? "";
 
   const [coach,   setCoach]   = useState<CoachPublicProfile | null>(null);
   const [paying,  setPaying]  = useState(false);
@@ -107,6 +109,8 @@ function BookingStep3Content() {
           lock_id:       lockId,
           location,
           player_notes:  note || undefined,
+          location_venue_id: venueId || undefined,
+          location_court_id: courtId || undefined,
         }),
       });
       const json = (await res.json()) as {
@@ -127,7 +131,7 @@ function BookingStep3Content() {
   return (
     <BookingShell
       step={3}
-      backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}`}
+      backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}${venueId ? `&venue_id=${venueId}` : ""}${courtId ? `&court_id=${courtId}` : ""}`}
     >
       {/* Countdown */}
       <p className={`mb-5 rounded-full px-4 py-2 text-center text-sm font-black transition-colors duration-500 ${countdownStyle(seconds)}`}>
@@ -136,7 +140,7 @@ function BookingStep3Content() {
 
       <h2 className="text-sm font-black uppercase tracking-wider text-[var(--lobb-black)]">Order Summary</h2>
 
-      <section className="mt-3 rounded-3xl border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-5.5 shadow-[0_16px_40px_rgba(58,43,20,0.02)]">
+      <section className="mt-3 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-5.5 shadow-[var(--lobb-shadow-card)]">
         {/* Coach identity */}
         {coach && (
           <div className="mb-4 flex items-center gap-3.5 pb-4 border-b border-[var(--lobb-border)]">
@@ -217,8 +221,8 @@ function BookingStep3Content() {
         </div>
       </div>
 
-      <BookingButton disabled={!coach || paying} onClick={handlePay}>
-        {paying ? "Redirecting to Paystack..." : coach ? `Pay ${money(total)} Securely` : "Loading Booking Summary…"}
+      <BookingButton disabled={!coach} loading={paying} onClick={handlePay}>
+        {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} Securely` : "Loading Booking Summary..."}
       </BookingButton>
 
       <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-black uppercase tracking-wider text-[var(--lobb-muted)]">

@@ -218,7 +218,7 @@ brand-kit/logos/lobb-mark.svg
 - shadcn/base UI primitives
 - Supabase Auth and database-ready helpers
 - Paystack-ready payment screens
-- Termii/Twilio-ready OTP messaging layer
+- Twilio WhatsApp OTP delivery
 - Lucide icons
 
 ## Local Setup
@@ -277,8 +277,9 @@ Required groups:
 - `PAYSTACK_PUBLIC_KEY`
 - `PAYSTACK_SECRET_KEY`
 - `PAYSTACK_WEBHOOK_SECRET`
-- `TERMII_API_KEY`
-- `TERMII_SENDER_ID`
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_WHATSAPP_FROM`
 - `RESEND_API_KEY`
 - `NEXT_PUBLIC_APP_URL`
 - `NEXT_PUBLIC_APP_NAME`

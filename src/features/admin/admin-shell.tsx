@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays, Gavel, LayoutDashboard, LogOut, UserCheck, WalletCards } from "lucide-react";
+import { ArrowLeft, CalendarDays, LayoutDashboard, LogOut, UserCheck, WalletCards } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/coaches", label: "Coach Approvals", icon: UserCheck },
-  { href: "/admin/bookings", label: "All Bookings", icon: CalendarDays },
-  { href: "/admin/disputes", label: "Disputes", icon: Gavel },
-  { href: "/admin/earnings", label: "Platform Earnings", icon: WalletCards },
+  { href: "/admin/coaches", label: "Coaches", icon: UserCheck },
+  { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
+  { href: "/admin/earnings", label: "Earnings", icon: WalletCards },
 ] as const;
 
 export function AdminShell({ children, active = "Dashboard" }: { children: React.ReactNode; active?: string }) {
@@ -24,40 +23,44 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
   };
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] text-[var(--lobb-black)]">
-      <header className="sticky top-0 z-50 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-          <Link href="/admin" className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-full bg-[var(--lobb-black)] text-[11px] font-black text-white">LA</span>
+    <main className="min-h-screen bg-[var(--lobb-bg-secondary)] p-3 text-[var(--lobb-text-primary)] md:p-5">
+      <div className="mx-auto min-h-[calc(100vh-24px)] max-w-[1380px] rounded-[20px] bg-[var(--lobb-bg-primary)] pb-20 shadow-[var(--lobb-shadow-card)] md:min-h-[calc(100vh-40px)] md:pb-0">
+      <header className="sticky top-3 z-50 rounded-t-[20px] bg-[var(--lobb-bg-primary)]/95 backdrop-blur-xl md:top-5">
+        <div className="flex h-20 items-center justify-between gap-4 px-5 sm:px-7">
+          <Link href="/admin" className="flex items-center gap-2.5">
+            <span className="flex size-9 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-black)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/favicon.svg" alt="" className="size-9" />
+            </span>
             <span>
-              <span className="block text-sm font-black tracking-tight">LOBB Admin</span>
-              <span className="hidden text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)] sm:block">Control room</span>
+              <span className="block text-[15px] font-black tracking-tight">LOBB</span>
+              <span className="hidden text-[11px] font-bold text-[var(--lobb-text-secondary)] sm:block">Admin</span>
             </span>
           </Link>
           <AdminDesktopNav active={active} />
-          <button onClick={signOut} className="inline-flex h-10 items-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-sm font-black shadow-[0_8px_22px_rgba(13,13,13,0.05)]">
+          <button onClick={signOut} className="inline-flex h-10 items-center gap-2 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-black">
             <LogOut className="size-4" />
             <span className="hidden sm:inline">Log out</span>
           </button>
         </div>
       </header>
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 md:grid-cols-[250px_1fr]">
-        <aside className="hidden md:block">
-          <nav className="sticky top-24 rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-3 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
-            <p className="px-3 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">Platform Management</p>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = item.label === active;
-              return (
-                <Link key={`${item.href}-${item.label}`} href={item.href} className={cn("mt-1 flex items-center gap-3 rounded-[14px] px-3 py-3 text-sm font-black text-[var(--lobb-muted)] transition hover:bg-[var(--lobb-bg)] hover:text-[var(--lobb-black)]", isActive && "bg-[var(--lobb-black)] text-white hover:bg-[var(--lobb-black)] hover:text-white")}>
-                  <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
+      <div className="px-5 pb-6 sm:px-7">
         <section className="min-w-0">{children}</section>
+      </div>
+      <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/95 px-3 py-2 backdrop-blur-xl md:hidden" aria-label="Admin mobile navigation">
+        <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.label === active || (active === "Coach Approvals" && item.label === "Coaches") || (active === "All Bookings" && item.label === "Bookings") || (active === "Platform Earnings" && item.label === "Earnings");
+            return (
+              <Link key={item.href} href={item.href} className={cn("flex h-14 flex-col items-center justify-center gap-1 rounded-[14px] text-[10px] font-black text-[var(--lobb-text-tertiary)]", isActive && "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]")}>
+                <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
       </div>
     </main>
   );
@@ -68,16 +71,16 @@ function AdminDesktopNav({ active }: { active: string }) {
     <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex" aria-label="Admin navigation">
       {navItems.map((item) => {
         const Icon = item.icon;
-        const isActive = item.label === active;
+        const isActive = item.label === active || (active === "Coach Approvals" && item.label === "Coaches") || (active === "All Bookings" && item.label === "Bookings") || (active === "Platform Earnings" && item.label === "Earnings");
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-black transition",
+              "inline-flex h-10 items-center gap-2 rounded-[12px] px-4 text-sm font-bold transition",
               isActive
-                ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_24px_rgba(13,13,13,0.14)]"
-                : "text-[var(--lobb-muted)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-black)]"
+                ? "bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)]"
+                : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-elevated)] hover:text-[var(--lobb-text-primary)]"
             )}
           >
             <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />
@@ -92,7 +95,7 @@ function AdminDesktopNav({ active }: { active: string }) {
 export function AdminBackHeader({ title, href = "/admin" }: { title: string; href?: string }) {
   return (
     <div className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3 lg:flex">
-      <Link href={href} className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_8px_22px_rgba(13,13,13,0.05)]" aria-label="Go back">
+      <Link href={href} className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]" aria-label="Go back">
         <ArrowLeft className="size-5" />
       </Link>
       <h1 className="truncate text-center text-[22px] font-black md:text-2xl lg:text-left">{title}</h1>

@@ -13,7 +13,7 @@ export function LobbVerifiedBadge({ verified, size = "small", className }: LobbV
   return (
     <span
       className={cn(
-        "inline-flex w-fit items-center gap-1 rounded-full bg-[var(--lobb-clay)] font-black text-white",
+        "inline-flex w-fit items-center gap-1 rounded-full border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay-light)] font-black text-[var(--lobb-clay)]",
         size === "large" ? "px-3 py-1.5 text-[13px]" : "px-2 py-1 text-[12px]",
         className,
       )}
@@ -23,4 +23,3 @@ export function LobbVerifiedBadge({ verified, size = "small", className }: LobbV
     </span>
   );
 }
-

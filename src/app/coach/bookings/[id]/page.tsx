@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Circle, MapPin, Phone, User, X } from "lucide-react";
+import { ArrowLeft, Circle, MapPin, Phone, User, WalletCards, X } from "lucide-react";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   durationMinutes,
@@ -61,11 +62,11 @@ export default function CoachBookingDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 text-[var(--lobb-black)]">
-        <CoachFlowHeader title="Booking" eyebrow="Loading" />
-        <section className="mx-auto max-w-md pt-5">
+      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+        <CoachFlowHeader title="Booking" eyebrow="Loading" showLogout={false} />
+        <section className="mx-auto max-w-5xl pt-5">
           <BookingCardSkeleton />
-          <div className="mt-7 space-y-4">
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
             <BookingCardSkeleton />
             <BookingCardSkeleton />
           </div>
@@ -76,9 +77,9 @@ export default function CoachBookingDetailPage() {
 
   if (!booking) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 text-[var(--lobb-black)]">
-        <CoachFlowHeader title="Booking" eyebrow="Not found" />
-        <section className="mx-auto max-w-md pt-5">
+      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+        <CoachFlowHeader title="Booking" eyebrow="Not found" showLogout={false} />
+        <section className="mx-auto max-w-5xl pt-5">
           <h1 className="text-xl font-black">Booking not found</h1>
           <Link href="/coach/bookings" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
@@ -92,84 +93,121 @@ export default function CoachBookingDetailPage() {
   const sessionInFuture = new Date(booking.starts_at).getTime() > Date.now();
   const canCancel = isConfirmed && sessionInFuture;
 
+  const courtLabel = booking.location_venue_id === "national_stadium" && booking.location_court_id
+    ? NATIONAL_STADIUM_COURTS.find((c) => c.id === booking.location_court_id)?.label ?? null
+    : null;
+
+  const sessionRef = payment?.paystack_reference ?? booking.paystack_reference ?? null;
+
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 text-[var(--lobb-black)]">
-      <CoachFlowHeader title="Booking Detail" eyebrow="Coach schedule" actionHref="/coach/bookings" actionLabel="List" />
-      <section className="mx-auto max-w-md pt-5">
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+      <CoachFlowHeader title="Booking Detail" eyebrow="Coach schedule" actionHref="/coach/bookings" actionLabel="List" showLogout={false} />
+      <section className="mx-auto max-w-5xl pt-5 lg:pt-7">
+        <Link href="/coach/bookings" className="mb-4 inline-flex items-center gap-2 text-xs font-black text-[var(--lobb-text-secondary)]">
+          <ArrowLeft className="size-4" />
+          Back to bookings
+        </Link>
 
-        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[#e8f4ed] text-[var(--lobb-success)]" : "bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)]"}`}>
-          <Circle className="size-2 fill-current" />
-          {booking.status}
-        </span>
-
-        <h2 className="mt-5 text-[22px] font-black">{formatBookingDate(booking.starts_at)}</h2>
-        <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">
-          {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} session
-        </p>
-
-        <DetailSection title="Player">
-          <div className="flex items-center gap-3">
-            <div className="flex size-14 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)]">
-              <User className="size-5" />
-            </div>
+        <section className="rounded-[22px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="font-black">{player?.full_name ?? "Player"}</p>
-              {booking.player_notes && (
-                <p className="mt-1 text-sm font-medium italic text-[var(--lobb-muted)]">&quot;{booking.player_notes}&quot;</p>
-              )}
-            </div>
-          </div>
-          <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-muted)]">
-            <Phone className="size-4 text-[var(--lobb-clay)]" />
-            Player phone appears in your booking confirmation SMS
-          </p>
-        </DetailSection>
-
-        <DetailSection title="Location">
-          <p className="flex items-start gap-2 text-sm font-semibold text-[var(--lobb-muted)]">
-            <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-            {booking.location || "Location not specified"}
-          </p>
-        </DetailSection>
-
-        <DetailSection title="Your Earnings">
-          <PaymentRow label="Session fee (player pays)" amount={booking.hourly_rate_ngn} />
-          <PaymentRow label="LOBB platform fee" amount={booking.platform_fee_ngn} />
-          <PaymentRow label="Total collected" amount={booking.total_amount_ngn} strong />
-          <p className="mt-3 text-xs font-bold text-[var(--lobb-muted)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
-        </DetailSection>
-
-        {/* Cancel — only available for upcoming confirmed sessions */}
-        {canCancel && (
-          <>
-            <div className="mt-8 rounded-[18px] border border-[#f1d2c1] bg-[#fff7f2] p-4">
-              <p className="text-sm font-black text-[var(--lobb-black)]">Need to cancel?</p>
-              <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
-                Cancelling this session will send the player a full refund (5–7 business days) and remove the booking from both your schedules.
+              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/70"}`}>
+                <Circle className="size-2 fill-current text-[var(--lobb-success)]" />
+                {booking.status}
+              </span>
+              <h2 className="mt-5 text-[28px] font-black leading-tight text-white sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-2 text-sm font-semibold text-white/58">
+                {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} session
               </p>
             </div>
-            <button
-              onClick={() => setShowCancel(true)}
-              className="mt-4 h-14 w-full rounded-full border border-red-300 bg-transparent text-sm font-black text-red-700"
-            >
-              Cancel This Session
-            </button>
-          </>
-        )}
+            <div className="rounded-[18px] border border-white/10 bg-white/[0.06] p-4 sm:min-w-[220px]">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">Coach payout</p>
+              <p className="mt-2 text-2xl font-black text-white">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
+              <p className="mt-1 text-xs font-semibold text-white/50">From this session</p>
+            </div>
+          </div>
+        </section>
 
-        <Link href="/coach/bookings" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
-          Back to My Bookings
-        </Link>
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <section className="space-y-4">
+            <DetailSection title="Player">
+              <div className="flex items-center gap-3">
+                <div className="flex size-12 items-center justify-center rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
+                  <User className="size-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-black">{player?.full_name ?? "Player"}</p>
+                  {booking.player_notes && (
+                    <p className="mt-1 text-sm font-medium italic text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
+                  )}
+                </div>
+              </div>
+              <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-text-secondary)]">
+                <Phone className="size-4 text-[var(--lobb-clay)]" />
+                Phone number is in your confirmation email
+              </p>
+            </DetailSection>
+
+            <DetailSection title="Location">
+              <p className="flex items-start gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
+                {booking.location || "Location not specified"}
+              </p>
+              {courtLabel && (
+                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay-light)] px-3 py-1 text-xs font-black text-[var(--lobb-clay)]">
+                  Court: {courtLabel}
+                </p>
+              )}
+            </DetailSection>
+          </section>
+
+          <aside className="space-y-4">
+            <DetailSection title="Earnings">
+              <div className="mb-3 flex items-center gap-2 text-sm font-black">
+                <WalletCards className="size-4 text-[var(--lobb-clay)]" />
+                Session breakdown
+              </div>
+              <PaymentRow label="Session fee" amount={booking.hourly_rate_ngn} />
+              <PaymentRow label="LOBB fee" amount={booking.platform_fee_ngn} />
+              <PaymentRow label="Total collected" amount={booking.total_amount_ngn} strong />
+              {sessionRef && (
+                <p className="mt-3 rounded-[10px] bg-[var(--lobb-bg-primary)] px-3 py-2 font-mono text-xs font-black tracking-wider text-[var(--lobb-text-secondary)]">
+                  {sessionRef}
+                </p>
+              )}
+            </DetailSection>
+
+            {canCancel && (
+              <section className="rounded-[18px] border border-[var(--lobb-error)]/30 bg-[var(--lobb-bg-elevated)] p-4">
+                <p className="text-sm font-black">Need to cancel?</p>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                  Cancelling refunds the player and removes the session from both schedules.
+                </p>
+                <button
+                  onClick={() => setShowCancel(true)}
+                  className="mt-4 h-11 w-full rounded-[14px] border border-[var(--lobb-error)] text-sm font-black text-[var(--lobb-error)]"
+                >
+                  Cancel Session
+                </button>
+              </section>
+            )}
+          </aside>
+        </div>
+
+        {!canCancel && (
+          <Link href="/coach/bookings" className="mt-5 inline-flex text-sm font-bold text-[var(--lobb-text-secondary)]">
+            Back to bookings
+          </Link>
+        )}
       </section>
 
-      {/* Cancel confirmation modal */}
       {showCancel && (
         <div
           className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4"
           onClick={() => setShowCancel(false)}
         >
           <section
-            className="mx-auto w-full max-w-md rounded-[24px] bg-[var(--lobb-surface)] p-5 shadow-[0_-18px_44px_rgba(0,0,0,0.2)]"
+            className="mx-auto w-full max-w-md rounded-[24px] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -178,8 +216,8 @@ export default function CoachBookingDetailPage() {
                 <X className="size-5" />
               </button>
             </div>
-            <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-muted)]">
-              The player will receive a <strong>full refund</strong> — this booking will be removed from both schedules and the player will be notified by WhatsApp.
+            <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+              The player will receive a full refund. This booking will be removed from both schedules and the player will be notified by email.
             </p>
             <p className="mt-3 text-sm font-semibold text-[var(--lobb-error)]">
               Repeated cancellations may affect your coach standing on LOBB.
@@ -187,14 +225,14 @@ export default function CoachBookingDetailPage() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 onClick={() => setShowCancel(false)}
-                className="h-12 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white"
+                className="h-12 rounded-[14px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
               >
                 Keep Session
               </button>
               <button
                 disabled={cancelling}
                 onClick={cancelBooking}
-                className="h-12 rounded-full border border-red-300 text-sm font-black text-red-700 disabled:opacity-60"
+                className="h-12 rounded-[14px] border border-[var(--lobb-error)] text-sm font-black text-[var(--lobb-error)] disabled:opacity-60"
               >
                 {cancelling ? "Cancelling..." : "Yes, Cancel"}
               </button>
@@ -208,8 +246,8 @@ export default function CoachBookingDetailPage() {
 
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-7 rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
-      <p className="mb-4 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">{title}</p>
+    <section className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+      <p className="mb-4 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</p>
       {children}
     </section>
   );
@@ -217,7 +255,7 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
 
 function PaymentRow({ amount, label, strong }: { amount: number; label: string; strong?: boolean }) {
   return (
-    <p className={`flex justify-between gap-5 py-1 text-sm ${strong ? "font-black text-[var(--lobb-black)]" : "font-semibold text-[var(--lobb-muted)]"}`}>
+    <p className={`flex justify-between gap-5 py-1 text-sm ${strong ? "font-black text-[var(--lobb-text-primary)]" : "font-semibold text-[var(--lobb-text-secondary)]"}`}>
       <span>{label}</span>
       <span>{money(amount)}</span>
     </p>

@@ -202,6 +202,150 @@ export const LAGOS_LOCATIONS = [
   "Sangotedo",
 ] as const;
 
+export type CourtVenueType = "club" | "public" | "estate" | "stadium";
+export type CourtVenueAccess = "open" | "members_only" | "members_weekday_restricted";
+
+export type LagosCourtEntry = {
+  id: string;
+  name: string;
+  venue: string;
+  area: string;
+  address: string;
+  type: CourtVenueType;
+  accessRule: CourtVenueAccess;
+  publicNote?: string;
+  courtCount?: number;
+  isNationalStadium?: boolean;
+};
+
+export type NationalStadiumCourt = {
+  id: string;
+  label: string;
+  isMemberCourt: boolean;
+  publicWeekdaysBefore4pm: boolean;
+  notes?: string;
+};
+
+export const NATIONAL_STADIUM_COURTS: NationalStadiumCourt[] = [
+  // 3 front courts — members only except weekdays before 4pm
+  { id: "nat_front_1", label: "Front Court 1", isMemberCourt: true, publicWeekdaysBefore4pm: true, notes: "Members only · Open weekdays before 4pm" },
+  { id: "nat_front_2", label: "Front Court 2", isMemberCourt: true, publicWeekdaysBefore4pm: true, notes: "Members only · Open weekdays before 4pm" },
+  { id: "nat_front_3", label: "Front Court 3", isMemberCourt: true, publicWeekdaysBefore4pm: true, notes: "Members only · Open weekdays before 4pm" },
+  // Center court — open to all
+  { id: "nat_center",  label: "Center Court",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
+  // 3 back courts — open to all
+  { id: "nat_back_1",  label: "Back Court 1",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
+  { id: "nat_back_2",  label: "Back Court 2",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
+  { id: "nat_back_3",  label: "Back Court 3",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
+];
+
+export const LAGOS_COURTS: LagosCourtEntry[] = [
+  {
+    id: "national_stadium",
+    name: "National Stadium Tennis Courts",
+    venue: "National Stadium",
+    area: "Surulere",
+    address: "National Stadium, Surulere, Lagos",
+    type: "stadium",
+    accessRule: "members_weekday_restricted",
+    publicNote: "7 courts: 3 front (members), 1 center, 3 back. Saturday mornings are peak — book early.",
+    courtCount: 7,
+    isNationalStadium: true,
+  },
+  {
+    id: "lagos_lawn_tennis_club",
+    name: "Lagos Lawn Tennis Club",
+    venue: "Lagos Lawn Tennis Club",
+    area: "Lagos Island",
+    address: "Glover Road, Lagos Island",
+    type: "club",
+    accessRule: "open",
+    courtCount: 6,
+  },
+  {
+    id: "lagos_country_club",
+    name: "Lagos Country Club",
+    venue: "Lagos Country Club",
+    area: "Ikeja",
+    address: "Ikeja, Lagos",
+    type: "club",
+    accessRule: "members_only",
+    publicNote: "Members and their guests only.",
+    courtCount: 4,
+  },
+  {
+    id: "ikoyi_club",
+    name: "Ikoyi Club Tennis Courts",
+    venue: "Ikoyi Club 1938",
+    area: "Ikoyi",
+    address: "Ikoyi Club 1938, Lagos",
+    type: "club",
+    accessRule: "members_only",
+    publicNote: "Members and signed-in guests only.",
+    courtCount: 5,
+  },
+  {
+    id: "lekki_tennis_club",
+    name: "Lekki Tennis Club",
+    venue: "Lekki Tennis Club",
+    area: "Lekki",
+    address: "Lekki Phase 1, Lagos",
+    type: "club",
+    accessRule: "open",
+    courtCount: 3,
+  },
+  {
+    id: "chevron_estate_courts",
+    name: "Chevron Estate Courts",
+    venue: "Chevron Tennis Courts",
+    area: "Chevron",
+    address: "Chevron Drive, Lekki, Lagos",
+    type: "estate",
+    accessRule: "open",
+    courtCount: 2,
+  },
+  {
+    id: "oniru_courts",
+    name: "Oniru Estate Tennis",
+    venue: "Oniru Estate Club",
+    area: "Oniru",
+    address: "Oniru Estate, Victoria Island Extension, Lagos",
+    type: "estate",
+    accessRule: "open",
+    courtCount: 2,
+  },
+  {
+    id: "eko_atlantic_courts",
+    name: "Eko Atlantic Tennis Courts",
+    venue: "Eko Atlantic City",
+    area: "Victoria Island",
+    address: "Eko Atlantic City, Victoria Island, Lagos",
+    type: "club",
+    accessRule: "open",
+    courtCount: 2,
+  },
+  {
+    id: "gbagada_tennis_courts",
+    name: "Gbagada Tennis Club",
+    venue: "Gbagada Tennis Club",
+    area: "Gbagada",
+    address: "Gbagada, Lagos",
+    type: "club",
+    accessRule: "open",
+    courtCount: 2,
+  },
+  {
+    id: "terrakulture_courts",
+    name: "Terra Kulture Courts",
+    venue: "Terra Kulture Arena",
+    area: "Victoria Island",
+    address: "Plot 1376 Tiamiyu Savage Street, Victoria Island, Lagos",
+    type: "club",
+    accessRule: "open",
+    courtCount: 2,
+  },
+];
+
 export const SPECIALIZATION_OPTIONS = [
   "Beginners",
   "Kids (5–12)",

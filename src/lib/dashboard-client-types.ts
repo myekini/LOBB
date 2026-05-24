@@ -20,6 +20,7 @@ export type JoinedCoachProfile = {
 export type JoinedPlayer = {
   id: string;
   full_name: string;
+  avatar_url?: string | null;
 };
 
 export type JoinedReview = {
@@ -36,6 +37,8 @@ export type DashboardBooking = {
   starts_at: string;
   ends_at: string;
   location: string;
+  location_venue_id: string | null;
+  location_court_id: string | null;
   status: string;
   hourly_rate_ngn: number;
   platform_fee_ngn: number;

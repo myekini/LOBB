@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createOtp, getTestOtp, shouldUseTestOtp } from "@/lib/db-otp";
+import { createOtp, getTestOtp, isTestOtpEnabled, shouldUseTestOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { sendOtpSms } from "@/lib/sms";
 
@@ -25,19 +25,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: otp.error }, { status: 429 });
     }
 
-    const isTestOtp = shouldUseTestOtp(phone);
+    const isTestPhone = shouldUseTestOtp(phone);
 
-    if (!isTestOtp) {
-      await sendOtpSms({
-        phone,
-        message: `Your LOBB login code is ${otp.code}. It expires in 10 minutes.`,
-      });
+    if (!isTestPhone) {
+      // Fire-and-forget in test mode — Twilio trial can't message unverified numbers,
+      // so we swallow the error and fall through to the devCode hint below.
+      try {
+        await sendOtpSms({
+          phone,
+          message: `Your LOBB login code is ${otp.code}. It expires in 10 minutes.`,
+        });
+      } catch (err) {
+        if (!isTestOtpEnabled()) throw err;
+        // In test mode: SMS failed (likely Twilio trial). Code is in the DB — the
+        // devCode hint below lets the developer complete the flow without SMS.
+        console.warn("[send-otp] SMS failed in test mode, returning devCode hint:", err instanceof Error ? err.message : err);
+      }
     }
+
+    // In test mode, always echo the code back so any phone number can be used locally.
+    const devCode = isTestOtpEnabled() ? (isTestPhone ? getTestOtp() : otp.code) : undefined;
 
     return NextResponse.json({
       phone,
       expiresAt: otp.expiresAt,
-      ...(isTestOtp ? { devCode: getTestOtp() } : {}),
+      ...(devCode ? { devCode } : {}),
     });
   } catch (error) {
     return NextResponse.json(

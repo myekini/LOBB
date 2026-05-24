@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     let user = signIn.data.user;
 
     if (signIn.error && adminClient) {
-      await adminClient.auth.admin.createUser({
+      const { data: created } = await adminClient.auth.admin.createUser({
         email,
         password,
         phone,
@@ -97,6 +97,17 @@ export async function POST(request: Request) {
           requested_role: otpResult.role,
         },
       });
+
+      // Stamp the correct role immediately so DB triggers don't default to "player"
+      // for users who signed up via the coach flow.
+      if (created?.user && otpResult.role && otpResult.role !== "player") {
+        await adminClient
+          .from("profiles")
+          .upsert(
+            { id: created.user.id, role: otpResult.role, phone_number: phone },
+            { onConflict: "id" }
+          );
+      }
 
       signIn = await authClient.auth.signInWithPassword({ email, password });
       session = signIn.data.session;

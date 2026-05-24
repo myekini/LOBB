@@ -13,7 +13,7 @@ import {
   Phone,
 } from "lucide-react";
 import { showLobbToast } from "@/providers/lobb-global-state";
-import { BookingCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { LobbBrandLoader } from "@/components/common/lobb-skeleton";
 import type { BookingWithDetails } from "@/lib/types";
 
 function money(v: number) { return `₦${v.toLocaleString()}`; }
@@ -85,16 +85,7 @@ function BookingConfirmContent() {
   }, [reference]);
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] p-5">
-        <section className="mx-auto max-w-md pt-16">
-          <SkeletonBlock className="mx-auto size-20 rounded-full" />
-          <SkeletonBlock className="mx-auto mt-6 h-9 w-48" />
-          <SkeletonBlock className="mx-auto mt-3 h-4 w-40" />
-          <div className="mt-8"><BookingCardSkeleton /></div>
-        </section>
-      </main>
-    );
+    return <LobbBrandLoader message="Verifying your payment and securing your booking." />;
   }
 
   if (failed || !booking) {

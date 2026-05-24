@@ -32,13 +32,12 @@ export function TennisLineIllustration({ className = "" }: { className?: string 
 export function LobbEmptyState({ title, body, action, className = "" }: EmptyStateProps) {
   return (
     <section
-      className={`rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-6 py-10 text-center shadow-[0_12px_28px_rgba(13,13,13,0.05)] ${className}`}
+      className={`rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-6 py-10 text-center shadow-[var(--lobb-shadow-card)] ${className}`}
     >
       <TennisLineIllustration className="mx-auto h-24 w-32 text-[var(--lobb-clay)]" />
-      <h2 className="mt-5 text-[16px] font-black text-[var(--lobb-black)]">{title}</h2>
-      <p className="mx-auto mt-2 max-w-[260px] text-[13px] font-medium leading-5 text-[var(--lobb-muted)]">{body}</p>
+      <h2 className="mt-5 text-[16px] font-black text-[var(--lobb-text-primary)]">{title}</h2>
+      <p className="mx-auto mt-2 max-w-[260px] text-[13px] font-medium leading-5 text-[var(--lobb-text-secondary)]">{body}</p>
       {action ? <div className="mt-6">{action}</div> : null}
     </section>
   );
 }
-

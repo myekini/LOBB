@@ -75,9 +75,11 @@ export async function POST(request: Request) {
       lock_id?: string;
       location?: string;
       player_notes?: string;
+      location_venue_id?: string;
+      location_court_id?: string;
     };
 
-    const { coach_slug, slot_starts_at, lock_id, location, player_notes } = body;
+    const { coach_slug, slot_starts_at, lock_id, location, player_notes, location_venue_id, location_court_id } = body;
 
     if (!coach_slug || !slot_starts_at || !lock_id || !location?.trim()) {
       return NextResponse.json(
@@ -163,9 +165,11 @@ export async function POST(request: Request) {
         player_id:        user.id,
         starts_at:        starts_at.toISOString(),
         ends_at:          ends_at.toISOString(),
-        location:         location.trim(),
-        player_notes:     player_notes?.trim() || null,
-        status:           "pending",
+        location:             location.trim(),
+        location_venue_id:    location_venue_id || null,
+        location_court_id:    location_court_id || null,
+        player_notes:         player_notes?.trim() || null,
+        status:               "pending",
         hourly_rate_ngn:  session_fee,
         platform_fee_ngn: convenience_fee,
         total_amount_ngn: total_amount,

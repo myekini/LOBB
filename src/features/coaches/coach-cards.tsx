@@ -1,14 +1,21 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { ArrowRight, CalendarCheck, Eye, MapPin, ShieldCheck, Star, Trophy, Sparkles } from "lucide-react";
-import { LobbVerifiedBadge } from "@/components/common/lobb-badge";
+import { ArrowRight, MapPin, Sparkles, Star } from "lucide-react";
 import type { CoachPublicProfile } from "@/lib/types";
 
 function money(value: number | null) {
-  return value == null ? "Rate pending" : `₦${value.toLocaleString()}`;
+  return value == null ? "TBD" : `₦${value.toLocaleString()}`;
 }
 
-/* ── Small card — horizontal scroll strip on home ── */
+function skillColor(skill: string): string {
+  const s = skill.toLowerCase();
+  if (s.includes("beginner")) return "bg-[#e8f4ed] text-[#2D6A4F]";
+  if (s.includes("intermediate")) return "bg-[#fff0e8] text-[#A3501F]";
+  if (s.includes("advanced") || s.includes("competitive")) return "bg-[#f0e8ff] text-[#5b3fa6]";
+  if (s.includes("kid") || s.includes("junior")) return "bg-[#e8f0ff] text-[#1a4fbf]";
+  return "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]";
+}
+
+/* ── Small card — home page grid ── */
 export function SmallCoachCard({ coach }: { coach: CoachPublicProfile }) {
   return (
     <Link
@@ -28,9 +35,6 @@ export function SmallCoachCard({ coach }: { coach: CoachPublicProfile }) {
             <Sparkles className="size-8 stroke-[1.25]" />
           </div>
         )}
-        <div className="absolute left-2.5 top-2.5">
-          <LobbVerifiedBadge verified={coach.is_verified} size="small" />
-        </div>
       </div>
       <div className="flex flex-1 flex-col justify-between p-3.5">
         <div>
@@ -48,15 +52,18 @@ export function SmallCoachCard({ coach }: { coach: CoachPublicProfile }) {
             {(coach.specializations[0] ?? coach.skill_levels[0]) || "Tennis Coach"} · {coach.primary_location}
           </p>
         </div>
-        <p className="mt-3 font-[family-name:var(--font-mono)] text-sm font-black text-[var(--lobb-clay)]">
-          {coach.hourly_rate_ngn == null ? money(coach.hourly_rate_ngn) : `${money(coach.hourly_rate_ngn)}/hr`}
+        <p className="mt-3 text-sm font-black text-[var(--lobb-clay)]">
+          {coach.hourly_rate_ngn == null ? money(null) : `${money(coach.hourly_rate_ngn)}/hr`}
         </p>
       </div>
     </Link>
   );
 }
 
-/* ── Full list card — coaches browse page ── */
+/* ── Full list card — coaches browse page ──
+   Mobile:  horizontal — image left, content right
+   Desktop: vertical — large image top, overlay badges, content below
+─────────────────────────────────────────────── */
 export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
   const profileHref = `/coaches/${coach.slug ?? coach.id}`;
   const bookingHref = coach.slug ? `/book/${coach.slug}/step-1` : "#";
@@ -65,75 +72,70 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
     ...coach.service_areas.filter((a) => a !== coach.primary_location),
   ].filter(Boolean).slice(0, 3);
   const primarySkill = coach.specializations[0] ?? coach.skill_levels[0] ?? "Tennis Coach";
+  const ratingLabel = coach.avg_rating != null ? String(coach.avg_rating) : "New";
 
   return (
-    <article className="group overflow-hidden rounded-[22px] border border-black/[0.07] bg-white shadow-[0_14px_34px_rgba(58,43,20,0.055)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_20px_48px_rgba(58,43,20,0.09)]">
-      <Link href={profileHref} className="block">
-        <div className="relative aspect-[16/11] overflow-hidden bg-[var(--lobb-surface-2)]">
+    <article className="group overflow-hidden rounded-[20px] border border-black/[0.07] bg-white shadow-[0_4px_18px_rgba(58,43,20,0.06)] transition duration-200 hover:shadow-[0_10px_32px_rgba(58,43,20,0.10)]">
+
+      {/* ── Mobile: horizontal layout ── */}
+      <div className="flex md:hidden">
+        {/* Image */}
+        <Link href={profileHref} className="relative w-[120px] shrink-0 overflow-hidden rounded-l-[20px]">
           {coach.profile_photo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={coach.profile_photo_url}
               alt={coach.full_name}
-              className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.035]"
+              className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex size-full items-center justify-center bg-[var(--lobb-surface-2)] text-black/10">
-              <Sparkles className="size-14 stroke-[1]" />
+            <div className="flex h-full w-full items-center justify-center bg-[var(--lobb-surface-2)]">
+              <Sparkles className="size-8 text-black/10 stroke-[1.25]" />
             </div>
           )}
-          <div className="absolute left-3 top-3">
-            <LobbVerifiedBadge verified={coach.is_verified} size="small" />
+        </Link>
+
+        {/* Content */}
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 p-3">
+          {/* Skill + Rating row */}
+          <div className="flex items-center justify-between gap-2">
+            <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em] ${skillColor(primarySkill)}`}>
+              {primarySkill}
+            </span>
+            <div className="flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] px-2 py-0.5 text-[11px] font-black text-[var(--lobb-black)]">
+              <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
+              {ratingLabel}
+            </div>
           </div>
-          <div className="absolute bottom-3 right-3 rounded-full bg-white/95 px-3 py-1.5 text-xs font-black text-[var(--lobb-black)] shadow-sm">
-            {money(coach.hourly_rate_ngn)}/hr
-          </div>
-        </div>
-      </Link>
 
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="truncate text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">{primarySkill}</p>
-            <Link href={profileHref} className="mt-1 block truncate text-[20px] font-black leading-tight tracking-tight text-[var(--lobb-black)] hover:text-[var(--lobb-clay-dark)]">
-              {coach.full_name}
-            </Link>
-          </div>
-          <div className="flex shrink-0 items-center gap-1 rounded-full border border-black/[0.06] bg-[var(--lobb-surface)] px-2.5 py-1 text-xs font-black text-[var(--lobb-black)]">
-            <Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
-            <span>{coach.avg_rating != null ? coach.avg_rating : "New"}</span>
-          </div>
-        </div>
-
-        <p className="mt-2 line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
-          {coach.headline ?? (coach.certifications[0] || "Focused tennis coaching for match-ready players.")}
-        </p>
-
-        <div className="mt-3 flex items-center gap-1.5 text-xs font-bold text-[var(--lobb-muted)]">
-          <MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
-          <span className="truncate">{locations.length ? locations.join(" · ") : "Location pending"}</span>
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 rounded-[16px] border border-black/[0.05] bg-[var(--lobb-surface)]">
-          <MiniMetric icon={<Trophy className="size-3.5" />} label="Sessions" value={coach.session_count || "New"} />
-          <MiniMetric icon={<ShieldCheck className="size-3.5" />} label="Reviews" value={coach.review_count || "New"} />
-          <MiniMetric icon={<CalendarCheck className="size-3.5" />} label="Slots" value={coach.has_availability ? "Open" : "Ask"} />
-        </div>
-
-        <div className="mt-4 flex items-center gap-2.5">
-          <Link
-            href={profileHref}
-            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-[14px] border border-black/10 bg-white px-3 text-xs font-black text-[var(--lobb-black)] transition hover:bg-black/[0.03] active:scale-[0.98]"
-          >
-            <Eye className="size-4" />
-            View profile
+          {/* Name */}
+          <Link href={profileHref} className="block truncate text-[17px] font-black leading-tight tracking-tight text-[var(--lobb-black)]">
+            {coach.full_name}
           </Link>
+
+          {/* Headline */}
+          <p className="line-clamp-2 text-[11px] font-semibold leading-[1.45] text-[var(--lobb-muted)]">
+            {coach.headline ?? `${primarySkill} · ${coach.certifications[0] ?? "Tennis Coach"}`}
+          </p>
+
+          {/* Location */}
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-[var(--lobb-muted)]">
+            <MapPin className="size-3 shrink-0 text-[var(--lobb-clay)]" />
+            <span className="truncate">{locations.join(" · ") || "Lagos"}</span>
+          </div>
+
+          {/* Rate */}
+          <p className="text-[11px] font-black text-[var(--lobb-clay)]">
+            {money(coach.hourly_rate_ngn)}/hr
+          </p>
+
+          {/* Book button */}
           <Link
             href={bookingHref}
             aria-disabled={!coach.slug}
-            className={`flex h-12 flex-1 items-center justify-center gap-2 rounded-[14px] px-3 text-xs font-black transition active:scale-[0.98] ${
+            className={`mt-auto flex h-10 items-center justify-center gap-1.5 rounded-[12px] text-xs font-black transition active:scale-[0.97] ${
               coach.slug
-                ? "bg-[var(--lobb-black)] text-white shadow-[0_8px_22px_rgba(13,13,13,0.16)] hover:bg-[#1f1f1f]"
+                ? "bg-[var(--lobb-black)] text-white"
                 : "pointer-events-none bg-black/10 text-black/35"
             }`}
           >
@@ -141,18 +143,79 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
           </Link>
         </div>
       </div>
-    </article>
-  );
-}
 
-function MiniMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
-  return (
-    <div className="border-r border-black/[0.04] px-3 py-3 last:border-r-0 text-center sm:text-left">
-      <p className="flex items-center justify-center sm:justify-start gap-1 text-sm font-black text-[var(--lobb-black)]">
-        <span className="text-[var(--lobb-clay)]">{icon}</span>
-        <span className="truncate">{value}</span>
-      </p>
-      <p className="mt-1 text-[9px] font-black uppercase tracking-[0.1em] text-[var(--lobb-muted)]">{label}</p>
-    </div>
+      {/* ── Desktop: vertical image-top layout ── */}
+      <div className="hidden md:block">
+        {/* Image with overlaid badges */}
+        <Link href={profileHref} className="relative block overflow-hidden rounded-t-[20px]">
+          <div className="relative aspect-[4/3] overflow-hidden bg-[var(--lobb-surface-2)]">
+            {coach.profile_photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={coach.profile_photo_url}
+                alt={coach.full_name}
+                className="size-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+              />
+            ) : (
+              <div className="flex size-full items-center justify-center bg-[var(--lobb-surface-2)]">
+                <Sparkles className="size-14 text-black/10 stroke-[1]" />
+              </div>
+            )}
+            {/* Gradient for badge readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+            {/* Overlaid badges at bottom */}
+            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+              <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] backdrop-blur-sm ${skillColor(primarySkill)}`}>
+                {primarySkill}
+              </span>
+              <div className="flex shrink-0 items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-black text-[var(--lobb-black)] shadow-sm">
+                <Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
+                {ratingLabel}
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        {/* Content */}
+        <div className="p-4">
+          <Link href={profileHref} className="block text-[22px] font-black leading-tight tracking-tight text-[var(--lobb-black)] hover:text-[var(--lobb-clay-dark)]">
+            {coach.full_name}
+          </Link>
+          <p className="mt-1.5 line-clamp-2 text-sm font-semibold leading-5 text-[var(--lobb-muted)]">
+            {coach.headline ?? `${primarySkill} · ${coach.certifications[0] ?? "Tennis Coach"}`}
+          </p>
+          <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-[var(--lobb-muted)]">
+            <MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
+            <span className="truncate">{locations.join(" · ") || "Lagos"}</span>
+          </div>
+
+          {/* Availability + rate row */}
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+              coach.has_availability ? "bg-[#e8f4ed] text-[#2D6A4F]" : "bg-black/[0.04] text-black/40"
+            }`}>
+              {coach.has_availability ? "● Open slots" : "○ No slots"}
+            </span>
+            <span className="text-sm font-black text-[var(--lobb-clay)]">
+              {money(coach.hourly_rate_ngn)}/hr
+            </span>
+          </div>
+
+          {/* Book */}
+          <Link
+            href={bookingHref}
+            aria-disabled={!coach.slug}
+            className={`mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-black transition active:scale-[0.98] ${
+              coach.slug
+                ? "bg-[var(--lobb-black)] text-white shadow-[0_8px_22px_rgba(13,13,13,0.16)] hover:bg-[#1f1f1f]"
+                : "pointer-events-none bg-black/10 text-black/35"
+            }`}
+          >
+            Book <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      </div>
+    </article>
   );
 }

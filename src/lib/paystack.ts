@@ -145,8 +145,16 @@ export function verifyWebhookSignature(rawBody: string, signature: string): bool
 
 // ─── Reference generator ───────────────────────────────────────────────────────
 
+// Unambiguous uppercase chars — no 0/O, 1/I confusion
+const REF_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
 export function generateReference(): string {
-  const ts  = Date.now().toString(36).toUpperCase();
-  const rnd = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `LOBB-${ts}-${rnd}`;
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const rnd = Array.from(
+    { length: 5 },
+    () => REF_CHARS[Math.floor(Math.random() * REF_CHARS.length)]
+  ).join("");
+  return `LB-${yy}${mm}-${rnd}`;
 }

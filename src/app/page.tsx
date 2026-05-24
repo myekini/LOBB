@@ -33,6 +33,7 @@ function getTimeMood() {
   if (hour < 12) {
     return {
       Icon: Sunrise,
+      period: "Morning",
       label: "Morning court window",
       prompt: "Set up a clean morning hit.",
       detail: "Early sessions are best for focused drills, lighter heat, and a calmer court.",
@@ -42,6 +43,7 @@ function getTimeMood() {
   if (hour < 17) {
     return {
       Icon: Sun,
+      period: "Afternoon",
       label: "Afternoon match prep",
       prompt: "Find your next focused lesson.",
       detail: "Compare coaches by area, price, and availability before the day gets crowded.",
@@ -50,20 +52,12 @@ function getTimeMood() {
   }
   return {
     Icon: Moon,
+    period: "Evening",
     label: "Evening recovery session",
     prompt: "Line up a calm evening lesson.",
     detail: "Book ahead, keep the court details clear, and arrive with the plan already settled.",
     accent: "from-[#7b8fc7]/18",
   };
-}
-
-function PlayerHomeStat({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="border-r border-white/10 px-3 py-3 last:border-r-0 md:border-b md:border-r-0 md:last:border-b-0">
-      <p className="truncate text-[19px] font-black leading-none">{value}</p>
-      <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-white/42">{label}</p>
-    </div>
-  );
 }
 
 type HomeProfile = {
@@ -229,7 +223,6 @@ export default function Home() {
   /* ── Authenticated player home ── */
   if (profile?.role === "player" && profile.full_name) {
     const firstName = profile.full_name.split(" ")[0] || "there";
-    const featuredCoach = liveCoaches.find((coach) => coach.has_availability) ?? liveCoaches[0];
     const mood = getTimeMood();
     const MoodIcon = mood.Icon;
     const signOut = async () => {
@@ -309,48 +302,36 @@ export default function Home() {
 
         {/* Hero card */}
         <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative overflow-hidden rounded-[32px] bg-[#0d0d0d] px-6 py-8 text-white shadow-[0_22px_56px_rgba(13,13,13,0.22)] sm:p-10">
+          <div className="relative overflow-hidden rounded-[28px] bg-[#0d0d0d] px-5 py-6 text-white shadow-[0_18px_48px_rgba(13,13,13,0.18)] sm:px-8 sm:py-7">
             <div className={`absolute inset-0 bg-gradient-to-br ${mood.accent} via-transparent to-[var(--lobb-clay)]/10`} aria-hidden="true" />
             <div className="absolute right-0 top-0 h-full w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_42%)]" aria-hidden="true" />
-            <div className="relative grid gap-7 md:grid-cols-[minmax(0,1fr)_320px] md:items-end">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="flex size-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-[var(--lobb-clay)]">
+            <div className="relative">
+              <div className="max-w-3xl">
+                <div className="inline-flex items-center gap-2 rounded-[16px] border border-white/10 bg-white/[0.06] p-1.5 pr-3">
+                  <span className="flex size-10 items-center justify-center rounded-[14px] bg-white/[0.05] text-[var(--lobb-clay)]">
                     <MoodIcon className="size-4.5" />
                   </span>
-                  <span className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--lobb-clay)]">
-                    {getGreeting()}, {firstName}
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-white">
+                    {mood.period}
                   </span>
                 </div>
-                <h1 className="mt-4 text-[38px] font-black leading-[1.05] tracking-tight sm:max-w-none sm:text-[56px] text-white">
+                <div className="mt-4 text-[11px] font-black uppercase tracking-[0.22em] text-[var(--lobb-clay)]">
+                    {getGreeting()}, {firstName}
+                </div>
+                <h1 className="mt-3 text-[34px] font-black leading-[1.05] tracking-tight text-white sm:text-[48px]">
                   {mood.prompt}
                 </h1>
-                <p className="mt-4 max-w-xl text-[14px] font-medium leading-[1.6] text-white/58">
+                <p className="mt-3 max-w-xl text-[14px] font-medium leading-[1.6] text-white/58">
                   {mood.detail}
                 </p>
-              </div>
-
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.06] p-4 shadow-inner backdrop-blur">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/42">{mood.label}</p>
-                    <p className="mt-2 text-2xl font-black text-white">{liveCoaches.filter((coach) => coach.has_availability).length}</p>
-                    <p className="mt-1 text-xs font-semibold text-white/50">coaches with open booking windows</p>
-                  </div>
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-white text-[var(--lobb-black)]">
-                    <MoodIcon className="size-5 text-[var(--lobb-clay)]" />
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white/64">
+                    {liveCoaches.length} verified coaches
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white/64">
+                    Search below by coach, area, or skill
                   </span>
                 </div>
-                <div className="mt-4 grid grid-cols-2 overflow-hidden rounded-[18px] border border-white/10">
-                  <PlayerHomeStat label="Verified" value={liveCoaches.length} />
-                  <PlayerHomeStat label="Top area" value={featuredCoach?.primary_location ?? "Lagos"} />
-                </div>
-                <Link
-                  href="/dashboard"
-                  className="mt-4 flex h-11 items-center justify-center rounded-[14px] bg-white text-xs font-black text-[var(--lobb-black)] transition hover:bg-white/90"
-                >
-                  View My Bookings
-                </Link>
               </div>
             </div>
           </div>
@@ -467,9 +448,6 @@ export default function Home() {
             <Link href="/coaches" className="rounded-full px-4 py-2 text-[13px] font-bold text-white/68 transition hover:bg-white/10 hover:text-white">
               Browse coaches
             </Link>
-            <Link href="/coaches/join" className="rounded-full px-4 py-2 text-[13px] font-bold text-white/68 transition hover:bg-white/10 hover:text-white">
-              Become a coach
-            </Link>
           </nav>
           <Link
             href="/auth/login"
@@ -489,8 +467,7 @@ export default function Home() {
               Book the court session without the chase.
             </h1>
             <p className="mt-6 max-w-xl text-[16px] leading-7 text-white/64 sm:text-[18px] animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
-              LOBB turns Lagos tennis coaching into a clear marketplace: verified coaches, real
-              availability, secure payment, and booking details you can trust.
+              Verified Lagos coaches, real availability, secure payment — no WhatsApp back-and-forth.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
@@ -502,26 +479,12 @@ export default function Home() {
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link
-                href="/auth/login"
+                href="/auth/login?role=coach"
                 className="inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] border border-white/14 bg-white/[0.07] px-6 text-[14px] font-black text-white/78 backdrop-blur transition hover:bg-white/12 hover:text-white active:scale-[0.98]"
               >
-                Sign up free
+                Become a Coach
               </Link>
             </div>
-
-            <p className="mt-5 text-[13px] font-medium text-white/50 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-              Are you a Lagos coach?{" "}
-              <Link href="/coaches/join" className="font-bold text-[var(--lobb-clay)] hover:underline">
-                Apply to teach
-              </Link>{" "}
-              or{" "}
-              <Link href="/auth/login" className="font-bold text-white hover:underline">
-                access your portal
-              </Link>.
-            </p>
-
-            {/* Spacing alignment */}
-            <div className="h-4" />
           </div>
 
           <div className="relative mx-auto w-full max-w-[420px] md:mx-0 md:justify-self-end animate-in fade-in-0 slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both">

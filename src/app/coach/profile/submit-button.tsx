@@ -18,7 +18,7 @@ export function SubmitForReviewButton() {
         showLobbToast({ type: "error", message: json.error ?? "Could not submit profile." });
         return;
       }
-      showLobbToast({ type: "success", message: "Profile submitted for review! You'll get an SMS when it's live." });
+      showLobbToast({ type: "success", message: "Profile submitted for review! You'll be notified by email when it's live." });
       router.refresh();
     } catch {
       showLobbToast({ type: "error", message: "Network error. Please try again." });

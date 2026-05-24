@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -17,6 +17,27 @@ import { createClient } from "@/lib/supabase/client";
 // Only visible when the dedicated dev-login switch is enabled.
 const IS_DEV_LOGIN_ENABLED = process.env.NEXT_PUBLIC_LOBB_DEV_LOGIN === "true";
 type LoginRole = "player" | "coach" | "admin";
+type PublicLoginRole = "player" | "coach";
+
+const roleOptions: Array<{
+  role: PublicLoginRole;
+  title: string;
+  body: string;
+  Icon: typeof Trophy;
+}> = [
+  {
+    role: "player",
+    title: "Player",
+    body: "Find and book Lagos tennis coaches.",
+    Icon: Trophy,
+  },
+  {
+    role: "coach",
+    title: "Coach",
+    body: "Manage your profile, sessions, and earnings.",
+    Icon: GraduationCap,
+  },
+];
 
 function nationalDigits(value: string) {
   const digits = value.replace(/\D/g, "");
@@ -120,6 +141,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || undefined;
   const intentRole = getIntentRole(searchParams);
+  const [selectedRole, setSelectedRole] = useState<PublicLoginRole>(intentRole === "coach" ? "coach" : "player");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -137,7 +159,7 @@ function LoginForm() {
     setLoading(true);
 
     // Coach intent is carried from public coach sign-up links. Local test roles use the Dev Test Suite.
-    const roleToSend: LoginRole | undefined = intentRole;
+    const roleToSend: LoginRole | undefined = intentRole === "admin" ? "admin" : selectedRole;
 
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
@@ -168,23 +190,48 @@ function LoginForm() {
     router.push("/auth/verify");
   };
 
+  const selectedOption = roleOptions.find((option) => option.role === selectedRole) ?? roleOptions[0];
+  const titleLines = selectedRole === "coach" ? ["Coach", "account"] : ["Player", "account"];
+
   return (
     <OnboardingShell>
       <form onSubmit={submit} className="flex flex-1 flex-col pt-3">
         <section>
-          <OnboardingKicker>Secure phone sign-in</OnboardingKicker>
+          <OnboardingKicker>LOBB · {selectedOption.title}</OnboardingKicker>
           <OnboardingTitle>
-            Enter your
+            {titleLines[0]}
             <br />
-            phone number
+            {titleLines[1]}
           </OnboardingTitle>
           <OnboardingCopy>
-            Works for players and coaches. We&apos;ll send a 6-digit WhatsApp code — if you&apos;re new, setup follows automatically.
+            Enter your number. We&apos;ll send a WhatsApp code — no password needed.
           </OnboardingCopy>
-
         </section>
 
-        <section className="mt-8">
+        <section className="mt-7 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5 shadow-[0_10px_30px_rgba(58,43,20,0.04)]" aria-label="Choose account type">
+          {roleOptions.map((option) => {
+            const isSelected = selectedRole === option.role;
+            const Icon = option.Icon;
+
+            return (
+              <button
+                key={option.role}
+                type="button"
+                onClick={() => setSelectedRole(option.role)}
+                className={`inline-flex h-12 w-1/2 items-center justify-center gap-2 rounded-full text-sm font-black transition-all active:scale-[0.98] ${
+                  isSelected
+                    ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_22px_rgba(13,13,13,0.14)]"
+                    : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                }`}
+              >
+                <Icon className="size-4" />
+                {option.role === "coach" ? "Coach" : "Player"}
+              </button>
+            );
+          })}
+        </section>
+
+        <section className="mt-5">
           <label className="flex h-16 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_12px_40px_rgba(58,43,20,0.06)] transition focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
             <span className="flex items-center gap-2 border-r border-[var(--lobb-border)] pr-3 text-sm font-black text-[var(--lobb-black)]">
               <span aria-hidden="true">🇳🇬</span>
@@ -200,14 +247,6 @@ function LoginForm() {
               className="h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-lg font-semibold text-[var(--lobb-black)] outline-none placeholder:text-[#9b958a] focus:ring-0"
             />
           </label>
-          <div className="mt-4 rounded-2xl border border-[var(--lobb-border)] bg-white/55 p-4">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--lobb-green)]">
-              Secure access
-            </p>
-            <p className="mt-2 text-sm leading-5 text-[var(--lobb-muted)]">
-              No password to remember. Your phone number is used to keep bookings and coach messages in one place.
-            </p>
-          </div>
           {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
         </section>
 
@@ -219,8 +258,8 @@ function LoginForm() {
             <span className="text-[var(--lobb-black)]">Terms</span> &amp;{" "}
             <span className="text-[var(--lobb-black)]">Privacy Policy</span>
           </p>
-          <OnboardingButton type="submit" disabled={!isReady || loading}>
-            {loading ? "Sending..." : "Send Code"}
+          <OnboardingButton type="submit" disabled={!isReady} loading={loading}>
+            {loading ? "Sending code…" : "Send Code"}
           </OnboardingButton>
         </div>
       </form>
@@ -230,8 +269,26 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoginSkeleton />}>
       <LoginForm />
     </Suspense>
+  );
+}
+
+function LoginSkeleton() {
+  return (
+    <OnboardingShell>
+      <section className="flex flex-1 flex-col pt-3">
+        <div className="h-3 w-32 rounded-full lobb-skeleton" />
+        <div className="mt-5 h-20 w-56 rounded-[18px] lobb-skeleton" />
+        <div className="mt-5 h-14 w-full rounded-[18px] lobb-skeleton" />
+        <div className="mt-7 grid grid-cols-2 gap-3">
+          <div className="h-12 rounded-full lobb-skeleton" />
+          <div className="h-12 rounded-full lobb-skeleton" />
+        </div>
+        <div className="mx-auto mt-3 h-4 w-56 rounded-full lobb-skeleton" />
+        <div className="mt-6 h-16 rounded-2xl lobb-skeleton" />
+      </section>
+    </OnboardingShell>
   );
 }

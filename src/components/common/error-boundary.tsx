@@ -15,7 +15,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { hasError
 
   render() {
     if (this.state.hasError) {
-      return <div className="rounded-[18px] border border-red-200 bg-white p-4 text-sm font-black text-red-700">Something went wrong.</div>;
+      return <div className="rounded-[12px] border border-[var(--lobb-border-error)] bg-[var(--lobb-bg-elevated)] p-4 text-sm font-black text-[var(--lobb-error)] shadow-[var(--lobb-shadow-card)]">Something went wrong.</div>;
     }
     return this.props.children;
   }

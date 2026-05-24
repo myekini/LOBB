@@ -12,7 +12,7 @@ function isAuthorized(request: Request) {
   return request.headers.get("x-admin-secret") === secret;
 }
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
