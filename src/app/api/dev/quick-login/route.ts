@@ -2,76 +2,16 @@ import { createHmac } from "crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { DEV_PHONES, type DevRole, seedDevAccount } from "@/lib/dev-account-seed";
 
 // ─── Only active when LOBB_ENABLE_DEV_LOGIN=true ─────────────────────────────
-// Seeds the account exactly ONCE (on first creation). After that, quick-login
-// just authenticates — all state persists identically to production.
+// Seeds or refreshes only the dev account identity. Availability is created
+// only when missing, so bookings and operational state are left intact.
 // Go-live cleanup: delete these 3 rows from auth.users + profiles.
-
-type DevRole = "player" | "coach" | "admin";
 
 function isDevLoginEnabled() {
   return process.env.LOBB_ENABLE_DEV_LOGIN === "true";
 }
-
-// Synthetic numbers that can never collide with real Nigerian subscribers.
-const TEST_PHONES: Record<DevRole, string> = {
-  player: "+2340000000001",
-  coach:  "+2340000000002",
-  admin:  "+2340000000003",
-};
-
-// Seed data is intentionally realistic — same fields a real user fills in via the UI.
-const TEST_PROFILES: Record<DevRole, Record<string, unknown>> = {
-  player: {
-    full_name: "Tobi Adeyemi",
-    role: "player",
-    avatar_url: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=512&q=80",
-  },
-  coach: {
-    full_name: "Ada Okafor",
-    role: "coach",
-    avatar_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
-  },
-  admin: {
-    full_name: "LOBB Admin",
-    role: "admin",
-    avatar_url: null,
-  },
-};
-
-const TEST_PLAYER_ROW = {
-  full_name: "Tobi Adeyemi",
-  skill_level: "Intermediate",
-  preferred_locations: ["Lekki", "Victoria Island", "Ikoyi"],
-};
-
-const TEST_COACH_ROW = {
-  full_name:         "Ada Okafor",
-  headline:          "ITF Level 1 Coach · Footwork, beginners & match play",
-  bio:               "Ada is a patient Lagos tennis coach who helps beginners build clean fundamentals and intermediate players sharpen footwork, consistency, and match confidence.",
-  hourly_rate_ngn:   15000,
-  experience_years:  8,
-  primary_location:  "Lekki",
-  service_areas:     ["Lekki", "Victoria Island", "Ikoyi", "Oniru"],
-  skill_levels:      ["Beginner", "Intermediate", "All levels"],
-  specializations:   ["Beginners", "Adults", "Footwork", "Match Play"],
-  certifications:    ["ITF Level 1"],
-  languages:         ["English", "Yoruba"],
-  court_access:      "coach_can_recommend",
-  demo_video_url:    null,
-  profile_photo_url: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=512&q=80",
-  status:            "active",
-  is_verified:       true,
-  slug:              "ada-okafor-dev",
-};
-
-const TEST_COACH_AVAILABILITY = [
-  { day_of_week: 1, starts_at: "08:00:00", ends_at: "12:00:00" },
-  { day_of_week: 2, starts_at: "16:00:00", ends_at: "20:00:00" },
-  { day_of_week: 4, starts_at: "16:00:00", ends_at: "20:00:00" },
-  { day_of_week: 6, starts_at: "08:00:00", ends_at: "13:00:00" },
-];
 
 function getSyntheticCredentials(phone: string) {
   const secret =
@@ -97,7 +37,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json().catch(() => ({}))) as { role?: string };
   const role: DevRole = body.role === "coach" ? "coach" : body.role === "admin" ? "admin" : "player";
-  const phone = TEST_PHONES[role];
+  const phone = DEV_PHONES[role];
   const { email, password } = getSyntheticCredentials(phone);
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -116,7 +56,7 @@ export async function POST(request: Request) {
   let signIn = await authClient.auth.signInWithPassword({ email, password });
 
   if (signIn.error) {
-    // First time — create the Supabase user and seed the profile once.
+    // First time: create the Supabase user and seed a production-like profile.
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,
       password,
@@ -129,48 +69,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: createErr?.message ?? "Could not create test user" }, { status: 500 });
     }
 
-    await seedOnce(admin, created.user.id, phone, role);
+    await seedDevAccount(admin, created.user.id, phone, role);
 
     signIn = await authClient.auth.signInWithPassword({ email, password });
   }
-  // Existing account — just authenticate. State is preserved exactly as the user left it.
+
+  if (signIn.data.user) {
+    await seedDevAccount(admin, signIn.data.user.id, phone, role);
+  }
 
   if (signIn.error || !signIn.data.session) {
     return NextResponse.json({ error: signIn.error?.message ?? "Sign-in failed" }, { status: 500 });
   }
 
   return NextResponse.json({ session: signIn.data.session, user: signIn.data.user, role, phone });
-}
-
-async function seedOnce(
-  admin: ReturnType<typeof createAdminClient>,
-  userId: string,
-  phone: string,
-  role: DevRole
-) {
-  await admin.from("profiles").upsert(
-    { id: userId, phone_number: phone, ...TEST_PROFILES[role] },
-    { onConflict: "id" }
-  );
-
-  if (role === "player") {
-    await admin.from("players").upsert(
-      { id: userId, ...TEST_PLAYER_ROW },
-      { onConflict: "id" }
-    );
-    return;
-  }
-
-  if (role === "admin") {
-    return;
-  }
-
-  await admin.from("coaches").upsert(
-    { id: userId, ...TEST_COACH_ROW },
-    { onConflict: "id" }
-  );
-
-  await admin.from("coach_availability").insert(
-    TEST_COACH_AVAILABILITY.map((slot) => ({ coach_id: userId, ...slot }))
-  );
 }

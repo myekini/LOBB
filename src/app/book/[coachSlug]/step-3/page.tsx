@@ -134,69 +134,75 @@ function BookingStep3Content() {
       backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}${venueId ? `&venue_id=${venueId}` : ""}${courtId ? `&court_id=${courtId}` : ""}`}
     >
       {/* Countdown */}
-      <p className={`mb-5 rounded-full px-4 py-2 text-center text-sm font-black transition-colors duration-500 ${countdownStyle(seconds)}`}>
-        {formatCountdown(seconds)} remaining
-      </p>
+      <div className="mb-4 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Review & pay</p>
+            <h2 className="mt-1 text-xl font-black text-[var(--lobb-text-primary)]">Confirm your session</h2>
+          </div>
+          <span className={`rounded-full px-3 py-2 text-xs font-black transition-colors duration-500 ${countdownStyle(seconds)}`}>
+            {formatCountdown(seconds)}
+          </span>
+        </div>
+      </div>
 
-      <h2 className="text-sm font-black uppercase tracking-wider text-[var(--lobb-black)]">Order Summary</h2>
-
-      <section className="mt-3 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-5.5 shadow-[var(--lobb-shadow-card)]">
+      <section className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
         {/* Coach identity */}
         {coach && (
-          <div className="mb-4 flex items-center gap-3.5 pb-4 border-b border-[var(--lobb-border)]">
-            <div className="size-11 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
+          <div className="mb-4 flex items-center gap-3.5 border-b border-[var(--lobb-border-subtle)] pb-4">
+            <div className="size-12 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
               ) : (
-                <div className="flex size-full items-center justify-center font-bold text-[var(--lobb-muted)] bg-[var(--lobb-surface-2)]">
+                <div className="flex size-full items-center justify-center bg-[var(--lobb-bg-secondary)] font-bold text-[var(--lobb-text-secondary)]">
                   {coach.full_name?.charAt(0)}
                 </div>
               )}
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Tennis Professional</p>
-              <p className="text-base font-black text-[var(--lobb-black)] tracking-tight">{coach.full_name}</p>
+              <p className="text-base font-black tracking-tight text-[var(--lobb-text-primary)]">{coach.full_name}</p>
             </div>
           </div>
         )}
 
         {/* Session details */}
-        <div className="space-y-3 text-sm font-semibold text-[var(--lobb-muted)]">
+        <div className="grid gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
           {slot && (
-            <p className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3 rounded-2xl bg-[var(--lobb-bg-secondary)] p-3">
               <CalendarDays className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-              <span className="text-[var(--lobb-black)]">{formatSlotShort(slot)} – {formatSlotEnd(slot)}</span>
-            </p>
+              <span className="text-[var(--lobb-text-primary)]">{formatSlotShort(slot)} - {formatSlotEnd(slot)}</span>
+            </div>
           )}
-          <p className="flex items-center gap-2.5">
+          <div className="flex items-center gap-3 rounded-2xl bg-[var(--lobb-bg-secondary)] p-3">
             <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-            <span className="text-[var(--lobb-black)]">60 minutes standard session</span>
-          </p>
+            <span className="text-[var(--lobb-text-primary)]">60 minutes</span>
+          </div>
           {location && (
-            <p className="flex items-start gap-2.5">
+            <div className="flex items-start gap-3 rounded-2xl bg-[var(--lobb-bg-secondary)] p-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-              <span className="text-[var(--lobb-black)] leading-relaxed">{location}</span>
-            </p>
+              <span className="leading-relaxed text-[var(--lobb-text-primary)]">{location}</span>
+            </div>
           )}
         </div>
 
-        <div className="my-5 border-t border-dashed border-[var(--lobb-border)]" />
+        <div className="my-5 border-t border-dashed border-[var(--lobb-border-subtle)]" />
 
         {/* Fee breakdown */}
         {coach ? (
           <div className="space-y-3.5">
-            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-muted)]">
+            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-text-secondary)]">
               <span>Session fee</span>
-              <span className="text-[var(--lobb-black)] font-black">{money(sessionFee)}</span>
+              <span className="font-black text-[var(--lobb-text-primary)]">{money(sessionFee)}</span>
             </div>
-            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-muted)]">
+            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-text-secondary)]">
               <span>LOBB service fee (5%)</span>
-              <span className="text-[var(--lobb-black)] font-black">{money(lobbFee)}</span>
+              <span className="font-black text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
             </div>
             <div className="pt-2">
-              <div className="flex items-center justify-between rounded-2xl bg-[var(--lobb-clay)]/5 px-4.5 py-3.5 border border-[var(--lobb-clay)]/15">
-                <span className="text-xs font-black uppercase tracking-wider text-[var(--lobb-black)]">Total to Pay</span>
+              <div className="flex items-center justify-between rounded-2xl border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-3.5">
+                <span className="text-xs font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">Total</span>
                 <span className="text-xl font-black text-[var(--lobb-clay)]">{money(total)}</span>
               </div>
             </div>
@@ -211,12 +217,12 @@ function BookingStep3Content() {
       </section>
 
       {/* Escrow Shield Trust Banner */}
-      <div className="mt-5 rounded-2xl bg-emerald-500/[0.04] p-4.5 border border-emerald-500/10 flex gap-3 items-start text-xs font-semibold text-emerald-950 leading-relaxed shadow-sm">
-        <ShieldCheck className="size-5 shrink-0 text-emerald-600 mt-0.5 animate-pulse" />
+      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.04] p-4 text-xs font-semibold leading-relaxed text-emerald-950 shadow-sm">
+        <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
         <div>
-          <p className="font-black text-emerald-900 uppercase tracking-wider text-[10px]">Escrow Protection Active</p>
-          <p className="mt-1 text-emerald-800 font-medium">
-            Your payment is safely held in escrow and only released to the coach after your session is completed. Cancel for free up to 24 hours prior.
+          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-900">Protected payment</p>
+          <p className="mt-1 font-medium text-emerald-800">
+            LOBB holds payment securely and releases it after the session is completed.
           </p>
         </div>
       </div>
@@ -225,7 +231,7 @@ function BookingStep3Content() {
         {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} Securely` : "Loading Booking Summary..."}
       </BookingButton>
 
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-black uppercase tracking-wider text-[var(--lobb-muted)]">
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-black uppercase tracking-wider text-[var(--lobb-text-secondary)]">
         Secured by Paystack · Powered by LOBB
       </p>
     </BookingShell>

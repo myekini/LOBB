@@ -17,6 +17,10 @@ export type JoinedCoachProfile = {
   phone_number: string | null;
 };
 
+export type JoinedPlayerProfile = {
+  phone_number: string | null;
+};
+
 export type JoinedPlayer = {
   id: string;
   full_name: string;
@@ -62,6 +66,7 @@ export type DashboardBooking = {
   created_at: string;
   coaches: JoinedCoach | JoinedCoach[] | null;
   coach_profile?: JoinedCoachProfile | JoinedCoachProfile[] | null;
+  player_profile?: JoinedPlayerProfile | JoinedPlayerProfile[] | null;
   players: JoinedPlayer | JoinedPlayer[] | null;
   payments: JoinedPayment[] | null;
   reviews: JoinedReview[] | null;

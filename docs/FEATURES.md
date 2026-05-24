@@ -17,6 +17,7 @@ Lagos tennis coach booking platform. Verified coaches, real availability, secure
 9. [Admin Tools](#9-admin-tools)
 10. [Responsive UX & PWA Experience](#10-responsive-ux--pwa-experience)
 11. [Infrastructure & Cron Jobs](#11-infrastructure--cron-jobs)
+12. [Booking Backend — Data Model & Logic](#12-booking-backend--data-model--logic)
 
 ---
 
@@ -507,3 +508,143 @@ Rules:
 | `TWILIO_WHATSAPP_FROM` | WhatsApp sandbox (+14155238886) |
 | `LOBB_ENABLE_TEST_OTP` | `true` in dev — skips real SMS for test phones |
 | `ADMIN_SECRET` | Protects cron endpoints + admin API |
+
+---
+
+## 12. Booking Backend — Data Model & Logic
+
+### Core tables
+
+| Table | Purpose |
+|-------|---------|
+| `coach_availability` | Weekly recurring windows per coach (`day_of_week`, `starts_at`, `ends_at`, `is_active`) |
+| `coach_availability_blocks` | Full-day blackouts (`blocked_date`) |
+| `coach_availability_slot_blocks` | Granular 60-min slot blocks within an otherwise-open window |
+| `slot_locks` | 10-minute exclusive hold placed on a slot when a player starts checkout |
+| `bookings` | One row per session; tracks status lifecycle from `pending` → `confirmed` → `completed` |
+| `payments` | Paystack transaction record linked 1-to-1 with a booking |
+| `paystack_events` | Webhook idempotency log keyed on Paystack reference |
+| `court_slot_bookings` | National Stadium court reservations linked to a booking |
+
+### Coach availability setup
+
+**API:** `GET / PUT /api/coaches/me/availability`
+
+A coach's bookable schedule is composed of three layers:
+
+1. **Weekly windows** — recurring time ranges per day-of-week (e.g. Monday 09:00–17:00). Multiple non-overlapping windows per day are supported. The PUT endpoint does a full replace (delete-all then insert), so the client always sends the complete desired state.
+2. **Full-day blocks** — date strings (`YYYY-MM-DD`) that close an entire day regardless of weekly windows.
+3. **Slot-level blocks** — ISO timestamp pairs that block an individual 60-min slot within an open window (used to close a specific hour without touching the rest of the day).
+
+Validation on PUT:
+- `starts_at < ends_at` for every window
+- No two windows on the same day may overlap
+- Blocked dates must be `YYYY-MM-DD`
+- Slot block timestamps must parse to valid ISO dates with start < end
+
+### Slot generation — `get_coach_available_slots()`
+
+Supabase RPC function called at `GET /api/coaches/[slug]/slots`. Returns the next 14 days of bookable 60-min slots.
+
+Logic (in order):
+1. Enumerate every date from `from_date` to `to_date`.
+2. For each date, join with `coach_availability` where `day_of_week` matches and `is_active = true`.
+3. Within each matching window, generate one slot per hour (e.g. 09:00, 10:00 … for a 09:00–17:00 window).
+4. Discard slots that start before `now() + 24 hours` (minimum advance notice).
+5. Discard slots on dates present in `coach_availability_blocks`.
+6. Discard slots whose time range overlaps any row in `coach_availability_slot_blocks`.
+7. Discard slots that conflict with existing confirmed bookings (±15 min buffer).
+8. Return deduplicated results ordered by `slot_starts_at`.
+
+### Slot lock (`POST /api/bookings/lock`)
+
+Called when the player taps "Continue" at the end of Step 1.
+
+- Validates the slot is 24 h–14 days in the future and appears in `get_coach_available_slots`.
+- Inserts a row into `slot_locks` with a `UNIQUE(coach_id, slot_starts_at)` constraint — if another player is already in checkout, the insert fails with 409.
+- Lock expires after 10 minutes (`expires_at = now() + interval '10 minutes'`).
+- Returns `{ lock_id, expires_at }`. The countdown timer on Steps 2 and 3 is driven by `expires_at`.
+
+### Booking creation (`POST /api/bookings`)
+
+Called on Step 3 when the player taps "Pay securely".
+
+Validations:
+- Player has a completed `players` row.
+- `lock_id` exists, belongs to this player, is not yet used (`booking_id IS NULL`), is not expired, and its `slot_starts_at` matches the requested slot.
+- Coach exists and has `status = 'active'`.
+- Lock's `coach_id` matches the coach resolved from `coach_slug`.
+
+Fee calculation (authoritative server-side):
+
+```
+session_fee       = coach.hourly_rate_ngn
+platform_commission = round(session_fee × 0.15)   // LOBB's cut, deducted from coach
+convenience_fee   = round(session_fee × 0.05)      // charged on top to player
+coach_payout      = session_fee − platform_commission
+total_amount      = session_fee + convenience_fee
+```
+
+Sequence:
+1. Initialise Paystack transaction (`email`, `amount_kobo = total_amount × 100`, `subaccount = coach.paystack_subaccount_code`).
+2. Insert `bookings` row with `status = 'pending'`.
+3. Insert `payments` row with `status = 'pending'`.
+4. Mark lock as used: `UPDATE slot_locks SET booking_id = [new_id]`.
+5. Return `{ booking_id, reference, paystack_url }` → client redirects player to Paystack hosted checkout.
+
+### Payment confirmation (dual-path)
+
+Both paths are idempotent and can run independently:
+
+**Path A — Paystack webhook** (`POST /api/payments/webhook`):
+- Verifies `x-paystack-signature` (HMAC-SHA512 with `PAYSTACK_WEBHOOK_SECRET`).
+- Upserts into `paystack_events`; skips if already processed.
+- On `charge.success`: sets payment `status = 'paid'`, booking `status = 'confirmed'`, deletes slot lock, queues notification jobs.
+
+**Path B — Verify endpoint** (`GET /api/payments/verify?reference=...`):
+- Called by the confirmation page with exponential backoff (4 attempts, ~1.4 s–5.6 s).
+- If payment is already `paid`, repairs booking to `confirmed` and clears locks.
+- Otherwise calls Paystack API directly to verify; applies the same state transitions as the webhook.
+- On National Stadium bookings: inserts into `court_slot_bookings` (`ON CONFLICT DO NOTHING`) to reserve the specific court.
+
+### Coach booking management
+
+**API:** `GET /api/bookings` (role-aware — coaches receive their own bookings ordered by `starts_at ASC`)
+
+**Coach bookings page** (`/coach/bookings`): tabs for Upcoming (`confirmed`), Completed, and Cancelled. Stats show upcoming count, completed session count, and total earned.
+
+**Coach booking detail** (`/coach/bookings/[id]`):
+- Full session info: date, duration, location, court label (National Stadium), payout breakdown.
+- Player name and **direct contact buttons** (Call + WhatsApp) populated from `profiles.phone_number` via a secondary lookup in `/api/bookings/[id]`.
+- "Cancel Session" button (visible only for confirmed future sessions) triggers a full refund to the player.
+
+### Player booking dashboard
+
+**API:** `GET /api/dashboard/player` (cached client-side via `fetchWithCache`)
+
+- Returns `upcoming` and `past` booking arrays.
+- Upcoming includes `pending`, `pending_payment`, and `confirmed` statuses so that bookings are visible even before the Paystack webhook has settled.
+- Status labels: `Confirmed` (green), `Confirming` (clock — paid but webhook slow), `Pending payment` (amber warning).
+
+### Status lifecycle
+
+```
+pending
+  └── payment confirmed (webhook or verify)
+        └── confirmed
+              ├── session occurs
+              │     └── [cron: release-escrow] → completed
+              ├── cancelled_by_player / cancelled_by_coach / cancelled (admin)
+              └── disputed → resolved by admin → completed or refunded
+```
+
+### Cancellation & refund tiers (summary)
+
+| Who | When | Refund |
+|-----|------|--------|
+| Coach or admin | Any time | 100% |
+| Player | > 24 h before | 100% |
+| Player | 2–24 h before | 50% |
+| Player | < 2 h before | 0% |
+
+Refund is issued via Paystack API; payment record updated to `refunded` or `partial_refund`.

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Circle, MapPin, Phone, User, WalletCards, X } from "lucide-react";
+import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards, X } from "lucide-react";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -88,6 +88,7 @@ export default function CoachBookingDetailPage() {
   }
 
   const player = firstJoin(booking.players);
+  const playerProfile = firstJoin(booking.player_profile);
   const payment = booking.payments?.[0];
   const isConfirmed = booking.status === "confirmed";
   const sessionInFuture = new Date(booking.starts_at).getTime() > Date.now();
@@ -142,10 +143,31 @@ export default function CoachBookingDetailPage() {
                   )}
                 </div>
               </div>
-              <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-text-secondary)]">
-                <Phone className="size-4 text-[var(--lobb-clay)]" />
-                Phone number is in your confirmation email
-              </p>
+              {playerProfile?.phone_number ? (
+                <div className="mt-4 flex items-center gap-3">
+                  <a
+                    href={`tel:${playerProfile.phone_number}`}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-black"
+                  >
+                    <Phone className="size-3.5 text-[var(--lobb-clay)]" />
+                    Call Player
+                  </a>
+                  <a
+                    href={`https://wa.me/${playerProfile.phone_number.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-black"
+                  >
+                    <MessageCircle className="size-3.5 text-[var(--lobb-clay)]" />
+                    WhatsApp
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-text-secondary)]">
+                  <Phone className="size-4 text-[var(--lobb-clay)]" />
+                  Contact details are in your confirmation email
+                </p>
+              )}
             </DetailSection>
 
             <DetailSection title="Location">

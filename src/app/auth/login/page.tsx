@@ -98,11 +98,11 @@ function DevLoginPanel() {
           <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--lobb-clay)]"></span>
         </span>
         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
-          Dev Test Suite
+          Dev Access
         </p>
       </div>
       <p className="mt-1.5 text-center text-xs font-semibold text-[var(--lobb-muted)]">
-        One-click bypass — completely hidden in production
+        One-click local access, hidden when production login is enabled.
       </p>
       <div className="mt-4 grid grid-cols-3 gap-2">
         {(["player", "coach", "admin"] as const).map((role) => (
@@ -117,7 +117,7 @@ function DevLoginPanel() {
             ) : (
               <>
                 <span className="capitalize">{role}</span>
-                <span className="text-[9px] font-medium text-[var(--lobb-muted)] group-hover:text-[var(--lobb-clay)] transition-colors">Bypass ⚡</span>
+                <span className="text-[9px] font-medium text-[var(--lobb-muted)] transition-colors group-hover:text-[var(--lobb-clay)]">Local access</span>
               </>
             )}
           </button>
@@ -158,7 +158,7 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    // Coach intent is carried from public coach sign-up links. Local test roles use the Dev Test Suite.
+    // Coach intent is carried from public coach sign-up links. Local roles use Dev Access.
     const roleToSend: LoginRole | undefined = intentRole === "admin" ? "admin" : selectedRole;
 
     const response = await fetch("/api/auth/send-otp", {

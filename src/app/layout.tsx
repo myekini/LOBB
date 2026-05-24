@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { LobbToaster, OfflineState } from "@/providers/lobb-global-state";
 import { DevRoleSwitcher } from "@/components/dev/dev-role-switcher";
+import { LobbPostHogProvider } from "@/providers/posthog-provider";
 
 const siteUrl = "https://lobb.ng";
 const siteDescription =
@@ -147,10 +148,12 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <LobbToaster />
-        <OfflineState />
-        <DevRoleSwitcher />
-        {children}
+        <LobbPostHogProvider>
+          <LobbToaster />
+          <OfflineState />
+          <DevRoleSwitcher />
+          {children}
+        </LobbPostHogProvider>
       </body>
     </html>
   );

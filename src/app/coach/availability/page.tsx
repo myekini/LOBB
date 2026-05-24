@@ -167,7 +167,15 @@ export default function CoachAvailabilityPage() {
       };
       setWindows(windowsFromRows(json.slots));
       setBlocks(json.blocks);
-      setSlotBlocks(json.slot_blocks ?? []);
+      // Normalize timestamptz from Supabase ("...+00:00") → JS ISO ("...Z") so
+      // string comparisons in toggleSlotBlock and SlotChips work correctly.
+      setSlotBlocks(
+        (json.slot_blocks ?? []).map((sb) => ({
+          ...sb,
+          slot_starts_at: new Date(sb.slot_starts_at).toISOString(),
+          slot_ends_at: new Date(sb.slot_ends_at).toISOString(),
+        }))
+      );
     } catch {
       setError("Could not load your availability. Please refresh.");
     } finally {
@@ -448,7 +456,7 @@ function CalendarDayCard({ blocked, date, inMonth, onClick, selected, slotBlocks
       <span className={`relative z-10 inline-flex size-7 items-center justify-center rounded-full text-xs font-black ${selected ? "bg-white/12" : blocked ? "bg-white/70 text-[var(--lobb-text-primary)]" : "bg-white"}`}>{date.getDate()}</span>
       <div className="relative z-10 mt-5 space-y-1">
         <p className={`text-xs font-black ${selected || blocked ? "text-white" : "text-[var(--lobb-text-primary)]"}`}>{blocked ? "Closed" : isOpen ? `${slots} slots` : "No slots"}</p>
-        <p className={`text-[11px] font-semibold ${selected ? "text-white/58" : blocked ? "text-white/85" : "text-[var(--lobb-text-secondary)]"}`}>{slotBlocks ? `${slotBlocks} blocked` : isOpen ? "Available" : "$0"}</p>
+        <p className={`text-[11px] font-semibold ${selected ? "text-white/58" : blocked ? "text-white/85" : "text-[var(--lobb-text-secondary)]"}`}>{slotBlocks ? `${slotBlocks} blocked` : isOpen ? "Available" : "—"}</p>
       </div>
     </button>
   );
@@ -548,32 +556,99 @@ function MobileAvailability(props: {
   updateWindow: (id: string, updates: Partial<WeeklyWindow>) => void;
   weekCells: Array<{ date: Date; value: string }>;
 }) {
-  const currentIndex = props.weekCells.findIndex((cell) => cell.value === props.selectedDate);
   const firstSlot = props.selectedSlots[0];
   const lastSlot = props.selectedSlots.at(-1);
+
+  const goDay = (delta: number) => {
+    const d = fromDateValue(props.selectedDate);
+    d.setDate(d.getDate() + delta);
+    props.setSelectedDate(dateValue(d));
+  };
+
+  const goWeek = (delta: number) => {
+    const d = fromDateValue(props.selectedDate);
+    d.setDate(d.getDate() + delta * 7);
+    props.setSelectedDate(dateValue(d));
+  };
+
   return (
     <section className="md:hidden">
       <div className="rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3"><span className="flex size-10 items-center justify-center rounded-[14px] bg-[var(--lobb-bg-primary)]"><CalendarDays className="size-4 text-[var(--lobb-clay)]" /></span><div><p className="font-black">Availability</p><p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">This Week</p></div></div>
-          <div className="flex gap-2">
-            <IconButton label="Previous day" onClick={() => props.setSelectedDate(props.weekCells[Math.max(0, currentIndex - 1)]?.value ?? props.selectedDate)} icon={<ChevronLeft className="size-4" />} small />
-            <IconButton label="Next day" onClick={() => props.setSelectedDate(props.weekCells[Math.min(6, currentIndex + 1)]?.value ?? props.selectedDate)} icon={<ChevronRight className="size-4" />} small />
+          <div className="flex items-start gap-3">
+            <span className="flex size-10 items-center justify-center rounded-[14px] bg-[var(--lobb-bg-primary)]">
+              <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
+            </span>
+            <div>
+              <p className="font-black">Availability</p>
+              <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                {new Date(props.weekCells[0]?.value + "T00:00:00").toLocaleDateString("en-NG", { day: "numeric", month: "short" })} – {new Date(props.weekCells[6]?.value + "T00:00:00").toLocaleDateString("en-NG", { day: "numeric", month: "short" })}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-1.5">
+            <IconButton label="Previous week" onClick={() => goWeek(-1)} icon={<ChevronLeft className="size-4" />} small />
+            <IconButton label="Next week" onClick={() => goWeek(1)} icon={<ChevronRight className="size-4" />} small />
           </div>
         </div>
+
         <div className="mt-5 grid grid-cols-7 gap-1 text-center">
           {props.weekCells.map((cell) => {
             const selected = cell.value === props.selectedDate;
-            return <button key={cell.value} type="button" onClick={() => props.setSelectedDate(cell.value)} className="flex flex-col items-center gap-2"><span className="text-[10px] font-black text-[var(--lobb-text-secondary)]">{DAY_SHORT[cell.date.getDay()]}</span><span className={`flex size-9 items-center justify-center rounded-full text-xs font-black ${selected ? "bg-[var(--lobb-clay)] text-white" : "bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]"}`}>{cell.date.getDate()}</span></button>;
+            return (
+              <button key={cell.value} type="button" onClick={() => props.setSelectedDate(cell.value)} className="flex flex-col items-center gap-2">
+                <span className="text-[10px] font-black text-[var(--lobb-text-secondary)]">{DAY_SHORT[cell.date.getDay()]}</span>
+                <span className={`flex size-9 items-center justify-center rounded-full text-xs font-black ${selected ? "bg-[var(--lobb-clay)] text-white" : "bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]"}`}>
+                  {cell.date.getDate()}
+                </span>
+              </button>
+            );
           })}
         </div>
+
         <div className="mt-6 rounded-[22px] bg-[var(--lobb-bg-primary)] p-4">
-          <div className="flex items-center justify-between gap-3"><p className="flex items-center gap-2 text-sm font-black"><CalendarDays className="size-4" />{selectedDateLabel(props.selectedDate)}</p><button type="button" onClick={() => props.setFullDayBlocked(props.selectedDate, !props.selectedBlocked)} className="text-xs font-black text-[var(--lobb-clay)]">{props.selectedBlocked ? "Reopen" : "Close day"}</button></div>
-          <div className="mt-4 flex items-center justify-between text-xs font-black text-[var(--lobb-text-secondary)]"><span>{firstSlot ? firstSlot.label.split(" - ")[0] : "No slots"}</span><span>{lastSlot ? lastSlot.label.split(" - ")[1] : "Closed"}</span></div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--lobb-bg-secondary)]"><div className={`h-full rounded-full ${props.selectedBlocked || !props.selectedSlots.length ? "w-0" : "w-4/5 bg-[var(--lobb-success)]"}`} /></div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <IconButton label="Previous day" onClick={() => goDay(-1)} icon={<ChevronLeft className="size-3.5" />} small />
+              <p className="text-sm font-black">{selectedDateLabel(props.selectedDate)}</p>
+              <IconButton label="Next day" onClick={() => goDay(1)} icon={<ChevronRight className="size-3.5" />} small />
+            </div>
+            <button
+              type="button"
+              onClick={() => props.setFullDayBlocked(props.selectedDate, !props.selectedBlocked)}
+              className="shrink-0 text-xs font-black text-[var(--lobb-clay)]"
+            >
+              {props.selectedBlocked ? "Reopen" : "Close day"}
+            </button>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between text-xs font-black text-[var(--lobb-text-secondary)]">
+            <span>{firstSlot ? firstSlot.label.split(" - ")[0] : "No slots"}</span>
+            <span>{lastSlot ? lastSlot.label.split(" - ")[1] : "Closed"}</span>
+          </div>
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-[var(--lobb-bg-secondary)]">
+            <div className={`h-full rounded-full ${props.selectedBlocked || !props.selectedSlots.length ? "w-0" : "w-4/5 bg-[var(--lobb-success)]"}`} />
+          </div>
+
           <WindowEditor windows={props.selectedWindows} addWindow={props.addWindow} removeWindow={props.removeWindow} updateWindow={props.updateWindow} />
           <SlotChips selectedBlocked={props.selectedBlocked} selectedSlotBlocks={props.selectedSlotBlocks} selectedSlots={props.selectedSlots} toggleSlotBlock={props.toggleSlotBlock} />
-          <div className="mt-4 grid grid-cols-2 gap-3"><button type="button" onClick={() => props.setFullDayBlocked(props.selectedDate, true)} className="h-12 rounded-[16px] bg-white text-sm font-black">Cancel</button><button type="button" onClick={() => { props.addWindow(); props.setFullDayBlocked(props.selectedDate, false); }} className="h-12 rounded-[16px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">Confirm</button></div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => props.setFullDayBlocked(props.selectedDate, true)}
+              className="h-12 rounded-[16px] border border-[var(--lobb-clay)] text-sm font-black text-[var(--lobb-clay)]"
+            >
+              Block Day
+            </button>
+            <button
+              type="button"
+              onClick={() => { props.addWindow(); props.setFullDayBlocked(props.selectedDate, false); }}
+              className="h-12 rounded-[16px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
+            >
+              + Add Window
+            </button>
+          </div>
         </div>
       </div>
     </section>
