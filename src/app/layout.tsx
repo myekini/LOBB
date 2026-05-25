@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { LobbToaster, OfflineState } from "@/providers/lobb-global-state";
 import { DevRoleSwitcher } from "@/components/dev/dev-role-switcher";
 import { LobbPostHogProvider } from "@/providers/posthog-provider";
+import { LobbMixpanelProvider } from "@/providers/mixpanel-provider";
 
 const siteUrl = "https://lobb.ng";
 const siteDescription =
@@ -149,6 +150,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
         <LobbPostHogProvider>
+          <LobbMixpanelProvider />
           <LobbToaster />
           <OfflineState />
           <DevRoleSwitcher />
