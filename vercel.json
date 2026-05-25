@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/notifications/process-due",
-      "schedule": "0 * * * *"
+      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/notifications/schedule-booking-jobs",
