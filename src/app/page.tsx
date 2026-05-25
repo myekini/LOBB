@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowRight, CalendarDays, ChevronDown, Clock3, CreditCard, LogOut, MapPin, Moon, Search, ShieldCheck, Sun, Sunrise, User } from "lucide-react";
@@ -19,7 +19,6 @@ function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: str
     </svg>
   );
 }
-
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -69,12 +68,24 @@ type HomeProfile = {
 export default function Home() {
   const router = useRouter();
   const [profile, setProfile]               = useState<HomeProfile | null>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  // Skip loading skeleton for unauthenticated visitors by checking localStorage synchronously.
+  // If no Supabase token exists, render the splash immediately without a flash.
+  const [loadingProfile, setLoadingProfile] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+      const ref = url.match(/https:\/\/([^.]+)\./)?.[1] ?? "";
+      return ref ? !!localStorage.getItem(`sb-${ref}-auth-token`) : false;
+    } catch {
+      return false;
+    }
+  });
   const [liveCoaches, setLiveCoaches]       = useState<CoachPublicProfile[]>([]);
   const [loadingCoaches, setLoadingCoaches] = useState(true);
   const [coachQuery, setCoachQuery]         = useState("");
   const [coachLocation, setCoachLocation]   = useState("All");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const locationChips = useMemo(() => {
     const locations = liveCoaches.flatMap((coach) => [
@@ -95,7 +106,6 @@ export default function Home() {
         coach.service_areas.some((area) => area.toLowerCase().includes(coachLocation.toLowerCase()));
 
       if (!locationMatch) return false;
-
       if (!query) return true;
 
       const searchable = [
@@ -110,6 +120,18 @@ export default function Home() {
       return searchable.includes(query);
     });
   }, [coachLocation, coachQuery, liveCoaches]);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [profileMenuOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,8 +172,6 @@ export default function Home() {
       }
     }
 
-    // onAuthStateChange fires immediately with the current session (INITIAL_SESSION)
-    // and again on any sign-in/sign-out — far more reliable than a one-shot getUser()
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (cancelled) return;
@@ -190,16 +210,13 @@ export default function Home() {
   if (loadingProfile) {
     return (
       <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
-        {/* Header skeleton — matches real header height */}
         <header className="flex h-[68px] items-center justify-between border-b border-[var(--lobb-border)] px-5">
           <SkeletonBlock className="h-8 w-20 rounded-full" />
           <SkeletonBlock className="size-9 rounded-full" />
         </header>
-        {/* Hero card skeleton */}
         <div className="px-5 pt-4">
           <SkeletonBlock className="h-[232px] rounded-[24px]" />
         </div>
-        {/* Coach grid skeleton */}
         <section className="mt-12 px-5">
           <div className="mb-3 flex items-center justify-between">
             <SkeletonBlock className="h-4 w-36" />
@@ -211,7 +228,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-        {/* Featured card skeleton */}
         <section className="mt-6 px-5">
           <SkeletonBlock className="mb-3 h-4 w-28" />
           <SkeletonBlock className="h-[168px] rounded-[22px]" />
@@ -246,7 +262,7 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-3">
               <PlayerDesktopNav active="home" />
-              <div className="relative">
+              <div className="relative" ref={menuRef}>
                 <button
                   type="button"
                   onClick={() => setProfileMenuOpen((open) => !open)}
@@ -316,7 +332,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="mt-4 text-[11px] font-black uppercase tracking-[0.22em] text-[var(--lobb-clay)]">
-                    {getGreeting()}, {firstName}
+                  {getGreeting()}, {firstName}
                 </div>
                 <h1 className="mt-3 text-[34px] font-black leading-[1.05] tracking-tight text-white sm:text-[48px]">
                   {mood.prompt}
@@ -324,14 +340,13 @@ export default function Home() {
                 <p className="mt-3 max-w-xl text-[14px] font-medium leading-[1.6] text-white/58">
                   {mood.detail}
                 </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white/64">
-                    {liveCoaches.length} verified coaches
-                  </span>
-                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white/64">
-                    Search below by coach, area, or skill
-                  </span>
-                </div>
+                {liveCoaches.length > 0 && (
+                  <div className="mt-5">
+                    <span className="rounded-full border border-white/10 bg-white/[0.06] px-3 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white/64">
+                      {liveCoaches.length} verified coaches
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -391,8 +406,17 @@ export default function Home() {
               ))}
             </div>
           ) : liveCoaches.length === 0 ? (
-            <div className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 text-sm font-semibold text-[var(--lobb-muted)]">
-              No coaches yet. Check back soon.
+            <div className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center">
+              <p className="font-black text-[var(--lobb-black)]">Coaches are being verified</p>
+              <p className="mt-1.5 text-sm font-semibold text-[var(--lobb-muted)]">
+                We&apos;re onboarding Lagos coaches now. Check back in a few days.
+              </p>
+              <Link
+                href="/auth/login?mode=signup&role=coach"
+                className="mt-5 inline-flex h-11 items-center rounded-full bg-[var(--lobb-black)] px-5 text-sm font-black text-white"
+              >
+                Apply as a coach
+              </Link>
             </div>
           ) : filteredCoaches.length === 0 ? (
             <div className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5">
@@ -427,13 +451,14 @@ export default function Home() {
         <img
           src={courtImage}
           alt=""
-          className="size-full object-cover object-center opacity-80"
+          className="size-full object-cover object-center opacity-[0.88]"
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/60 to-[#0D0D0D]/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/55 to-[#0D0D0D]/10" />
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-4 py-4 sm:px-8 lg:px-10">
+        {/* Nav */}
         <header className="flex min-h-12 items-center justify-between gap-4 animate-in fade-in-0 slide-in-from-top-2 duration-500 fill-mode-both">
           <Link href="/" className="flex min-w-0 items-center gap-2.5">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.06]">
@@ -467,45 +492,106 @@ export default function Home() {
           </div>
         </header>
 
+        {/* Hero */}
         <section className="flex flex-1 flex-col justify-center pb-4 pt-10 sm:pt-12 lg:pb-6">
           <div className="max-w-4xl">
+            {/* Eyebrow pill — shows real count once loaded */}
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.07] px-3 py-1.5 text-[11px] font-black uppercase text-white/72 backdrop-blur animate-in fade-in-0 slide-in-from-bottom-4 duration-500 fill-mode-both">
               <span className="size-1.5 rounded-full bg-[var(--lobb-clay)]" />
-              Lagos tennis coaching
+              {!loadingCoaches && liveCoaches.length > 0
+                ? `${liveCoaches.length} coaches · Lagos`
+                : "Lagos tennis coaching"}
             </div>
-            <h1 className="max-w-[14ch] text-[40px] font-black leading-[1.03] text-white sm:text-[58px] lg:text-[70px] animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-75 fill-mode-both">
-              Book a verified tennis coach in Lagos.
+
+            <h1 className="max-w-[16ch] text-[40px] font-black leading-[1.03] text-white sm:text-[58px] lg:text-[70px] animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-75 fill-mode-both">
+              Stop chasing coaches on WhatsApp.
             </h1>
-            <p className="mt-4 max-w-2xl text-[15px] font-medium leading-7 text-white/68 sm:text-[17px] animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
-              Compare coaches, pick a real slot, and pay securely. LOBB keeps the session details clear before anyone reaches the court.
+            <p className="mt-4 max-w-xl text-[15px] font-medium leading-7 text-white/68 sm:text-[17px] animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
+              Browse verified Lagos tennis coaches, pick a real available slot, and pay securely — no DMs needed.
             </p>
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
+            {/* Primary CTA — low friction: browse first, auth gates at booking */}
+            <div className="mt-7 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
               <Link
-                href="/auth/login?mode=signup&role=player"
-                className="lobb-cta-pulse group inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] bg-[var(--lobb-clay)] px-6 text-[14px] font-black text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition hover:bg-[#D8733C] active:scale-[0.98]"
+                href="/coaches"
+                className="lobb-cta-pulse group inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] bg-[var(--lobb-clay)] px-7 text-[14px] font-black text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition hover:bg-[#D8733C] active:scale-[0.98]"
               >
-                Sign up to book
+                Browse coaches
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </Link>
-              <Link
-                href="/auth/login?mode=signup&role=coach"
-                className="inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] border border-white/14 bg-white/[0.07] px-6 text-[14px] font-black text-white/82 backdrop-blur transition hover:bg-white/12 hover:text-white active:scale-[0.98]"
-              >
-                Become a coach
-              </Link>
             </div>
-            <p className="mt-4 text-sm font-semibold text-white/52 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-              Already have an account? <Link href="/auth/login?mode=login" className="font-black text-white underline decoration-white/30 underline-offset-4">Log in</Link>
+
+            {/* Secondary links */}
+            <p className="mt-4 flex items-center gap-3 text-sm animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
+              <Link href="/auth/login?mode=login" className="font-black text-white underline decoration-white/30 underline-offset-4">
+                Log in
+              </Link>
+              <span className="text-white/24">·</span>
+              <Link href="/auth/login?mode=signup&role=coach" className="font-semibold text-white/52 transition hover:text-white/80">
+                Join as a coach
+              </Link>
             </p>
+
+            {/* Coach name preview pills — proof that real coaches exist */}
+            {!loadingCoaches && liveCoaches.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-2 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
+                {liveCoaches.slice(0, 4).map((coach) => (
+                  <Link
+                    key={coach.id}
+                    href={`/coaches/${coach.slug ?? coach.id}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 backdrop-blur transition hover:bg-white/10"
+                  >
+                    {coach.profile_photo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={coach.profile_photo_url} alt="" className="size-5 rounded-full object-cover" />
+                    )}
+                    <span className="text-[12px] font-black text-white">{coach.full_name.split(" ")[0]}</span>
+                    {coach.primary_location && (
+                      <span className="text-[11px] text-white/50">{coach.primary_location}</span>
+                    )}
+                  </Link>
+                ))}
+                <Link
+                  href="/coaches"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.06] px-3 py-1.5 text-[12px] font-black text-white/56 backdrop-blur transition hover:bg-white/10 hover:text-white"
+                >
+                  See all <ArrowRight className="size-3" />
+                </Link>
+              </div>
+            )}
           </div>
 
-          <div className="mt-9 grid gap-2 border-t border-white/12 pt-4 text-white/80 sm:grid-cols-3 animate-in fade-in-0 duration-700 delay-300 fill-mode-both">
-            <LandingProof icon={<ShieldCheck className="size-4" />} title="Verified coaches" body="Profiles are reviewed before they go live." />
-            <LandingProof icon={<Clock3 className="size-4" />} title="Real availability" body="Pick open session times without chat chasing." />
-            <LandingProof icon={<CreditCard className="size-4" />} title="Secure payment" body="Paystack checkout and clear receipts." />
+          {/* Proof strip — real numbers once coaches load */}
+          <div className="mt-9 grid gap-2 border-t border-white/12 pt-4 sm:grid-cols-3 animate-in fade-in-0 duration-700 delay-300 fill-mode-both">
+            <LandingProof
+              icon={<ShieldCheck className="size-4" />}
+              title={!loadingCoaches && liveCoaches.length > 0 ? `${liveCoaches.length} verified coaches` : "Verified coaches"}
+              body="All profiles reviewed before going live."
+            />
+            <LandingProof
+              icon={<Clock3 className="size-4" />}
+              title="Real availability"
+              body="Pick open slots without chasing anyone on WhatsApp."
+            />
+            <LandingProof
+              icon={<CreditCard className="size-4" />}
+              title="Secure payment"
+              body="Paystack checkout. Payment held until after your session."
+            />
           </div>
         </section>
+
+        {/* Footer */}
+        <footer className="border-t border-white/8 py-4 animate-in fade-in-0 duration-500 fill-mode-both">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] font-semibold text-white/32">
+            <span>© {new Date().getFullYear()} LOBB</span>
+            <div className="flex gap-5">
+              <Link href="/terms" className="transition hover:text-white/60">Terms</Link>
+              <Link href="/privacy" className="transition hover:text-white/60">Privacy</Link>
+              <Link href="/how-it-works" className="transition hover:text-white/60">How it works</Link>
+            </div>
+          </div>
+        </footer>
       </div>
     </main>
   );
