@@ -18,6 +18,7 @@ Lagos tennis coach booking platform. Verified coaches, real availability, secure
 10. [Responsive UX & PWA Experience](#10-responsive-ux--pwa-experience)
 11. [Infrastructure & Cron Jobs](#11-infrastructure--cron-jobs)
 12. [Booking Backend — Data Model & Logic](#12-booking-backend--data-model--logic)
+13. [Analytics](#13-analytics)
 
 ---
 
@@ -648,3 +649,91 @@ pending
 | Player | < 2 h before | 0% |
 
 Refund is issued via Paystack API; payment record updated to `refunded` or `partial_refund`.
+
+---
+
+## 13. Analytics
+
+Two tools run in parallel. Both receive the same key events via `src/lib/analytics.ts` (`track()`).
+
+### Tool roles
+
+| Tool | Purpose | Primary user |
+|------|---------|-------------|
+| **PostHog** | Behavioral product intelligence — session recordings, heatmaps, funnel analysis, feature flags | Dev / product |
+| **Mixpanel** | Business metrics dashboard — GMV, conversion rates, cohort retention, north star tracking | Founder / business |
+
+### Setup
+
+| Variable | Where | Notes |
+|----------|-------|-------|
+| `NEXT_PUBLIC_POSTHOG_KEY` | Vercel + `.env.local` | Required — PostHog is silent in production until this is set |
+| `NEXT_PUBLIC_POSTHOG_HOST` | Vercel + `.env.local` | Defaults to `https://us.i.posthog.com` |
+| `NEXT_PUBLIC_MIXPANEL_TOKEN` | Vercel ✅ set | Token in Vercel production env |
+| `NEXT_PUBLIC_MIXPANEL_ENABLED` | Vercel ✅ set | `true` in production |
+
+PostHog is opted-out in development (`client.opt_out_capturing()` in `posthog-provider.tsx`).
+Mixpanel debug mode is on in development, off in production.
+
+### Events tracked
+
+All events fire to **both** tools via `track(event, properties)` in `src/lib/analytics.ts`.
+
+#### Auth & onboarding funnel
+
+| Event | Fired in | Key properties |
+|-------|---------|---------------|
+| `User Signed In` | `auth/verify/page.tsx` | `role` |
+| `Role Selected` | `auth/role/page.tsx` | `role` |
+| `Coach Onboarding Step Completed` | `auth/setup/coach/[1-3]/page.tsx` | `step` (1, 2, or 3) |
+| `Coach Profile Submitted` | `auth/setup/coach/4/page.tsx` | — |
+| `Player Profile Created` | `auth/setup/player/page.tsx` | — |
+
+#### Booking funnel (north star)
+
+| Event | Fired in | Key properties |
+|-------|---------|---------------|
+| `Booking Started` | `book/[coachSlug]/step-1/page.tsx` | `coach_slug`, `coach_name`, `coach_rate`, `slot_iso` |
+| `Payment Initiated` | `book/[coachSlug]/step-3/page.tsx` | `coach_slug`, `session_fee`, `lobb_fee`, `total`, `booking_id`, `reference` |
+| `Booking Confirmed` | `book/confirm/page.tsx` | `booking_id`, `coach_slug`, `coach_name`, `total_paid`, `reference` |
+
+#### Automatic (no custom code needed)
+
+| What | Tool | How |
+|------|------|-----|
+| Page views | Both | PostHog: `$pageview` in `posthog-provider.tsx`; Mixpanel: `Page Viewed` in `mixpanel-provider.tsx` |
+| Page leaves | PostHog | `capture_pageleave: true` |
+| Clicks, inputs, form submits | Both | `autocapture: true` on both providers |
+| Session recordings | PostHog | `record_sessions_percent: 100` in Mixpanel (session replay) |
+| User identity | Both | Set on auth state change in respective providers |
+
+### Mixpanel dashboard — what to build
+
+Build these boards in Mixpanel once events are flowing:
+
+**1. North Star — Bookings**
+- Metric: `Booking Confirmed` count over time (daily/weekly)
+- Secondary: total `total_paid` sum = GMV
+
+**2. Booking Funnel**
+- Steps: `Booking Started` → `Payment Initiated` → `Booking Confirmed`
+- Shows where players drop off and the conversion rate end-to-end
+
+**3. User Acquisition**
+- `User Signed In` by `role` over time
+- New vs returning (Mixpanel first-touch vs repeat)
+
+**4. Coach Supply Funnel**
+- `Role Selected` (role=coach) → `Coach Profile Submitted` → (coach approved, tracked server-side)
+- Shows supply pipeline health
+
+**5. Player Activation**
+- `Player Profile Created` → `Booking Started` → `Booking Confirmed`
+- Cohort: % of new players who complete first booking within 7 days
+
+### PostHog — recommended setup
+
+1. **Funnel insight**: `Booking Started` → `Payment Initiated` → `Booking Confirmed` — watch for drop-off at payment
+2. **Session recordings**: filter by users who hit `Booking Started` but not `Booking Confirmed` to watch where they left
+3. **User properties**: `role` is set on identify — use it to create player and coach cohorts
+4. **Feature flags**: wire future experiments (e.g. new booking UI) through PostHog flags

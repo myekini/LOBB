@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { track } from "@/lib/analytics";
 import { ArrowRight, Plus, User } from "lucide-react";
 import {
   OnboardingButton,
@@ -75,6 +76,7 @@ export default function CoachSetupStepOnePage() {
         throw new Error(result?.error || "Could not save your coach profile.");
       }
 
+      track("Coach Onboarding Step Completed", { step: 1 });
       router.push("/auth/setup/coach/2");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not save your coach profile.");

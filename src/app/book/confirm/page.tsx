@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { track } from "@/lib/analytics";
 import {
   CalendarDays,
   CheckCircle,
   ClipboardList,
   CreditCard,
+  ReceiptText,
   MapPin,
   MessageCircle,
   Phone,
@@ -63,6 +65,13 @@ function BookingConfirmContent() {
           }
           if (cancelled) return;
           setBooking(json.booking);
+          track("Booking Confirmed", {
+            booking_id: json.booking.id,
+            coach_slug: json.booking.coach_slug,
+            coach_name: json.booking.coach_full_name,
+            total_paid: json.booking.total_amount_ngn,
+            reference: json.booking.paystack_reference,
+          });
           showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
           setLoading(false);
         })
@@ -223,6 +232,13 @@ function BookingConfirmContent() {
           className="mt-7 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.18)] transition-all hover:opacity-90 active:scale-98"
         >
           View My Bookings
+        </Link>
+        <Link
+          href={`/dashboard/bookings/${booking.id}/receipt`}
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black text-[var(--lobb-black)]"
+        >
+          <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
+          View Receipt
         </Link>
         <Link href="/" className="mt-4 block text-center text-xs font-black uppercase tracking-wider text-[var(--lobb-muted)] hover:text-[var(--lobb-clay)] transition-all">
           Back to Home

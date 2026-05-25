@@ -12,6 +12,7 @@ import {
 } from "@/features/auth/onboarding-shell";
 import { clearPendingAuth, getPendingAuth } from "@/lib/auth-flow";
 import { showLobbToast } from "@/providers/lobb-global-state";
+import { track } from "@/lib/analytics";
 
 function displayPhone(phone: string) {
   return phone.replace("+234", "+234 ").replace(/(\d{4})(\d{3})(\d{3})$/, "$1 $2 $3");
@@ -134,6 +135,7 @@ export default function VerifyPage() {
     const safeNextPath = getSafeNextPath(pendingAuth.nextPath, profile?.role);
 
     if (safeNextPath && profile?.role && profile.full_name) {
+      track("User Signed In", { role: profile.role });
       router.push(safeNextPath);
       return;
     }
@@ -141,11 +143,13 @@ export default function VerifyPage() {
     const intendedRole = pendingAuth.role;
 
     if (profile?.role === "coach") {
+      track("User Signed In", { role: "coach" });
       router.push(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
       return;
     }
 
     if (profile?.role === "admin") {
+      track("User Signed In", { role: "admin" });
       router.push("/admin");
       return;
     }
@@ -159,9 +163,11 @@ export default function VerifyPage() {
           .from("profiles")
           .update({ role: "coach" })
           .eq("id", userId);
+        track("User Signed In", { role: "coach" });
         router.push("/auth/setup/coach/1");
         return;
       }
+      track("User Signed In", { role: "player" });
       router.push(profile.full_name ? "/" : "/auth/setup/player");
       return;
     }
@@ -172,6 +178,7 @@ export default function VerifyPage() {
         { id: userId, role: intendedRole, phone_number: pendingAuth.phone },
         { onConflict: "id" }
       );
+      track("User Signed In", { role: intendedRole });
       router.push(intendedRole === "coach" ? "/auth/setup/coach/1" : "/auth/setup/player");
       return;
     }

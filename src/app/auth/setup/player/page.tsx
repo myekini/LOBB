@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
+import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -81,6 +82,7 @@ export default function PlayerSetupPage() {
         throw playerError;
       }
 
+      track("Player Profile Created");
       router.push("/");
       router.refresh();
     } catch (error) {

@@ -7,6 +7,7 @@ import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { CoachCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 type DayGroup = {
   dateStr: string;
@@ -131,6 +132,12 @@ function BookingStep1Content() {
         return;
       }
       showLobbToast({ type: "info", message: "Slot held for 10 minutes." });
+      track("Booking Started", {
+        coach_slug: slug,
+        coach_name: coach?.full_name,
+        coach_rate: coach?.hourly_rate_ngn,
+        slot_iso: selectedSlot,
+      });
       router.push(
         `/book/${slug}/step-2?slot=${encodeURIComponent(selectedSlot)}&lock=${json.lock_id}&expires=${encodeURIComponent(json.expires_at!)}`
       );

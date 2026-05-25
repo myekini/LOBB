@@ -7,6 +7,7 @@ import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { CoachPublicProfile } from "@/lib/types";
+import { track } from "@/lib/analytics";
 
 const LOBB_FEE_RATE = 0.05;
 
@@ -120,6 +121,14 @@ function BookingStep3Content() {
         showLobbToast({ type: "error", message: json.error ?? "Could not initiate payment. Try again." });
         return;
       }
+      track("Payment Initiated", {
+        coach_slug: slug,
+        session_fee: sessionFee,
+        lobb_fee: lobbFee,
+        total: total,
+        booking_id: json.booking_id,
+        reference: json.reference,
+      });
       window.location.href = json.paystack_url;
     } catch {
       showLobbToast({ type: "error", message: "Network error. Please try again." });

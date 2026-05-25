@@ -12,6 +12,7 @@ import {
 } from "@/features/auth/onboarding-shell";
 import { getPendingAuth } from "@/lib/auth-flow";
 import { createClient } from "@/lib/supabase/client";
+import { track } from "@/lib/analytics";
 
 type UserRole = "player" | "coach";
 
@@ -86,6 +87,7 @@ export default function RolePage() {
       return;
     }
 
+    track("Role Selected", { role: selected });
     router.push(selected === "player" ? "/auth/setup/player" : "/auth/setup/coach/1");
   };
 

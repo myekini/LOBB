@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -61,6 +62,7 @@ export default function CoachSetupStep2Page() {
       return;
     }
 
+    track("Coach Onboarding Step Completed", { step: 2 });
     router.push("/auth/setup/coach/3");
   };
 

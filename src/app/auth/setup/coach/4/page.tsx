@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -97,6 +98,7 @@ export default function CoachSetupStep4Page() {
       return;
     }
 
+    track("Coach Profile Submitted");
     router.push("/auth/setup/coach/submitted");
     router.refresh();
   };
