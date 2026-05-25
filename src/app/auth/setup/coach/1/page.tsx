@@ -28,9 +28,13 @@ export default function CoachSetupStepOnePage() {
   const canContinue = Boolean(fullName.trim() && headline.trim() && photoUrl && photoFile);
 
   useEffect(() => {
-    createClient().auth.getUser().then(({ data }) => {
-      if (data.user?.email) setAuthEmail(data.user.email);
-    });
+    try {
+      createClient().auth.getUser().then(({ data }) => {
+        if (data.user?.email) setAuthEmail(data.user.email);
+      });
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Sign in is temporarily unavailable.");
+    }
   }, []);
 
   const next = async (event: React.FormEvent) => {

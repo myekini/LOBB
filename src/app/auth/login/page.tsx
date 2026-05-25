@@ -17,6 +17,7 @@ import { createClient } from "@/lib/supabase/client";
 const IS_DEV_LOGIN_ENABLED = process.env.NEXT_PUBLIC_LOBB_DEV_LOGIN === "true";
 type LoginRole = "player" | "coach" | "admin";
 type PublicLoginRole = "player" | "coach";
+type AuthMode = "signup" | "login";
 
 const roleOptions: Array<{
   role: PublicLoginRole;
@@ -127,6 +128,8 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next") || undefined;
   const intentRole = getIntentRole(searchParams);
+  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+  const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
   const [selectedRole, setSelectedRole] = useState<PublicLoginRole>(intentRole === "coach" ? "coach" : "player");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -141,7 +144,7 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const roleToSend: LoginRole | undefined = intentRole === "admin" ? "admin" : selectedRole;
+    const roleToSend: LoginRole | undefined = intentRole === "admin" ? "admin" : authMode === "signup" ? selectedRole : undefined;
 
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
@@ -163,7 +166,7 @@ function LoginForm() {
 
     setPendingAuth({
       email: email.trim().toLowerCase(),
-      mode: "login",
+      mode: authMode,
       sentAt: Date.now(),
       nextPath,
       ...(roleToSend ? { role: roleToSend } : {}),
@@ -173,44 +176,77 @@ function LoginForm() {
   };
 
   const selectedOption = roleOptions.find((option) => option.role === selectedRole) ?? roleOptions[0];
-  const titleLines = selectedRole === "coach" ? ["Coach", "account"] : ["Player", "account"];
+  const titleLines = authMode === "signup"
+    ? selectedRole === "coach"
+      ? ["Create coach", "account"]
+      : ["Create player", "account"]
+    : ["Log in to", "LOBB"];
+  const submitLabel = authMode === "signup" ? "Send sign-up code" : "Send login code";
 
   return (
     <OnboardingShell>
       <form onSubmit={submit} className="flex flex-1 flex-col pt-3">
         <section>
-          <OnboardingKicker>LOBB · {selectedOption.title}</OnboardingKicker>
+          <OnboardingKicker>LOBB · {authMode === "signup" ? "Sign up" : "Log in"}</OnboardingKicker>
           <OnboardingTitle>
             {titleLines[0]}
             <br />
             {titleLines[1]}
           </OnboardingTitle>
           <OnboardingCopy>
-            Enter your email — we&apos;ll send a 6-digit code instantly. No password needed.
+            {authMode === "signup"
+              ? `Start as a ${selectedOption.title.toLowerCase()}. We'll send a 6-digit code to verify your email.`
+              : "Enter the email on your LOBB account. We'll send a 6-digit code. No password needed."}
           </OnboardingCopy>
         </section>
 
-        <section className="mt-7 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5 shadow-[0_10px_30px_rgba(58,43,20,0.04)]" aria-label="Choose account type">
-          {roleOptions.map((option) => {
-            const isSelected = selectedRole === option.role;
-            const Icon = option.Icon;
-            return (
-              <button
-                key={option.role}
-                type="button"
-                onClick={() => setSelectedRole(option.role)}
-                className={`inline-flex h-12 w-1/2 items-center justify-center gap-2 rounded-full text-sm font-black transition-all active:scale-[0.98] ${
-                  isSelected
-                    ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_22px_rgba(13,13,13,0.14)]"
-                    : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
-                }`}
-              >
-                <Icon className="size-4" />
-                {option.role === "coach" ? "Coach" : "Player"}
-              </button>
-            );
-          })}
+        <section className="mt-7 grid grid-cols-2 gap-2 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5 shadow-[0_10px_30px_rgba(58,43,20,0.04)]" aria-label="Choose sign up or log in">
+          {([
+            ["signup", "Sign up"],
+            ["login", "Log in"],
+          ] as const).map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setAuthMode(mode)}
+              className={`h-11 rounded-[14px] text-sm font-black transition-all active:scale-[0.98] ${
+                authMode === mode
+                  ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_22px_rgba(13,13,13,0.14)]"
+                  : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </section>
+
+        {authMode === "signup" ? (
+          <section className="mt-5 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5 shadow-[0_10px_30px_rgba(58,43,20,0.04)]" aria-label="Choose account type">
+            {roleOptions.map((option) => {
+              const isSelected = selectedRole === option.role;
+              const Icon = option.Icon;
+              return (
+                <button
+                  key={option.role}
+                  type="button"
+                  onClick={() => setSelectedRole(option.role)}
+                  className={`inline-flex h-12 w-1/2 items-center justify-center gap-2 rounded-full text-sm font-black transition-all active:scale-[0.98] ${
+                    isSelected
+                      ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_22px_rgba(13,13,13,0.14)]"
+                      : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                  }`}
+                >
+                  <Icon className="size-4" />
+                  {option.role === "coach" ? "Coach" : "Player"}
+                </button>
+              );
+            })}
+          </section>
+        ) : (
+          <div className="mt-5 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-3 text-sm font-semibold text-[var(--lobb-muted)]">
+            One login works for player and coach accounts.
+          </div>
+        )}
 
         <section className="mt-5">
           <label className="flex h-16 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_12px_40px_rgba(58,43,20,0.06)] transition focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
@@ -237,7 +273,7 @@ function LoginForm() {
             <span className="text-[var(--lobb-black)]">Privacy Policy</span>
           </p>
           <OnboardingButton type="submit" disabled={!isReady} loading={loading}>
-            {loading ? "Sending code…" : "Send Code"}
+            {loading ? "Sending code…" : submitLabel}
           </OnboardingButton>
         </div>
       </form>

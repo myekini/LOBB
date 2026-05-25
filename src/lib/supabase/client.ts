@@ -12,7 +12,7 @@ export function createClient() {
   const key = getSupabaseBrowserKey();
 
   if (!url || !key) {
-    throw new Error("Supabase browser environment variables are not configured");
+    throw new Error("LOBB sign in is temporarily unavailable. Please try again after the latest deployment finishes.");
   }
 
   return createBrowserClient(

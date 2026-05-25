@@ -421,7 +421,7 @@ export default function Home() {
 
   /* ── Unauthenticated splash ── */
   return (
-    <main className="relative min-h-svh overflow-hidden bg-[var(--lobb-black)] text-white">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--lobb-black)] text-white">
       <div className="absolute inset-0 select-none" aria-hidden="true">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -433,18 +433,17 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/60 to-[#0D0D0D]/15" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-svh w-full max-w-7xl flex-col px-5 py-5 sm:px-8 lg:px-10">
-        <header className="flex items-center justify-between animate-in fade-in-0 slide-in-from-top-2 duration-500 fill-mode-both">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-10 items-center justify-center rounded-[14px] border border-white/10 bg-white/[0.06]">
-              <LobbMark size={22} />
+      <div className="relative z-10 mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col px-4 py-4 sm:px-8 lg:px-10">
+        <header className="flex min-h-12 items-center justify-between gap-4 animate-in fade-in-0 slide-in-from-top-2 duration-500 fill-mode-both">
+          <Link href="/" className="flex min-w-0 items-center gap-2.5">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-white/[0.06]">
+              <LobbMark size={20} />
             </span>
-            <div>
-              <p className="text-[13px] font-black uppercase text-white">LOBB</p>
-              <p className="text-[11px] font-semibold text-white/48">Book a coach. Not a favor.</p>
-            </div>
-          </div>
-          <nav className="hidden items-center gap-7 md:flex">
+            <span className="min-w-0 text-[13px] font-black text-white">
+              LOBB <span className="hidden font-semibold text-white/50 sm:inline">· Book a coach. Not a favor.</span>
+            </span>
+          </Link>
+          <nav className="hidden items-center gap-6 md:flex">
             <Link href="/coaches" className="text-[13px] font-black text-white/76 transition hover:text-white">
               Browse coaches
             </Link>
@@ -452,45 +451,56 @@ export default function Home() {
               How it works
             </Link>
           </nav>
-          <Link
-            href="/auth/login"
-            className="inline-flex h-11 items-center justify-center rounded-[14px] border border-white/14 bg-white/[0.07] px-4 text-[12px] font-black text-white/82 backdrop-blur transition hover:bg-white/12 hover:text-white"
-          >
-            Log in
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/auth/login?mode=signup"
+              className="hidden h-10 items-center justify-center rounded-[14px] bg-white px-4 text-[12px] font-black text-[var(--lobb-black)] transition hover:bg-white/90 sm:inline-flex"
+            >
+              Sign up
+            </Link>
+            <Link
+              href="/auth/login?mode=login"
+              className="inline-flex h-10 items-center justify-center rounded-[14px] border border-white/14 bg-white/[0.07] px-4 text-[12px] font-black text-white/82 backdrop-blur transition hover:bg-white/12 hover:text-white"
+            >
+              Log in
+            </Link>
+          </div>
         </header>
 
-        <section className="flex flex-1 flex-col justify-end pb-5 pt-16 sm:pt-20 lg:pb-8">
+        <section className="flex flex-1 flex-col justify-center pb-4 pt-10 sm:pt-12 lg:pb-6">
           <div className="max-w-4xl">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.07] px-3 py-1.5 text-[11px] font-black uppercase text-white/72 backdrop-blur animate-in fade-in-0 slide-in-from-bottom-4 duration-500 fill-mode-both">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.07] px-3 py-1.5 text-[11px] font-black uppercase text-white/72 backdrop-blur animate-in fade-in-0 slide-in-from-bottom-4 duration-500 fill-mode-both">
               <span className="size-1.5 rounded-full bg-[var(--lobb-clay)]" />
               Lagos tennis coaching
             </div>
-            <h1 className="max-w-[13ch] text-[44px] font-black leading-[1.02] text-white sm:text-[64px] lg:text-[78px] animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-75 fill-mode-both">
+            <h1 className="max-w-[14ch] text-[40px] font-black leading-[1.03] text-white sm:text-[58px] lg:text-[70px] animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-75 fill-mode-both">
               Book a verified tennis coach in Lagos.
             </h1>
-            <p className="mt-5 max-w-2xl text-[16px] font-medium leading-7 text-white/68 sm:text-[18px] animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
+            <p className="mt-4 max-w-2xl text-[15px] font-medium leading-7 text-white/68 sm:text-[17px] animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
               Compare coaches, pick a real slot, and pay securely. LOBB keeps the session details clear before anyone reaches the court.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
               <Link
-                href="/coaches"
+                href="/auth/login?mode=signup&role=player"
                 className="lobb-cta-pulse group inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] bg-[var(--lobb-clay)] px-6 text-[14px] font-black text-white shadow-[0_18px_48px_rgba(0,0,0,0.28)] transition hover:bg-[#D8733C] active:scale-[0.98]"
               >
-                Find a coach
+                Sign up to book
                 <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link
-                href="/auth/login?role=coach"
+                href="/auth/login?mode=signup&role=coach"
                 className="inline-flex h-[54px] items-center justify-center gap-2 rounded-[14px] border border-white/14 bg-white/[0.07] px-6 text-[14px] font-black text-white/82 backdrop-blur transition hover:bg-white/12 hover:text-white active:scale-[0.98]"
               >
                 Become a coach
               </Link>
             </div>
+            <p className="mt-4 text-sm font-semibold text-white/52 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
+              Already have an account? <Link href="/auth/login?mode=login" className="font-black text-white underline decoration-white/30 underline-offset-4">Log in</Link>
+            </p>
           </div>
 
-          <div className="mt-12 grid gap-2 border-t border-white/12 pt-4 text-white/80 sm:grid-cols-3 animate-in fade-in-0 duration-700 delay-300 fill-mode-both">
+          <div className="mt-9 grid gap-2 border-t border-white/12 pt-4 text-white/80 sm:grid-cols-3 animate-in fade-in-0 duration-700 delay-300 fill-mode-both">
             <LandingProof icon={<ShieldCheck className="size-4" />} title="Verified coaches" body="Profiles are reviewed before they go live." />
             <LandingProof icon={<Clock3 className="size-4" />} title="Real availability" body="Pick open session times without chat chasing." />
             <LandingProof icon={<CreditCard className="size-4" />} title="Secure payment" body="Paystack checkout and clear receipts." />
