@@ -85,7 +85,7 @@ export async function POST(request: Request) {
     let user = signIn.data.user;
 
     if (signIn.error && adminClient) {
-      const { data: created } = await adminClient.auth.admin.createUser({
+      const { data: created, error: createError } = await adminClient.auth.admin.createUser({
         email: authEmail,
         password,
         // Only attach phone to Supabase user for phone-based auth
@@ -98,18 +98,41 @@ export async function POST(request: Request) {
         },
       });
 
-      // Stamp the correct role immediately so DB triggers don't default to "player"
-      if (created?.user && otpResult.role && otpResult.role !== "player") {
-        await adminClient
+      if (!createError && created?.user) {
+        // Brand-new user — stamp role if non-player so DB triggers don't default it.
+        if (otpResult.role && otpResult.role !== "player") {
+          await adminClient
+            .from("profiles")
+            .upsert(
+              {
+                id: created.user.id,
+                role: otpResult.role,
+                ...(isEmailAuth ? { email: identifier } : { phone_number: identifier }),
+              },
+              { onConflict: "id" }
+            );
+        }
+      } else {
+        // User already exists in Supabase Auth (e.g. signed up before, or HMAC secret
+        // changed between deployments). Reset their password to the current HMAC value
+        // so the subsequent signInWithPassword succeeds.
+        const profileCol = isEmailAuth ? "email" : "phone_number";
+        const { data: profileRow } = await adminClient
           .from("profiles")
-          .upsert(
-            {
-              id: created.user.id,
-              role: otpResult.role,
-              ...(isEmailAuth ? { email: identifier } : { phone_number: identifier }),
-            },
-            { onConflict: "id" }
-          );
+          .select("id")
+          .eq(profileCol, identifier)
+          .maybeSingle();
+
+        if (profileRow?.id) {
+          await adminClient.auth.admin.updateUserById(profileRow.id, { password });
+        } else {
+          // Profile doesn't exist yet — scan auth users (small user-base path).
+          const { data: listData } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
+          const existing = listData?.users.find((u) => u.email === authEmail);
+          if (existing) {
+            await adminClient.auth.admin.updateUserById(existing.id, { password });
+          }
+        }
       }
 
       signIn = await authClient.auth.signInWithPassword({ email: authEmail, password });
@@ -119,7 +142,7 @@ export async function POST(request: Request) {
 
     if (signIn.error || !session || !user) {
       return NextResponse.json(
-        { error: "Could not start your session. Make sure SUPABASE_SERVICE_ROLE_KEY is set." },
+        { error: signIn.error?.message ?? "Could not start your session. Please try again." },
         { status: 500 }
       );
     }
