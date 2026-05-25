@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
-import { sendBookingCancelledEmails } from "@/lib/email-notifications";
+import { sendBookingCancelledEmails, sendRefundIssuedEmail } from "@/lib/email-notifications";
 import { initiateRefund } from "@/lib/paystack";
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
@@ -97,12 +97,40 @@ export async function POST(request: Request, { params }: { params: { id: string 
       reference: payment?.paystack_reference ?? booking.id,
       coachPhone: coachProfile.data?.phone_number ?? null,
       playerPhone: playerProfile.data?.phone_number ?? null,
+      totalAmountNgn: totalPaidNgn,
+      paymentStatus: payment?.status ?? null,
+      paymentMethod: "Paystack",
     },
     playerProfile.data,
     coachProfile.data,
     cancelledBy,
     refundSummary
   ).catch(() => null);
+
+  if (refundNgn > 0 && payment?.status === "paid") {
+    sendRefundIssuedEmail(
+      auth.admin,
+      {
+        bookingId: booking.id,
+        coachName: coachProfile.data?.full_name ?? "Your coach",
+        playerName: playerProfile.data?.full_name ?? "Your player",
+        startsAt: booking.starts_at,
+        endsAt: booking.ends_at,
+        location: booking.location,
+        playerNotes: booking.player_notes,
+        reference: payment?.paystack_reference ?? booking.id,
+        coachPhone: coachProfile.data?.phone_number ?? null,
+        playerPhone: playerProfile.data?.phone_number ?? null,
+        totalAmountNgn: totalPaidNgn,
+        paymentStatus: payment?.status ?? null,
+        paymentMethod: "Paystack",
+      },
+      playerProfile.data,
+      coachProfile.data,
+      refundNgn,
+      refundSummary
+    ).catch(() => null);
+  }
 
   return NextResponse.json({
     ok: true,

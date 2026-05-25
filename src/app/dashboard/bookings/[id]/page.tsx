@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, X } from "lucide-react";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   durationMinutes,
@@ -211,6 +211,10 @@ export default function BookingDetailPage() {
 
         <Link href="/dashboard" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
           Back to My Bookings
+        </Link>
+        <Link href={`/dashboard/bookings/${booking.id}/receipt`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black">
+          <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
+          View Receipt
         </Link>
           </aside>
         </div>

@@ -4,7 +4,7 @@ import { verifyWebhookSignature } from "@/lib/paystack";
 import {
   type NotificationBookingInfo,
 } from "@/lib/notification-messages";
-import { queueBookingReminderEmails, sendBookingConfirmedEmails } from "@/lib/email-notifications";
+import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendPaymentReceiptEmail } from "@/lib/email-notifications";
 
 // Paystack requires raw body for signature verification — do NOT parse via middleware
 export const dynamic = "force-dynamic";
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     .update({ status: "confirmed" })
     .eq("id", payment.booking_id)
     .in("status", ["pending", "pending_payment"])
-    .select("id, coach_id, player_id, starts_at, ends_at, location, player_notes")
+    .select("id, coach_id, player_id, starts_at, ends_at, location, player_notes, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
     .maybeSingle();
 
   // ── Remove slot lock ───────────────────────────────────────────────────────
@@ -127,11 +127,18 @@ export async function POST(request: Request) {
       coachName:    coachProfile.data?.full_name  ?? "Your coach",
       playerName:   playerProfile.data?.full_name ?? "Your player",
       startsAt:     booking.starts_at,
+      endsAt:       booking.ends_at,
       location:     booking.location,
       playerNotes:  booking.player_notes,
       reference,
       coachPhone:   coachProfile.data?.phone_number  ?? null,
       playerPhone:  playerProfile.data?.phone_number ?? null,
+      paidAt:       new Date().toISOString(),
+      sessionFeeNgn: booking.hourly_rate_ngn,
+      convenienceFeeNgn: booking.convenience_fee_ngn,
+      totalAmountNgn: booking.total_amount_ngn,
+      paymentStatus: "paid",
+      paymentMethod: "Paystack",
     };
 
     const notificationInfo: NotificationBookingInfo = info;
@@ -141,6 +148,7 @@ export async function POST(request: Request) {
 
     await Promise.allSettled([
       sendBookingConfirmedEmails(admin, notificationInfo, playerProfile.data, coachProfile.data),
+      sendPaymentReceiptEmail(admin, notificationInfo, playerProfile.data, coachProfile.data),
       queueBookingReminderEmails(admin, notificationInfo, playerProfile.data, coachProfile.data, reminderAt, reviewAt),
     ]);
   }

@@ -7,7 +7,10 @@ import {
   bookingConfirmedPlayerEmail,
   bookingReminderEmail,
   coachDecisionEmail,
+  paymentFailedEmail,
+  paymentReceiptEmail,
   payoutProcessedEmail,
+  refundIssuedEmail,
   reviewRequestEmail,
   type EmailBookingInfo,
 } from "@/lib/email-templates";
@@ -35,16 +38,20 @@ type EmailJobInput = {
     html: string;
     text: string;
   };
-  status?: "pending" | "sent" | "failed";
+  status?: "pending" | "sent" | "failed" | "cancelled";
   provider_message_id?: string | null;
   error_message?: string | null;
+};
+
+type EmailJobRecord = {
+  id: string;
 };
 
 function canEmail(profile: EmailProfileWithId | null | undefined): profile is EmailProfileWithId & { email: string } {
   return Boolean(profile?.email && profile.email_notifications_enabled !== false);
 }
 
-async function insertEmailJob(admin: SupabaseClient, input: EmailJobInput) {
+function insertEmailJob(admin: SupabaseClient, input: EmailJobInput) {
   return admin.from("email_jobs").insert({
     type: input.type,
     recipient_user_id: input.recipient_user_id,
@@ -66,6 +73,19 @@ async function insertEmailJob(admin: SupabaseClient, input: EmailJobInput) {
 }
 
 async function sendAndRecord(admin: SupabaseClient, input: EmailJobInput) {
+  const { data: job, error: reserveError } = await insertEmailJob(admin, {
+    ...input,
+    status: "cancelled",
+    error_message: "Reserved for immediate send",
+  }).select("id").maybeSingle<EmailJobRecord>();
+
+  if (reserveError) {
+    if (reserveError.code === "23505") return;
+    throw reserveError;
+  }
+
+  if (!job?.id) return;
+
   try {
     const result = await sendEmail({
       to: input.recipient_email,
@@ -74,17 +94,25 @@ async function sendAndRecord(admin: SupabaseClient, input: EmailJobInput) {
       html: input.template.html,
       text: input.template.text,
     });
-    await insertEmailJob(admin, {
-      ...input,
-      status: "sent",
-      provider_message_id: result?.id ?? null,
-    });
+    await admin
+      .from("email_jobs")
+      .update({
+        status: "sent",
+        sent_at: new Date().toISOString(),
+        failed_at: null,
+        provider_message_id: result?.id ?? null,
+        error_message: null,
+      })
+      .eq("id", job.id);
   } catch (error) {
-    await insertEmailJob(admin, {
-      ...input,
-      status: "failed",
-      error_message: error instanceof Error ? error.message : "Email failed",
-    });
+    await admin
+      .from("email_jobs")
+      .update({
+        status: "failed",
+        failed_at: new Date().toISOString(),
+        error_message: error instanceof Error ? error.message : "Email failed",
+      })
+      .eq("id", job.id);
   }
 }
 
@@ -123,6 +151,42 @@ export async function sendBookingConfirmedEmails(
   }
 
   await Promise.allSettled(sends);
+}
+
+export async function sendPaymentReceiptEmail(
+  admin: SupabaseClient,
+  info: EmailBookingInfo,
+  playerProfile: EmailProfileWithId | null,
+  coachProfile: EmailProfileWithId | null
+) {
+  if (!canEmail(playerProfile) || !playerProfile.email) return;
+
+  await sendAndRecord(admin, {
+    type: "booking_payment_receipt_player",
+    recipient_user_id: playerProfile.id ?? undefined,
+    recipient_email: playerProfile.email,
+    booking_id: info.bookingId,
+    coach_id: coachProfile?.id ?? undefined,
+    template: paymentReceiptEmail(info),
+  });
+}
+
+export async function sendPaymentFailedEmail(
+  admin: SupabaseClient,
+  info: EmailBookingInfo,
+  playerProfile: EmailProfileWithId | null,
+  coachProfile: EmailProfileWithId | null
+) {
+  if (!canEmail(playerProfile) || !playerProfile.email) return;
+
+  await sendAndRecord(admin, {
+    type: "payment_failed_player",
+    recipient_user_id: playerProfile.id ?? undefined,
+    recipient_email: playerProfile.email,
+    booking_id: info.bookingId,
+    coach_id: coachProfile?.id ?? undefined,
+    template: paymentFailedEmail(info),
+  });
 }
 
 export async function queueBookingReminderEmails(
@@ -224,6 +288,26 @@ export async function sendBookingCancelledEmails(
   }
 
   await Promise.allSettled(sends);
+}
+
+export async function sendRefundIssuedEmail(
+  admin: SupabaseClient,
+  info: EmailBookingInfo,
+  playerProfile: EmailProfileWithId | null,
+  coachProfile: EmailProfileWithId | null,
+  refundAmountNgn: number,
+  refundSummary: string
+) {
+  if (!canEmail(playerProfile) || !playerProfile.email || refundAmountNgn <= 0) return;
+
+  await sendAndRecord(admin, {
+    type: "refund_issued_player",
+    recipient_user_id: playerProfile.id ?? undefined,
+    recipient_email: playerProfile.email,
+    booking_id: info.bookingId,
+    coach_id: coachProfile?.id ?? undefined,
+    template: refundIssuedEmail(info, refundAmountNgn, refundSummary),
+  });
 }
 
 export async function sendCoachDecisionEmail(

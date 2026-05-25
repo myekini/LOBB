@@ -12,7 +12,7 @@ export type BookingStatus =
   | "cancelled_by_coach"
   | "disputed"
   | "refunded";
-export type PaymentStatus = "pending" | "authorized" | "paid" | "failed" | "refunded";
+export type PaymentStatus = "pending" | "authorized" | "paid" | "failed" | "refunded" | "partial_refund";
 export type UserRole = "player" | "coach" | "admin";
 export type CourtAccess = "coach_has_access" | "player_arranges" | "coach_can_recommend";
 

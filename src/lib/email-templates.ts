@@ -10,11 +10,18 @@ export type EmailBookingInfo = {
   coachName: string;
   playerName: string;
   startsAt: string;
+  endsAt?: string;
   location: string;
   playerNotes: string | null;
   reference?: string;
   coachPhone?: string | null;
   playerPhone?: string | null;
+  paidAt?: string | null;
+  sessionFeeNgn?: number;
+  convenienceFeeNgn?: number;
+  totalAmountNgn?: number;
+  paymentStatus?: string | null;
+  paymentMethod?: string | null;
 };
 
 function escapeHtml(value: string | null | undefined) {
@@ -35,6 +42,15 @@ function formatDate(iso: string) {
     weekday: "long",
     day: "numeric",
     month: "long",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Africa/Lagos",
+  });
+}
+
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("en-NG", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
@@ -139,6 +155,30 @@ function detailTable(rows: Array<[string, string | null | undefined]>) {
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:22px;border-collapse:collapse;border-top:1px solid ${BRAND.line};border-bottom:1px solid ${BRAND.line};">${detailRows(rows)}</table>`;
 }
 
+type AmountRowTone = "normal" | "strong" | "discount";
+
+function amountRows(rows: Array<[string, number | null | undefined, AmountRowTone]>) {
+  return rows
+    .filter(([, value]) => typeof value === "number")
+    .map(([label, value, tone]) => {
+      const isStrong = tone === "strong";
+      const isDiscount = tone === "discount";
+      return `<tr>
+          <td style="padding:${isStrong ? "16px" : "10px"} 0;border-top:${isStrong ? `1px solid ${BRAND.line}` : "0"};color:${isStrong ? BRAND.ink : BRAND.muted};font:${isStrong ? "900 16px" : "700 14px"} Arial,Helvetica,sans-serif;">${escapeHtml(label)}</td>
+          <td style="padding:${isStrong ? "16px" : "10px"} 0;border-top:${isStrong ? `1px solid ${BRAND.line}` : "0"};color:${isDiscount ? BRAND.success : BRAND.ink};font:${isStrong ? "900 18px" : "800 14px"} Arial,Helvetica,sans-serif;text-align:right;">${isDiscount ? "-" : ""}${money(value ?? 0)}</td>
+        </tr>`;
+    })
+    .join("");
+}
+
+function amountTable(rows: Array<[string, number | null | undefined, AmountRowTone]>) {
+  return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:22px;border-collapse:collapse;">${amountRows(rows)}</table>`;
+}
+
+function receiptUrl(info: EmailBookingInfo) {
+  return appUrl(`/dashboard/bookings/${info.bookingId}/receipt`);
+}
+
 function noteCard(title: string, body: string, tone: "default" | "success" | "warning" = "default") {
   const colors = tone === "success"
     ? { bg: "#E8F4ED", border: "rgba(45,106,79,0.20)", title: BRAND.success }
@@ -175,6 +215,174 @@ export function bookingConfirmedPlayerEmail(info: EmailBookingInfo): EmailTempla
     preview,
     html,
     text: `Booking confirmed\nCoach: ${info.coachName}\nDate: ${formatDate(info.startsAt)}\nLocation: ${info.location}\nRef: ${info.reference ?? info.bookingId}`,
+  };
+}
+
+export function paymentReceiptEmail(info: EmailBookingInfo): EmailTemplate {
+  const total = info.totalAmountNgn ?? 0;
+  const subject = "Receipt for your LOBB session";
+  const preview = `${money(total)} paid for your session with ${info.coachName}.`;
+  const paidAt = info.paidAt ? formatDate(info.paidAt) : "Payment confirmed";
+  const html = shell(
+    `Thanks for your payment, ${info.playerName}`,
+    preview,
+    `<div style="border-bottom:1px solid ${BRAND.line};padding-bottom:22px;">
+      <p style="margin:0;color:${BRAND.muted};font:800 12px Arial,Helvetica,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">Total paid</p>
+      <p style="margin:8px 0 0;color:${BRAND.ink};font:900 42px/1 Arial,Helvetica,sans-serif;letter-spacing:-0.03em;">${money(total)}</p>
+      <p style="margin:10px 0 0;color:${BRAND.muted};font:700 14px/1.6 Arial,Helvetica,sans-serif;">Your LOBB court session is confirmed. Keep this receipt for your records.</p>
+    </div>
+    ${amountTable([
+      ["Coach session", info.sessionFeeNgn, "normal"],
+      ["LOBB convenience fee", info.convenienceFeeNgn, "normal"],
+      ["Total", total, "strong"],
+    ])}
+    ${detailTable([
+      ["Coach", info.coachName],
+      ["Player", info.playerName],
+      ["Session", `${formatDate(info.startsAt)}${info.endsAt ? ` - ${formatTime(info.endsAt)}` : ""}`],
+      ["Location", info.location],
+      ["Payment", info.paymentMethod ?? "Paystack"],
+      ["Paid", paidAt],
+      ["Receipt ID", info.reference ?? info.bookingId],
+    ])}
+    ${noteCard("What happens next", "Your coach has the session details. Use the receipt page if you need a cleaner printable record.", "success")}`,
+    { label: "View receipt", href: receiptUrl(info) }
+  );
+
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\nTotal paid: ${money(total)}\nCoach: ${info.coachName}\nPlayer: ${info.playerName}\nSession: ${formatDate(info.startsAt)}\nLocation: ${info.location}\nReceipt: ${receiptUrl(info)}\nReference: ${info.reference ?? info.bookingId}`,
+  };
+}
+
+export function paymentFailedEmail(info: EmailBookingInfo): EmailTemplate {
+  const subject = "Your LOBB payment did not complete";
+  const preview = `We could not confirm payment for your session with ${info.coachName}.`;
+  const html = shell(
+    "Payment not completed",
+    preview,
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your court session is not confirmed yet because the payment did not complete.</p>
+    ${detailTable([
+      ["Coach", info.coachName],
+      ["Session", formatDate(info.startsAt)],
+      ["Location", info.location],
+      ["Reference", info.reference],
+    ])}
+    ${noteCard("No confirmed charge", "If your bank shows a debit, Paystack usually reverses failed attempts automatically. Reply to this email with the reference if it remains unresolved.", "warning")}`,
+    { label: "Book again", href: appUrl("/coaches") }
+  );
+
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\nSession: ${formatDate(info.startsAt)}\nLocation: ${info.location}\nReference: ${info.reference ?? info.bookingId}`,
+  };
+}
+
+export function refundIssuedEmail(info: EmailBookingInfo, refundAmountNgn: number, refundSummary: string): EmailTemplate {
+  const subject = "Your LOBB refund has been started";
+  const preview = `${money(refundAmountNgn)} refund started for your cancelled session.`;
+  const html = shell(
+    "Refund started",
+    preview,
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">We have started the refund for your cancelled LOBB session.</p>
+    ${amountTable([
+      ["Refund amount", refundAmountNgn, "strong"],
+    ])}
+    ${detailTable([
+      ["Coach", info.coachName],
+      ["Session", formatDate(info.startsAt)],
+      ["Reference", info.reference],
+      ["Status", refundSummary],
+    ])}`,
+    { label: "View booking", href: appUrl(`/dashboard/bookings/${info.bookingId}`) }
+  );
+
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\nRefund: ${money(refundAmountNgn)}\n${refundSummary}\nReference: ${info.reference ?? info.bookingId}`,
+  };
+}
+
+export function bookingRescheduledEmail(info: EmailBookingInfo, recipient: "player" | "coach", previousStartsAt: string): EmailTemplate {
+  const subject = "Your LOBB session was rescheduled";
+  const preview = `New time: ${formatDate(info.startsAt)}.`;
+  const html = shell(
+    "Session rescheduled",
+    preview,
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">This LOBB session has a new time. The latest schedule is below.</p>
+    ${detailTable([
+      ["Previous time", formatDate(previousStartsAt)],
+      ["New time", `${formatDate(info.startsAt)}${info.endsAt ? ` - ${formatTime(info.endsAt)}` : ""}`],
+      ["Coach", info.coachName],
+      ["Player", info.playerName],
+      ["Location", info.location],
+      ["Reference", info.reference],
+    ])}
+    ${noteCard("Calendar check", "Please use the new time for arrival, court logistics, and reminders.", "warning")}`,
+    { label: "View booking", href: appUrl(recipient === "coach" ? `/coach/bookings/${info.bookingId}` : `/dashboard/bookings/${info.bookingId}`) }
+  );
+
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\nPrevious: ${formatDate(previousStartsAt)}\nNew: ${formatDate(info.startsAt)}\nReference: ${info.reference ?? info.bookingId}`,
+  };
+}
+
+export function waitlistUpdateEmail(info: EmailBookingInfo, availableUntil?: string | null): EmailTemplate {
+  const subject = "A LOBB session slot opened up";
+  const preview = `A spot with ${info.coachName} is available for ${formatDate(info.startsAt)}.`;
+  const html = shell(
+    "Slot available",
+    preview,
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">A waitlisted tennis slot is now available. Book it while it is still open.</p>
+    ${detailTable([
+      ["Coach", info.coachName],
+      ["Session", formatDate(info.startsAt)],
+      ["Location", info.location],
+      ["Held until", availableUntil ? formatDate(availableUntil) : null],
+    ])}`,
+    { label: "Book slot", href: appUrl("/coaches") }
+  );
+
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\nCoach: ${info.coachName}\nSession: ${formatDate(info.startsAt)}\nLocation: ${info.location}`,
+  };
+}
+
+export function trialConfirmedEmail(info: EmailBookingInfo): EmailTemplate {
+  const subject = "Your LOBB trial session is confirmed";
+  const preview = `Trial session with ${info.coachName}: ${formatDate(info.startsAt)}.`;
+  const html = shell(
+    "Trial confirmed",
+    preview,
+    `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your trial session is confirmed. Come ready to share your goals so the coach can tailor the first hit.</p>
+    ${detailTable([
+      ["Coach", info.coachName],
+      ["Player", info.playerName],
+      ["Session", formatDate(info.startsAt)],
+      ["Location", info.location],
+      ["Reference", info.reference],
+    ])}
+    ${noteCard("First session tip", "Arrive a few minutes early with water, comfortable shoes, and anything you want the coach to know.", "success")}`,
+    { label: "View booking", href: appUrl(`/dashboard/bookings/${info.bookingId}`) }
+  );
+
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\nCoach: ${info.coachName}\nSession: ${formatDate(info.startsAt)}\nLocation: ${info.location}`,
   };
 }
 
