@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { track } from "@/lib/analytics";
 import { ArrowRight, Plus, User } from "lucide-react";
@@ -17,7 +17,7 @@ import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 export default function CoachSetupStepOnePage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
   const [headline, setHeadline] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -25,7 +25,13 @@ export default function CoachSetupStepOnePage() {
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const canContinue = Boolean(fullName.trim() && email.trim() && headline.trim() && photoUrl && photoFile);
+  const canContinue = Boolean(fullName.trim() && headline.trim() && photoUrl && photoFile);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user?.email) setAuthEmail(data.user.email);
+    });
+  }, []);
 
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -33,12 +39,6 @@ export default function CoachSetupStepOnePage() {
 
     if (!canContinue) {
       setError("Add your name, email, headline, and profile photo to continue.");
-      return;
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setError("Enter a valid email address.");
       return;
     }
 
@@ -53,9 +53,11 @@ export default function CoachSetupStepOnePage() {
 
     if (userError || !user || !photoFile) {
       setSaving(false);
-      setError("Please verify your phone number again.");
+      setError("Session expired. Please sign in again.");
       return;
     }
+
+    const normalizedEmail = (user.email || authEmail).trim().toLowerCase();
 
     try {
       const uploadedPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "coach-avatar");
@@ -147,16 +149,10 @@ export default function CoachSetupStepOnePage() {
           </label>
 
           <label className="block">
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Email <span className="text-[#ba1a1a]">*</span>
-            </span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            />
+            <span className="text-sm font-bold text-[var(--lobb-black)]">Email</span>
+            <div className="mt-2 flex h-14 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-4 text-base font-semibold text-[var(--lobb-muted)]">
+              {authEmail || "Loading…"}
+            </div>
           </label>
 
           <label className="block">

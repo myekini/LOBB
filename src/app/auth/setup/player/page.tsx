@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import { track } from "@/lib/analytics";
@@ -17,25 +17,22 @@ import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 export default function PlayerSetupPage() {
   const router = useRouter();
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user?.email) setAuthEmail(data.user.email);
+    });
+  }, []);
 
   const finish = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    if (!fullName.trim() || !normalizedEmail) {
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setError("Enter a valid email address.");
-      return;
-    }
+    if (!fullName.trim()) return;
 
     setSaving(true);
     setError("");
@@ -48,7 +45,7 @@ export default function PlayerSetupPage() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Please verify your phone number again.");
+      setError("Session expired. Please sign in again.");
       return;
     }
 
@@ -65,8 +62,8 @@ export default function PlayerSetupPage() {
           id: user.id,
           role: "player",
           full_name: fullName.trim(),
-          email: normalizedEmail,
-          phone_number: user.phone || null,
+          email: user.email || authEmail || null,
+          phone_number: phone.trim() || user.phone || null,
           avatar_url: uploadedPhotoUrl || null,
         });
 
@@ -111,15 +108,25 @@ export default function PlayerSetupPage() {
           />
         </label>
 
+        {authEmail && (
+          <label className="mt-5 block">
+            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Email</span>
+            <div className="mt-2 flex h-14 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-4 text-base font-semibold text-[var(--lobb-muted)]">
+              {authEmail}
+            </div>
+          </label>
+        )}
+
         <label className="mt-5 block">
-          <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Email</span>
+          <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Phone number <span className="normal-case font-semibold text-[var(--lobb-muted)]">(optional)</span></span>
           <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
+            type="tel"
+            value={phone}
+            onChange={(event) => setPhone(event.target.value)}
+            placeholder="+234 801 234 5678"
             className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition-all duration-200 placeholder:text-[#9b958a] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
           />
+          <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">Coaches can reach you on WhatsApp for session details</p>
         </label>
 
         <div className="mt-6 flex flex-col items-center rounded-3xl border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-6 shadow-[0_16px_40px_rgba(58,43,20,0.02)]">
@@ -174,7 +181,7 @@ export default function PlayerSetupPage() {
 
         <div className="mt-auto space-y-3 pb-8">
           {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
-          <OnboardingButton type="submit" disabled={!fullName.trim() || !email.trim()} loading={saving}>
+          <OnboardingButton type="submit" disabled={!fullName.trim()} loading={saving}>
             {saving ? "Saving" : "Finish Setup"}
           </OnboardingButton>
         </div>

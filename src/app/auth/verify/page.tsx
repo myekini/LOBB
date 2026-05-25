@@ -14,7 +14,9 @@ import { clearPendingAuth, getPendingAuth } from "@/lib/auth-flow";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { track } from "@/lib/analytics";
 
-function displayPhone(phone: string) {
+function displayIdentifier(auth: { email?: string; phone?: string }) {
+  if (auth.email) return auth.email;
+  const phone = auth.phone ?? "";
   return phone.replace("+234", "+234 ").replace(/(\d{4})(\d{3})(\d{3})$/, "$1 $2 $3");
 }
 
@@ -86,7 +88,11 @@ export default function VerifyPage() {
     const response = await fetch("/api/auth/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: pendingAuth.phone, code: nextCode, ...(pendingAuth.role ? { role: pendingAuth.role } : {}) }),
+      body: JSON.stringify({
+        ...(pendingAuth.email ? { email: pendingAuth.email } : { phone: pendingAuth.phone }),
+        code: nextCode,
+        ...(pendingAuth.role ? { role: pendingAuth.role } : {}),
+      }),
     });
     const payload = (await response.json()) as {
       error?: string;
@@ -175,7 +181,7 @@ export default function VerifyPage() {
     // No profile row yet — set role from intent and route directly.
     if (intendedRole === "coach" || intendedRole === "player") {
       await supabase.from("profiles").upsert(
-        { id: userId, role: intendedRole, phone_number: pendingAuth.phone },
+        { id: userId, role: intendedRole, ...(pendingAuth.phone ? { phone_number: pendingAuth.phone } : {}) },
         { onConflict: "id" }
       );
       track("User Signed In", { role: intendedRole });
@@ -228,7 +234,10 @@ export default function VerifyPage() {
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: pendingAuth.phone, ...(pendingAuth.role ? { role: pendingAuth.role } : {}) }),
+      body: JSON.stringify({
+        ...(pendingAuth.email ? { email: pendingAuth.email } : { phone: pendingAuth.phone }),
+        ...(pendingAuth.role ? { role: pendingAuth.role } : {}),
+      }),
     });
 
     if (!response.ok) {
@@ -242,7 +251,7 @@ export default function VerifyPage() {
     setDigits(["", "", "", "", "", ""]);
     setError("");
     inputs.current[0]?.focus();
-    showLobbToast({ type: "success", message: "New WhatsApp code sent." });
+    showLobbToast({ type: "success", message: "New code sent." });
   };
 
   return (
@@ -250,7 +259,7 @@ export default function VerifyPage() {
       <section className="flex flex-1 flex-col pt-3">
         <div>
           <div className="flex items-center justify-between">
-            <OnboardingKicker>WhatsApp code</OnboardingKicker>
+            <OnboardingKicker>Login code</OnboardingKicker>
             {pendingAuth?.role && (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)]/10 px-2.5 py-1 border border-[var(--lobb-clay)]/20 animate-in fade-in duration-300">
                 <span className="relative flex h-1.5 w-1.5">
@@ -266,10 +275,10 @@ export default function VerifyPage() {
           <OnboardingTitle>
             Check your
             <br />
-            WhatsApp
+            {pendingAuth?.email ? "email" : "phone"}
           </OnboardingTitle>
           <OnboardingCopy>
-            Code sent to {pendingAuth ? displayPhone(pendingAuth.phone) : "+234"}.
+            Code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"}.
           </OnboardingCopy>
           <div className="mt-5 flex items-start gap-3 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]">

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import {
@@ -11,7 +11,6 @@ import {
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
 import { setPendingAuth } from "@/lib/auth-flow";
-import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { createClient } from "@/lib/supabase/client";
 
 // Only visible when the dedicated dev-login switch is enabled.
@@ -38,19 +37,6 @@ const roleOptions: Array<{
     Icon: GraduationCap,
   },
 ];
-
-function nationalDigits(value: string) {
-  const digits = value.replace(/\D/g, "");
-  if (digits.startsWith("234")) return digits.slice(3, 13);
-  if (digits.startsWith("0"))   return digits.slice(1, 11);
-  return digits.slice(0, 10);
-}
-
-function formatNationalPhone(value: string) {
-  const digits = nationalDigits(value);
-  const parts = [digits.slice(0, 4), digits.slice(4, 7), digits.slice(7, 10)].filter(Boolean);
-  return parts.join(" ");
-}
 
 // ─── Dev quick-login panel ────────────────────────────────────────────────────
 function DevLoginPanel() {
@@ -142,29 +128,25 @@ function LoginForm() {
   const nextPath = searchParams.get("next") || undefined;
   const intentRole = getIntentRole(searchParams);
   const [selectedRole, setSelectedRole] = useState<PublicLoginRole>(intentRole === "coach" ? "coach" : "player");
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const digits = useMemo(() => nationalDigits(phone), [phone]);
-  const formattedPhone = useMemo(() => formatNationalPhone(phone), [phone]);
-  const isReady = digits.length === 10;
+  const isReady = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!isReady || loading) return;
 
-    const e164Phone = formatNigerianPhoneNumber(digits);
     setError("");
     setLoading(true);
 
-    // Coach intent is carried from public coach sign-up links. Local roles use Dev Access.
     const roleToSend: LoginRole | undefined = intentRole === "admin" ? "admin" : selectedRole;
 
     const response = await fetch("/api/auth/send-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: e164Phone, ...(roleToSend ? { role: roleToSend } : {}) }),
+      body: JSON.stringify({ email: email.trim().toLowerCase(), ...(roleToSend ? { role: roleToSend } : {}) }),
     });
 
     setLoading(false);
@@ -180,7 +162,7 @@ function LoginForm() {
     }
 
     setPendingAuth({
-      phone: e164Phone,
+      email: email.trim().toLowerCase(),
       mode: "login",
       sentAt: Date.now(),
       nextPath,
@@ -204,7 +186,7 @@ function LoginForm() {
             {titleLines[1]}
           </OnboardingTitle>
           <OnboardingCopy>
-            Enter your number. We&apos;ll send a WhatsApp code — no password needed.
+            Enter your email — we&apos;ll send a 6-digit code instantly. No password needed.
           </OnboardingCopy>
         </section>
 
@@ -212,7 +194,6 @@ function LoginForm() {
           {roleOptions.map((option) => {
             const isSelected = selectedRole === option.role;
             const Icon = option.Icon;
-
             return (
               <button
                 key={option.role}
@@ -233,18 +214,15 @@ function LoginForm() {
 
         <section className="mt-5">
           <label className="flex h-16 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_12px_40px_rgba(58,43,20,0.06)] transition focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
-            <span className="flex items-center gap-2 border-r border-[var(--lobb-border)] pr-3 text-sm font-black text-[var(--lobb-black)]">
-              <span aria-hidden="true">🇳🇬</span>
-              +234
-            </span>
             <input
               autoFocus
-              inputMode="numeric"
-              autoComplete="tel-national"
-              value={formattedPhone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="8012 345 678"
-              className="h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-lg font-semibold text-[var(--lobb-black)] outline-none placeholder:text-[#9b958a] focus:ring-0"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@gmail.com"
+              className="h-full min-w-0 flex-1 border-0 bg-transparent px-2 text-base font-semibold text-[var(--lobb-black)] outline-none placeholder:text-[#9b958a] focus:ring-0"
             />
           </label>
           {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}

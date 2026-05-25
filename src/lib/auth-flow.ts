@@ -1,5 +1,8 @@
 export type PendingAuth = {
-  phone: string;
+  /** Email-based auth — primary path */
+  email?: string;
+  /** Phone-based auth — legacy / dev quick-login only */
+  phone?: string;
   mode: "signup" | "login";
   sentAt: number;
   nextPath?: string;
