@@ -7,7 +7,7 @@ import { Suspense, useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || "/ingest";
 
 let initialized = false;
 
@@ -16,11 +16,12 @@ function initPostHog() {
 
   posthog.init(posthogKey, {
     api_host: posthogHost,
+    ui_host: "https://us.posthog.com",
     capture_pageview: false,
     capture_pageleave: true,
     autocapture: true,
     loaded: (client) => {
-      if (process.env.NODE_ENV === "development") {
+      if (process.env.NEXT_PUBLIC_POSTHOG_OPT_OUT === "true") {
         client.opt_out_capturing();
       }
     },
