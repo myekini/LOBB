@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, CalendarDays, ChevronDown, Clock3, CreditCard, LogOut, MapPin, Moon, Search, ShieldCheck, Sun, Sunrise, User } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, Clock3, CreditCard, LogOut, MapPin, Moon, Search, ShieldCheck, Sun, Sunrise, User, Star, Check, Sparkles } from "lucide-react";
 import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
@@ -82,6 +82,11 @@ export default function Home() {
   const [coachLocation, setCoachLocation]   = useState("All");
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // States for interactive landing page preview widget
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   const locationChips = useMemo(() => {
     const locs = liveCoaches
@@ -390,183 +395,332 @@ export default function Home() {
   const coachesReady = !loadingCoaches;
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[#0D0D0D] text-white">
-
-      {/* Background: court image with layered overlays */}
-      <div className="absolute inset-0" aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={courtImage}
-          alt=""
-          className="size-full object-cover object-center"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+    <main className="relative min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-[#050505] text-white flex flex-col justify-between font-sans">
+      
+      {/* Background Canvas: Premium Glowing Spotlight & Grid Lines */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        {/* Clay radial bloom spotlight centered behind the hero */}
+        <div className="absolute top-[-25%] left-1/2 -translate-x-1/2 w-[120%] aspect-square rounded-full bg-[radial-gradient(circle_at_center,rgba(217,107,39,0.14)_0%,rgba(217,107,39,0.02)_60%,transparent_100%)] filter blur-3xl" />
+        
+        {/* Signature Linear-style fine mesh grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:44px_44px]" />
+        
+        {/* Subtly blended court texture blurred to avoid visual clutter */}
+        <div 
+          className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none filter blur-[1px]" 
+          style={{ backgroundImage: `url(${courtImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
         />
-        {/* Base tint */}
-        <div className="absolute inset-0 bg-[#0D0D0D]/62" />
-        {/* Bottom vignette — darkens proof strip / footer area */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/30 to-transparent" />
+        
+        {/* Vignette smoothing shadows */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/20 via-transparent to-[#050505]" />
       </div>
 
-      {/* Page shell */}
-      <div className="relative z-10 flex min-h-[100dvh] flex-col">
+      {/* Header */}
+      <header className="relative z-20 shrink-0 h-16 border-b border-white/[0.04] bg-[#050505]/40 backdrop-blur-md px-6 sm:px-12 flex items-center justify-between">
+        
+        {/* Brand Logo */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.04] border border-white/[0.08] group-hover:border-white/20 transition-all duration-300">
+            <LobbMark size={16} />
+          </span>
+          <span className="text-[13px] font-black tracking-[0.16em] uppercase text-white/90">Lobb</span>
+        </Link>
 
-        {/* ── Nav: 3-column grid keeps logo/links/actions truly balanced ── */}
-        <header className="grid h-16 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-5 sm:px-8 lg:px-12">
-
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.08] ring-1 ring-inset ring-white/10">
-              <LobbMark size={18} />
-            </span>
-            <span className="text-[14px] font-black tracking-tight">LOBB</span>
+        {/* Center Links */}
+        <nav className="hidden items-center gap-8 md:flex">
+          <Link href="/coaches" className="text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
+            Browse coaches
           </Link>
+          <Link href="/how-it-works" className="text-xs font-bold uppercase tracking-widest text-white/35 transition-colors hover:text-white/70">
+            How it works
+          </Link>
+        </nav>
 
-          {/* Center links — hidden on mobile */}
-          <nav className="hidden items-center gap-7 md:flex">
-            <Link href="/coaches" className="text-[13px] font-medium text-white/58 transition hover:text-white">
-              Browse coaches
-            </Link>
-            <Link href="/how-it-works" className="text-[13px] font-medium text-white/38 transition hover:text-white/70">
-              How it works
-            </Link>
-          </nav>
+        {/* Right Actions */}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/auth/login?mode=login"
+            className="hidden sm:inline-flex h-9 items-center px-4 text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white"
+          >
+            Log in
+          </Link>
+          <Link
+            href="/auth/login?mode=signup"
+            className="flex h-9 items-center justify-center rounded-full bg-white px-5 text-xs font-black uppercase tracking-widest text-[#050505] transition-all duration-300 hover:bg-white/90 active:scale-[0.97]"
+          >
+            Sign up
+          </Link>
+        </div>
+      </header>
 
-          {/* Right actions */}
-          <div className="flex items-center justify-end gap-1.5">
-            <Link
-              href="/auth/login?mode=login"
-              className="hidden h-9 items-center rounded-[10px] px-3.5 text-[13px] font-medium text-white/52 transition hover:text-white sm:flex"
-            >
-              Log in
-            </Link>
-            <Link
-              href="/auth/login?mode=signup"
-              className="flex h-9 items-center rounded-[10px] bg-white px-4 text-[13px] font-black text-[#0D0D0D] transition hover:bg-white/[0.9] active:scale-[0.97]"
-            >
-              Sign up
-            </Link>
-          </div>
-        </header>
-
-        {/* ── Hero — vertically centered in remaining space ── */}
-        <section className="flex flex-1 items-center px-5 py-10 sm:px-8 lg:px-12">
-          <div className="w-full max-w-6xl">
-
+      {/* Hero section */}
+      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center py-4 lg:py-0 overflow-y-auto lg:overflow-hidden [scrollbar-width:none]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 w-full items-center py-8 lg:py-0">
+          
+          {/* Left Column: Hero Text */}
+          <div className="lg:col-span-7 flex flex-col justify-center text-left select-none">
+            
             {/* Eyebrow */}
-            <div className="mb-5 flex items-center gap-2 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 fill-mode-both">
-              <span className="size-1.5 shrink-0 rounded-full bg-[var(--lobb-clay)]" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/45">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-3.5 py-1.5 backdrop-blur-sm self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D96B27]"></span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">
                 {coachesReady && coachCount > 0
-                  ? `${coachCount} verified coaches · Lagos`
-                  : "Lagos tennis coaching"}
+                  ? `${coachCount} verified coaches live in Lagos`
+                  : "Instant Lagos Tennis Booking"}
               </span>
             </div>
 
-            {/* Headline */}
-            <h1 className="max-w-[13ch] text-[46px] font-black leading-[1.02] tracking-[-0.022em] text-white text-balance sm:text-[62px] lg:text-[76px] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75 fill-mode-both">
-              Stop chasing coaches on WhatsApp.
+            {/* Title */}
+            <h1 className="text-[38px] sm:text-[52px] lg:text-[66px] font-black leading-[1.06] tracking-[-0.035em] text-white animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
+              Stop chasing on WhatsApp.<br />
+              <span className="bg-gradient-to-r from-white via-white/80 to-[#D96B27] bg-clip-text text-transparent">LOBB is for booking.</span>
             </h1>
 
-            {/* Subhead */}
-            <p className="mt-5 max-w-[400px] text-[15px] font-normal leading-[1.75] text-white/50 sm:text-base animate-in fade-in-0 duration-700 delay-150 fill-mode-both">
-              Browse verified Lagos tennis coaches, pick a real available slot, and pay securely — no DMs needed.
+            {/* Subtitle */}
+            <p className="mt-5 max-w-[480px] text-[13px] sm:text-[15px] leading-[1.7] text-white/45 animate-in fade-in-0 duration-700 delay-150">
+              No DMs, no back-and-forth coordinate checks. Browse verified Lagos tennis coaches, view live available slots, and book instantly.
             </p>
 
-            {/* CTAs */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 fill-mode-both">
+            {/* Actions */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
               <Link
                 href="/coaches"
-                className="group inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-clay)] px-8 text-[14px] font-black text-white shadow-[0_12px_32px_rgba(196,98,45,0.4)] transition hover:bg-[#D8733C] active:scale-[0.97] sm:w-auto"
+                className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-8 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98]"
               >
+                <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 Browse coaches
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
               <Link
                 href="/auth/login?mode=signup&role=coach"
-                className="inline-flex h-[52px] w-full items-center justify-center rounded-[12px] border border-white/[0.14] px-8 text-[14px] font-semibold text-white/60 backdrop-blur-sm transition hover:border-white/25 hover:text-white active:scale-[0.97] sm:w-auto"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] px-8 text-xs font-bold uppercase tracking-widest text-white/70 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5 active:scale-[0.98]"
               >
                 Join as a coach
               </Link>
             </div>
 
-            {/* Log in hint */}
-            <p className="mt-4 text-[13px] text-white/30 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-              Already have an account?{" "}
-              <Link href="/auth/login?mode=login" className="font-semibold text-white/55 underline underline-offset-4 transition hover:text-white">
-                Log in
-              </Link>
-            </p>
-
-            {/* Coach preview pills — only renders once real coaches are loaded */}
+            {/* Coach facepile */}
             {coachesReady && coachCount > 0 && (
-              <div className="mt-8 flex flex-wrap gap-2 animate-in fade-in-0 duration-500 delay-300 fill-mode-both">
-                {liveCoaches.slice(0, 4).map((coach) => (
-                  <Link
-                    key={coach.id}
-                    href={`/coaches/${coach.slug ?? coach.id}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] py-1.5 pl-2 pr-4 text-[12px] backdrop-blur-sm transition hover:border-white/[0.2] hover:bg-white/[0.08]"
-                  >
-                    {coach.profile_photo_url
-                      // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={coach.profile_photo_url} alt="" className="size-5 rounded-full object-cover" />
-                      : <span className="size-5 rounded-full bg-white/[0.08]" />}
-                    <span className="font-semibold text-white/80">{coach.full_name.split(" ")[0]}</span>
-                    {coach.primary_location && (
-                      <span className="text-white/32">· {coach.primary_location}</span>
-                    )}
-                  </Link>
-                ))}
-                {coachCount > 4 && (
-                  <Link
-                    href="/coaches"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.04] px-4 py-1.5 text-[12px] font-semibold text-white/38 backdrop-blur-sm transition hover:text-white/70"
-                  >
-                    +{coachCount - 4} more <ArrowRight className="size-3" />
-                  </Link>
-                )}
+              <div className="mt-8 flex items-center gap-3 animate-in fade-in-0 duration-500 delay-300">
+                <div className="flex -space-x-2.5 overflow-hidden">
+                  {liveCoaches.slice(0, 4).map((coach) => (
+                    <Link
+                      key={coach.id}
+                      href={`/coaches/${coach.slug ?? coach.id}`}
+                      className="inline-block size-8 rounded-full border-2 border-[#050505] bg-white/[0.04] overflow-hidden transition-transform duration-300 hover:scale-110 relative"
+                      title={coach.full_name}
+                    >
+                      {coach.profile_photo_url
+                        // eslint-disable-next-line @next/next/no-img-element
+                        ? <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
+                        : <span className="size-full bg-white/[0.08] block" />}
+                    </Link>
+                  ))}
+                </div>
+                <div className="text-[11px] font-semibold text-white/40">
+                  Joined by{" "}
+                  <Link href="/coaches" className="text-white hover:text-[#D96B27] transition-colors font-bold">
+                    {coachCount} verified coaches
+                  </Link>{" "}
+                  in the Lagos district
+                </div>
               </div>
             )}
+
           </div>
-        </section>
 
-        {/* ── Proof strip + footer ── */}
-        <div className="shrink-0 px-5 pb-6 sm:px-8 lg:px-12">
-          <div className="mx-auto max-w-6xl">
-
-            {/* Three trust signals */}
-            <div className="grid grid-cols-1 border-t border-white/[0.08] pt-5 sm:grid-cols-3 animate-in fade-in-0 duration-700 delay-300 fill-mode-both">
-              <ProofItem
-                icon={<ShieldCheck className="size-3.5" />}
-                title={coachesReady && coachCount > 0 ? `${coachCount} verified coaches` : "Verified coaches"}
-                body="All profiles reviewed before going live"
-              />
-              <ProofItem
-                icon={<Clock3 className="size-3.5" />}
-                title="Real availability"
-                body="Book open slots — no WhatsApp chasing"
-                bordered
-              />
-              <ProofItem
-                icon={<CreditCard className="size-3.5" />}
-                title="Secure payment"
-                body="Paystack checkout, held until your session"
-                bordered
-              />
-            </div>
-
-            {/* Footer */}
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-4 text-[11px] text-white/22">
-              <span>© {new Date().getFullYear()} LOBB</span>
-              <div className="flex items-center gap-5">
-                <Link href="/terms" className="transition hover:text-white/50">Terms</Link>
-                <Link href="/privacy" className="transition hover:text-white/50">Privacy</Link>
-                <Link href="/how-it-works" className="transition hover:text-white/50">How it works</Link>
+          {/* Right Column: High-Fidelity Interactive Scheduler Card */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+            <div className="w-full max-w-[390px] rounded-[28px] border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-2xl p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] relative overflow-hidden group select-none animate-in fade-in-0 duration-700 delay-200">
+              
+              {/* Internal decorative bloom */}
+              <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#D96B27]/10 rounded-full filter blur-2xl pointer-events-none" />
+              
+              {/* Coach profile header */}
+              <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <span className="flex size-11 items-center justify-center overflow-hidden rounded-full border border-white/[0.1] bg-white/[0.04]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Tunde" className="size-full object-cover" />
+                    </span>
+                    <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-[#050505]" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white tracking-wide">Coach Tunde O.</h3>
+                    <p className="text-[10px] text-white/40 font-medium">Ikoyi Tennis Club · Head Pro</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-500 ring-1 ring-inset ring-amber-500/20">
+                    <Star className="size-3 fill-amber-500" /> 4.9
+                  </span>
+                  <p className="mt-1 text-[9px] text-white/30 font-semibold uppercase tracking-wider">₦25k / hr</p>
+                </div>
               </div>
+
+              {/* Scheduler Body */}
+              {!bookingSuccess ? (
+                <div className="mt-5 flex flex-col gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-white/45">Select Live Slot</p>
+                      <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-[#D96B27]">
+                        <Sparkles className="size-2.5" /> Interactive Demo
+                      </span>
+                    </div>
+                    
+                    <div className="mt-2.5 flex flex-col gap-2">
+                      
+                      {/* Slot 1: Booked */}
+                      <div className="flex items-center justify-between rounded-xl border border-white/[0.03] bg-white/[0.01] px-4 py-3 opacity-30 cursor-not-allowed">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-semibold text-white/60 line-through">08:00 AM - 09:30 AM</span>
+                        </div>
+                        <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white/40">
+                          Booked
+                        </span>
+                      </div>
+
+                      {/* Slot 2: Available */}
+                      <button
+                        type="button"
+                        onClick={() => { if (!isBooking) setSelectedSlot(selectedSlot === "10:30 AM" ? null : "10:30 AM"); }}
+                        className={`flex items-center justify-between rounded-xl border transition-all duration-300 px-4 py-3 ${
+                          selectedSlot === "10:30 AM"
+                            ? "border-[#D96B27] bg-[#D96B27]/10 text-white shadow-[0_0_20px_rgba(217,107,39,0.15)]"
+                            : "border-white/[0.06] bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] text-white/80"
+                        }`}
+                      >
+                        <span className="text-[11px] font-bold">10:30 AM - 12:00 PM</span>
+                        {selectedSlot === "10:30 AM" ? (
+                          <span className="rounded-full bg-[#D96B27] px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-white">
+                            Selected
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+                            Available
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Slot 3: Available */}
+                      <button
+                        type="button"
+                        onClick={() => { if (!isBooking) setSelectedSlot(selectedSlot === "04:30 PM" ? null : "04:30 PM"); }}
+                        className={`flex items-center justify-between rounded-xl border transition-all duration-300 px-4 py-3 ${
+                          selectedSlot === "04:30 PM"
+                            ? "border-[#D96B27] bg-[#D96B27]/10 text-white shadow-[0_0_20px_rgba(217,107,39,0.15)]"
+                            : "border-white/[0.06] bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] text-white/80"
+                        }`}
+                      >
+                        <span className="text-[11px] font-bold">04:30 PM - 06:00 PM</span>
+                        {selectedSlot === "04:30 PM" ? (
+                          <span className="rounded-full bg-[#D96B27] px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-white">
+                            Selected
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+                            Available
+                          </span>
+                        )}
+                      </button>
+
+                    </div>
+                  </div>
+
+                  {/* Booking Checkout Summary */}
+                  <div className={`mt-1 border-t border-white/[0.06] pt-4 transition-all duration-500 ${
+                    selectedSlot ? "opacity-100 scale-100 max-h-[200px]" : "opacity-0 scale-95 max-h-0 overflow-hidden pointer-events-none"
+                  }`}>
+                    <div className="flex items-center justify-between text-xs text-white/50 mb-3 font-semibold">
+                      <span>Court Fee & Session (1.5 hrs)</span>
+                      <span className="text-white font-bold">₦37,500</span>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsBooking(true);
+                        await new Promise(resolve => setTimeout(resolve, 1200));
+                        setIsBooking(false);
+                        setBookingSuccess(true);
+                      }}
+                      disabled={isBooking}
+                      className="w-full h-11 relative flex items-center justify-center overflow-hidden rounded-xl bg-white text-[11px] font-black uppercase tracking-widest text-[#050505] shadow-[0_4px_20px_rgba(255,255,255,0.08)] transition-all duration-300 hover:bg-white/90 active:scale-[0.98] disabled:opacity-75 disabled:cursor-not-allowed"
+                    >
+                      {isBooking ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#050505]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing Paystack...
+                        </span>
+                      ) : (
+                        <span>Pay ₦37,500 Instantly</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Success screen */
+                <div className="mt-8 flex flex-col items-center text-center py-6 animate-in zoom-in-95 duration-500">
+                  <div className="flex size-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                    <Check className="size-6" />
+                  </div>
+                  <h4 className="mt-5 text-sm font-bold text-white tracking-wide">Court Slot Secured!</h4>
+                  <p className="mt-2 text-[11px] leading-[1.6] text-white/40 max-w-[280px]">
+                    Your session is locked. We have dispatched receipt confirmation to your WhatsApp and registered email.
+                  </p>
+                  
+                  <div className="mt-6 rounded-xl border border-white/[0.04] bg-white/[0.01] px-5 py-2.5">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">booking receipt</span>
+                    <span className="text-xs font-mono font-bold text-white/70 mt-0.5 block">LOBB-IKY-{selectedSlot?.split(" ")[0]}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookingSuccess(false);
+                      setSelectedSlot(null);
+                    }}
+                    className="mt-6 text-[9px] font-bold uppercase tracking-widest text-[#D96B27] hover:text-[#C4622D] transition-colors underline underline-offset-4"
+                  >
+                    Reset scheduler preview
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative z-20 shrink-0 border-t border-white/[0.04] bg-[#050505]/40 backdrop-blur-md py-4 px-6 sm:px-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+        
+        {/* Sleek inline proof strip */}
+        <div className="flex items-center flex-wrap justify-center sm:justify-start gap-x-6 gap-y-2 text-[9px] font-bold uppercase tracking-[0.14em] text-white/40">
+          <span className="flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-[#D96B27]" /> Profiles Verified</span>
+          <span className="flex items-center gap-1.5"><Clock3 className="size-3.5 text-[#D96B27]" /> Real Availability</span>
+          <span className="flex items-center gap-1.5"><CreditCard className="size-3.5 text-[#D96B27]" /> Secured Paystack</span>
         </div>
 
-      </div>
+        {/* Footer Meta Links */}
+        <div className="flex items-center gap-6 text-[10px] text-white/30">
+          <span>&copy; {new Date().getFullYear()} LOBB</span>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="hover:text-white/60 transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy</Link>
+            <Link href="/how-it-works" className="hover:text-white/60 transition-colors">How it works</Link>
+          </div>
+        </div>
+      </footer>
+
     </main>
   );
 }
@@ -579,17 +733,5 @@ function ProfileMenuLink({ href, icon, label }: { href: string; icon: React.Reac
       <span className="text-[var(--lobb-clay)]">{icon}</span>
       {label}
     </Link>
-  );
-}
-
-function ProofItem({ icon, title, body, bordered }: { icon: React.ReactNode; title: string; body: string; bordered?: boolean }) {
-  return (
-    <div className={`flex items-start gap-3 py-4 ${bordered ? "border-t border-white/[0.08] sm:border-t-0 sm:border-l sm:border-white/[0.08] sm:pl-6" : ""}`}>
-      <span className="mt-0.5 shrink-0 text-[var(--lobb-clay)]">{icon}</span>
-      <div>
-        <p className="text-[12px] font-black text-white">{title}</p>
-        <p className="mt-0.5 text-[11px] leading-[1.55] text-white/34">{body}</p>
-      </div>
-    </div>
   );
 }
