@@ -110,7 +110,7 @@ export default function CoachSetupStep3Page() {
 
   return (
     <OnboardingShell step="3 of 4">
-      <form onSubmit={next} className="flex flex-1 flex-col pt-3">
+      <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
           <OnboardingTitle>
@@ -123,13 +123,13 @@ export default function CoachSetupStep3Page() {
           </OnboardingCopy>
         </section>
 
-        <div className="mt-8 space-y-7">
+        <div className="mt-8 space-y-8">
           {/* Hourly rate */}
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Hourly rate <span className="text-[#ba1a1a]">*</span>
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Hourly rate <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-2 grid grid-cols-3 gap-2">
+            <div className="mt-3 grid grid-cols-3 gap-2">
               {RATE_OPTIONS.map((rate) => (
                 <button
                   key={rate}
@@ -138,20 +138,20 @@ export default function CoachSetupStep3Page() {
                     setHourlyRate(rate);
                     setCustomRate("");
                   }}
-                  className={`h-12 rounded-2xl border text-sm font-black transition ${
+                  className={`h-12 rounded-[14px] border text-[13px] font-bold transition-all active:scale-[0.98] ${
                     hourlyRate === rate
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
+                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
                   }`}
                 >
                   {formatRate(rate)}
                 </button>
               ))}
             </div>
-            <label className="mt-3 block">
-              <span className="text-xs font-bold text-[var(--lobb-muted)]">Custom hourly rate</span>
-              <div className="mt-1 flex h-14 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
-                <span className="mr-2 font-black text-[var(--lobb-muted)]">₦</span>
+            <label className="mt-4 block group/custom">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Custom hourly rate</span>
+              <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+                <span className="relative z-10 mr-2 font-black text-white/40">₦</span>
                 <input
                   inputMode="numeric"
                   value={customRate}
@@ -161,50 +161,55 @@ export default function CoachSetupStep3Page() {
                     setHourlyRate(digits ? Number(digits) : null);
                   }}
                   placeholder="12000"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 font-semibold text-[var(--lobb-black)] outline-none placeholder:text-[#9b958a] focus:ring-0"
+                  className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
                 />
               </div>
               {hourlyRate !== null && hourlyRate < 1000 && (
-                <p className="mt-1 text-xs font-bold text-[#ba1a1a]">Minimum rate is ₦1,000.</p>
+                <p className="mt-2 text-[12px] font-bold text-red-400">Minimum rate is ₦1,000.</p>
               )}
             </label>
           </div>
 
           {/* Primary location */}
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Primary location <span className="text-[#ba1a1a]">*</span>
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Primary location <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <select
-              value={primaryLocation}
-              onChange={(event) => setPrimaryLocation(event.target.value)}
-              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-black text-[var(--lobb-black)] outline-none transition focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            >
-              <option value="">Choose primary area</option>
-              {LAGOS_LOCATIONS.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-4 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+              <select
+                value={primaryLocation}
+                onChange={(event) => setPrimaryLocation(event.target.value)}
+                className="relative z-10 h-full w-full appearance-none border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none focus:ring-0 [&>option]:bg-[#050505] [&>option]:text-white"
+              >
+                <option value="" className="text-white/40">Choose primary area</option>
+                {LAGOS_LOCATIONS.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-white/40">
+                <svg className="size-4 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+              </div>
+            </div>
           </div>
 
           {/* Other service areas */}
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
               Other areas you cover{" "}
-              <span className="text-xs font-semibold text-[var(--lobb-muted)]">(optional)</span>
+              <span className="text-white/30 normal-case font-semibold tracking-normal">(optional)</span>
             </span>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {LAGOS_LOCATIONS.filter((l) => l !== primaryLocation).map((loc) => (
                 <button
                   key={loc}
                   type="button"
                   onClick={() => toggle(loc, serviceAreas, setServiceAreas)}
-                  className={`rounded-full border px-4 py-2 text-sm font-black transition ${
+                  className={`rounded-full border px-4 py-2 text-[12px] font-bold transition-all active:scale-[0.98] ${
                     serviceAreas.includes(loc)
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
+                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
                   }`}
                 >
                   {loc}
@@ -214,20 +219,20 @@ export default function CoachSetupStep3Page() {
           </div>
 
           {/* Skill levels */}
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Player levels you coach <span className="text-[#ba1a1a]">*</span>
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Player levels you coach <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               {SKILL_LEVEL_OPTIONS.map((level) => (
                 <button
                   key={level}
                   type="button"
                   onClick={() => toggle(level, skillLevels, setSkillLevels)}
-                  className={`h-12 rounded-2xl border text-sm font-black transition ${
+                  className={`h-12 rounded-[14px] border text-[13px] font-bold transition-all active:scale-[0.98] ${
                     skillLevels.includes(level)
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
+                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
                   }`}
                 >
                   {level}
@@ -237,8 +242,8 @@ export default function CoachSetupStep3Page() {
           </div>
         </div>
 
-        <div className="mt-auto pb-8">
-          {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
+        <div className="mt-auto pb-8 pt-10">
+          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

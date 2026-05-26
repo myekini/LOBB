@@ -105,7 +105,7 @@ export default function CoachSetupStep4Page() {
 
   return (
     <OnboardingShell step="4 of 4">
-      <form onSubmit={submit} className="flex flex-1 flex-col pt-3">
+      <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
           <OnboardingTitle>
@@ -118,21 +118,21 @@ export default function CoachSetupStep4Page() {
           </OnboardingCopy>
         </section>
 
-        <div className="mt-8 space-y-7">
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Specializations <span className="text-[#ba1a1a]">*</span>
+        <div className="mt-8 space-y-8">
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Specializations <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {SPECIALIZATION_OPTIONS.map((spec) => (
                 <button
                   key={spec}
                   type="button"
                   onClick={() => setSpecializations((current) => toggle(spec, current))}
-                  className={`rounded-full border px-4 py-2 text-sm font-black transition ${
+                  className={`rounded-full border px-4 py-2 text-[12px] font-bold transition-all active:scale-[0.98] ${
                     specializations.includes(spec)
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
+                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
                   }`}
                 >
                   {spec}
@@ -141,20 +141,20 @@ export default function CoachSetupStep4Page() {
             </div>
           </div>
 
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Languages spoken <span className="text-[#ba1a1a]">*</span>
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Languages spoken <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               {LANGUAGE_OPTIONS.map((language) => (
                 <button
                   key={language}
                   type="button"
                   onClick={() => setLanguages((current) => toggle(language, current))}
-                  className={`rounded-full border px-4 py-2 text-sm font-black transition ${
+                  className={`rounded-full border px-4 py-2 text-[12px] font-bold transition-all active:scale-[0.98] ${
                     languages.includes(language)
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
+                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
                   }`}
                 >
                   {language}
@@ -163,71 +163,73 @@ export default function CoachSetupStep4Page() {
             </div>
           </div>
 
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Court access <span className="text-[#ba1a1a]">*</span>
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Court access <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-2 space-y-2">
+            <div className="mt-3 space-y-2">
               {COURT_ACCESS_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => setCourtAccess(option.value)}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-black transition ${
+                  className={`flex w-full items-center justify-between rounded-[16px] border px-5 py-4 text-left text-[14px] font-bold transition-all active:scale-[0.98] ${
                     courtAccess === option.value
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-[#D96B27]/10 text-white border-[#D96B27]/50 shadow-[0_0_24px_rgba(217,107,39,0.15)]"
+                      : "border-white/[0.08] bg-white/[0.02] text-white/50 hover:bg-white/[0.04] hover:text-white backdrop-blur-sm"
                   }`}
                 >
                   {option.label}
-                  {courtAccess === option.value && <CheckCircle2 className="size-5 shrink-0" />}
+                  {courtAccess === option.value && <CheckCircle2 className="size-5 shrink-0 text-[#D96B27]" />}
                 </button>
               ))}
             </div>
           </div>
 
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Certifications <span className="text-[#ba1a1a]">*</span>
+          <div className="group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Certifications <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-2 space-y-2">
+            <div className="mt-3 space-y-2">
               {CERTIFICATION_OPTIONS.map((cert) => (
                 <button
                   key={cert}
                   type="button"
                   onClick={() => toggleCert(cert)}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-black transition ${
+                  className={`flex w-full items-center justify-between rounded-[16px] border px-5 py-4 text-left text-[14px] font-bold transition-all active:scale-[0.98] ${
                     certifications.includes(cert)
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] hover:border-[var(--lobb-black)]"
+                      ? "bg-[#D96B27]/10 text-white border-[#D96B27]/50 shadow-[0_0_24px_rgba(217,107,39,0.15)]"
+                      : "border-white/[0.08] bg-white/[0.02] text-white/50 hover:bg-white/[0.04] hover:text-white backdrop-blur-sm"
                   }`}
                 >
                   {cert}
                   {certifications.includes(cert) && (
-                    <CheckCircle2 className="size-5 shrink-0" />
+                    <CheckCircle2 className="size-5 shrink-0 text-[#D96B27]" />
                   )}
                 </button>
               ))}
             </div>
           </div>
 
-          <label className="block">
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
+          <label className="block group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
               Demo video URL{" "}
-              <span className="text-xs font-semibold text-[var(--lobb-muted)]">(optional)</span>
+              <span className="text-white/30 normal-case font-semibold tracking-normal">(optional)</span>
             </span>
-            <input
-              type="url"
-              value={demoVideoUrl}
-              onChange={(e) => setDemoVideoUrl(e.target.value)}
-              placeholder="YouTube or Instagram link showing your coaching"
-              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            />
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+              <input
+                type="url"
+                value={demoVideoUrl}
+                onChange={(e) => setDemoVideoUrl(e.target.value)}
+                placeholder="YouTube or Instagram link showing your coaching"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+              />
+            </div>
           </label>
         </div>
 
-        <div className="mt-auto pb-8">
-          {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
+        <div className="mt-auto pb-8 pt-10">
+          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue || saving}>
             {saving ? "Submitting..." : "Submit for review"}
           </OnboardingButton>

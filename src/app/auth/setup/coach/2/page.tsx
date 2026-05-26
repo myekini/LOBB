@@ -68,7 +68,7 @@ export default function CoachSetupStep2Page() {
 
   return (
     <OnboardingShell step="2 of 4">
-      <form onSubmit={next} className="flex flex-1 flex-col pt-3">
+      <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
           <OnboardingTitle>
@@ -82,57 +82,61 @@ export default function CoachSetupStep2Page() {
           </OnboardingCopy>
         </section>
 
-        <div className="mt-8 space-y-6">
-          <label className="block">
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Bio <span className="text-[#ba1a1a]">*</span>
+        <div className="mt-8 space-y-7">
+          <label className="block group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Bio <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <span className="mt-1 block text-xs font-semibold text-[var(--lobb-muted)]">
+            <span className="mt-2 block text-[12px] font-medium text-white/40 leading-relaxed">
               Minimum 50 characters. Aim for your coaching style, ideal player, and session structure.
             </span>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="I'm an ITF-certified coach based in Lekki. I focus on adult beginners and intermediates — structured sessions, clear drills, and proper footwork from day one."
-              maxLength={600}
-              rows={6}
-              className="mt-2 w-full resize-none rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-3 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:font-normal placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            />
+            <div className="mt-3 relative flex overflow-hidden rounded-[20px] border border-white/[0.08] bg-white/[0.02] p-1 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="I'm an ITF-certified coach based in Lekki. I focus on adult beginners and intermediates — structured sessions, clear drills, and proper footwork from day one."
+                maxLength={600}
+                rows={6}
+                className="relative z-10 w-full resize-none border-0 bg-transparent px-4 py-3 text-[15px] leading-relaxed font-medium text-white outline-none placeholder:text-white/20 focus:ring-0"
+              />
+            </div>
             <span
-              className={`mt-1 block text-right text-xs font-bold ${
-                bioLength < 50 ? "text-[#ba1a1a]" : "text-[var(--lobb-muted)]"
+              className={`mt-2 block text-right text-[11px] font-bold tracking-wide ${
+                bioLength < 50 ? "text-red-400" : "text-white/30"
               }`}
             >
               {bioLength < 50 ? `${50 - bioLength} more characters needed` : `${bio.length}/600`}
             </span>
           </label>
 
-          <div>
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Years coaching tennis <span className="text-[#ba1a1a]">*</span>
+          <label className="block group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Years coaching tennis <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={60}
-              step={1}
-              value={experienceYears ?? ""}
-              onChange={(event) => {
-                const value = event.target.value;
-                setExperienceYears(value === "" ? null : Number(value));
-              }}
-              placeholder="5"
-              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            />
-            <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={60}
+                step={1}
+                value={experienceYears ?? ""}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setExperienceYears(value === "" ? null : Number(value));
+                }}
+                placeholder="5"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+              />
+            </div>
+            <p className="mt-3 text-[11px] font-medium text-white/40">
               Enter the actual number of years, not a range.
             </p>
-          </div>
+          </label>
         </div>
 
-        <div className="mt-auto pb-8">
-          {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
+        <div className="mt-auto pb-8 pt-10">
+          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

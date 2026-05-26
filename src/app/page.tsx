@@ -414,11 +414,14 @@ export default function Home() {
           <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.04] border border-white/[0.08] group-hover:border-white/20 transition-all duration-300">
             <LobbMark size={16} />
           </span>
-          <span className="text-[13px] font-black tracking-[0.16em] uppercase text-white/90">Lobb</span>
+          <span className="text-[13px] font-black tracking-[0.16em] uppercase text-white/90">LOBB</span>
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
           <Link href="/coaches" className="text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
             Browse coaches
+          </Link>
+          <Link href="/auth/login?mode=signup&role=coach" className="text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-[#D96B27]">
+            Become a coach
           </Link>
           <Link href="/how-it-works" className="text-xs font-bold uppercase tracking-widest text-white/35 transition-colors hover:text-white/70">
             How it works
@@ -428,7 +431,7 @@ export default function Home() {
           <Link href="/auth/login?mode=login" className="hidden sm:inline-flex h-9 items-center px-4 text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
             Log in
           </Link>
-          <Link href="/auth/login?mode=signup" className="flex h-9 items-center justify-center rounded-full bg-white px-5 text-xs font-black uppercase tracking-widest text-[#050505] transition-all duration-300 hover:bg-white/90 active:scale-[0.97]">
+          <Link href="/auth/login?mode=signup&role=player" className="flex h-9 items-center justify-center rounded-full bg-white px-5 text-xs font-black uppercase tracking-widest text-[#050505] transition-all duration-300 hover:bg-white/90 active:scale-[0.97]">
             Sign up
           </Link>
         </div>
@@ -452,7 +455,7 @@ export default function Home() {
               <span className="bg-gradient-to-r from-white via-white/80 to-[#D96B27] bg-clip-text text-transparent">Perfect Timing.</span>
             </h1>
             <p className="mt-5 max-w-[480px] text-[14px] sm:text-[16px] leading-[1.7] text-white/45 animate-in fade-in-0 duration-700 delay-150">
-              The premier platform for elite tennis training. Book your sessions instantly with world-class professionals.
+              Book verified Lagos tennis coaches directly. Set your schedule, pay securely, and show up ready.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
               <Link href="/coaches" className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-8 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98]">
@@ -479,11 +482,10 @@ export default function Home() {
                   ))}
                 </div>
                 <div className="text-[11px] font-semibold text-white/45 flex items-center gap-1.5">
-                  Joined by{" "}
                   <Link href="/coaches" className="text-white hover:text-[#D96B27] transition-colors font-bold">
                     {coachCount} verified coaches
                   </Link>{" "}
-                  live today
+                  on LOBB
                 </div>
               </div>
             )}
@@ -610,7 +612,7 @@ export default function Home() {
                   </div>
                   <h4 className="mt-5 text-sm font-bold text-white tracking-wide">Court Slot Secured!</h4>
                   <p className="mt-2 text-[11px] leading-[1.6] text-white/40 max-w-[280px]">
-                    Your session is locked. We have dispatched receipt confirmation to your WhatsApp and registered email.
+                    Your session is confirmed. A receipt has been sent to your email.
                   </p>
                   <button
                     type="button"
@@ -637,7 +639,7 @@ export default function Home() {
           <Link href="/how-it-works" className="hover:text-white/50 transition-colors">How it works</Link>
         </div>
         <div className="flex items-center gap-3">
-          <span className="font-black tracking-[0.16em] uppercase text-white/35">Lobb</span>
+          <span className="font-black tracking-[0.16em] uppercase text-white/35">LOBB</span>
           <span className="text-white/10">|</span>
           <span>&copy; {new Date().getFullYear()} LOBB</span>
         </div>

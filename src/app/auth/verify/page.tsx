@@ -256,17 +256,17 @@ export default function VerifyPage() {
 
   return (
     <OnboardingShell>
-      <section className="flex flex-1 flex-col pt-3">
+      <section className="flex flex-1 flex-col pt-4 relative z-10">
         <div>
-          <div className="flex items-center justify-between">
-            <OnboardingKicker>Login code</OnboardingKicker>
+          <div className="flex items-center justify-between mb-2">
+            <OnboardingKicker>Magic Code</OnboardingKicker>
             {pendingAuth?.role && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)]/10 px-2.5 py-1 border border-[var(--lobb-clay)]/20 animate-in fade-in duration-300">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#D96B27]/10 px-3 py-1.5 border border-[#D96B27]/20 backdrop-blur-sm animate-in fade-in duration-300">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--lobb-clay)]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#D96B27]"></span>
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[#D96B27]">
                   {roleLabel}
                 </span>
               </div>
@@ -280,27 +280,27 @@ export default function VerifyPage() {
           <OnboardingCopy>
             Code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"}.
           </OnboardingCopy>
-          <div className="mt-5 flex items-start gap-3 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]">
+          <div className="mt-6 flex items-start gap-4 rounded-[20px] border border-white/[0.08] bg-white/[0.02] p-5 backdrop-blur-md">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-white/[0.06] text-white/80 border border-white/[0.08]">
               <RoleIcon className="size-5" />
             </span>
             <div>
-              <p className="text-sm font-black text-[var(--lobb-text-primary)]">{roleLabel}</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+              <p className="text-[14px] font-black text-white">{roleLabel}</p>
+              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-white/50">
                 {pendingAuth?.role === "coach"
-                  ? "After verification you will complete coach profile, email, availability, and review details."
-                  : "After verification you will finish your player profile and add email for booking updates."}
+                  ? "After verification, you will complete your coach profile, set availability, and review details."
+                  : "After verification, you will complete your player profile and start booking sessions."}
               </p>
             </div>
           </div>
           {pendingAuth?.devCode && (
-            <p className="mt-4 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-4 py-3 text-sm font-bold text-[var(--lobb-text-secondary)]">
-              Dev account code: <span className="text-[var(--lobb-text-primary)]">{pendingAuth.devCode}</span>
+            <p className="mt-4 rounded-[16px] border border-[#D96B27]/20 bg-[#D96B27]/[0.02] px-5 py-3.5 text-[13px] font-bold text-[#D96B27]/60 backdrop-blur-sm">
+              Dev code: <span className="text-[#D96B27]">{pendingAuth.devCode}</span>
             </p>
           )}
         </div>
 
-        <div className="mt-9">
+        <div className="mt-10">
           <div className={`grid grid-cols-6 gap-2 ${isShaking ? "animate-[shake_0.35s_ease-in-out]" : ""}`}>
             {digits.map((digit, index) => (
               <input
@@ -318,28 +318,28 @@ export default function VerifyPage() {
                     inputs.current[index - 1]?.focus();
                   }
                 }}
-                className={`h-14 rounded-[12px] border bg-[var(--lobb-bg-elevated)] text-center text-xl font-black text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] outline-none transition-all duration-200 focus:scale-105 focus:border-[var(--lobb-border-focus)] focus:ring-3 focus:ring-[var(--lobb-clay)]/15 ${
-                  error ? "border-[var(--lobb-border-error)] focus:border-[var(--lobb-border-error)] focus:ring-[var(--lobb-error)]/10 focus:shadow-none" : "border-[var(--lobb-border-subtle)]"
+                className={`h-[60px] rounded-[16px] border bg-white/[0.02] backdrop-blur-md text-center text-[22px] font-black text-white shadow-[0_4px_24px_rgba(0,0,0,0.2)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[#D96B27]/60 focus:bg-white/[0.06] focus:shadow-[0_8px_32px_rgba(217,107,39,0.2)] ${
+                  error ? "border-red-500/50 focus:border-red-500 focus:shadow-[0_8px_32px_rgba(239,68,68,0.2)] text-red-400" : "border-white/[0.08]"
                 }`}
               />
             ))}
           </div>
-          {error && <p className="mt-4 text-sm font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <p className="mt-4 text-[13px] font-semibold text-red-400 text-center">{error}</p>}
         </div>
 
         <button
           type="button"
           disabled={seconds > 0}
           onClick={resend}
-          className="mt-6 rounded-full py-3 text-center text-sm font-bold text-[var(--lobb-clay)] transition hover:bg-[var(--lobb-bg-secondary)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)] disabled:opacity-70"
+          className="mt-8 mx-auto w-fit flex rounded-full px-6 py-2.5 text-[12px] font-bold tracking-wide text-white/50 border border-transparent transition-all hover:text-white hover:bg-white/[0.04] hover:border-white/[0.08] disabled:cursor-default disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-transparent"
         >
           {seconds > 0 ? `Resend code (0:${String(seconds).padStart(2, "0")})` : "Resend code"}
         </button>
 
         <div className="mt-auto pb-8 text-center">
-          <p className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
-            {verifying && <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />}
-            {verifying ? "Checking your code..." : code.length === 6 ? "Submitting automatically..." : "Enter all 6 digits to continue."}
+          <p className="inline-flex items-center justify-center gap-2 text-[13px] font-medium text-white/40">
+            {verifying && <Loader2 className="size-4 animate-spin text-[#D96B27]" />}
+            {verifying ? "Checking your code..." : code.length === 6 ? "Submitting..." : "Enter all 6 digits to continue."}
           </p>
         </div>
       </section>

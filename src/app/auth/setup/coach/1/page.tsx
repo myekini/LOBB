@@ -93,7 +93,7 @@ export default function CoachSetupStepOnePage() {
 
   return (
     <OnboardingShell step="1 of 4">
-      <form onSubmit={next} className="flex flex-1 flex-col pt-3">
+      <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
           <OnboardingTitle>
@@ -104,23 +104,23 @@ export default function CoachSetupStepOnePage() {
           <OnboardingCopy>You&apos;ll complete your availability, rate, and verification before going live.</OnboardingCopy>
         </section>
 
-        <div className="mt-8 rounded-[28px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-6 shadow-[0_12px_40px_rgba(58,43,20,0.05)]">
-          <p className="mb-5 text-center text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
+        <div className="mt-8 flex flex-col items-center rounded-[24px] border border-white/[0.08] bg-white/[0.02] p-8 backdrop-blur-sm relative overflow-hidden">
+          <p className="mb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
             Public coach photo
           </p>
-          <label className="group relative cursor-pointer">
-            <span className="mx-auto flex size-32 flex-col items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] transition group-hover:border-[var(--lobb-black)]">
+          <label className="group relative cursor-pointer flex flex-col items-center relative z-10">
+            <div className="relative flex size-[120px] items-center justify-center overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.04] text-white/40 transition-all duration-500 group-hover:border-[#D96B27]/50 group-hover:shadow-[0_0_32px_rgba(217,107,39,0.2)] group-hover:scale-105 group-hover:bg-white/[0.06]">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoUrl} alt="" className="size-full object-cover" />
               ) : (
                 <>
-                  <User className="mb-1 size-9" />
-                  <span className="px-3 text-center text-xs font-semibold leading-4">Upload Photo</span>
+                  <User className="mb-2 size-10 text-white/30 transition-colors duration-500 group-hover:text-[#D96B27]" />
+                  <span className="px-4 text-center text-[11px] font-bold uppercase tracking-wider text-white/40 group-hover:text-white/80">Upload</span>
                 </>
               )}
-            </span>
-            <span className="absolute bottom-0 right-[calc(50%-64px)] flex size-10 translate-x-2 items-center justify-center rounded-full border-4 border-[var(--lobb-surface)] bg-[var(--lobb-black)] text-white">
+            </div>
+            <span className="absolute bottom-2 right-0 translate-x-1 translate-y-1 flex size-10 items-center justify-center rounded-full bg-[#D96B27] border-[3px] border-[#050505] text-white shadow-lg transition-transform group-hover:scale-110">
               <Plus className="size-5" />
             </span>
             <input
@@ -136,46 +136,52 @@ export default function CoachSetupStepOnePage() {
               }}
             />
           </label>
-          {submitted && !photoUrl && <p className="mt-4 text-center text-xs font-bold text-[#ba1a1a]">Profile photo required</p>}
+          {submitted && !photoUrl && <p className="mt-5 text-center text-[12px] font-bold text-red-400">Profile photo required</p>}
         </div>
 
-        <div className="mt-8 space-y-5">
-          <label className="block">
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Full name <span className="text-[#ba1a1a]">*</span>
+        <div className="mt-8 space-y-6">
+          <label className="block group">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+              Full name <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <input
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              placeholder="Enter your full name"
-              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-bold text-[var(--lobb-black)]">Email</span>
-            <div className="mt-2 flex h-14 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-4 text-base font-semibold text-[var(--lobb-muted)]">
-              {authEmail || "Loading…"}
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+              <input
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+                placeholder="Enter your full name"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+              />
             </div>
           </label>
 
           <label className="block">
-            <span className="text-sm font-bold text-[var(--lobb-black)]">
-              Headline <span className="text-[#ba1a1a]">*</span>
-            </span>
-            <input
-              value={headline}
-              maxLength={150}
-              onChange={(event) => setHeadline(event.target.value)}
-              placeholder="ITF Certified · 8 Years · Lekki"
-              className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition placeholder:text-[#9b958a] focus:border-[var(--lobb-black)] focus:ring-2 focus:ring-black/5"
-            />
-            <span className="mt-1 block text-right text-xs font-bold text-[var(--lobb-muted)]">{headline.length}/150</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">Email</span>
+            <div className="mt-2 flex h-16 items-center rounded-[16px] border border-white/[0.04] bg-white/[0.01] px-5 text-[15px] font-bold tracking-wide text-white/40 backdrop-blur-sm">
+              {authEmail || "Loading…"}
+            </div>
+          </label>
+
+          <label className="block group">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+                Headline <span className="text-red-400 normal-case font-bold">*</span>
+              </span>
+              <span className="text-[10px] font-bold text-white/30">{headline.length}/150</span>
+            </div>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+              <input
+                value={headline}
+                maxLength={150}
+                onChange={(event) => setHeadline(event.target.value)}
+                placeholder="ITF Certified · 8 Years · Lekki"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+              />
+            </div>
           </label>
         </div>
 
-        <div className="mt-auto pb-8">
-          {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
+        <div className="mt-auto pb-8 pt-10">
+          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
           <OnboardingButton type="submit" disabled={saving} loading={saving}>
             <span className="inline-flex items-center gap-2">
               {saving ? "Saving" : "Next"} {!saving && <ArrowRight className="size-4" />}

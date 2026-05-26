@@ -78,33 +78,32 @@ function DevLoginPanel() {
   };
 
   return (
-    <div className="mt-8 rounded-3xl border border-[var(--lobb-clay)]/20 bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.03] p-5 shadow-[0_12px_36px_rgba(196,98,45,0.06)] animate-in fade-in duration-300">
-      <div className="flex items-center justify-center gap-2">
+    <div className="mt-8 rounded-[24px] border border-[#D96B27]/20 bg-gradient-to-br from-[#D96B27]/5 to-transparent p-5 backdrop-blur-sm animate-in fade-in duration-300 relative overflow-hidden">
+      <div className="flex items-center justify-center gap-2 relative z-10">
         <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--lobb-clay)]"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D96B27]"></span>
         </span>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
           Dev Access
         </p>
       </div>
-      <p className="mt-1.5 text-center text-xs font-semibold text-[var(--lobb-muted)]">
+      <p className="mt-1.5 text-center text-xs font-semibold text-[#D96B27]/60 relative z-10">
         One-click local access, hidden when production login is enabled.
       </p>
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-5 grid grid-cols-3 gap-2 relative z-10">
         {(["player", "coach", "admin"] as const).map((role) => (
           <button
             key={role}
             onClick={() => quickLogin(role)}
             disabled={busy !== null}
-            className="group flex h-[46px] flex-col items-center justify-center rounded-2xl border border-[var(--lobb-border)] bg-white text-[11px] font-black tracking-tight text-[var(--lobb-black)] shadow-[0_4px_12px_rgba(13,13,13,0.03)] transition-all hover:border-[var(--lobb-clay)]/40 hover:shadow-[0_8px_20px_rgba(196,98,45,0.08)] active:scale-[0.96] disabled:opacity-50"
+            className="group flex h-[52px] flex-col items-center justify-center rounded-2xl border border-[#D96B27]/20 bg-[#D96B27]/[0.02] text-[11px] font-black tracking-tight text-[#D96B27] transition-all hover:border-[#D96B27]/40 hover:bg-[#D96B27]/10 active:scale-[0.96] disabled:opacity-50"
           >
             {busy === role ? (
-              <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />
+              <Loader2 className="size-4 animate-spin text-[#D96B27]" />
             ) : (
               <>
-                <span className="capitalize">{role}</span>
-                <span className="text-[9px] font-medium text-[var(--lobb-muted)] transition-colors group-hover:text-[var(--lobb-clay)]">Local access</span>
+                <span className="capitalize uppercase tracking-wider">{role}</span>
               </>
             )}
           </button>
@@ -178,16 +177,16 @@ function LoginForm() {
   const selectedOption = roleOptions.find((option) => option.role === selectedRole) ?? roleOptions[0];
   const titleLines = authMode === "signup"
     ? selectedRole === "coach"
-      ? ["Create coach", "account"]
-      : ["Create player", "account"]
-    : ["Log in to", "LOBB"];
+      ? ["Coach", "Sign up"]
+      : ["Player", "Sign up"]
+    : ["Welcome", "back"];
   const submitLabel = authMode === "signup" ? "Send sign-up code" : "Send login code";
 
   return (
     <OnboardingShell>
-      <form onSubmit={submit} className="flex flex-1 flex-col pt-3">
+      <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
-          <OnboardingKicker>LOBB · {authMode === "signup" ? "Sign up" : "Log in"}</OnboardingKicker>
+          <OnboardingKicker>LOBB · {authMode === "signup" ? "Join" : "Access"}</OnboardingKicker>
           <OnboardingTitle>
             {titleLines[0]}
             <br />
@@ -195,12 +194,12 @@ function LoginForm() {
           </OnboardingTitle>
           <OnboardingCopy>
             {authMode === "signup"
-              ? `Start as a ${selectedOption.title.toLowerCase()}. We'll send a 6-digit code to verify your email.`
-              : "Enter the email on your LOBB account. We'll send a 6-digit code. No password needed."}
+              ? `Create your ${selectedOption.title.toLowerCase()} profile. We'll send a 6-digit magic code to verify your email.`
+              : "Enter your registered email. We'll send a 6-digit magic code for secure, passwordless access."}
           </OnboardingCopy>
         </section>
 
-        <section className="mt-7 grid grid-cols-2 gap-2 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5 shadow-[0_10px_30px_rgba(58,43,20,0.04)]" aria-label="Choose sign up or log in">
+        <section className="mt-8 grid grid-cols-2 gap-2 rounded-[20px] border border-white/[0.08] bg-white/[0.02] p-1.5 backdrop-blur-md" aria-label="Choose sign up or log in">
           {([
             ["signup", "Sign up"],
             ["login", "Log in"],
@@ -209,10 +208,10 @@ function LoginForm() {
               key={mode}
               type="button"
               onClick={() => setAuthMode(mode)}
-              className={`h-11 rounded-[14px] text-sm font-black transition-all active:scale-[0.98] ${
+              className={`h-11 rounded-[14px] text-[13px] font-bold transition-all active:scale-[0.98] ${
                 authMode === mode
-                  ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_22px_rgba(13,13,13,0.14)]"
-                  : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                  ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/[0.08]"
+                  : "text-white/40 hover:text-white/80 border border-transparent"
               }`}
             >
               {label}
@@ -221,7 +220,7 @@ function LoginForm() {
         </section>
 
         {authMode === "signup" ? (
-          <section className="mt-5 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1.5 shadow-[0_10px_30px_rgba(58,43,20,0.04)]" aria-label="Choose account type">
+          <section className="mt-5 rounded-full border border-white/[0.08] bg-white/[0.02] p-1.5 backdrop-blur-md flex" aria-label="Choose account type">
             {roleOptions.map((option) => {
               const isSelected = selectedRole === option.role;
               const Icon = option.Icon;
@@ -230,26 +229,26 @@ function LoginForm() {
                   key={option.role}
                   type="button"
                   onClick={() => setSelectedRole(option.role)}
-                  className={`inline-flex h-12 w-1/2 items-center justify-center gap-2 rounded-full text-sm font-black transition-all active:scale-[0.98] ${
+                  className={`inline-flex h-11 flex-1 items-center justify-center gap-2.5 rounded-full text-[13px] font-bold transition-all active:scale-[0.98] ${
                     isSelected
-                      ? "bg-[var(--lobb-black)] text-white shadow-[0_10px_22px_rgba(13,13,13,0.14)]"
-                      : "text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border border-white/[0.08]"
+                      : "text-white/40 hover:text-white/80 border border-transparent"
                   }`}
                 >
-                  <Icon className="size-4" />
+                  <Icon className="size-3.5" />
                   {option.role === "coach" ? "Coach" : "Player"}
                 </button>
               );
             })}
           </section>
         ) : (
-          <div className="mt-5 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-3 text-sm font-semibold text-[var(--lobb-muted)]">
-            One login works for player and coach accounts.
+          <div className="mt-5 rounded-[20px] border border-white/[0.04] bg-white/[0.01] px-5 py-3.5 text-center text-[12px] font-semibold text-white/40 backdrop-blur-md">
+            One login works for both player and coach profiles.
           </div>
         )}
 
         <section className="mt-5">
-          <label className="flex h-16 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_12px_40px_rgba(58,43,20,0.06)] transition focus-within:border-[var(--lobb-black)] focus-within:ring-2 focus-within:ring-black/5">
+          <label className="group relative flex h-16 items-center overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
             <input
               autoFocus
               type="email"
@@ -257,20 +256,20 @@ function LoginForm() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@gmail.com"
-              className="h-full min-w-0 flex-1 border-0 bg-transparent px-2 text-base font-semibold text-[var(--lobb-black)] outline-none placeholder:text-[#9b958a] focus:ring-0"
+              placeholder="you@email.com"
+              className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
             />
           </label>
-          {error && <p className="mt-3 text-sm font-semibold text-red-700">{error}</p>}
+          {error && <p className="mt-3 text-[13px] font-semibold text-red-400">{error}</p>}
         </section>
 
         {IS_DEV_LOGIN_ENABLED && <DevLoginPanel />}
 
-        <div className="mt-auto pb-8">
-          <p className="mb-4 px-4 text-center text-xs font-semibold leading-4 text-[var(--lobb-muted)]">
+        <div className="mt-auto pb-8 pt-8">
+          <p className="mb-5 px-4 text-center text-[11px] font-semibold leading-relaxed text-white/30">
             By continuing you agree to our{" "}
-            <span className="text-[var(--lobb-black)]">Terms</span> &amp;{" "}
-            <span className="text-[var(--lobb-black)]">Privacy Policy</span>
+            <span className="text-white/60 hover:text-white transition-colors cursor-pointer">Terms</span> &amp;{" "}
+            <span className="text-white/60 hover:text-white transition-colors cursor-pointer">Privacy Policy</span>
           </p>
           <OnboardingButton type="submit" disabled={!isReady} loading={loading}>
             {loading ? "Sending code…" : submitLabel}
@@ -292,16 +291,16 @@ export default function LoginPage() {
 function LoginSkeleton() {
   return (
     <OnboardingShell>
-      <section className="flex flex-1 flex-col pt-3">
-        <div className="h-3 w-32 rounded-full lobb-skeleton" />
-        <div className="mt-5 h-20 w-56 rounded-[18px] lobb-skeleton" />
-        <div className="mt-5 h-14 w-full rounded-[18px] lobb-skeleton" />
-        <div className="mt-7 grid grid-cols-2 gap-3">
-          <div className="h-12 rounded-full lobb-skeleton" />
-          <div className="h-12 rounded-full lobb-skeleton" />
+      <section className="flex flex-1 flex-col pt-4 relative z-10">
+        <div className="h-6 w-32 rounded-full bg-white/[0.05] animate-pulse" />
+        <div className="mt-6 h-20 w-56 rounded-[18px] bg-white/[0.05] animate-pulse" />
+        <div className="mt-5 h-16 w-full rounded-[18px] bg-white/[0.05] animate-pulse" />
+        <div className="mt-8 grid grid-cols-2 gap-3">
+          <div className="h-12 rounded-[16px] bg-white/[0.05] animate-pulse" />
+          <div className="h-12 rounded-[16px] bg-white/[0.05] animate-pulse" />
         </div>
-        <div className="mx-auto mt-3 h-4 w-56 rounded-full lobb-skeleton" />
-        <div className="mt-6 h-16 rounded-2xl lobb-skeleton" />
+        <div className="mx-auto mt-4 h-4 w-56 rounded-full bg-white/[0.05] animate-pulse" />
+        <div className="mt-8 h-16 rounded-2xl bg-white/[0.05] animate-pulse" />
       </section>
     </OnboardingShell>
   );

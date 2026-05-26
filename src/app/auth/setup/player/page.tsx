@@ -91,65 +91,69 @@ export default function PlayerSetupPage() {
 
   return (
     <OnboardingShell step="1 of 1">
-      <form onSubmit={finish} className="flex flex-1 flex-col pt-3">
+      <form onSubmit={finish} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Player profile</OnboardingKicker>
           <OnboardingTitle>Almost done</OnboardingTitle>
           <OnboardingCopy>Add your name so coaches know who they&apos;re preparing for.</OnboardingCopy>
         </section>
 
-        <label className="mt-10 block">
-          <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Full name</span>
-          <input
-            value={fullName}
-            onChange={(event) => setFullName(event.target.value)}
-            placeholder="e.g. Fola Adeola"
-            className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition-all duration-200 placeholder:text-[#9b958a] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
-          />
+        <label className="mt-10 block group">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">Full name</span>
+          <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <input
+              value={fullName}
+              onChange={(event) => setFullName(event.target.value)}
+              placeholder="e.g. Fola Adeola"
+              className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+            />
+          </div>
         </label>
 
         {authEmail && (
-          <label className="mt-5 block">
-            <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Email</span>
-            <div className="mt-2 flex h-14 items-center rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-4 text-base font-semibold text-[var(--lobb-muted)]">
+          <label className="mt-6 block">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">Email</span>
+            <div className="mt-2 flex h-16 items-center rounded-[16px] border border-white/[0.04] bg-white/[0.01] px-5 text-[15px] font-bold tracking-wide text-white/40 backdrop-blur-sm">
               {authEmail}
             </div>
           </label>
         )}
 
-        <label className="mt-5 block">
-          <span className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Phone number <span className="normal-case font-semibold text-[var(--lobb-muted)]">(optional)</span></span>
-          <input
-            type="tel"
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder="+234 801 234 5678"
-            className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 text-base font-semibold text-[var(--lobb-black)] outline-none transition-all duration-200 placeholder:text-[#9b958a] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
-          />
-          <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">Coaches can reach you on WhatsApp for session details</p>
+        <label className="mt-6 block group">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">Phone number <span className="normal-case font-semibold text-white/30 tracking-normal">(optional)</span></span>
+          <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <input
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              placeholder="+234 801 234 5678"
+              className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+            />
+          </div>
+          <p className="mt-3 text-[11px] font-medium text-white/40">Coaches can reach you on WhatsApp for session details</p>
         </label>
 
-        <div className="mt-6 flex flex-col items-center rounded-3xl border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-6 shadow-[0_16px_40px_rgba(58,43,20,0.02)]">
-          <label className="group flex cursor-pointer flex-col items-center">
-            <div className="relative flex size-24 items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)] transition-all duration-300 group-hover:border-[var(--lobb-clay)] group-hover:shadow-[0_0_15px_rgba(196,98,45,0.15)] group-hover:scale-105">
+        <div className="mt-8 flex flex-col items-center rounded-[24px] border border-white/[0.08] bg-white/[0.02] p-8 backdrop-blur-sm relative overflow-hidden">
+          <label className="group flex cursor-pointer flex-col items-center relative z-10">
+            <div className="relative flex size-[104px] items-center justify-center overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.04] text-white/40 transition-all duration-500 group-hover:border-[#D96B27]/50 group-hover:shadow-[0_0_32px_rgba(217,107,39,0.2)] group-hover:scale-105 group-hover:bg-white/[0.06]">
               {photoUrl ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photoUrl} alt="" className="size-full object-cover" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#050505]/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]">
                     <Camera className="size-6 text-white" />
                   </div>
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center">
-                  <Camera className="size-7 text-[var(--lobb-muted)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)]" />
+                  <Camera className="size-8 text-white/30 transition-colors duration-500 group-hover:text-[#D96B27]" />
                 </div>
               )}
             </div>
-            <span className="mt-4 text-sm font-black text-[var(--lobb-black)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)]">
+            <span className="mt-5 text-[14px] font-black text-white transition-colors duration-300 group-hover:text-[#D96B27]">
               {photoUrl ? "Change photo" : "Add your photo"}
             </span>
-            <span className="mt-1 text-[11px] font-semibold text-[var(--lobb-muted)] text-center max-w-[200px] leading-relaxed">
+            <span className="mt-2 text-[12px] font-medium text-white/40 text-center max-w-[220px] leading-relaxed">
               Recommended to help Lagos tennis coaches recognize you
             </span>
             <input
@@ -168,7 +172,7 @@ export default function PlayerSetupPage() {
           {photoUrl && (
             <button
               type="button"
-              className="mt-4 h-9 rounded-full px-4 text-xs font-bold text-[var(--lobb-clay)] transition hover:bg-[var(--lobb-clay)]/5 border border-[var(--lobb-clay)]/10"
+              className="mt-5 relative z-10 h-9 rounded-full px-5 text-[11px] font-bold uppercase tracking-wider text-red-400/80 transition-all hover:text-red-400 hover:bg-red-400/10 border border-transparent hover:border-red-400/20"
               onClick={() => {
                 setPhotoUrl("");
                 setPhotoFile(null);
@@ -179,8 +183,8 @@ export default function PlayerSetupPage() {
           )}
         </div>
 
-        <div className="mt-auto space-y-3 pb-8">
-          {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+        <div className="mt-auto space-y-3 pb-8 pt-10">
+          {error && <p className="text-[13px] font-semibold text-red-400">{error}</p>}
           <OnboardingButton type="submit" disabled={!fullName.trim()} loading={saving}>
             {saving ? "Saving" : "Finish Setup"}
           </OnboardingButton>
