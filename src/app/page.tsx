@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, CalendarDays, ChevronDown, Clock3, CreditCard, LogOut, MapPin, Moon, Search, ShieldCheck, Sun, Sunrise, User, Star, Check, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, LogOut, MapPin, Moon, Search, Sun, Sunrise, User, Check } from "lucide-react";
 import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
@@ -399,34 +399,23 @@ export default function Home() {
       
       {/* Background Canvas: Premium Glowing Spotlight & Grid Lines */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        {/* Clay radial bloom spotlight centered behind the hero */}
         <div className="absolute top-[-25%] left-1/2 -translate-x-1/2 w-[120%] aspect-square rounded-full bg-[radial-gradient(circle_at_center,rgba(217,107,39,0.14)_0%,rgba(217,107,39,0.02)_60%,transparent_100%)] filter blur-3xl" />
-        
-        {/* Signature Linear-style fine mesh grid */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.012)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.012)_1px,transparent_1px)] bg-[size:44px_44px]" />
-        
-        {/* Subtly blended court texture blurred to avoid visual clutter */}
         <div 
           className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none filter blur-[1px]" 
           style={{ backgroundImage: `url(${courtImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }} 
         />
-        
-        {/* Vignette smoothing shadows */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/20 via-transparent to-[#050505]" />
       </div>
 
       {/* Header */}
       <header className="relative z-20 shrink-0 h-16 border-b border-white/[0.04] bg-[#050505]/40 backdrop-blur-md px-6 sm:px-12 flex items-center justify-between">
-        
-        {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-white/[0.04] border border-white/[0.08] group-hover:border-white/20 transition-all duration-300">
             <LobbMark size={16} />
           </span>
           <span className="text-[13px] font-black tracking-[0.16em] uppercase text-white/90">Lobb</span>
         </Link>
-
-        {/* Center Links */}
         <nav className="hidden items-center gap-8 md:flex">
           <Link href="/coaches" className="text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
             Browse coaches
@@ -435,74 +424,43 @@ export default function Home() {
             How it works
           </Link>
         </nav>
-
-        {/* Right Actions */}
         <div className="flex items-center gap-4">
-          <Link
-            href="/auth/login?mode=login"
-            className="hidden sm:inline-flex h-9 items-center px-4 text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white"
-          >
+          <Link href="/auth/login?mode=login" className="hidden sm:inline-flex h-9 items-center px-4 text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
             Log in
           </Link>
-          <Link
-            href="/auth/login?mode=signup"
-            className="flex h-9 items-center justify-center rounded-full bg-white px-5 text-xs font-black uppercase tracking-widest text-[#050505] transition-all duration-300 hover:bg-white/90 active:scale-[0.97]"
-          >
+          <Link href="/auth/login?mode=signup" className="flex h-9 items-center justify-center rounded-full bg-white px-5 text-xs font-black uppercase tracking-widest text-[#050505] transition-all duration-300 hover:bg-white/90 active:scale-[0.97]">
             Sign up
           </Link>
         </div>
       </header>
 
       {/* Hero section */}
-      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center py-4 lg:py-0 overflow-y-auto lg:overflow-hidden [scrollbar-width:none]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 w-full items-center py-8 lg:py-0">
-          
-          {/* Left Column: Hero Text */}
+      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center py-6 lg:py-0 overflow-y-auto lg:overflow-hidden [scrollbar-width:none]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 w-full items-center py-6 lg:py-0">
           <div className="lg:col-span-7 flex flex-col justify-center text-left select-none">
-            
-            {/* Eyebrow */}
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-3.5 py-1.5 backdrop-blur-sm self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D96B27]"></span>
               </span>
               <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">
-                {coachesReady && coachCount > 0
-                  ? `${coachCount} verified coaches live in Lagos`
-                  : "Instant Lagos Tennis Booking"}
+                Lagos Tennis
               </span>
             </div>
-
-            {/* Title */}
             <h1 className="text-[38px] sm:text-[52px] lg:text-[66px] font-black leading-[1.06] tracking-[-0.035em] text-white animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
-              Stop chasing on WhatsApp.<br />
-              <span className="bg-gradient-to-r from-white via-white/80 to-[#D96B27] bg-clip-text text-transparent">LOBB is for booking.</span>
+              Precision Coaching.<br />
+              <span className="bg-gradient-to-r from-white via-white/80 to-[#D96B27] bg-clip-text text-transparent">Perfect Timing.</span>
             </h1>
-
-            {/* Subtitle */}
-            <p className="mt-5 max-w-[480px] text-[13px] sm:text-[15px] leading-[1.7] text-white/45 animate-in fade-in-0 duration-700 delay-150">
-              No DMs, no back-and-forth coordinate checks. Browse verified Lagos tennis coaches, view live available slots, and book instantly.
+            <p className="mt-5 max-w-[480px] text-[14px] sm:text-[16px] leading-[1.7] text-white/45 animate-in fade-in-0 duration-700 delay-150">
+              The premier platform for elite tennis training. Book your sessions instantly with world-class professionals.
             </p>
-
-            {/* Actions */}
             <div className="mt-8 flex flex-col sm:flex-row gap-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
-              <Link
-                href="/coaches"
-                className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-8 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98]"
-              >
+              <Link href="/coaches" className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-8 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98]">
                 <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 Browse coaches
                 <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
-              <Link
-                href="/auth/login?mode=signup&role=coach"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.02] px-8 text-xs font-bold uppercase tracking-widest text-white/70 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06] hover:text-white hover:-translate-y-0.5 active:scale-[0.98]"
-              >
-                Join as a coach
-              </Link>
             </div>
-
-            {/* Coach facepile */}
             {coachesReady && coachCount > 0 && (
               <div className="mt-8 flex items-center gap-3 animate-in fade-in-0 duration-500 delay-300">
                 <div className="flex -space-x-2.5 overflow-hidden">
@@ -520,26 +478,19 @@ export default function Home() {
                     </Link>
                   ))}
                 </div>
-                <div className="text-[11px] font-semibold text-white/40">
+                <div className="text-[11px] font-semibold text-white/45 flex items-center gap-1.5">
                   Joined by{" "}
                   <Link href="/coaches" className="text-white hover:text-[#D96B27] transition-colors font-bold">
                     {coachCount} verified coaches
                   </Link>{" "}
-                  in the Lagos district
+                  live today
                 </div>
               </div>
             )}
-
           </div>
-
-          {/* Right Column: High-Fidelity Interactive Scheduler Card */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="w-full max-w-[390px] rounded-[28px] border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-2xl p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] relative overflow-hidden group select-none animate-in fade-in-0 duration-700 delay-200">
-              
-              {/* Internal decorative bloom */}
+            <div className="w-full max-w-[370px] rounded-[28px] border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-2xl p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] relative overflow-hidden group select-none animate-in fade-in-0 duration-700 delay-200">
               <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#D96B27]/10 rounded-full filter blur-2xl pointer-events-none" />
-              
-              {/* Coach profile header */}
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -550,85 +501,70 @@ export default function Home() {
                     <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-[#050505]" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white tracking-wide">Coach Tunde O.</h3>
-                    <p className="text-[10px] text-white/40 font-medium">Ikoyi Tennis Club · Head Pro</p>
+                    <h3 className="text-sm font-bold text-white tracking-wide flex items-center">
+                      Coach Tunde O.
+                    </h3>
+                    <p className="text-[10px] text-white/40 font-medium mt-0.5">Ikoyi Tennis Club · Head Pro</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold text-amber-500 ring-1 ring-inset ring-amber-500/20">
-                    <Star className="size-3 fill-amber-500" /> 4.9
-                  </span>
-                  <p className="mt-1 text-[9px] text-white/30 font-semibold uppercase tracking-wider">₦25k / hr</p>
+                  <p className="text-xs font-bold text-white tracking-wide">₦25k</p>
+                  <p className="text-[8px] text-white/30 font-semibold uppercase tracking-wider mt-0.5">per hour</p>
                 </div>
               </div>
-
-              {/* Scheduler Body */}
               {!bookingSuccess ? (
                 <div className="mt-5 flex flex-col gap-4">
                   <div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-[9px] font-bold uppercase tracking-widest text-white/45">Select Live Slot</p>
-                      <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-[#D96B27]">
-                        <Sparkles className="size-2.5" /> Interactive Demo
-                      </span>
-                    </div>
-                    
-                    <div className="mt-2.5 flex flex-col gap-2">
-                      
-                      {/* Slot 1: Booked */}
-                      <div className="flex items-center justify-between rounded-xl border border-white/[0.03] bg-white/[0.01] px-4 py-3 opacity-30 cursor-not-allowed">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-semibold text-white/60 line-through">08:00 AM - 09:30 AM</span>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/35 mb-2.5">Schedule Today</p>
+                    <div className="grid grid-cols-4 gap-2 border-b border-white/[0.04] pb-4 mb-1">
+                      {[
+                        { day: "Mon", date: "25" },
+                        { day: "Tue", date: "26", active: true },
+                        { day: "Wed", date: "27" },
+                        { day: "Thu", date: "28" }
+                      ].map((item) => (
+                        <div 
+                          key={item.date} 
+                          className={`flex flex-col items-center justify-center py-2.5 rounded-xl border transition-all ${
+                            item.active 
+                              ? "border-[#D96B27]/40 bg-[#D96B27]/5 text-white" 
+                              : "border-white/[0.04] bg-white/[0.01] text-white/30"
+                          }`}
+                        >
+                          <span className="text-[8px] font-bold uppercase tracking-widest">{item.day}</span>
+                          <span className={`text-xs font-bold mt-0.5 ${item.active ? "text-[#D96B27]" : "text-white/70"}`}>{item.date}</span>
                         </div>
-                        <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-white/40">
-                          Booked
-                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-white/35 mb-2">Available Slots</p>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-center rounded-xl bg-white/[0.01] border border-white/[0.02] py-2.5 text-[11px] font-semibold text-white/18 line-through cursor-not-allowed select-none">
+                        08:00 AM - 09:30 AM
                       </div>
-
-                      {/* Slot 2: Available */}
                       <button
                         type="button"
                         onClick={() => { if (!isBooking) setSelectedSlot(selectedSlot === "10:30 AM" ? null : "10:30 AM"); }}
-                        className={`flex items-center justify-between rounded-xl border transition-all duration-300 px-4 py-3 ${
+                        className={`w-full py-2.5 rounded-xl border text-[11px] font-semibold transition-all duration-300 ${
                           selectedSlot === "10:30 AM"
                             ? "border-[#D96B27] bg-[#D96B27]/10 text-white shadow-[0_0_20px_rgba(217,107,39,0.15)]"
                             : "border-white/[0.06] bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] text-white/80"
                         }`}
                       >
-                        <span className="text-[11px] font-bold">10:30 AM - 12:00 PM</span>
-                        {selectedSlot === "10:30 AM" ? (
-                          <span className="rounded-full bg-[#D96B27] px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-white">
-                            Selected
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-                            Available
-                          </span>
-                        )}
+                        10:30 AM - 12:00 PM
                       </button>
-
-                      {/* Slot 3: Available */}
                       <button
                         type="button"
                         onClick={() => { if (!isBooking) setSelectedSlot(selectedSlot === "04:30 PM" ? null : "04:30 PM"); }}
-                        className={`flex items-center justify-between rounded-xl border transition-all duration-300 px-4 py-3 ${
+                        className={`w-full py-2.5 rounded-xl border text-[11px] font-semibold transition-all duration-300 ${
                           selectedSlot === "04:30 PM"
                             ? "border-[#D96B27] bg-[#D96B27]/10 text-white shadow-[0_0_20px_rgba(217,107,39,0.15)]"
                             : "border-white/[0.06] bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04] text-white/80"
                         }`}
                       >
-                        <span className="text-[11px] font-bold">04:30 PM - 06:00 PM</span>
-                        {selectedSlot === "04:30 PM" ? (
-                          <span className="rounded-full bg-[#D96B27] px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-white">
-                            Selected
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-                            Available
-                          </span>
-                        )}
+                        04:30 PM - 06:00 PM
                       </button>
-
                     </div>
                   </div>
 
@@ -665,9 +601,9 @@ export default function Home() {
                       )}
                     </button>
                   </div>
+
                 </div>
               ) : (
-                /* Success screen */
                 <div className="mt-8 flex flex-col items-center text-center py-6 animate-in zoom-in-95 duration-500">
                   <div className="flex size-14 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
                     <Check className="size-6" />
@@ -676,12 +612,6 @@ export default function Home() {
                   <p className="mt-2 text-[11px] leading-[1.6] text-white/40 max-w-[280px]">
                     Your session is locked. We have dispatched receipt confirmation to your WhatsApp and registered email.
                   </p>
-                  
-                  <div className="mt-6 rounded-xl border border-white/[0.04] bg-white/[0.01] px-5 py-2.5">
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">booking receipt</span>
-                    <span className="text-xs font-mono font-bold text-white/70 mt-0.5 block">LOBB-IKY-{selectedSlot?.split(" ")[0]}</span>
-                  </div>
-
                   <button
                     type="button"
                     onClick={() => {
@@ -696,28 +626,20 @@ export default function Home() {
               )}
             </div>
           </div>
-
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-20 shrink-0 border-t border-white/[0.04] bg-[#050505]/40 backdrop-blur-md py-4 px-6 sm:px-12 flex flex-col sm:flex-row items-center justify-between gap-4">
-        
-        {/* Sleek inline proof strip */}
-        <div className="flex items-center flex-wrap justify-center sm:justify-start gap-x-6 gap-y-2 text-[9px] font-bold uppercase tracking-[0.14em] text-white/40">
-          <span className="flex items-center gap-1.5"><ShieldCheck className="size-3.5 text-[#D96B27]" /> Profiles Verified</span>
-          <span className="flex items-center gap-1.5"><Clock3 className="size-3.5 text-[#D96B27]" /> Real Availability</span>
-          <span className="flex items-center gap-1.5"><CreditCard className="size-3.5 text-[#D96B27]" /> Secured Paystack</span>
+      <footer className="relative z-20 shrink-0 border-t border-white/[0.04] bg-[#050505]/40 backdrop-blur-md py-6 px-6 flex flex-col items-center justify-center gap-4 text-[10px] text-white/20 select-none">
+        <div className="flex items-center gap-6 font-semibold uppercase tracking-widest text-[9px]">
+          <Link href="/terms" className="hover:text-white/50 transition-colors">Terms</Link>
+          <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy</Link>
+          <Link href="/how-it-works" className="hover:text-white/50 transition-colors">How it works</Link>
         </div>
-
-        {/* Footer Meta Links */}
-        <div className="flex items-center gap-6 text-[10px] text-white/30">
+        <div className="flex items-center gap-3">
+          <span className="font-black tracking-[0.16em] uppercase text-white/35">Lobb</span>
+          <span className="text-white/10">|</span>
           <span>&copy; {new Date().getFullYear()} LOBB</span>
-          <div className="flex items-center gap-4">
-            <Link href="/terms" className="hover:text-white/60 transition-colors">Terms</Link>
-            <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy</Link>
-            <Link href="/how-it-works" className="hover:text-white/60 transition-colors">How it works</Link>
-          </div>
         </div>
       </footer>
 
