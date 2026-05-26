@@ -20,10 +20,14 @@ export function OnboardingShell({
 }: OnboardingShellProps) {
   const router = useRouter();
 
+  const stepMatch = step?.match(/^(\d+) of (\d+)$/);
+  const stepCurrent = stepMatch ? parseInt(stepMatch[1]) : 0;
+  const stepTotal = stepMatch ? parseInt(stepMatch[2]) : 0;
+
   return (
     <main
       className={cn(
-        "relative min-h-screen bg-[#050505] text-white font-sans overflow-hidden",
+        "relative min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden",
         className
       )}
     >
@@ -38,8 +42,8 @@ export function OnboardingShell({
         <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/20 via-transparent to-[#050505]" />
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-6 sm:px-8">
-        <header className="flex h-[88px] items-center justify-between">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[420px] flex-col px-6 sm:px-8">
+        <header className="flex h-20 shrink-0 items-center justify-between">
           {showBack ? (
             <button
               type="button"
@@ -60,10 +64,17 @@ export function OnboardingShell({
               <p className="text-[12px] font-black tracking-[0.16em] uppercase text-white/90">LOBB</p>
             </div>
           )}
-          {step && (
-            <p className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white/50 backdrop-blur-sm">
-              {step}
-            </p>
+          {stepTotal > 0 && (
+            <div className="flex items-center gap-1.5" aria-label={`Step ${stepCurrent} of ${stepTotal}`}>
+              {Array.from({ length: stepTotal }).map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    i < stepCurrent ? "w-6 bg-[#D96B27]" : "w-2.5 bg-white/[0.12]"
+                  }`}
+                />
+              ))}
+            </div>
           )}
         </header>
 

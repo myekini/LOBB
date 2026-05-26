@@ -395,7 +395,7 @@ export default function Home() {
   const coachesReady = !loadingCoaches;
 
   return (
-    <main className="relative min-h-[100dvh] lg:h-screen lg:overflow-hidden bg-[#050505] text-white flex flex-col justify-between font-sans">
+    <main className="relative min-h-[100dvh] bg-[#050505] text-white flex flex-col justify-between font-sans overflow-x-hidden">
       
       {/* Background Canvas: Premium Glowing Spotlight & Grid Lines */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -438,9 +438,9 @@ export default function Home() {
       </header>
 
       {/* Hero section */}
-      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center py-6 lg:py-0 overflow-y-auto lg:overflow-hidden [scrollbar-width:none]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 w-full items-center py-6 lg:py-0">
-          <div className="lg:col-span-7 flex flex-col justify-center text-left select-none">
+      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center min-h-[calc(100dvh-64px-72px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 w-full items-start py-14 lg:py-16">
+          <div className="lg:col-span-7 flex flex-col text-left select-none">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-3.5 py-1.5 backdrop-blur-sm self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
@@ -464,8 +464,17 @@ export default function Home() {
                 <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 animate-in fade-in-0 duration-500 delay-250">
+              {["Verified coaches", "Instant booking", "All of Lagos"].map((f) => (
+                <div key={f} className="flex items-center gap-1.5 text-[11px] font-semibold text-white/35">
+                  <Check className="size-3 shrink-0 text-[#D96B27]" />
+                  {f}
+                </div>
+              ))}
+            </div>
+
             {coachesReady && coachCount > 0 && (
-              <div className="mt-8 flex items-center gap-3 animate-in fade-in-0 duration-500 delay-300">
+              <div className="mt-7 flex items-center gap-3 animate-in fade-in-0 duration-500 delay-300">
                 <div className="flex -space-x-2.5 overflow-hidden">
                   {liveCoaches.slice(0, 4).map((coach) => (
                     <Link
@@ -490,7 +499,7 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+          <div className="lg:col-span-5 flex items-start justify-center lg:justify-end">
             <div className="w-full max-w-[370px] rounded-[28px] border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-transparent backdrop-blur-2xl p-6 shadow-[0_24px_80px_rgba(0,0,0,0.6)] relative overflow-hidden group select-none animate-in fade-in-0 duration-700 delay-200">
               <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#D96B27]/10 rounded-full filter blur-2xl pointer-events-none" />
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">

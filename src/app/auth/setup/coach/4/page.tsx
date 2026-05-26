@@ -118,18 +118,18 @@ export default function CoachSetupStep4Page() {
           </OnboardingCopy>
         </section>
 
-        <div className="mt-8 space-y-8">
+        <div className="mt-8 space-y-6">
           <div className="group">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
               Specializations <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {SPECIALIZATION_OPTIONS.map((spec) => (
                 <button
                   key={spec}
                   type="button"
                   onClick={() => setSpecializations((current) => toggle(spec, current))}
-                  className={`rounded-full border px-4 py-2 text-[12px] font-bold transition-all active:scale-[0.98] ${
+                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-[0.98] ${
                     specializations.includes(spec)
                       ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
                       : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
@@ -145,13 +145,13 @@ export default function CoachSetupStep4Page() {
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
               Languages spoken <span className="text-red-400 normal-case font-bold">*</span>
             </span>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-1.5">
               {LANGUAGE_OPTIONS.map((language) => (
                 <button
                   key={language}
                   type="button"
                   onClick={() => setLanguages((current) => toggle(language, current))}
-                  className={`rounded-full border px-4 py-2 text-[12px] font-bold transition-all active:scale-[0.98] ${
+                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-[0.98] ${
                     languages.includes(language)
                       ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
                       : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
@@ -228,7 +228,7 @@ export default function CoachSetupStep4Page() {
           </label>
         </div>
 
-        <div className="mt-auto pb-8 pt-10">
+        <div className="mt-10 pb-10">
           {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue || saving}>
             {saving ? "Submitting..." : "Submit for review"}
