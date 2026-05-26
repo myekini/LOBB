@@ -395,7 +395,7 @@ export default function Home() {
   const coachesReady = !loadingCoaches;
 
   return (
-    <main className="relative min-h-[100dvh] bg-[#050505] text-white flex flex-col justify-between font-sans overflow-x-hidden">
+    <main className="relative h-[100dvh] bg-[#050505] text-white flex flex-col overflow-hidden font-sans">
       
       {/* Background Canvas: Premium Glowing Spotlight & Grid Lines */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
@@ -416,15 +416,9 @@ export default function Home() {
           </span>
           <span className="text-[13px] font-black tracking-[0.16em] uppercase text-white/90">LOBB</span>
         </Link>
-        <nav className="hidden items-center gap-8 md:flex">
-          <Link href="/coaches" className="text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
-            Browse coaches
-          </Link>
+        <nav className="hidden items-center md:flex">
           <Link href="/auth/login?mode=signup&role=coach" className="text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-[#D96B27]">
             Become a coach
-          </Link>
-          <Link href="/how-it-works" className="text-xs font-bold uppercase tracking-widest text-white/35 transition-colors hover:text-white/70">
-            How it works
           </Link>
         </nav>
         <div className="flex items-center gap-4">
@@ -438,8 +432,8 @@ export default function Home() {
       </header>
 
       {/* Hero section */}
-      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center min-h-[calc(100dvh-64px-72px)]">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 w-full items-start py-14 lg:py-16">
+      <section className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-6 sm:px-12 flex items-center overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 w-full items-start">
           <div className="lg:col-span-7 flex flex-col text-left select-none">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-3.5 py-1.5 backdrop-blur-sm self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
               <span className="relative flex h-2 w-2">
@@ -641,16 +635,11 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-20 shrink-0 border-t border-white/[0.04] bg-[#050505]/40 backdrop-blur-md py-6 px-6 flex flex-col items-center justify-center gap-4 text-[10px] text-white/20 select-none">
-        <div className="flex items-center gap-6 font-semibold uppercase tracking-widest text-[9px]">
+      <footer className="relative z-20 shrink-0 h-11 border-t border-white/[0.04] bg-[#050505]/60 backdrop-blur-md px-6 sm:px-12 flex items-center justify-between select-none">
+        <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-white/25">&copy; {new Date().getFullYear()} LOBB</span>
+        <div className="flex items-center gap-5 text-[9px] font-semibold uppercase tracking-widest text-white/25">
           <Link href="/terms" className="hover:text-white/50 transition-colors">Terms</Link>
           <Link href="/privacy" className="hover:text-white/50 transition-colors">Privacy</Link>
-          <Link href="/how-it-works" className="hover:text-white/50 transition-colors">How it works</Link>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="font-black tracking-[0.16em] uppercase text-white/35">LOBB</span>
-          <span className="text-white/10">|</span>
-          <span>&copy; {new Date().getFullYear()} LOBB</span>
         </div>
       </footer>
 
