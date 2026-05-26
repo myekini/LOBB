@@ -504,7 +504,7 @@ export default function Home() {
                   <div className="relative">
                     <span className="flex size-11 items-center justify-center overflow-hidden rounded-full border border-white/[0.1] bg-white/[0.04]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200" alt="Tunde" className="size-full object-cover" />
+                      <img src="https://images.unsplash.com/photo-1566753323558-f4e0952af115?auto=format&fit=crop&q=80&w=200&h=200" alt="Coach Tunde" className="size-full object-cover" />
                     </span>
                     <span className="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-[#050505]" />
                   </div>
