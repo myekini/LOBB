@@ -416,14 +416,7 @@ export default function Home() {
           </span>
           <span className="text-[13px] font-black tracking-[0.16em] uppercase text-white/90">LOBB</span>
         </Link>
-        <nav className="hidden items-center gap-2 md:flex">
-          <Link href="/coaches" className="inline-flex h-9 items-center rounded-full border border-white/[0.08] bg-white/[0.02] px-5 text-[11px] font-bold uppercase tracking-widest text-white/55 transition-all hover:border-white/20 hover:bg-white/[0.05] hover:text-white">
-            Browse coaches
-          </Link>
-          <Link href="/auth/login?mode=signup&role=coach" className="inline-flex h-9 items-center rounded-full border border-[#D96B27]/25 bg-[#D96B27]/[0.05] px-5 text-[11px] font-bold uppercase tracking-widest text-[#D96B27]/75 transition-all hover:border-[#D96B27]/50 hover:bg-[#D96B27]/10 hover:text-[#D96B27]">
-            Become a coach
-          </Link>
-        </nav>
+        <nav />
         <div className="flex items-center gap-4">
           <Link href="/auth/login?mode=login" className="hidden sm:inline-flex h-9 items-center px-4 text-xs font-bold uppercase tracking-widest text-white/50 transition-colors hover:text-white">
             Log in
@@ -454,11 +447,14 @@ export default function Home() {
             <p className="mt-5 max-w-[480px] text-[14px] sm:text-[16px] leading-[1.7] text-white/45 animate-in fade-in-0 duration-700 delay-150">
               Find certified tennis coaches across Lagos — Lekki, Ikoyi, VI, and beyond. Browse real profiles, check live availability, book your session, and pay securely through Paystack.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
+            <div className="mt-8 flex flex-wrap gap-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200">
               <Link href="/coaches" className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-8 text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98]">
                 <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 Browse coaches
                 <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+              <Link href="/auth/login?mode=signup&role=coach" className="inline-flex h-12 items-center justify-center rounded-full border border-white/[0.10] bg-white/[0.03] px-8 text-xs font-bold uppercase tracking-widest text-white/60 transition-all duration-300 hover:border-white/25 hover:bg-white/[0.07] hover:text-white active:scale-[0.98]">
+                Become a coach
               </Link>
             </div>
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 animate-in fade-in-0 duration-500 delay-250">
