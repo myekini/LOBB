@@ -193,22 +193,22 @@ export default function VerifyPage() {
     router.push("/auth/role");
   };
 
+  const fillAllDigits = (value: string) => {
+    const numeric = value.replace(/\D/g, "").slice(0, 6);
+    if (!numeric) return;
+    const next = Array(6).fill("").map((_, i) => numeric[i] ?? "");
+    setDigits(next);
+    const nextCode = next.join("");
+    const focusIndex = Math.min(numeric.length, 5);
+    inputs.current[focusIndex]?.focus();
+    if (nextCode.replace(/\s/g, "").length === 6) verify(nextCode);
+  };
+
   const updateDigit = (index: number, value: string) => {
     const numeric = value.replace(/\D/g, "");
 
     if (numeric.length > 1) {
-      const next = [...digits];
-      numeric
-        .slice(0, 6)
-        .split("")
-        .forEach((digit, digitIndex) => {
-          next[digitIndex] = digit;
-        });
-      setDigits(next);
-      const nextCode = next.join("");
-      if (nextCode.length === 6) {
-        verify(nextCode);
-      }
+      fillAllDigits(numeric);
       return;
     }
 
@@ -224,6 +224,11 @@ export default function VerifyPage() {
     if (nextCode.length === 6) {
       verify(nextCode);
     }
+  };
+
+  const handlePaste = (event: React.ClipboardEvent) => {
+    event.preventDefault();
+    fillAllDigits(event.clipboardData.getData("text"));
   };
 
   const resend = async () => {
@@ -308,9 +313,10 @@ export default function VerifyPage() {
                 }}
                 aria-label={`Digit ${index + 1}`}
                 inputMode="numeric"
-                maxLength={1}
+                maxLength={6}
                 value={digit}
                 onChange={(event) => updateDigit(index, event.target.value)}
+                onPaste={handlePaste}
                 onKeyDown={(event) => {
                   if (event.key === "Backspace" && !digits[index] && index > 0) {
                     inputs.current[index - 1]?.focus();

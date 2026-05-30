@@ -11,14 +11,14 @@ export type PendingAuth = {
 const pendingAuthKey = "lobb.pending-auth";
 
 export function setPendingAuth(auth: PendingAuth) {
-  sessionStorage.setItem(pendingAuthKey, JSON.stringify(auth));
+  localStorage.setItem(pendingAuthKey, JSON.stringify(auth));
 }
 
 export function getPendingAuth(): PendingAuth | null {
-  const value = sessionStorage.getItem(pendingAuthKey);
+  const value = localStorage.getItem(pendingAuthKey);
   return value ? (JSON.parse(value) as PendingAuth) : null;
 }
 
 export function clearPendingAuth() {
-  sessionStorage.removeItem(pendingAuthKey);
+  localStorage.removeItem(pendingAuthKey);
 }

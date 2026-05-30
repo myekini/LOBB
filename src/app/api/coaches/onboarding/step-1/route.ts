@@ -69,16 +69,13 @@ export async function POST(request: Request) {
     id: user.id,
     full_name: fullName,
     headline,
-    bio: null,
-    hourly_rate_ngn: null,
     experience_years: 0,
-    primary_location: null,
     service_areas: [],
     skill_levels: [],
     certifications: [],
     profile_photo_url: profilePhotoUrl,
     status: "draft",
-  });
+  }, { onConflict: "id", ignoreDuplicates: false });
 
   if (coachError) {
     if (previousProfile) {
