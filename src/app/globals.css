@@ -454,8 +454,15 @@
   }
 }
 
+/* Only show boot splash when running as an installed PWA */
+@media not (display-mode: standalone) {
+  .lobb-pwa-boot {
+    display: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lobb-pwa-boot {
-    display: none;
+    display: none !important;
   }
 }

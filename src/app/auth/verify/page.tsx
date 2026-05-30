@@ -59,6 +59,14 @@ export default function VerifyPage() {
       return;
     }
 
+    // OTP codes expire after ~10 min — if the stored request is stale, start over
+    const ageMs = Date.now() - (pendingAuth.sentAt ?? 0);
+    if (ageMs > 12 * 60 * 1000) {
+      clearPendingAuth();
+      router.replace("/auth/login");
+      return;
+    }
+
     inputs.current[0]?.focus();
   }, [pendingAuth, router]);
 
