@@ -7,6 +7,7 @@ import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
   OnboardingCopy,
+  OnboardingFieldLabel,
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
@@ -84,25 +85,23 @@ export default function CoachSetupStep2Page() {
 
         <div className="mt-8 space-y-7">
           <label className="block group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Bio <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <span className="mt-2 block text-[12px] font-medium text-white/40 leading-relaxed">
+            <OnboardingFieldLabel required>Bio</OnboardingFieldLabel>
+            <span className="mt-2 block text-[12px] font-medium text-[var(--lobb-text-secondary)]/70 leading-relaxed">
               Minimum 50 characters. Aim for your coaching style, ideal player, and session structure.
             </span>
-            <div className="mt-3 relative flex overflow-hidden rounded-[20px] border border-white/[0.08] bg-white/[0.02] p-1 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <div className="mt-3 relative flex overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-1 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="I'm an ITF-certified coach based in Lekki. I focus on adult beginners and intermediates — structured sessions, clear drills, and proper footwork from day one."
                 maxLength={600}
                 rows={6}
-                className="relative z-10 w-full resize-none border-0 bg-transparent px-4 py-3 text-[15px] leading-relaxed font-medium text-white outline-none placeholder:text-white/20 focus:ring-0"
+                className="relative z-10 w-full resize-none border-0 bg-transparent px-4 py-3 text-[15px] leading-relaxed font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
               />
             </div>
             <span
               className={`mt-2 block text-right text-[11px] font-bold tracking-wide ${
-                bioLength < 50 ? "text-red-400" : "text-white/30"
+                bioLength < 50 ? "text-[var(--lobb-error)]" : "text-[var(--lobb-text-tertiary)]"
               }`}
             >
               {bioLength < 50 ? `${50 - bioLength} more characters needed` : `${bio.length}/600`}
@@ -110,10 +109,8 @@ export default function CoachSetupStep2Page() {
           </label>
 
           <label className="block group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Years coaching tennis <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <OnboardingFieldLabel required>Years coaching tennis</OnboardingFieldLabel>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
               <input
                 type="number"
                 inputMode="numeric"
@@ -126,10 +123,10 @@ export default function CoachSetupStep2Page() {
                   setExperienceYears(value === "" ? null : Number(value));
                 }}
                 placeholder="5"
-                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
               />
             </div>
-            <p className="mt-3 text-[11px] font-medium text-white/40">
+            <p className="mt-3 text-[11px] font-medium text-[var(--lobb-text-secondary)]/70">
               Enter the actual number of years, not a range.
             </p>
           </label>

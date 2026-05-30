@@ -5,6 +5,7 @@ import {
   type NotificationBookingInfo,
 } from "@/lib/notification-messages";
 import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendPaymentReceiptEmail } from "@/lib/email-notifications";
+import { sendBookingConfirmedSms } from "@/lib/sms-notifications";
 
 // Paystack requires raw body for signature verification — do NOT parse via middleware
 export const dynamic = "force-dynamic";
@@ -147,6 +148,7 @@ export async function POST(request: Request) {
     const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
 
     await Promise.allSettled([
+      sendBookingConfirmedSms(admin, notificationInfo, playerProfile.data, coachProfile.data),
       sendBookingConfirmedEmails(admin, notificationInfo, playerProfile.data, coachProfile.data),
       sendPaymentReceiptEmail(admin, notificationInfo, playerProfile.data, coachProfile.data),
       queueBookingReminderEmails(admin, notificationInfo, playerProfile.data, coachProfile.data, reminderAt, reviewAt),

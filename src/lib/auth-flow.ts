@@ -1,13 +1,11 @@
 export type PendingAuth = {
   /** Email-based auth — primary path */
   email?: string;
-  /** Phone-based auth — legacy / dev quick-login only */
   phone?: string;
   mode: "signup" | "login";
   sentAt: number;
   nextPath?: string;
   role?: "player" | "coach" | "admin";
-  devCode?: string;
 };
 
 const pendingAuthKey = "lobb.pending-auth";

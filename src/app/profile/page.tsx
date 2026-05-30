@@ -3,7 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, User } from "lucide-react";
+import {
+  ChevronRight,
+  HelpCircle,
+  FileText,
+  Lock,
+  Mail,
+  MessageSquare,
+  Pencil,
+  User,
+} from "lucide-react";
 import { PlayerBottomNav } from "@/components/layout/player-nav";
 import { createClient } from "@/lib/supabase/client";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
@@ -51,14 +60,14 @@ export default function ProfilePage() {
   const abbr = initials(profile?.full_name ?? null);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-28 pt-7 text-[var(--lobb-black)]">
-      <section className="mx-auto max-w-md">
-        <h1 className="text-[22px] font-black">Profile</h1>
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] pb-28 text-[var(--lobb-text-primary)]">
+      <div className="mx-auto max-w-lg px-5 pt-8 sm:px-6">
 
-        <div className="mt-7 flex items-center gap-4">
+        {/* Avatar + name */}
+        <div className="flex items-center gap-4 pb-8">
           {loading ? (
             <>
-              <SkeletonBlock className="size-20 shrink-0 rounded-full" />
+              <SkeletonBlock className="size-16 shrink-0 rounded-full" />
               <div className="space-y-2">
                 <SkeletonBlock className="h-5 w-36" />
                 <SkeletonBlock className="h-4 w-28" />
@@ -66,80 +75,101 @@ export default function ProfilePage() {
             </>
           ) : (
             <>
-              <div className="relative size-20 shrink-0 overflow-hidden rounded-full bg-[var(--lobb-black)]">
+              <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-[var(--lobb-bg-inverse)]">
                 {profile?.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={profile.avatar_url} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-xl font-black text-white">
-                    {abbr ?? <User className="size-7 text-white/60" />}
+                  <span className="flex size-full items-center justify-center text-lg font-black text-white">
+                    {abbr ?? <User className="size-6 text-white/60" />}
                   </span>
                 )}
               </div>
-              <div>
-                <p className="text-lg font-black">{profile?.full_name ?? "—"}</p>
-                {profile?.phone_number && (
-                  <p className="mt-1 text-sm font-semibold text-[var(--lobb-muted)]">
-                    {profile.phone_number}
-                  </p>
-                )}
-                {profile?.email && (
-                  <p className="mt-0.5 text-sm font-semibold text-[var(--lobb-muted)]">
-                    {profile.email}
-                  </p>
-                )}
+              <div className="min-w-0">
+                <p className="truncate text-[17px] font-black">{profile?.full_name ?? "—"}</p>
+                <p className="mt-0.5 truncate text-sm text-[var(--lobb-text-secondary)]">
+                  {profile?.phone_number ?? profile?.email ?? ""}
+                </p>
               </div>
             </>
           )}
         </div>
 
-        <ProfileSection title="Account">
-          <ProfileRow href="/profile/edit" label="Edit profile" />
-        </ProfileSection>
+        {/* Account */}
+        <SettingGroup label="Account">
+          <SettingRow href="/profile/edit" icon={<Pencil className="size-[18px]" />} label="Edit profile" description="Name, photo, contact info" />
+        </SettingGroup>
 
-        <ProfileSection title="Support">
-          <ProfileRow href="/how-it-works" label="How LOBB works" />
-          <ProfileRow href="/faq" label="FAQs" />
-          <ProfileRow href="/contact" label="Contact support" />
-        </ProfileSection>
+        {/* Support */}
+        <SettingGroup label="Support">
+          <SettingRow href="/how-it-works" icon={<HelpCircle className="size-[18px]" />} label="How LOBB works" description="Booking flow and policies" />
+          <SettingRow href="/faq" icon={<MessageSquare className="size-[18px]" />} label="FAQs" description="Common questions answered" />
+          <SettingRow href="/contact" icon={<Mail className="size-[18px]" />} label="Contact support" description="Get help from our team" last />
+        </SettingGroup>
 
-        <ProfileSection title="Legal">
-          <ProfileRow href="/terms" label="Terms of Service" />
-          <ProfileRow href="/privacy" label="Privacy Policy" />
-        </ProfileSection>
+        {/* Legal */}
+        <SettingGroup label="Legal">
+          <SettingRow href="/terms" icon={<FileText className="size-[18px]" />} label="Terms of Service" />
+          <SettingRow href="/privacy" icon={<Lock className="size-[18px]" />} label="Privacy Policy" last />
+        </SettingGroup>
 
-        <div className="mt-8 border-t border-[var(--lobb-border)] pt-6">
-          <button onClick={logout} className="text-sm font-black text-[var(--lobb-muted)]">
-            Log out
+        {/* Sign out */}
+        <div className="mt-2">
+          <button
+            onClick={logout}
+            className="flex w-full items-center justify-between rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-5 py-4 text-sm font-black text-[var(--lobb-text-secondary)] transition hover:text-red-500"
+          >
+            Sign out
           </button>
         </div>
-      </section>
 
+      </div>
       <PlayerBottomNav active="profile" />
     </main>
   );
 }
 
-function ProfileSection({ title, children }: { title: string; children: React.ReactNode }) {
+function SettingGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="mt-9">
-      <div className="mb-2 flex items-center gap-3">
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">{title}</span>
-        <span className="h-px flex-1 bg-[var(--lobb-border)]" />
+    <div className="mb-3">
+      <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+        {label}
+      </p>
+      <div className="overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+        {children}
       </div>
-      <div>{children}</div>
-    </section>
+    </div>
   );
 }
 
-function ProfileRow({ href, label }: { href: string; label: string }) {
+function SettingRow({
+  href,
+  icon,
+  label,
+  description,
+  last,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  description?: string;
+  last?: boolean;
+}) {
   return (
     <Link
       href={href}
-      className="flex items-center justify-between border-b border-[var(--lobb-border)] py-4 text-sm font-black"
+      className={`flex items-center gap-4 px-5 py-4 transition hover:bg-[var(--lobb-bg-secondary)] ${
+        !last ? "border-b border-[var(--lobb-border-subtle)]" : ""
+      }`}
     >
-      <span>{label}</span>
-      <ChevronRight className="size-4 text-[var(--lobb-muted)]" />
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px] font-bold text-[var(--lobb-text-primary)]">{label}</p>
+        {description && (
+          <p className="mt-0.5 text-[12px] text-[var(--lobb-text-tertiary)]">{description}</p>
+        )}
+      </div>
+      <ChevronRight className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />
     </Link>
   );
 }

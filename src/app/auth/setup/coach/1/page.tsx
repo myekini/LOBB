@@ -7,6 +7,7 @@ import { ArrowRight, Plus, User } from "lucide-react";
 import {
   OnboardingButton,
   OnboardingCopy,
+  OnboardingFieldLabel,
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
@@ -104,23 +105,23 @@ export default function CoachSetupStepOnePage() {
           <OnboardingCopy>You&apos;ll complete your availability, rate, and verification before going live.</OnboardingCopy>
         </section>
 
-        <div className="mt-8 flex flex-col items-center rounded-[24px] border border-white/[0.08] bg-white/[0.02] p-8 backdrop-blur-sm relative overflow-hidden">
-          <p className="mb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
+        <div className="mt-8 flex flex-col items-center rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
+          <p className="mb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
             Public coach photo
           </p>
-          <label className="group relative cursor-pointer flex flex-col items-center relative z-10">
-            <div className="relative flex size-[120px] items-center justify-center overflow-hidden rounded-full border border-white/[0.08] bg-white/[0.04] text-white/40 transition-all duration-500 group-hover:border-[#D96B27]/50 group-hover:shadow-[0_0_32px_rgba(217,107,39,0.2)] group-hover:scale-105 group-hover:bg-white/[0.06]">
+          <label className="group relative z-10 cursor-pointer flex flex-col items-center">
+            <div className="relative flex size-[120px] items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-text-secondary)] transition-all duration-500 group-hover:border-[var(--lobb-clay)]/50 group-hover:shadow-[0_0_32px_rgba(196,98,45,0.12)] group-hover:scale-105 group-hover:bg-[var(--lobb-surface-2)]">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoUrl} alt="" className="size-full object-cover" />
               ) : (
                 <>
-                  <User className="mb-2 size-10 text-white/30 transition-colors duration-500 group-hover:text-[#D96B27]" />
-                  <span className="px-4 text-center text-[11px] font-bold uppercase tracking-wider text-white/40 group-hover:text-white/80">Upload</span>
+                  <User className="mb-2 size-10 text-[var(--lobb-text-secondary)]/50 transition-colors duration-500 group-hover:text-[var(--lobb-clay)]" />
+                  <span className="px-4 text-center text-[11px] font-bold uppercase tracking-wider text-[var(--lobb-text-secondary)]/70 group-hover:text-[var(--lobb-text-primary)]">Upload</span>
                 </>
               )}
             </div>
-            <span className="absolute bottom-2 right-0 translate-x-1 translate-y-1 flex size-10 items-center justify-center rounded-full bg-[#D96B27] border-[3px] border-[#050505] text-white shadow-lg transition-transform group-hover:scale-110">
+            <span className="absolute bottom-2 right-0 translate-x-1 translate-y-1 flex size-10 items-center justify-center rounded-full bg-[var(--lobb-clay)] border-[3px] border-[var(--lobb-surface-2)] text-white shadow-lg transition-transform group-hover:scale-110">
               <Plus className="size-5" />
             </span>
             <input
@@ -136,45 +137,38 @@ export default function CoachSetupStepOnePage() {
               }}
             />
           </label>
-          {submitted && !photoUrl && <p className="mt-5 text-center text-[12px] font-bold text-red-400">Profile photo required</p>}
+          {submitted && !photoUrl && <p className="mt-5 text-center text-[12px] font-bold text-[var(--lobb-error)]">Profile photo required</p>}
         </div>
 
         <div className="mt-8 space-y-6">
           <label className="block group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Full name <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <OnboardingFieldLabel required>Full name</OnboardingFieldLabel>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
               <input
                 value={fullName}
                 onChange={(event) => setFullName(event.target.value)}
                 placeholder="Enter your full name"
-                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
               />
             </div>
           </label>
 
           <label className="block">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">Email</span>
-            <div className="mt-2 flex h-16 items-center rounded-[16px] border border-white/[0.04] bg-white/[0.01] px-5 text-[15px] font-bold tracking-wide text-white/40 backdrop-blur-sm">
+            <OnboardingFieldLabel>Email</OnboardingFieldLabel>
+            <div className="mt-2 flex h-16 items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]/50 px-5 text-[15px] font-bold tracking-wide text-[var(--lobb-text-secondary)]/70 backdrop-blur-sm">
               {authEmail || "Loading…"}
             </div>
           </label>
 
           <label className="block group">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-                Headline <span className="text-red-400 normal-case font-bold">*</span>
-              </span>
-              <span className="text-[10px] font-bold text-white/30">{headline.length}/150</span>
-            </div>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <OnboardingFieldLabel required hint={`${headline.length}/150`}>Headline</OnboardingFieldLabel>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
               <input
                 value={headline}
                 maxLength={150}
                 onChange={(event) => setHeadline(event.target.value)}
                 placeholder="ITF Certified · 8 Years · Lekki"
-                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
               />
             </div>
           </label>

@@ -75,9 +75,9 @@ const BRAND = {
 };
 
 const SOCIAL_LINKS = [
-  { label: "Instagram", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng" },
-  { label: "X", href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng" },
-  { label: "Website", href: appUrl("/") },
+  { label: "Instagram", short: "IG", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng" },
+  { label: "X", short: "X", href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng" },
+  { label: "Website", short: "WWW", href: appUrl("/") },
 ];
 
 function shell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
@@ -85,8 +85,28 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
     ? `<div style="margin-top:28px;"><a href="${escapeHtml(cta.href)}" style="display:inline-block;border-radius:14px;background:${BRAND.ink};color:#ffffff;font:800 14px Arial,Helvetica,sans-serif;text-decoration:none;padding:15px 22px;box-shadow:0 10px 24px rgba(26,23,20,0.16);">${escapeHtml(cta.label)}</a></div>`
     : "";
   const socialHtml = SOCIAL_LINKS.map(
-    (item) => `<a href="${escapeHtml(item.href)}" style="color:#F5E6DC;text-decoration:none;font:800 12px Arial,Helvetica,sans-serif;">${escapeHtml(item.label)}</a>`
-  ).join(`<span style="color:#6B6560;">·</span>`);
+    (item) => `
+      <td style="padding-right:10px;">
+        <a href="${escapeHtml(item.href)}" aria-label="${escapeHtml(item.label)}" style="display:inline-block;min-width:38px;border:1px solid rgba(245,230,220,0.24);border-radius:999px;background:rgba(245,230,220,0.08);color:#ffffff;text-align:center;text-decoration:none;font:900 11px Arial,Helvetica,sans-serif;letter-spacing:0.04em;padding:10px 11px;">
+          ${escapeHtml(item.short)}
+        </a>
+      </td>`
+  ).join("");
+  const logoMark = `
+    <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+      <tr>
+        <td style="width:44px;height:44px;border-radius:16px;background:${BRAND.ink};text-align:center;vertical-align:middle;box-shadow:0 10px 24px rgba(26,23,20,0.16);">
+          <div style="width:44px;height:44px;border-radius:16px;background:${BRAND.ink};text-align:center;">
+            <div style="padding-top:8px;color:${BRAND.clay};font:900 20px/18px Arial,Helvetica,sans-serif;">L</div>
+            <div style="width:18px;height:3px;margin:4px auto 0;border-radius:999px;background:${BRAND.clay};"></div>
+          </div>
+        </td>
+        <td style="padding-left:12px;">
+          <p style="margin:0;color:${BRAND.ink};font:900 15px Arial,Helvetica,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">LOBB</p>
+          <p style="margin:3px 0 0;color:${BRAND.faint};font:800 11px Arial,Helvetica,sans-serif;">Lagos tennis, booked cleanly</p>
+        </td>
+      </tr>
+    </table>`;
 
   return `<!doctype html>
 <html>
@@ -102,17 +122,7 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
           <tr>
             <td>
-              <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-                <tr>
-                  <td style="width:34px;height:34px;border-radius:12px;background:${BRAND.ink};text-align:center;vertical-align:middle;">
-                    <span style="display:inline-block;color:${BRAND.clay};font:900 15px Arial,Helvetica,sans-serif;line-height:34px;">L</span>
-                  </td>
-                  <td style="padding-left:10px;">
-                    <p style="margin:0;color:${BRAND.ink};font:900 13px Arial,Helvetica,sans-serif;letter-spacing:0.18em;text-transform:uppercase;">LOBB</p>
-                    <p style="margin:2px 0 0;color:${BRAND.faint};font:700 11px Arial,Helvetica,sans-serif;">Lagos tennis, booked cleanly</p>
-                  </td>
-                </tr>
-              </table>
+              ${logoMark}
             </td>
             <td align="right">
               <span style="display:inline-block;border:1px solid ${BRAND.line};border-radius:999px;padding:7px 10px;color:${BRAND.clay};font:900 10px Arial,Helvetica,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">Court update</span>
@@ -126,12 +136,37 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
         ${body}
         ${ctaHtml}
       </section>
-      <footer style="padding:24px 30px;background:${BRAND.ink};color:#F5E6DC;">
-        <p style="margin:0;color:#ffffff;font:900 14px Arial,Helvetica,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">LOBB</p>
-        <p style="margin:10px 0 0;font:700 13px/1.7 Arial,Helvetica,sans-serif;color:#D8D0C3;">Secure tennis booking, coach operations, payments, and session updates for Lagos courts.</p>
-        <p style="margin:16px 0 0;">${socialHtml}</p>
-        <p style="margin:16px 0 0;font:600 12px/1.6 Arial,Helvetica,sans-serif;color:#A09890;">Need help? Reply to this email or contact <a href="mailto:support@lobb.ng" style="color:#F5E6DC;text-decoration:none;font-weight:800;">support@lobb.ng</a>.</p>
-        <p style="margin:12px 0 0;font:600 11px/1.6 Arial,Helvetica,sans-serif;color:#6B6560;">You are receiving this because email notifications are enabled on your LOBB account.</p>
+      <footer style="background:${BRAND.ink};color:#F5E6DC;">
+        <div style="height:4px;background:linear-gradient(90deg,${BRAND.clay},#F4A228);"></div>
+        <div style="padding:28px 30px 24px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+            <tr>
+              <td style="vertical-align:top;">
+                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="width:42px;height:42px;border-radius:15px;background:#ffffff;text-align:center;vertical-align:middle;">
+                      <div style="color:${BRAND.clay};font:900 19px/42px Arial,Helvetica,sans-serif;">L</div>
+                    </td>
+                    <td style="padding-left:12px;">
+                      <p style="margin:0;color:#ffffff;font:900 15px Arial,Helvetica,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">LOBB</p>
+                      <p style="margin:4px 0 0;font:800 12px Arial,Helvetica,sans-serif;color:#D8D0C3;">Book. Pay. Play.</p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td align="right" style="vertical-align:top;">
+                <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  <tr>${socialHtml}</tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <div style="margin-top:22px;border-top:1px solid rgba(245,230,220,0.16);padding-top:18px;">
+            <p style="margin:0;font:700 13px/1.7 Arial,Helvetica,sans-serif;color:#D8D0C3;">Secure tennis booking, coach operations, payments, and session updates for Lagos courts.</p>
+            <p style="margin:14px 0 0;font:700 12px/1.7 Arial,Helvetica,sans-serif;color:#A09890;">Need help? Reply to this email or contact <a href="mailto:support@lobb.ng" style="color:#F5E6DC;text-decoration:none;font-weight:900;">support@lobb.ng</a>.</p>
+            <p style="margin:12px 0 0;font:600 11px/1.6 Arial,Helvetica,sans-serif;color:#7E776E;">You are receiving this because email notifications are enabled on your LOBB account.</p>
+          </div>
+        </div>
       </footer>
     </main>
   </body>

@@ -136,9 +136,9 @@ export default function AdminCoachApprovalsPage() {
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               placeholder="Tell the coach what they need to fix."
-              className="mt-4 h-28 w-full resize-none rounded-[18px] border border-[var(--lobb-border)] bg-white p-4 text-sm font-medium outline-none focus:border-[var(--lobb-black)]"
+              className="mt-4 h-28 w-full resize-none rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)]"
             />
-            <button disabled={!reason.trim() || busyId === rejecting.id} onClick={() => decide(rejecting, "reject")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white disabled:bg-[#cfc6b8]">
+            <button disabled={!reason.trim() || busyId === rejecting.id} onClick={() => decide(rejecting, "reject")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]">
               {busyId === rejecting.id && <Loader2 className="size-4 animate-spin" />}
               {busyId === rejecting.id ? "Sending" : "Send Rejection"}
             </button>

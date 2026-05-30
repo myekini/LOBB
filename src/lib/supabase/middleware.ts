@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
   const coachRoutes = ["/coach"];
   const adminRoutes = ["/admin"];
   const setupRoutes = ["/auth/role", "/auth/setup"];
-  const authRoutes = ["/auth/login", "/auth/verify"];
+  const authRoutes = ["/auth/login", "/auth/verify", "/auth/signup"];
   const isProtected =
     [...playerRoutes, ...coachRoutes, ...adminRoutes, ...setupRoutes].some((route) => pathname.startsWith(route));
 
@@ -81,9 +81,33 @@ export async function updateSession(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role")
     .eq("id", user.id)
     .maybeSingle();
+
+  const role = profile?.role as "player" | "coach" | "admin" | undefined;
+
+  // Coaches always land on their dashboard, not the home/landing page
+  if (pathname === "/" && role === "coach") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/coach/dashboard";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  // Players cannot access coach setup; coaches cannot access player setup
+  if (pathname.startsWith("/auth/setup/coach") && role === "player") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
+  if (pathname.startsWith("/auth/setup/player") && role === "coach") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/coach/dashboard";
+    redirectUrl.search = "";
+    return NextResponse.redirect(redirectUrl);
+  }
 
   const isCoachSetupRoute = pathname.startsWith("/auth/setup/coach");
   const isCoachAppRoute = coachRoutes.some((r) => pathname.startsWith(r));
@@ -134,7 +158,6 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const role = profile?.role as "player" | "coach" | "admin" | undefined;
   const needsRole = !role && !setupRoutes.some((route) => pathname.startsWith(route));
 
   if (needsRole && !authRoutes.some((route) => pathname.startsWith(route))) {

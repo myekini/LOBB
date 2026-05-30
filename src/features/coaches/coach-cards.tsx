@@ -8,10 +8,10 @@ function money(value: number | null) {
 
 function skillColor(skill: string): string {
   const s = skill.toLowerCase();
-  if (s.includes("beginner")) return "bg-[#e8f4ed] text-[#2D6A4F]";
-  if (s.includes("intermediate")) return "bg-[#fff0e8] text-[#A3501F]";
-  if (s.includes("advanced") || s.includes("competitive")) return "bg-[#f0e8ff] text-[#5b3fa6]";
-  if (s.includes("kid") || s.includes("junior")) return "bg-[#e8f0ff] text-[#1a4fbf]";
+  if (s.includes("beginner")) return "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]";
+  if (s.includes("intermediate")) return "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]";
+  if (s.includes("advanced") || s.includes("competitive")) return "bg-[var(--lobb-accent-violet-soft)] text-[var(--lobb-accent-violet)]";
+  if (s.includes("kid") || s.includes("junior")) return "bg-[var(--lobb-accent-blue-soft)] text-[var(--lobb-accent-blue)]";
   return "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]";
 }
 
@@ -20,7 +20,7 @@ export function SmallCoachCard({ coach }: { coach: CoachPublicProfile }) {
   return (
     <Link
       href={`/coaches/${coach.slug}`}
-      className="group relative flex w-full flex-col overflow-hidden rounded-[24px] border border-black/[0.06] bg-white shadow-[0_12px_32px_rgba(58,43,20,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_rgba(58,43,20,0.09)]"
+      className="group relative flex w-full flex-col overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[var(--lobb-shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--lobb-shadow-modal)]"
     >
       <div className="relative aspect-[16/11] w-full overflow-hidden bg-[var(--lobb-surface-2)]">
         {coach.profile_photo_url ? (
@@ -31,7 +31,7 @@ export function SmallCoachCard({ coach }: { coach: CoachPublicProfile }) {
             className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="flex size-full items-center justify-center bg-[var(--lobb-surface-2)] text-black/10">
+          <div className="flex size-full items-center justify-center bg-[var(--lobb-surface-2)] text-[var(--lobb-text-tertiary)]/30">
             <Sparkles className="size-8 stroke-[1.25]" />
           </div>
         )}
@@ -75,7 +75,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
   const ratingLabel = coach.avg_rating != null ? String(coach.avg_rating) : "New";
 
   return (
-    <article className="group overflow-hidden rounded-[20px] border border-black/[0.07] bg-white shadow-[0_4px_18px_rgba(58,43,20,0.06)] transition duration-200 hover:shadow-[0_10px_32px_rgba(58,43,20,0.10)]">
+    <article className="group overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[var(--lobb-shadow-card)] transition duration-200 hover:shadow-[var(--lobb-shadow-modal)]">
 
       {/* ── Mobile: horizontal layout ── */}
       <div className="flex md:hidden">
@@ -90,7 +90,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-[var(--lobb-surface-2)]">
-              <Sparkles className="size-8 text-black/10 stroke-[1.25]" />
+              <Sparkles className="size-8 text-[var(--lobb-text-tertiary)]/30 stroke-[1.25]" />
             </div>
           )}
         </Link>
@@ -102,7 +102,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
             <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-[0.1em] ${skillColor(primarySkill)}`}>
               {primarySkill}
             </span>
-            <div className="flex shrink-0 items-center gap-1 rounded-full border border-black/[0.08] px-2 py-0.5 text-[11px] font-black text-[var(--lobb-black)]">
+            <div className="flex shrink-0 items-center gap-1 rounded-full border border-[var(--lobb-border)] px-2 py-0.5 text-[11px] font-black text-[var(--lobb-text-primary)]">
               <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
               {ratingLabel}
             </div>
@@ -135,8 +135,8 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
             aria-disabled={!coach.slug}
             className={`mt-auto flex h-10 items-center justify-center gap-1.5 rounded-[12px] text-xs font-black transition active:scale-[0.97] ${
               coach.slug
-                ? "bg-[var(--lobb-black)] text-white"
-                : "pointer-events-none bg-black/10 text-black/35"
+                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
+                : "pointer-events-none bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
             }`}
           >
             Book <ArrowRight className="size-3.5" />
@@ -158,7 +158,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
               />
             ) : (
               <div className="flex size-full items-center justify-center bg-[var(--lobb-surface-2)]">
-                <Sparkles className="size-14 text-black/10 stroke-[1]" />
+                <Sparkles className="size-14 text-[var(--lobb-text-tertiary)]/30 stroke-[1]" />
               </div>
             )}
             {/* Gradient for badge readability */}
@@ -169,7 +169,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
               <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] backdrop-blur-sm ${skillColor(primarySkill)}`}>
                 {primarySkill}
               </span>
-              <div className="flex shrink-0 items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-black text-[var(--lobb-black)] shadow-sm">
+              <div className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--lobb-surface)]/95 px-2.5 py-1 text-[11px] font-black text-[var(--lobb-text-primary)] shadow-sm">
                 <Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
                 {ratingLabel}
               </div>
@@ -193,7 +193,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
           {/* Availability + rate row */}
           <div className="mt-3 flex items-center justify-between gap-2">
             <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
-              coach.has_availability ? "bg-[#e8f4ed] text-[#2D6A4F]" : "bg-black/[0.04] text-black/40"
+              coach.has_availability ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]" : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
             }`}>
               {coach.has_availability ? "● Open slots" : "○ No slots"}
             </span>
@@ -208,8 +208,8 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
             aria-disabled={!coach.slug}
             className={`mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-black transition active:scale-[0.98] ${
               coach.slug
-                ? "bg-[var(--lobb-black)] text-white shadow-[0_8px_22px_rgba(13,13,13,0.16)] hover:bg-[#1f1f1f]"
-                : "pointer-events-none bg-black/10 text-black/35"
+                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[0_8px_22px_rgba(13,13,13,0.16)] hover:opacity-90"
+                : "pointer-events-none bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
             }`}
           >
             Book <ArrowRight className="size-4" />

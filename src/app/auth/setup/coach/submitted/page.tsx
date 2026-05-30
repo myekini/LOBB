@@ -28,33 +28,33 @@ export default function CoachSubmittedPage() {
         </section>
 
         <section className="mt-10 space-y-4">
-          <div className="relative overflow-hidden rounded-[24px] border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm transition-all hover:bg-white/[0.04]">
-            <div className="absolute top-0 right-0 p-6 opacity-10">
+          <div className="relative overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.06] text-[var(--lobb-text-secondary)]">
               <Clock3 className="size-16" />
             </div>
-            <p className="relative z-10 flex items-center gap-3 text-[14px] font-black tracking-wide text-white">
-              <span className="flex size-8 items-center justify-center rounded-full bg-[#D96B27]/20 text-[#D96B27]">
+            <p className="relative z-10 flex items-center gap-3 text-[14px] font-black tracking-wide text-[var(--lobb-text-primary)]">
+              <span className="flex size-8 items-center justify-center rounded-full bg-[var(--lobb-clay)]/20 text-[var(--lobb-clay)]">
                 <Clock3 className="size-4" />
               </span>
               What happens next
             </p>
-            <p className="relative z-10 mt-3 text-[13px] font-medium leading-relaxed text-white/50">
+            <p className="relative z-10 mt-3 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]/70">
               Our team checks your photo, coaching details, rate, locations, and credentials before
               players can book you.
             </p>
           </div>
           
-          <div className="relative overflow-hidden rounded-[24px] border border-white/[0.08] bg-white/[0.02] p-6 backdrop-blur-sm transition-all hover:bg-white/[0.04]">
-            <div className="absolute top-0 right-0 p-6 opacity-10">
+          <div className="relative overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
+            <div className="absolute top-0 right-0 p-6 opacity-[0.06] text-[var(--lobb-text-secondary)]">
               <Settings className="size-16" />
             </div>
-            <p className="relative z-10 flex items-center gap-3 text-[14px] font-black tracking-wide text-white">
-              <span className="flex size-8 items-center justify-center rounded-full bg-[#D96B27]/20 text-[#D96B27]">
+            <p className="relative z-10 flex items-center gap-3 text-[14px] font-black tracking-wide text-[var(--lobb-text-primary)]">
+              <span className="flex size-8 items-center justify-center rounded-full bg-[var(--lobb-clay)]/20 text-[var(--lobb-clay)]">
                 <Settings className="size-4" />
               </span>
               While you wait
             </p>
-            <p className="relative z-10 mt-3 text-[13px] font-medium leading-relaxed text-white/50">
+            <p className="relative z-10 mt-3 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]/70">
               You can preview your public profile, add availability, or update details from your
               coach dashboard.
             </p>
@@ -64,14 +64,14 @@ export default function CoachSubmittedPage() {
         <div className="mt-auto space-y-4 pb-8 pt-10 relative z-10">
           <Link
             href="/coach/profile/preview"
-            className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-[16px] bg-[#D96B27] text-[15px] font-bold tracking-wide text-white transition-all hover:scale-[1.02] hover:bg-[#E87A36] active:scale-[0.98]"
+            className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-[16px] bg-[var(--lobb-clay)] text-[15px] font-bold tracking-wide text-white transition-all hover:scale-[1.02] hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]"
           >
             <Eye className="size-5 transition-transform group-hover:scale-110" />
             Preview profile
           </Link>
           <Link
             href="/coach/dashboard"
-            className="flex h-14 w-full items-center justify-center rounded-[16px] border border-white/[0.08] bg-white/[0.02] text-[15px] font-bold tracking-wide text-white transition-all hover:bg-white/[0.04] active:scale-[0.98]"
+            className="flex h-14 w-full items-center justify-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-surface)] active:scale-[0.98]"
           >
             Go to dashboard
           </Link>

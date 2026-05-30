@@ -93,70 +93,77 @@ export default function RolePage() {
 
   return (
     <OnboardingShell showBack={false}>
-      <section className="flex flex-1 flex-col pt-3">
-        <div>
+      <section className="flex flex-1 flex-col pt-4">
+        <div className="text-center">
           <OnboardingKicker>Choose your path</OnboardingKicker>
           <OnboardingTitle>
-            How will you
+            Who is using
             <br />
-            use LOBB?
+            LOBB today?
           </OnboardingTitle>
-          <OnboardingCopy>Choose one role for this account. You can create the other path later.</OnboardingCopy>
+          <OnboardingCopy>
+            Select your account type to continue. You can set up the other path later.
+          </OnboardingCopy>
         </div>
 
-        <div className="mt-9 space-y-4">
-          {options.map((option) => {
-            const isSelected = selected === option.role;
-            const Icon = option.Icon;
+        <div className="mt-12 flex flex-col items-center justify-center flex-1">
+          <div className="grid grid-cols-2 gap-5 sm:gap-8 max-w-sm w-full justify-center px-2">
+            {options.map((option) => {
+              const isSelected = selected === option.role;
+              const Icon = option.Icon;
 
-            return (
-              <button
-                key={option.role}
-                type="button"
-                onClick={() => setSelected(option.role)}
-                className={`relative flex min-h-[152px] w-full flex-col justify-center rounded-[24px] border p-5 text-left shadow-[0_12px_40px_rgba(58,43,20,0.02)] transition-all duration-300 active:scale-[0.98] ${
-                  isSelected
-                    ? "border-[var(--lobb-clay)] bg-gradient-to-br from-white to-[var(--lobb-clay)]/[0.04] shadow-[0_16px_36px_rgba(196,98,45,0.06)]"
-                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40 hover:bg-white"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <span
-                    className={`flex size-12 shrink-0 items-center justify-center rounded-2xl transition-all duration-300 ${
-                      isSelected
-                        ? "bg-[var(--lobb-clay)] text-white shadow-[0_8px_20px_rgba(196,98,45,0.25)]"
-                        : "bg-[var(--lobb-surface-2)] text-[var(--lobb-black)]"
-                    }`}
-                    aria-hidden="true"
-                  >
-                    <Icon className="size-6 animate-pulse" style={{ animationDuration: isSelected ? '3s' : '0s' }} />
-                  </span>
-                  <div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
-                      {option.meta}
-                    </span>
-                    <h2 className="mt-1 text-lg font-black leading-6 tracking-normal text-[var(--lobb-black)]">
-                      {option.title}
-                    </h2>
-                    <p className="mt-1.5 text-sm leading-relaxed text-[var(--lobb-muted)]">{option.body}</p>
-                  </div>
-                </div>
-                <span
-                  className={`absolute right-5 top-5 flex size-6 items-center justify-center rounded-full border transition-all duration-300 ${
-                    isSelected
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white scale-110 shadow-[0_4px_10px_rgba(196,98,45,0.2)]"
-                      : "border-[var(--lobb-border)] bg-transparent scale-100"
-                  }`}
+              return (
+                <button
+                  key={option.role}
+                  type="button"
+                  onClick={() => setSelected(option.role)}
+                  className="group flex flex-col items-center focus:outline-none"
                 >
-                  {isSelected && <Check className="size-3.5 stroke-[3]" />}
-                </span>
-              </button>
-            );
-          })}
+                  {/* Netflix Profile Square */}
+                  <div
+                    className={`relative flex aspect-square w-full max-w-[140px] items-center justify-center rounded-[28px] border-[3px] transition-all duration-300 active:scale-95 ${
+                      isSelected
+                        ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)]/[0.08] shadow-[0_16px_36px_rgba(196,98,45,0.12)] scale-105"
+                        : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] group-hover:border-[var(--lobb-clay)]/40 group-hover:scale-102 group-hover:shadow-[0_8px_24px_rgba(196,98,45,0.04)]"
+                    }`}
+                  >
+                    <Icon
+                      className={`size-12 transition-transform duration-500 ${
+                        isSelected
+                          ? "text-[var(--lobb-clay)] scale-110 rotate-[4deg]"
+                          : "text-[var(--lobb-text-secondary)] group-hover:text-[var(--lobb-text-primary)] group-hover:rotate-[-4deg]"
+                      }`}
+                    />
+                    
+                    {/* Checkmark overlay */}
+                    {isSelected && (
+                      <span className="absolute -top-1.5 -right-1.5 flex size-7 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-white shadow-lg animate-in zoom-in duration-300">
+                        <Check className="size-4 stroke-[3]" />
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Profile Name */}
+                  <span
+                    className={`mt-4 text-[13px] font-black uppercase tracking-[0.16em] transition-colors duration-300 ${
+                      isSelected ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-secondary)] group-hover:text-[var(--lobb-text-primary)]"
+                    }`}
+                  >
+                    {option.role === "player" ? "Player" : "Coach"}
+                  </span>
+                  
+                  {/* Profile Description */}
+                  <span className="mt-1.5 text-center text-[11px] font-medium leading-relaxed text-[var(--lobb-text-tertiary)] max-w-[125px]">
+                    {option.body}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-auto pb-8">
-          {error && <p className="mb-3 text-sm font-semibold text-red-700">{error}</p>}
+        <div className="mt-auto pb-8 pt-12">
+          {error && <p className="mb-4 text-center text-sm font-semibold text-[var(--lobb-error)]">{error}</p>}
           <OnboardingButton disabled={!selected} loading={saving} onClick={continueFlow}>
             {saving ? "Saving" : "Continue"}
           </OnboardingButton>

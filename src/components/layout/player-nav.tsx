@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarDays, Home, Search, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const items = [
   { href: "/",         label: "Home",     icon: Home },
@@ -46,6 +47,7 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
             </Link>
           );
         })}
+        <ThemeToggle className="h-[54px] flex-1 rounded-[18px] border-0 bg-transparent" />
       </div>
     </nav>
   );
@@ -75,6 +77,7 @@ export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
           </Link>
         );
       })}
+      <ThemeToggle />
     </nav>
   );
 }

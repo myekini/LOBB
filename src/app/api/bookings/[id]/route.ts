@@ -26,7 +26,7 @@ export async function GET(_request: Request, { params }: { params: { id: string 
   // Fetch phone numbers directly by profile id — avoids FK hint ambiguity with coaches/players tables
   const [{ data: coachProfile }, { data: playerProfile }] = await Promise.all([
     auth.admin.from("profiles").select("phone_number").eq("id", booking.coach_id).maybeSingle(),
-    auth.admin.from("profiles").select("phone_number").eq("id", booking.player_id).maybeSingle(),
+    auth.admin.from("profiles").select("phone_number, avatar_url").eq("id", booking.player_id).maybeSingle(),
   ]);
 
   return NextResponse.json({

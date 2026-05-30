@@ -100,6 +100,23 @@ export async function initiateRefund(
   if (!json.status) throw new Error(json.message || "Paystack refund failed");
 }
 
+// ─── Banks ────────────────────────────────────────────────────────────────────
+
+export type PaystackBank = {
+  name: string;
+  code: string;
+};
+
+export async function listBanks(): Promise<PaystackBank[]> {
+  const res = await fetch(
+    `${PAYSTACK_BASE}/bank?country=nigeria&currency=NGN&use_cursor=false&perPage=100`,
+    { headers: authHeaders(), next: { revalidate: 3600 } }
+  );
+  const json = (await res.json()) as { status: boolean; message: string; data: { name: string; code: string }[] };
+  if (!json.status) throw new Error(json.message || "Failed to fetch bank list");
+  return json.data.map((b) => ({ name: b.name, code: b.code }));
+}
+
 // ─── Subaccounts ──────────────────────────────────────────────────────────────
 
 export type CreateSubaccountInput = {
@@ -137,10 +154,14 @@ export async function createSubaccount(input: CreateSubaccountInput): Promise<Cr
 // ─── Webhook signature ─────────────────────────────────────────────────────────
 
 export function verifyWebhookSignature(rawBody: string, signature: string): boolean {
-  const secret = process.env.PAYSTACK_WEBHOOK_SECRET || process.env.PAYSTACK_SECRET_KEY;
+  const secret =
+    process.env.PAYSTACK_WEBHOOK_SECRET ||
+    (process.env.NODE_ENV === "production" ? undefined : process.env.PAYSTACK_SECRET_KEY);
   if (!secret) return false;
   const hash = crypto.createHmac("sha512", secret).update(rawBody).digest("hex");
-  return hash === signature;
+  const expected = Buffer.from(hash, "hex");
+  const received = Buffer.from(signature, "hex");
+  return expected.length === received.length && crypto.timingSafeEqual(expected, received);
 }
 
 // ─── Reference generator ───────────────────────────────────────────────────────

@@ -43,23 +43,29 @@ function BookingConfirmContent() {
   const search    = useSearchParams();
   const reference = search.get("reference") ?? search.get("trxref");
 
-  const [booking, setBooking] = useState<BookingWithDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [failed,  setFailed]  = useState(false);
+  const [booking,       setBooking]       = useState<BookingWithDetails | null>(null);
+  const [loading,       setLoading]       = useState(true);
+  const [failed,        setFailed]        = useState(false);
+  const [paymentFailed, setPaymentFailed] = useState(false);
 
   useEffect(() => {
     if (!reference) { setFailed(true); setLoading(false); return; }
 
     let cancelled = false;
-    let attempts = 0;
+    let attempts  = 0;
 
     const verify = () => {
       attempts += 1;
       fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`)
         .then(async (res) => {
           const json = (await res.json()) as { booking?: BookingWithDetails; error?: string };
+          // 402 = Paystack confirmed the payment failed (abandoned/failed status)
+          if (res.status === 402) {
+            if (!cancelled) { setPaymentFailed(true); setLoading(false); }
+            return;
+          }
           if (!res.ok || !json.booking) throw new Error(json.error ?? "Not found");
-          // If payment landed but webhook hasn't confirmed the booking yet, keep retrying
+          // Booking exists but confirmation webhook hasn't arrived yet — keep retrying
           if (json.booking.status !== "confirmed" && json.booking.payment_status !== "paid") {
             throw new Error("Payment still processing");
           }
@@ -70,15 +76,17 @@ function BookingConfirmContent() {
             coach_slug: json.booking.coach_slug,
             coach_name: json.booking.coach_full_name,
             total_paid: json.booking.total_amount_ngn,
-            reference: json.booking.paystack_reference,
+            reference:  json.booking.paystack_reference,
           });
           showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
           setLoading(false);
         })
         .catch(() => {
           if (cancelled) return;
-          if (attempts < 4) {
-            window.setTimeout(verify, attempts * 1400);
+          if (attempts < 12) {
+            // Progressive backoff: ~1.5s, 3s, then capped at 7s per attempt (~60s total window)
+            const delay = attempts <= 3 ? attempts * 1500 : Math.min(attempts * 2000, 7000);
+            window.setTimeout(verify, delay);
             return;
           }
           setFailed(true);
@@ -88,13 +96,36 @@ function BookingConfirmContent() {
 
     verify();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [reference]);
 
   if (loading) {
     return <LobbBrandLoader message="Verifying your payment and securing your booking." />;
+  }
+
+  if (paymentFailed) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[var(--lobb-bg)] p-5">
+        <div className="w-full max-w-md text-center">
+          <div className="inline-flex size-16 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20">
+            <CreditCard className="size-8 text-red-500" />
+          </div>
+          <p className="mt-5 text-lg font-black text-[var(--lobb-black)]">Payment not completed</p>
+          <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">
+            Your payment did not go through. No charge was made. Please try booking again.
+          </p>
+          <Link
+            href="/"
+            className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)]"
+          >
+            Browse Coaches
+          </Link>
+          <Link href="/dashboard" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
+            My Bookings
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   if (failed || !booking) {
@@ -103,10 +134,11 @@ function BookingConfirmContent() {
         <div className="w-full max-w-md text-center">
           <p className="text-lg font-black text-[var(--lobb-black)]">Payment is still being confirmed</p>
           <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">
-            If Paystack charged you, this reference lets us reconcile the booking:
+            This can take a minute. Check My Bookings — it will appear there once confirmed.
+            If you were charged, save this reference:
           </p>
           {reference && (
-            <p className="mt-1 rounded-lg bg-[var(--lobb-surface)] px-4 py-2 font-mono text-sm font-bold">
+            <p className="mt-3 rounded-lg bg-[var(--lobb-surface)] px-4 py-2 font-mono text-sm font-bold select-all">
               {reference}
             </p>
           )}
@@ -234,7 +266,7 @@ function BookingConfirmContent() {
           View My Bookings
         </Link>
         <Link
-          href={`/dashboard/bookings/${booking.id}/receipt`}
+          href={`/dashboard/bookings/${booking.id}/receipt${booking.paystack_reference ?? reference ? `?reference=${encodeURIComponent(booking.paystack_reference ?? reference ?? "")}` : ""}`}
           className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black text-[var(--lobb-black)]"
         >
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />

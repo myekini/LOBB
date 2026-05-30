@@ -27,12 +27,12 @@ export function CoachLogoutButton({ compact = false }: { compact?: boolean }) {
       className={
         compact
           ? "flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)] disabled:opacity-60"
-          : "flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black text-[var(--lobb-black)] disabled:opacity-60"
+          : "flex w-full items-center justify-between rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-5 py-4 text-sm font-black text-[var(--lobb-text-secondary)] transition hover:text-red-500 disabled:opacity-60"
       }
       aria-label="Log out"
     >
-      <LogOut className="size-4" />
-      {!compact && (busy ? "Logging out..." : "Log out")}
+      {!compact && <span>{busy ? "Signing out..." : "Sign out"}</span>}
+      {compact && <LogOut className="size-4" />}
     </button>
   );
 }

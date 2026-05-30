@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Mail, MapPin, MoonStar, Sun, Sunrise, User, WalletCards, XCircle } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Landmark, Mail, MapPin, MoonStar, Sun, Sunrise, User, WalletCards, XCircle } from "lucide-react";
 import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
@@ -30,6 +30,7 @@ type CoachDashboardPayload = {
     status?: string | null;
     rejection_reason?: string | null;
     needs_direct_contact?: boolean | null;
+    paystack_subaccount_code?: string | null;
   } | null;
   availability_slots_count?: number;
   reviews: Array<{ id: string; rating: number; comment: string | null; player_first_name: string; created_at: string }>;
@@ -106,6 +107,7 @@ export default function CoachDashboardPage() {
   const rejectionReason = data?.coach?.rejection_reason ?? null;
   const needsDirectContact = data?.coach?.needs_direct_contact ?? false;
   const needsAvailability = coachStatus === "active" && !loading && (data?.availability_slots_count ?? 0) === 0;
+  const needsPayoutSetup = coachStatus === "active" && !loading && !data?.coach?.paystack_subaccount_code;
   const completionCard =
     coachStatus === "pending_review"
       ? {
@@ -114,6 +116,14 @@ export default function CoachDashboardPage() {
           detail: "We are reviewing your profile. You will be notified when a decision is made.",
           progress: 100,
           tone: "var(--lobb-clay)",
+        }
+      : coachStatus === "active" && needsPayoutSetup
+      ? {
+          icon: Landmark,
+          title: "Payouts not set up",
+          detail: "Add your bank account to start accepting bookings.",
+          progress: 90,
+          tone: "var(--lobb-error)",
         }
       : coachStatus === "active"
       ? {
@@ -192,7 +202,7 @@ export default function CoachDashboardPage() {
         <div className="grid gap-5 xl:grid-cols-[330px_minmax(0,1fr)] xl:items-start">
           <aside className="space-y-4">
             <Link
-              href={coachStatus === "rejected" ? "/coach/profile/edit" : "/coach/profile"}
+              href={needsPayoutSetup ? "/coach/settings/bank" : coachStatus === "rejected" ? "/coach/profile/edit" : "/coach/profile"}
               className="block rounded-[18px] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]"
             >
               <div className="flex items-start gap-3">
@@ -209,6 +219,21 @@ export default function CoachDashboardPage() {
               </div>
               <p className="mt-2 text-[11px] font-black text-[var(--lobb-text-tertiary)]">{completionCard.progress}% complete</p>
             </Link>
+
+            {needsPayoutSetup && (
+              <Link
+                href="/coach/settings/bank"
+                className="block rounded-[16px] border border-[var(--lobb-error)] bg-[var(--lobb-error)]/[0.06] p-4"
+              >
+                <div className="flex items-center gap-2">
+                  <Landmark className="size-4 text-[var(--lobb-error)]" />
+                  <p className="font-black text-[var(--lobb-error)]">Set up payouts to accept bookings</p>
+                </div>
+                <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                  Add your bank account so players can book you and LOBB can send your earnings.
+                </p>
+              </Link>
+            )}
 
             {needsAvailability && (
               <Link

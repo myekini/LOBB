@@ -5,8 +5,10 @@ export type NotificationBookingInfo = {
   coachName: string;
   playerName: string;
   startsAt: string;
+  endsAt?: string;
   location: string;
   playerNotes: string | null;
+  reference?: string;
   coachPhone: string | null;
   playerPhone: string | null;
 };
@@ -30,6 +32,11 @@ export function bookingConfirmedPlayerMessage(info: NotificationBookingInfo) {
 export function bookingConfirmedCoachMessage(info: NotificationBookingInfo) {
   const note = info.playerNotes ? info.playerNotes : "No note";
   return `LOBB: New booking from ${info.playerName} on ${formatSmsDate(info.startsAt)}. Note: ${note}. View: ${appUrl(`/coach/bookings/${info.bookingId}`)}`;
+}
+
+export function bookingPaymentInitiatedCoachMessage(info: NotificationBookingInfo) {
+  const note = info.playerNotes ? ` Note: ${info.playerNotes}.` : "";
+  return `LOBB: ${info.playerName} started payment for ${formatSmsDate(info.startsAt)} at ${info.location}.${note} We will confirm once payment clears.`;
 }
 
 export function reminderPlayerMessage(info: NotificationBookingInfo) {

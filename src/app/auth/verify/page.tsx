@@ -10,7 +10,7 @@ import {
   OnboardingShell,
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
-import { clearPendingAuth, getPendingAuth } from "@/lib/auth-flow";
+import { clearPendingAuth, getPendingAuth, setPendingAuth } from "@/lib/auth-flow";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { track } from "@/lib/analytics";
 
@@ -78,7 +78,7 @@ export default function VerifyPage() {
   };
 
   const verify = async (nextCode = code) => {
-    if (!pendingAuth || nextCode.length !== 6) {
+    if (!pendingAuth || nextCode.length !== 6 || verifying) {
       return;
     }
 
@@ -240,12 +240,15 @@ export default function VerifyPage() {
       }),
     });
 
+    const result = (await response.json().catch(() => null)) as { error?: string } | null;
+
     if (!response.ok) {
-      const result = (await response.json().catch(() => null)) as { error?: string } | null;
       fail(result?.error || "Could not resend code. Try again.");
       showLobbToast({ type: "error", message: "Could not resend code. Try again." });
       return;
     }
+
+    setPendingAuth({ ...pendingAuth, sentAt: Date.now() });
 
     setSeconds(60);
     setDigits(["", "", "", "", "", ""]);
@@ -280,24 +283,19 @@ export default function VerifyPage() {
           <OnboardingCopy>
             Code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"}.
           </OnboardingCopy>
-          <div className="mt-6 flex items-start gap-4 rounded-[20px] border border-white/[0.08] bg-white/[0.02] p-5 backdrop-blur-md">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-white/[0.06] text-white/80 border border-white/[0.08]">
+          <div className="mt-6 flex items-start gap-4 rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-5 backdrop-blur-md">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-surface)] text-[var(--lobb-text-primary)] border border-[var(--lobb-border)]">
               <RoleIcon className="size-5" />
             </span>
             <div>
-              <p className="text-[14px] font-black text-white">{roleLabel}</p>
-              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-white/50">
+              <p className="text-[14px] font-black text-[var(--lobb-text-primary)]">{roleLabel}</p>
+              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
                 {pendingAuth?.role === "coach"
                   ? "After verification, you will complete your coach profile, set availability, and review details."
                   : "After verification, you will complete your player profile and start booking sessions."}
               </p>
             </div>
           </div>
-          {pendingAuth?.devCode && (
-            <p className="mt-4 rounded-[16px] border border-[#D96B27]/20 bg-[#D96B27]/[0.02] px-5 py-3.5 text-[13px] font-bold text-[#D96B27]/60 backdrop-blur-sm">
-              Dev code: <span className="text-[#D96B27]">{pendingAuth.devCode}</span>
-            </p>
-          )}
         </div>
 
         <div className="mt-10">
@@ -318,27 +316,27 @@ export default function VerifyPage() {
                     inputs.current[index - 1]?.focus();
                   }
                 }}
-                className={`h-[60px] rounded-[16px] border bg-white/[0.02] backdrop-blur-md text-center text-[22px] font-black text-white shadow-[0_4px_24px_rgba(0,0,0,0.2)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[#D96B27]/60 focus:bg-white/[0.06] focus:shadow-[0_8px_32px_rgba(217,107,39,0.2)] ${
-                  error ? "border-red-500/50 focus:border-red-500 focus:shadow-[0_8px_32px_rgba(239,68,68,0.2)] text-red-400" : "border-white/[0.08]"
+                className={`h-[60px] rounded-[16px] border bg-[var(--lobb-surface-2)] text-[var(--lobb-text-primary)] text-center text-[22px] font-black shadow-[0_4px_24px_rgba(0,0,0,0.06)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[var(--lobb-clay)] focus:bg-[var(--lobb-surface)] focus:shadow-[0_8px_32px_rgba(196,98,45,0.15)] ${
+                  error ? "border-[var(--lobb-border-error)]/50 focus:border-[var(--lobb-border-error)] text-[var(--lobb-border-error)] focus:shadow-[0_8px_32px_rgba(214,64,69,0.15)]" : "border-[var(--lobb-border)]"
                 }`}
               />
             ))}
           </div>
-          {error && <p className="mt-4 text-[13px] font-semibold text-red-400 text-center">{error}</p>}
+          {error && <p className="mt-4 text-[13px] font-semibold text-[var(--lobb-error)] text-center">{error}</p>}
         </div>
 
         <button
           type="button"
           disabled={seconds > 0}
           onClick={resend}
-          className="mt-8 mx-auto w-fit flex rounded-full px-6 py-2.5 text-[12px] font-bold tracking-wide text-white/50 border border-transparent transition-all hover:text-white hover:bg-white/[0.04] hover:border-white/[0.08] disabled:cursor-default disabled:text-white/20 disabled:hover:bg-transparent disabled:hover:border-transparent"
+          className="mt-8 mx-auto w-fit flex rounded-full px-6 py-2.5 text-[12px] font-bold tracking-wide text-[var(--lobb-text-secondary)] border border-transparent transition-all hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface-2)] hover:border-[var(--lobb-border)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)]/40 disabled:hover:bg-transparent disabled:hover:border-transparent"
         >
           {seconds > 0 ? `Resend code (0:${String(seconds).padStart(2, "0")})` : "Resend code"}
         </button>
 
         <div className="mt-auto pb-8 text-center">
-          <p className="inline-flex items-center justify-center gap-2 text-[13px] font-medium text-white/40">
-            {verifying && <Loader2 className="size-4 animate-spin text-[#D96B27]" />}
+          <p className="inline-flex items-center justify-center gap-2 text-[13px] font-medium text-[var(--lobb-text-secondary)]">
+            {verifying && <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />}
             {verifying ? "Checking your code..." : code.length === 6 ? "Submitting..." : "Enter all 6 digits to continue."}
           </p>
         </div>

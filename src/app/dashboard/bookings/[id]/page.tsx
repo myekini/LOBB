@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   durationMinutes,
@@ -77,7 +77,7 @@ export default function BookingDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-10 pt-5 text-[var(--lobb-black)] sm:px-6 lg:pt-8">
+      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
         <section className="mx-auto max-w-5xl">
           <BookingCardSkeleton />
           <div className="mt-7 space-y-4">
@@ -91,7 +91,7 @@ export default function BookingDetailPage() {
 
   if (!booking) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-4 py-10 text-[var(--lobb-black)] sm:px-6">
+      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 py-10 text-[var(--lobb-text-primary)] sm:px-6">
         <section className="mx-auto max-w-3xl">
           <h1 className="text-xl font-black">Booking not found</h1>
           <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
@@ -108,113 +108,116 @@ export default function BookingDetailPage() {
   const policyNote = policy.note;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-10 pt-5 text-[var(--lobb-black)] sm:px-6 lg:pt-8">
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
       <section className="mx-auto max-w-5xl">
-        <header className="mb-7 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
-          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_8px_22px_rgba(13,13,13,0.05)]" aria-label="Go back">
+        <header className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
+          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
-          <h1 className="truncate text-center font-black">Booking Detail</h1>
+          <h1 className="truncate text-center font-black">Booking detail</h1>
           <div aria-hidden="true" />
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-start">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-[#e8f4ed] px-3 py-1.5 text-xs font-black text-[var(--lobb-success)]">
-              <Circle className="size-2 fill-current" />
-              {booking.status}
-            </span>
-
-            <section className="mt-5 overflow-hidden rounded-[28px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_18px_46px_rgba(13,13,13,0.18)] sm:p-6">
-              <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] text-white/45">
+            <section className="overflow-hidden rounded-[28px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] opacity-55">
                 <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
                 Session
               </p>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black capitalize">
+                  <Circle className="size-2 fill-current text-[var(--lobb-clay)]" />
+                  {booking.status.replaceAll("_", " ")}
+                </span>
+              </div>
               <h2 className="mt-3 text-[27px] font-black leading-none sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
-              <p className="mt-3 text-sm font-semibold text-white/58">
+              <p className="mt-3 text-sm font-semibold opacity-60">
                 {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid
               </p>
             </section>
 
-            <DetailSection title="Coach">
-              <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={coach?.profile_photo_url || "/favicon.svg"} alt="" className="size-14 rounded-full object-cover" />
-            <div className="min-w-0">
-              <p className="font-black">{coach?.full_name ?? "Coach"}</p>
-              <p className="text-sm font-medium text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || booking.location}</p>
-              {coach?.slug && (
-                <Link href={`/coaches/${coach.slug}`} className="mt-0.5 inline-block text-xs font-semibold text-[var(--lobb-clay)] hover:underline">
-                  View profile →
-                </Link>
+            <section className="mt-5 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+              <div className="flex items-start gap-3">
+                <div className="size-14 shrink-0 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+                  {coach?.profile_photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
+                  ) : (
+                    <div className="flex size-full items-center justify-center text-[var(--lobb-text-secondary)]">
+                      <UserRound className="size-6" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Coach</p>
+                  <p className="mt-1 truncate text-base font-black">{coach?.full_name ?? "Coach"}</p>
+                  <p className="mt-0.5 text-sm font-semibold text-[var(--lobb-text-secondary)]">{coach?.headline || coach?.primary_location || "Tennis coach"}</p>
+                  {coach?.slug && (
+                    <Link href={`/coaches/${coach.slug}`} className="mt-2 inline-flex text-xs font-black text-[var(--lobb-clay)] hover:underline">
+                      View profile
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {coachPhone ? (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[15px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]">
+                    <Phone className="size-4 text-[var(--lobb-clay)]" /> Call
+                  </a>
+                  <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[15px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-black">
+                    <MessageCircle className="size-4 text-[var(--lobb-clay)]" /> WhatsApp
+                  </a>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="mt-5 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+              <InfoRow icon={MapPin} label="Location" value={booking.location || "Location not specified"} />
+              {booking.player_notes && (
+                <div className="mt-4 border-t border-[var(--lobb-border-subtle)] pt-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Note to coach</p>
+                  <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
+                </div>
               )}
-            </div>
-          </div>
-          {coachPhone ? (
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[15px] bg-[var(--lobb-black)] text-xs font-black text-white">
-                <Phone className="size-4" /> Call
-              </a>
-              <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[15px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-xs font-black">
-                <MessageCircle className="size-4 text-[var(--lobb-clay)]" /> WhatsApp
-              </a>
-            </div>
-          ) : (
-            <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-muted)]">
-              <Phone className="size-4 text-[var(--lobb-clay)]" />
-              Coach phone unlocks after payment
-            </p>
-          )}
-            </DetailSection>
-
-            <DetailSection title="Location">
-              <p className="flex items-start gap-2 text-sm font-semibold text-[var(--lobb-muted)]">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-                {booking.location || "Location not specified"}
-              </p>
-            </DetailSection>
-
-            {booking.player_notes && (
-              <DetailSection title="Your Note to Coach">
-                <p className="text-sm font-medium leading-6 text-[var(--lobb-muted)]">&quot;{booking.player_notes}&quot;</p>
-              </DetailSection>
-            )}
+            </section>
           </div>
 
-          <aside className="rounded-[28px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5 shadow-[0_14px_34px_rgba(13,13,13,0.06)] lg:sticky lg:top-6">
+          <aside className="rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-card)] lg:sticky lg:top-6">
         <DetailSection title="Payment" compact>
-          <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
+          <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
             <CreditCard className="size-4 text-[var(--lobb-clay)]" />
             {payment?.status ?? "pending"}
           </p>
           <PaymentRow amount={booking.hourly_rate_ngn} label="Session fee" />
-          <PaymentRow amount={booking.platform_fee_ngn} label="Convenience fee" />
+          <PaymentRow amount={booking.convenience_fee_ngn ?? booking.platform_fee_ngn} label="Convenience fee" />
           <PaymentRow amount={booking.total_amount_ngn} label="Total paid" strong />
-          <p className="mt-3 break-all text-xs font-bold text-[var(--lobb-muted)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
+          <p className="mt-3 break-all rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold text-[var(--lobb-text-secondary)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
         </DetailSection>
 
         <DetailSection title="Cancellation Policy">
-          <div className={`rounded-[20px] border p-4 ${fullRefund ? "border-[#cfe7d8] bg-[#eef8f2]" : policy.refundPercent === 50 ? "border-[#ffe0b2] bg-[#fff7f2]" : "border-[#f1d2c1] bg-[#fff0ee]"}`}>
+          <div className={`rounded-[20px] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : policy.refundPercent === 50 ? "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10"}`}>
             <p className="flex items-start gap-2 text-sm font-black">
               <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
               {policy.label}
             </p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">{policyNote}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">{policyNote}</p>
           </div>
         </DetailSection>
 
         {isUpcoming && (
-          <button onClick={() => setShowCancel(true)} className="mt-8 h-14 w-full rounded-full border border-red-300 bg-transparent text-sm font-black text-red-700">
+          <button onClick={() => setShowCancel(true)} className="mt-6 h-12 w-full rounded-[16px] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-black text-[var(--lobb-error)]">
             Cancel Booking
           </button>
         )}
 
-        <Link href="/dashboard" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
-          Back to My Bookings
-        </Link>
-        <Link href={`/dashboard/bookings/${booking.id}/receipt`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black">
+        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-black">
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
           View Receipt
+        </Link>
+        <Link href="/dashboard" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
+          Back to bookings
         </Link>
           </aside>
         </div>
@@ -222,19 +225,19 @@ export default function BookingDetailPage() {
 
       {showCancel && (
         <div className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4" onClick={() => setShowCancel(false)}>
-          <section className="mx-auto w-full max-w-md rounded-[24px] bg-[var(--lobb-surface)] p-5 shadow-[0_-18px_44px_rgba(0,0,0,0.2)]" onClick={(event) => event.stopPropagation()}>
+          <section className="mx-auto w-full max-w-md rounded-[24px] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]" onClick={(event) => event.stopPropagation()}>
             <div className="flex items-start justify-between gap-4">
               <h2 className="text-lg font-black">Cancel this booking?</h2>
               <button onClick={() => setShowCancel(false)} aria-label="Close"><X className="size-5" /></button>
             </div>
-            <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-muted)]">
+            <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
               <strong>{policy.label}.</strong> {policyNote}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <button onClick={() => setShowCancel(false)} className="h-12 rounded-full bg-[var(--lobb-black)] text-sm font-black text-white">
+              <button onClick={() => setShowCancel(false)} className="h-12 rounded-full bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
                 Keep Booking
               </button>
-              <button disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-full border border-red-300 text-sm font-black text-red-700 disabled:opacity-60">
+              <button disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-full border border-[var(--lobb-error)]/35 text-sm font-black text-[var(--lobb-error)] disabled:opacity-60">
                 {cancelling ? "Cancelling..." : "Yes, Cancel"}
               </button>
             </div>
@@ -249,19 +252,33 @@ function DetailSection({ title, children, compact }: { title: string; children: 
   return (
     <section className={compact ? "" : "mt-7"}>
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">{title}</span>
-        <span className="h-px flex-1 bg-[var(--lobb-border)]" />
+        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</span>
+        <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
       </div>
       {children}
     </section>
   );
 }
 
+function InfoRow({ icon: Icon, label, value }: { icon: typeof MapPin; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+        <Icon className="size-4" />
+      </span>
+      <span>
+        <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">{label}</span>
+        <span className="mt-1 block text-sm font-black leading-6">{value}</span>
+      </span>
+    </div>
+  );
+}
+
 function PaymentRow({ amount, label, strong }: { amount: number; label: string; strong?: boolean }) {
   return (
-    <p className={`flex gap-5 py-1 text-sm ${strong ? "font-black text-[var(--lobb-black)]" : "font-semibold text-[var(--lobb-muted)]"}`}>
-      <span className="w-24 text-[var(--lobb-black)]">{money(amount)}</span>
+    <p className={`flex items-center justify-between gap-5 py-1.5 text-sm ${strong ? "font-black text-[var(--lobb-text-primary)]" : "font-semibold text-[var(--lobb-text-secondary)]"}`}>
       <span>{label}</span>
+      <span className="font-black text-[var(--lobb-text-primary)]">{money(amount)}</span>
     </p>
   );
 }

@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards, X } from "lucide-react";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
+import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   durationMinutes,
@@ -48,9 +49,12 @@ export default function CoachBookingDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: "Cancelled by coach" }),
       });
-      const payload = await response.json() as { ok?: boolean; error?: string; refund_label?: string };
+      const payload = await response.json() as { ok?: boolean; error?: string; refund_label?: string; refund_ngn?: number };
       if (!response.ok) throw new Error(payload.error ?? "Unable to cancel booking");
-      showLobbToast({ type: "success", message: `Booking cancelled. Player will receive a full refund.` });
+      const refundMsg = payload.refund_ngn
+        ? ` ${payload.refund_label ?? "Refund"} of ₦${payload.refund_ngn.toLocaleString()} issued.`
+        : "";
+      showLobbToast({ type: "success", message: `Booking cancelled.${refundMsg}` });
       router.push("/coach/bookings");
     } catch (error) {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to cancel booking" });
@@ -93,6 +97,8 @@ export default function CoachBookingDetailPage() {
   const isConfirmed = booking.status === "confirmed";
   const sessionInFuture = new Date(booking.starts_at).getTime() > Date.now();
   const canCancel = isConfirmed && sessionInFuture;
+  const cancelPolicy = cancellationPolicy(booking.starts_at, "coach");
+  const cancelRefundNgn = refundAmountNgn(booking.total_amount_ngn, cancelPolicy.refundPercent);
 
   const courtLabel = booking.location_venue_id === "national_stadium" && booking.location_court_id
     ? NATIONAL_STADIUM_COURTS.find((c) => c.id === booking.location_court_id)?.label ?? null
@@ -133,8 +139,13 @@ export default function CoachBookingDetailPage() {
           <section className="space-y-4">
             <DetailSection title="Player">
               <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
-                  <User className="size-5" />
+                <div className="flex size-12 items-center justify-center overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
+                  {playerProfile?.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={playerProfile.avatar_url} alt="" className="size-full object-cover" />
+                  ) : (
+                    <User className="size-5" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="truncate font-black">{player?.full_name ?? "Player"}</p>
@@ -189,9 +200,10 @@ export default function CoachBookingDetailPage() {
                 <WalletCards className="size-4 text-[var(--lobb-clay)]" />
                 Session breakdown
               </div>
-              <PaymentRow label="Session fee" amount={booking.hourly_rate_ngn} />
-              <PaymentRow label="LOBB fee" amount={booking.platform_fee_ngn} />
-              <PaymentRow label="Total collected" amount={booking.total_amount_ngn} strong />
+              <PaymentRow label="Session rate" amount={booking.hourly_rate_ngn} />
+              <PaymentRow label="Platform commission (15%)" amount={booking.platform_commission_ngn} negative />
+              <div className="my-2 border-t border-[var(--lobb-border-subtle)]" />
+              <PaymentRow label="Your payout" amount={booking.coach_payout_ngn ?? booking.hourly_rate_ngn} strong />
               {sessionRef && (
                 <p className="mt-3 rounded-[10px] bg-[var(--lobb-bg-primary)] px-3 py-2 font-mono text-xs font-black tracking-wider text-[var(--lobb-text-secondary)]">
                   {sessionRef}
@@ -239,7 +251,18 @@ export default function CoachBookingDetailPage() {
               </button>
             </div>
             <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-              The player will receive a full refund. This booking will be removed from both schedules and the player will be notified by email.
+              {cancelPolicy.refundPercent > 0 ? (
+                <>
+                  The player will receive <strong>{cancelPolicy.label.toLowerCase()}</strong> of <strong>{money(cancelRefundNgn)}</strong>. This booking will be removed from both schedules and the player will be notified by email.
+                </>
+              ) : (
+                <>
+                  The player will receive <strong>no automatic refund</strong> under the current cancellation window. This booking will be removed from both schedules and the player will be notified by email.
+                </>
+              )}
+            </p>
+            <p className="mt-3 rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold leading-5 text-[var(--lobb-text-secondary)]">
+              {cancelPolicy.note}
             </p>
             <p className="mt-3 text-sm font-semibold text-[var(--lobb-error)]">
               Repeated cancellations may affect your coach standing on LOBB.
@@ -275,11 +298,13 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
   );
 }
 
-function PaymentRow({ amount, label, strong }: { amount: number; label: string; strong?: boolean }) {
+function PaymentRow({ amount, label, strong, negative }: { amount: number; label: string; strong?: boolean; negative?: boolean }) {
   return (
     <p className={`flex justify-between gap-5 py-1 text-sm ${strong ? "font-black text-[var(--lobb-text-primary)]" : "font-semibold text-[var(--lobb-text-secondary)]"}`}>
       <span>{label}</span>
-      <span>{money(amount)}</span>
+      <span className={negative ? "text-[var(--lobb-error)]" : undefined}>
+        {negative ? "−" : ""}{money(amount)}
+      </span>
     </p>
   );
 }

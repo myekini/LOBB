@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, ChevronRight, Clock3, Eye, Pencil, Settings, User } from "lucide-react";
+import { AlertTriangle, Award, BadgeCheck, CheckCircle2, ChevronRight, Clock3, Eye, Pencil, Settings, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import type { CoachRow } from "@/lib/types";
@@ -130,17 +130,20 @@ export default async function CoachProfilePage() {
   const completionPct = Math.round((doneCount / sections.length) * 100);
   const allDone = doneCount === sections.length;
   const statusInfo = STATUS_LABELS[coach.status] ?? STATUS_LABELS.draft;
+  const certifications: string[] = Array.isArray(coach.certifications)
+    ? (coach.certifications as unknown[]).filter((cert: unknown): cert is string => typeof cert === "string" && cert.length > 0)
+    : [];
 
   return (
     <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-36 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Profile" eyebrow="Coach account" active="profile" actionHref="/coach/profile/edit" actionLabel="Edit" actionIcon={Pencil} />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start">
+        <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
           <aside className="space-y-4">
-        <section className="overflow-hidden rounded-[20px] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
-          <div className="p-4">
+        <section className="overflow-hidden rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
+          <div className="p-4 sm:p-5">
             <div className="flex items-start gap-4">
-              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-[var(--lobb-bg-secondary)]">
+              <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-[22px] bg-[var(--lobb-bg-secondary)] ring-1 ring-[var(--lobb-border-subtle)]">
                 {coach.profile_photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={coach.profile_photo_url} alt="" className="h-full w-full object-cover" />
@@ -150,13 +153,13 @@ export default async function CoachProfilePage() {
               </div>
               <div className="min-w-0 flex-1">
                 <CoachKicker>{statusInfo.label}</CoachKicker>
-                <h1 className="mt-2 truncate text-xl font-black">{coach.full_name || "Coach profile"}</h1>
+                <h1 className="mt-2 text-xl font-black leading-tight">{coach.full_name || "Coach profile"}</h1>
                 <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
                   {coach.headline || "Add a clear headline so players know what you teach best."}
                 </p>
               </div>
             </div>
-            <div className="mt-5 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+            <div className="mt-5 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-black text-[var(--lobb-text-secondary)]">Profile completion</p>
                 <span className="text-sm font-black">{completionPct}%</span>
@@ -172,7 +175,7 @@ export default async function CoachProfilePage() {
               </div>
               <p className="mt-2 text-[11px] font-black text-[var(--lobb-text-tertiary)]">{doneCount}/{sections.length} sections complete</p>
             </div>
-            <div className="mt-4 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3" style={{ borderLeftWidth: 4, borderLeftColor: statusInfo.color }}>
+            <div className="mt-4 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4" style={{ borderLeftWidth: 4, borderLeftColor: statusInfo.color }}>
               <div className="flex items-start gap-2">
                 <Clock3 className="mt-0.5 size-4 shrink-0" style={{ color: statusInfo.color }} />
                 <div>
@@ -190,6 +193,43 @@ export default async function CoachProfilePage() {
               </div>
             </div>
           </div>
+        </section>
+
+        <section className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <CoachKicker>Public badges</CoachKicker>
+              <h2 className="mt-1 text-base font-black">Certifications</h2>
+            </div>
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+              <Award className="size-5" />
+            </span>
+          </div>
+          {certifications.length > 0 ? (
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              {certifications.map((cert) => (
+                <span
+                  key={cert}
+                  className="relative inline-flex min-h-[70px] overflow-hidden rounded-[20px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[12px] font-black leading-tight text-[var(--lobb-text-primary)] shadow-sm"
+                >
+                  <span className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+                  <span className="flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-[15px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                      <BadgeCheck className="size-4" />
+                    </span>
+                    <span>
+                      <span className="block text-[9px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">Badge</span>
+                      <span className="mt-1 block">{cert}</span>
+                    </span>
+                  </span>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+              Add certifications to show clean credential badges on your public profile.
+            </p>
+          )}
         </section>
 
         <div className="grid grid-cols-2 gap-3">
@@ -225,12 +265,12 @@ export default async function CoachProfilePage() {
           </Link>
         </div>
 
-        <CoachSurface className="mt-3 overflow-hidden">
+        <CoachSurface className="mt-3 overflow-hidden bg-[var(--lobb-bg-elevated)]">
           {sections.map((section, index) => (
             <Link
               key={section.label}
               href={section.href}
-              className={`flex items-center justify-between gap-3 p-4 transition hover:bg-[var(--lobb-bg-primary)] ${
+              className={`flex min-h-[76px] items-center justify-between gap-4 p-4 transition hover:bg-[var(--lobb-bg-primary)] sm:p-5 ${
                 index ? "border-t border-[var(--lobb-border-subtle)]" : ""
               }`}
             >
@@ -243,9 +283,9 @@ export default async function CoachProfilePage() {
                   </span>
                 )}
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-black">{section.label}</p>
+                  <p className="text-sm font-black leading-tight">{section.label}</p>
                   <p
-                    className={`mt-1 truncate text-xs font-semibold ${
+                    className={`mt-1 line-clamp-2 text-xs font-semibold leading-5 ${
                       section.done ? "text-[var(--lobb-text-secondary)]" : "text-[var(--lobb-clay)]"
                     }`}
                   >

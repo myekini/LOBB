@@ -5,52 +5,23 @@ const OTP_TTL_MS = 10 * 60 * 1000;
 const REQUEST_WINDOW_MS = 60 * 60 * 1000;
 const MAX_REQUESTS = 3;
 const MAX_ATTEMPTS = 5;
-const FALLBACK_TEST_OTP = "000000";
-const FALLBACK_TEST_PHONES = ["+2340000000001", "+2340000000002", "+2340000000003"];
 type OtpRole = "player" | "coach" | "admin";
 
-function hashOtp(phone: string, code: string) {
-  return createHash("sha256").update(`${phone}:${code}`).digest("hex");
+function hashOtp(identifier: string, code: string) {
+  return createHash("sha256").update(`${identifier}:${code}`).digest("hex");
 }
 
-export function getTestOtp() {
-  const configured = process.env.LOBB_TEST_OTP?.replace(/\D/g, "").slice(0, 6);
-  return configured?.length === 6 ? configured : FALLBACK_TEST_OTP;
-}
-
-export function isTestOtpEnabled() {
-  // Explicit opt-in only — never falls back to NODE_ENV so a missing env var
-  // in production doesn't silently leave 000000 working for real users.
-  return process.env.LOBB_ENABLE_TEST_OTP === "true";
-}
-
-export function getTestPhones() {
-  return (process.env.LOBB_TEST_PHONE_NUMBERS ?? FALLBACK_TEST_PHONES.join(","))
-    .split(",")
-    .map((phone) => phone.trim())
-    .filter(Boolean);
-}
-
-export function isTestPhone(phone: string) {
-  return getTestPhones().includes(phone);
-}
-
-export function shouldUseTestOtp(phone: string) {
-  return isTestOtpEnabled() && isTestPhone(phone);
-}
-
-export async function createOtp(phone: string, role: OtpRole) {
+export async function createOtp(identifier: string, role: OtpRole) {
   const supabase = createAdminClient();
   const now = Date.now();
   const windowStart = now - REQUEST_WINDOW_MS;
 
-  // Best-effort cleanup of stale rows on every create
   void supabase.rpc("cleanup_expired_otps");
 
   const { data: existing } = await supabase
     .from("otp_verifications")
     .select("request_timestamps")
-    .eq("phone_number", phone)
+    .eq("phone_number", identifier)
     .maybeSingle();
 
   const recentRequests = ((existing?.request_timestamps ?? []) as number[]).filter(
@@ -65,14 +36,12 @@ export async function createOtp(phone: string, role: OtpRole) {
     };
   }
 
-  const code = shouldUseTestOtp(phone)
-    ? getTestOtp()
-    : String(randomInt(0, 1_000_000)).padStart(6, "0");
+  const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
 
   const { error } = await supabase.from("otp_verifications").upsert(
     {
-      phone_number: phone,
-      code_hash: hashOtp(phone, code),
+      phone_number: identifier,
+      code_hash: hashOtp(identifier, code),
       role,
       attempts: 0,
       request_timestamps: [...recentRequests, now],
@@ -89,53 +58,47 @@ export async function createOtp(phone: string, role: OtpRole) {
   return { code, expiresAt: now + OTP_TTL_MS };
 }
 
-export async function verifyOtp(phone: string, code: string) {
+/**
+ * Validates the OTP code without consuming (deleting) the record.
+ * Call consumeOtp() after auth succeeds to prevent a failed session creation
+ * from locking the user out.
+ */
+export async function verifyOtp(identifier: string, code: string) {
   const supabase = createAdminClient();
-
-  // Test OTP shortcut — valid only for explicitly configured dev phones.
-  if (shouldUseTestOtp(phone) && code === getTestOtp()) {
-    const { data } = await supabase
-      .from("otp_verifications")
-      .select("role")
-      .eq("phone_number", phone)
-      .maybeSingle();
-
-    await supabase.from("otp_verifications").delete().eq("phone_number", phone);
-    return { ok: true as const, role: ((data?.role as string) ?? "player") as OtpRole };
-  }
 
   const { data: record } = await supabase
     .from("otp_verifications")
     .select("*")
-    .eq("phone_number", phone)
+    .eq("phone_number", identifier)
     .maybeSingle();
 
   if (!record) {
-    return { ok: false as const, error: "Code expired. Request a new one." };
+    return { ok: false as const, error: "Code not found. Request a new one." };
   }
 
-  if (new Date(record.expires_at as string).getTime() < now()) {
-    await supabase.from("otp_verifications").delete().eq("phone_number", phone);
+  if (new Date(record.expires_at as string).getTime() < Date.now()) {
+    void supabase.from("otp_verifications").delete().eq("phone_number", identifier);
     return { ok: false as const, error: "Code expired. Request a new one." };
   }
 
   if ((record.attempts as number) >= MAX_ATTEMPTS) {
-    await supabase.from("otp_verifications").delete().eq("phone_number", phone);
+    void supabase.from("otp_verifications").delete().eq("phone_number", identifier);
     return { ok: false as const, error: "Too many wrong attempts. Request a new code." };
   }
 
-  if (record.code_hash !== hashOtp(phone, code)) {
+  if (record.code_hash !== hashOtp(identifier, code)) {
     await supabase
       .from("otp_verifications")
       .update({ attempts: (record.attempts as number) + 1 })
-      .eq("phone_number", phone);
+      .eq("phone_number", identifier);
     return { ok: false as const, error: "Wrong code. Try again." };
   }
 
-  await supabase.from("otp_verifications").delete().eq("phone_number", phone);
   return { ok: true as const, role: record.role as OtpRole };
 }
 
-function now() {
-  return Date.now();
+/** Deletes the OTP record after successful auth. Call once session is confirmed. */
+export async function consumeOtp(identifier: string) {
+  const supabase = createAdminClient();
+  void supabase.from("otp_verifications").delete().eq("phone_number", identifier);
 }

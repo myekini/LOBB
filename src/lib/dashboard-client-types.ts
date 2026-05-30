@@ -19,6 +19,7 @@ export type JoinedCoachProfile = {
 
 export type JoinedPlayerProfile = {
   phone_number: string | null;
+  avatar_url?: string | null;
 };
 
 export type JoinedPlayer = {

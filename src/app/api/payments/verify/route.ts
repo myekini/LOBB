@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
 import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendPaymentFailedEmail, sendPaymentReceiptEmail } from "@/lib/email-notifications";
+import { sendBookingConfirmedSms } from "@/lib/sms-notifications";
 import type { BookingRow, BookingWithDetails } from "@/lib/types";
 
 export async function GET(request: Request) {
@@ -81,7 +82,7 @@ export async function GET(request: Request) {
 
           // Reserve the National Stadium court slot to prevent double-booking
           if (updatedBooking.location_venue_id === "national_stadium" && updatedBooking.location_court_id) {
-            await admin.from("court_slot_bookings").upsert(
+            const { error: courtErr } = await admin.from("court_slot_bookings").upsert(
               {
                 court_id:      updatedBooking.location_court_id,
                 venue_id:      updatedBooking.location_venue_id,
@@ -91,24 +92,37 @@ export async function GET(request: Request) {
                 slot_starts_at: updatedBooking.starts_at,
                 slot_ends_at:   updatedBooking.ends_at,
               },
-              { onConflict: "court_id,slot_starts_at", ignoreDuplicates: true }
+              { onConflict: "court_id,slot_starts_at", ignoreDuplicates: false }
             );
+            if (courtErr) {
+              // Court was double-booked despite the pre-check (race condition).
+              // Payment is already confirmed — log the conflict for admin resolution
+              // rather than failing the verify response.
+              console.error("[court-conflict] booking=%s court=%s starts=%s error=%s",
+                updatedBooking.id, updatedBooking.location_court_id,
+                updatedBooking.starts_at, courtErr.message);
+            }
           }
 
-          // Send and schedule transactional emails (webhook may not have fired yet)
-          const [cp, pp] = await Promise.all([
+          // Send and schedule transactional emails (webhook may not have fired yet).
+          // Atomically claim the event record first (INSERT ... ON CONFLICT DO NOTHING).
+          // Two simultaneous verify requests can both reach this branch; only the one
+          // that successfully inserts the row should send emails — the other gets back
+          // an empty array and skips. This eliminates the SELECT→send→INSERT race.
+          const [cp, pp, claimResult] = await Promise.all([
             admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", updatedBooking.coach_id).single(),
             admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", updatedBooking.player_id).single(),
+            admin
+              .from("paystack_events")
+              .upsert(
+                { event: "charge.success", reference, payload: txn, processed_at: new Date().toISOString() },
+                { onConflict: "reference", ignoreDuplicates: true }
+              )
+              .select("reference"),
           ]);
 
-          const eventRecorded = await admin
-            .from("paystack_events")
-            .select("processed_at")
-            .eq("reference", reference)
-            .maybeSingle();
-
-          // Only send if webhook hasn't processed this yet
-          if (!eventRecorded.data?.processed_at) {
+          // Only proceed if we inserted the row (won the race vs webhook / concurrent verify)
+          if (claimResult.data && claimResult.data.length > 0) {
             const startMs = new Date(updatedBooking.starts_at).getTime();
             const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
             const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
@@ -131,15 +145,11 @@ export async function GET(request: Request) {
               paymentMethod: "Paystack",
             };
             await Promise.allSettled([
+              sendBookingConfirmedSms(admin, info, pp.data, cp.data),
               sendBookingConfirmedEmails(admin, info, pp.data, cp.data),
               sendPaymentReceiptEmail(admin, info, pp.data, cp.data),
               queueBookingReminderEmails(admin, info, pp.data, cp.data, reminderAt, reviewAt),
             ]);
-            // Record as processed to prevent webhook double-fire
-            await admin.from("paystack_events").upsert(
-              { event: "charge.success", reference, payload: txn, processed_at: new Date().toISOString() },
-              { onConflict: "reference" }
-            );
           }
         }
       } else if (txn?.status === "abandoned" || txn?.status === "failed") {

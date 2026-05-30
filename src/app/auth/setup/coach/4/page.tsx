@@ -7,6 +7,7 @@ import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
   OnboardingCopy,
+  OnboardingFieldLabel,
   OnboardingKicker,
   OnboardingShell,
   OnboardingTitle,
@@ -99,12 +100,12 @@ export default function CoachSetupStep4Page() {
     }
 
     track("Coach Profile Submitted");
-    router.push("/auth/setup/coach/submitted");
+    router.push("/auth/setup/coach/bank");
     router.refresh();
   };
 
   return (
-    <OnboardingShell step="4 of 4">
+    <OnboardingShell step="4 of 5">
       <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -120,19 +121,17 @@ export default function CoachSetupStep4Page() {
 
         <div className="mt-8 space-y-6">
           <div className="group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Specializations <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <OnboardingFieldLabel required>Specializations</OnboardingFieldLabel>
+            <div className="mt-3 flex flex-wrap gap-2">
               {SPECIALIZATION_OPTIONS.map((spec) => (
                 <button
                   key={spec}
                   type="button"
                   onClick={() => setSpecializations((current) => toggle(spec, current))}
-                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-[0.98] ${
+                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
                     specializations.includes(spec)
-                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
-                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
+                      ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {spec}
@@ -142,19 +141,17 @@ export default function CoachSetupStep4Page() {
           </div>
 
           <div className="group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Languages spoken <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <OnboardingFieldLabel required>Languages spoken</OnboardingFieldLabel>
+            <div className="mt-3 flex flex-wrap gap-2">
               {LANGUAGE_OPTIONS.map((language) => (
                 <button
                   key={language}
                   type="button"
                   onClick={() => setLanguages((current) => toggle(language, current))}
-                  className={`rounded-full border px-3.5 py-1.5 text-[11px] font-bold transition-all active:scale-[0.98] ${
+                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
                     languages.includes(language)
-                      ? "bg-white/[0.08] text-white shadow-[0_4px_16px_rgba(0,0,0,0.4)] border-white/[0.08]"
-                      : "border-transparent bg-white/[0.02] text-white/40 hover:text-white/80 hover:bg-white/[0.04] backdrop-blur-sm"
+                      ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {language}
@@ -164,47 +161,43 @@ export default function CoachSetupStep4Page() {
           </div>
 
           <div className="group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Court access <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <div className="mt-3 space-y-2">
+            <OnboardingFieldLabel required>Court access</OnboardingFieldLabel>
+            <div className="mt-3 space-y-2.5">
               {COURT_ACCESS_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => setCourtAccess(option.value)}
-                  className={`flex w-full items-center justify-between rounded-[16px] border px-5 py-4 text-left text-[14px] font-bold transition-all active:scale-[0.98] ${
+                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[16px] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
                     courtAccess === option.value
-                      ? "bg-[#D96B27]/10 text-white border-[#D96B27]/50 shadow-[0_0_24px_rgba(217,107,39,0.15)]"
-                      : "border-white/[0.08] bg-white/[0.02] text-white/50 hover:bg-white/[0.04] hover:text-white backdrop-blur-sm"
+                      ? "bg-[var(--lobb-clay)]/[0.08] text-[var(--lobb-text-primary)] border-[var(--lobb-clay)]/50 shadow-[0_0_24px_rgba(196,98,45,0.08)]"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {option.label}
-                  {courtAccess === option.value && <CheckCircle2 className="size-5 shrink-0 text-[#D96B27]" />}
+                  {courtAccess === option.value && <CheckCircle2 className="size-5 shrink-0 text-[var(--lobb-clay)]" />}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Certifications <span className="text-red-400 normal-case font-bold">*</span>
-            </span>
-            <div className="mt-3 space-y-2">
+            <OnboardingFieldLabel required>Certifications</OnboardingFieldLabel>
+            <div className="mt-3 space-y-2.5">
               {CERTIFICATION_OPTIONS.map((cert) => (
                 <button
                   key={cert}
                   type="button"
                   onClick={() => toggleCert(cert)}
-                  className={`flex w-full items-center justify-between rounded-[16px] border px-5 py-4 text-left text-[14px] font-bold transition-all active:scale-[0.98] ${
+                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[16px] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
                     certifications.includes(cert)
-                      ? "bg-[#D96B27]/10 text-white border-[#D96B27]/50 shadow-[0_0_24px_rgba(217,107,39,0.15)]"
-                      : "border-white/[0.08] bg-white/[0.02] text-white/50 hover:bg-white/[0.04] hover:text-white backdrop-blur-sm"
+                      ? "bg-[var(--lobb-clay)]/[0.08] text-[var(--lobb-text-primary)] border-[var(--lobb-clay)]/50 shadow-[0_0_24px_rgba(196,98,45,0.08)]"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {cert}
                   {certifications.includes(cert) && (
-                    <CheckCircle2 className="size-5 shrink-0 text-[#D96B27]" />
+                    <CheckCircle2 className="size-5 shrink-0 text-[var(--lobb-clay)]" />
                   )}
                 </button>
               ))}
@@ -212,17 +205,14 @@ export default function CoachSetupStep4Page() {
           </div>
 
           <label className="block group">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#D96B27]">
-              Demo video URL{" "}
-              <span className="text-white/30 normal-case font-semibold tracking-normal">(optional)</span>
-            </span>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.02] px-5 backdrop-blur-md transition-all focus-within:border-[#D96B27]/50 focus-within:bg-white/[0.04] focus-within:shadow-[0_0_24px_rgba(217,107,39,0.15)]">
+            <OnboardingFieldLabel hint="optional">Demo video URL</OnboardingFieldLabel>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
               <input
                 type="url"
                 value={demoVideoUrl}
                 onChange={(e) => setDemoVideoUrl(e.target.value)}
                 placeholder="YouTube or Instagram link showing your coaching"
-                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-white outline-none placeholder:text-white/20 focus:ring-0"
+                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
               />
             </div>
           </label>

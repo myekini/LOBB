@@ -4,9 +4,30 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireRole } from "@/lib/api-auth";
 import { loadCoachBookings, loadPlayerBookings } from "@/lib/dashboard-queries";
 import { initializeTransaction, generateReference } from "@/lib/paystack";
+import { sendBookingPaymentInitiatedCoachSms } from "@/lib/sms-notifications";
+import type { NotificationBookingInfo } from "@/lib/notification-messages";
 
 const PLATFORM_COMMISSION_RATE = 0.15; // LOBB's cut from coach rate
 const CONVENIENCE_FEE_RATE = 0.05; // charged to player
+
+function callbackOrigin(request: Request) {
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host");
+
+  if (host) {
+    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const requestProto = new URL(request.url).protocol.replace(":", "");
+    const proto = process.env.NODE_ENV === "production"
+      ? "https"
+      : forwardedProto === "https" || requestProto === "https"
+        ? "https"
+        : "http";
+
+    return `${proto}://${host}`;
+  }
+
+  return (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, "");
+}
 
 export async function GET() {
   const auth = await requireRole(["player", "coach", "admin"]);
@@ -128,6 +149,32 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Lock/coach mismatch" }, { status: 400 });
     }
 
+    // ── Guard: coach must have a Paystack subaccount for split payouts ─────────
+    if (!coach.paystack_subaccount_code) {
+      return NextResponse.json(
+        { error: "This coach hasn't set up their payout account yet and cannot accept bookings." },
+        { status: 403 }
+      );
+    }
+
+    // ── Guard: prevent National Stadium court double-booking ──────────────────
+    if (location_venue_id === "national_stadium" && location_court_id) {
+      const starts_at_check = new Date(slot_starts_at);
+      const { data: courtConflict } = await admin
+        .from("court_slot_bookings")
+        .select("id")
+        .eq("court_id", location_court_id)
+        .eq("slot_starts_at", starts_at_check.toISOString())
+        .maybeSingle();
+
+      if (courtConflict) {
+        return NextResponse.json(
+          { error: "This court is already booked for that time. Please go back and choose a different court." },
+          { status: 409 }
+        );
+      }
+    }
+
     // ── Calculate fees ────────────────────────────────────────────────────────
     const session_fee = coach.hourly_rate_ngn;
     const platform_commission = Math.round(session_fee * PLATFORM_COMMISSION_RATE);
@@ -141,7 +188,7 @@ export async function POST(request: Request) {
 
     // ── Initialize Paystack ────────────────────────────────────────────────────
     const reference  = generateReference();
-    const appUrl     = process.env.NEXT_PUBLIC_APP_URL || `https://${request.headers.get("host")}`;
+    const appUrl     = callbackOrigin(request);
     const email      = user.email ?? `${user.id}@lobb.ng`; // Paystack requires email
 
     const paystackData = await initializeTransaction({
@@ -176,8 +223,6 @@ export async function POST(request: Request) {
         session_date: starts_at.toLocaleDateString("en-CA", { timeZone: "Africa/Lagos" }),
         session_start_time: starts_at.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Africa/Lagos" }),
         session_end_time: ends_at.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Africa/Lagos" }),
-        location_note: location.trim(),
-        player_note: player_notes?.trim() || null,
         gross_amount: total_amount,
         platform_commission_ngn: platform_commission,
         convenience_fee_ngn: convenience_fee,
@@ -213,6 +258,26 @@ export async function POST(request: Request) {
       .from("slot_locks")
       .update({ booking_id: booking.id })
       .eq("id", lock_id);
+
+    const { data: coachProfile } = await admin
+      .from("profiles")
+      .select("id, phone_number, full_name")
+      .eq("id", coach.id)
+      .maybeSingle();
+
+    const notificationInfo: NotificationBookingInfo = {
+      bookingId: booking.id,
+      coachName: coachProfile?.full_name ?? coach.full_name ?? "Your coach",
+      playerName: profile.full_name ?? "Your player",
+      startsAt: starts_at.toISOString(),
+      endsAt: ends_at.toISOString(),
+      location: location.trim(),
+      playerNotes: player_notes?.trim() || null,
+      coachPhone: coachProfile?.phone_number ?? null,
+      playerPhone: profile.phone_number ?? null,
+    };
+
+    await sendBookingPaymentInitiatedCoachSms(admin, notificationInfo, coachProfile).catch(() => null);
 
     return NextResponse.json({
       booking_id:   booking.id,

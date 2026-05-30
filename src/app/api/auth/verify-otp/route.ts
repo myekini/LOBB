@@ -1,7 +1,7 @@
 import { createHmac } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { verifyOtp } from "@/lib/db-otp";
+import { consumeOtp, verifyOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { normalizeEmail } from "@/lib/email";
 import { getSupabaseServerKey } from "@/lib/supabase/server";
@@ -146,6 +146,10 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    // Only consume (delete) the OTP record once we have a confirmed session —
+    // if we deleted it before this point a failed signIn would lock the user out.
+    consumeOtp(identifier);
 
     return NextResponse.json({
       session,

@@ -64,11 +64,32 @@ export async function loadPlayerBookings(admin: SupabaseClient, playerId: string
 }
 
 export async function loadCoachBookings(admin: SupabaseClient, coachId: string) {
-  return admin
+  const result = await admin
     .from("bookings")
     .select(bookingSelect)
     .eq("coach_id", coachId)
     .order("starts_at", { ascending: true });
+
+  if (result.error || !result.data?.length) return result;
+
+  const playerIds = Array.from(new Set(result.data.map((booking) => booking.player_id).filter(Boolean)));
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("id, phone_number, avatar_url")
+    .in("id", playerIds);
+
+  const profileById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+
+  return {
+    ...result,
+    data: result.data.map((booking) => {
+      const profile = profileById.get(booking.player_id);
+      return {
+        ...booking,
+        player_profile: profile ? [{ phone_number: profile.phone_number, avatar_url: profile.avatar_url }] : [],
+      };
+    }),
+  };
 }
 
 export function canLeaveReview(booking: { status: string; starts_at: string; reviews?: unknown[] | null }) {

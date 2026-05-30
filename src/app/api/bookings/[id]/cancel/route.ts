@@ -38,28 +38,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const refundNgn = refundAmountNgn(totalPaidNgn, policy.refundPercent);
   const payment = booking.payments?.[0] as { paystack_reference?: string | null; status?: string | null } | undefined;
 
-  // Issue refund via Paystack
-  if (policy.refundPercent > 0 && payment?.status === "paid" && payment.paystack_reference) {
-    try {
-      const refundKobo = policy.refundPercent === 100
-        ? undefined                                          // full refund — omit amount
-        : Math.round(refundNgn * 100);                       // partial — specify kobo amount
-
-      await initiateRefund(payment.paystack_reference, refundKobo);
-
-      const newPaymentStatus = policy.refundPercent === 100 ? "refunded" : "partial_refund";
-      await auth.admin
-        .from("payments")
-        .update({ status: newPaymentStatus })
-        .eq("paystack_reference", payment.paystack_reference);
-    } catch (error) {
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Refund could not be started" },
-        { status: 502 }
-      );
-    }
-  }
-
+  // ── Cancel booking in DB first (before touching Paystack) ────────────────────
+  // If the DB update fails, no refund has been issued yet — consistent state.
   const now = new Date().toISOString();
 
   const { error: updateError } = await auth.admin
@@ -73,6 +53,37 @@ export async function POST(request: Request, { params }: { params: { id: string 
     .eq("id", params.id);
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+
+  // ── Issue refund via Paystack (booking already cancelled) ────────────────────
+  if (policy.refundPercent > 0 && payment?.status === "paid" && payment.paystack_reference) {
+    try {
+      const refundKobo = policy.refundPercent === 100
+        ? undefined                              // full refund — omit amount
+        : Math.round(refundNgn * 100);           // partial — specify kobo amount
+
+      await initiateRefund(payment.paystack_reference, refundKobo);
+
+      const newPaymentStatus = policy.refundPercent === 100 ? "refunded" : "partial_refund";
+      await auth.admin
+        .from("payments")
+        .update({ status: newPaymentStatus })
+        .eq("paystack_reference", payment.paystack_reference);
+    } catch (error) {
+      // Booking is already cancelled. Refund failed — return error so the caller
+      // knows to surface a "contact support" message, but don't re-activate the booking.
+      return NextResponse.json(
+        {
+          ok: true,
+          cancelled_by: cancelledBy,
+          refund_percent: policy.refundPercent,
+          refund_ngn: refundNgn,
+          refund_label: policy.label,
+          refund_error: error instanceof Error ? error.message : "Refund could not be started — contact support",
+        },
+        { status: 207 } // booking cancelled but refund requires manual action
+      );
+    }
+  }
 
   // Fetch contact details for notifications
   const [coachProfile, playerProfile] = await Promise.all([

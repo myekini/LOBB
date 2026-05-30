@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarDays, Home, User, WalletCards } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const items = [
   { href: "/coach/dashboard", label: "Home", icon: Home },
@@ -45,6 +46,7 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
             </Link>
           );
         })}
+        <ThemeToggle className="h-[54px] flex-1 rounded-[18px] border-0 bg-transparent" />
       </div>
     </nav>
   );
@@ -75,6 +77,7 @@ export function CoachDesktopNav({ active }: { active: ActiveTab }) {
           </Link>
         );
       })}
+      <ThemeToggle />
     </nav>
   );
 }

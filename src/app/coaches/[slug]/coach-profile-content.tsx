@@ -7,23 +7,25 @@ import {
   AlertCircle,
   ArrowLeft,
   Bell,
-  Bookmark,
   Building2,
   CalendarCheck,
-  Check,
   ChevronLeft,
   ChevronRight,
   CircleUserRound,
+  Copy,
+  Pencil,
   MapPin,
   Play,
   ShieldCheck,
   Star,
+  Trophy,
   Zap,
 } from "lucide-react";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
+import { CoachShareSheet } from "@/features/coaches/coach-share-sheet";
 
 type Tab = "about" | "availability" | "reviews";
 
@@ -117,6 +119,7 @@ export function CoachProfileContent({
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(0);
+  const [origin, setOrigin] = useState("");
   const slotTimedOut = search.get("timeout") === "slot";
 
   const fullName = coach.full_name ?? "Coach";
@@ -138,6 +141,9 @@ export function CoachProfileContent({
   const locations = [primaryLocation, ...serviceAreas.filter((area) => area && area !== primaryLocation)];
   const selectedSlotDay = slots[selectedDay];
   const bookingHref = coach.slug ? `/book/${coach.slug}/step-1` : "#";
+  const profilePath = coach.slug ? `/coaches/${coach.slug}` : "/coach/profile/preview";
+  const profileUrl = origin ? `${origin}${profilePath}` : profilePath;
+  const canSharePublicProfile = Boolean(coach.slug && origin);
 
   const heroStyle = useMemo(
     () =>
@@ -152,6 +158,10 @@ export function CoachProfileContent({
       showLobbToast({ type: "warning", message: "Your slot timed out. Select a new time." });
     }
   }, [slotTimedOut]);
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
 
   useEffect(() => {
     if (!coach.slug) {
@@ -221,6 +231,12 @@ export function CoachProfileContent({
             <span className="text-2xl font-black tracking-tight">LOBB</span>
           </div>
           <div className="flex items-center gap-3">
+            <CoachShareSheet
+              coachName={fullName}
+              disabled={!canSharePublicProfile}
+              profileUrl={profileUrl}
+              triggerClassName="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#d8d2c9] bg-white px-4 text-xs font-black text-[#1a1c1c] transition hover:border-[#9c440f]/35 disabled:opacity-45"
+            />
             <button
               type="button"
               className="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2]"
@@ -240,14 +256,33 @@ export function CoachProfileContent({
       </nav>
 
       {isPreview && (
-        <div className="border-b border-[#c4c7c7] bg-white px-4 py-2 text-center text-xs font-bold uppercase tracking-[0.08em] text-[#9c440f]">
-          Preview mode
+        <div className="border-b border-[#c4c7c7] bg-white px-4 py-3">
+          <div className="mx-auto flex max-w-[1280px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.08em] text-[#9c440f]">Preview mode</p>
+              <p className="mt-1 text-sm font-semibold text-[#6b6560]">
+                {coach.slug ? "This is the profile players can book and share." : "Add a public slug before sharing this profile."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#1a1c1c] px-4 text-xs font-black text-white">
+                <Pencil className="size-4 text-[#d96b27]" />
+                Edit profile
+              </Link>
+              <CoachShareSheet
+                coachName={fullName}
+                disabled={!canSharePublicProfile}
+                profileUrl={profileUrl}
+                triggerClassName="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#d8d2c9] bg-white px-4 text-xs font-black text-[#1a1c1c] disabled:opacity-45"
+              />
+            </div>
+          </div>
         </div>
       )}
 
-      <section className="mx-auto grid max-w-[1280px] gap-8 md:grid-cols-12 md:px-6 md:py-8">
+      <section className="mx-auto grid max-w-[1280px] gap-6 md:grid-cols-12 md:px-6 md:py-8 lg:gap-8">
         <div className="md:col-span-7 lg:col-span-8">
-          <section className="relative aspect-video overflow-hidden bg-[#e2e2e2] md:rounded-2xl">
+          <section className="relative aspect-[4/3] overflow-hidden bg-[#e2e2e2] sm:aspect-video md:rounded-2xl">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={heroStyle}
@@ -267,13 +302,13 @@ export function CoachProfileContent({
               >
                 <ArrowLeft className="size-5" />
               </Link>
-              <button
-                type="button"
-                className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur"
-                aria-label="Save coach"
-              >
-                <Bookmark className="size-5" />
-              </button>
+              <CoachShareSheet
+                coachName={fullName}
+                disabled={!canSharePublicProfile}
+                profileUrl={profileUrl}
+                triggerClassName="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur disabled:opacity-45"
+                triggerLabel=""
+              />
             </div>
             {coach.demo_video_url && (
               <a
@@ -296,8 +331,8 @@ export function CoachProfileContent({
               </div>
             )}
 
-            <div className="mb-6 flex items-start gap-4">
-              <div className="size-16 shrink-0 overflow-hidden rounded-full border-2 border-[#e2e2e2] bg-[#eeeeee]">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
+              <div className="size-20 shrink-0 overflow-hidden rounded-[24px] border border-[#d8d2c9] bg-[#eeeeee] shadow-sm sm:size-16 sm:rounded-full">
                 {coach.profile_photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={coach.profile_photo_url} alt={fullName} className="size-full object-cover" />
@@ -310,7 +345,7 @@ export function CoachProfileContent({
 
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-[18px] font-black text-[#1a1c1c]">{fullName}</h1>
+                  <h1 className="text-[24px] font-black leading-tight text-[#1a1c1c] sm:text-[18px]">{fullName}</h1>
                   {coach.is_verified && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#9c440f]/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-[#9c440f]">
                       <ShieldCheck className="size-3" />
@@ -331,10 +366,23 @@ export function CoachProfileContent({
                   <span className="font-mono text-2xl font-black text-[#9c440f]">{money(hourlyRate)}</span>
                   <span className="text-sm font-medium text-[#444748]">/hr</span>
                 </div>
+                {coach.slug && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(profileUrl);
+                      showLobbToast({ type: "success", message: "Profile link copied" });
+                    }}
+                    className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-full border border-[#d8d2c9] bg-white px-3 text-xs font-black text-[#1a1c1c] md:hidden"
+                  >
+                    <Copy className="size-3.5 text-[#9c440f]" />
+                    Copy profile link
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="mb-8 grid grid-cols-3 gap-4 rounded-xl bg-[#f3f3f3] p-4">
+            <div className="mb-8 grid grid-cols-3 gap-2 rounded-2xl border border-[#ded9d1] bg-white p-2 shadow-sm sm:gap-4 sm:p-4">
               <StatBlock value={sessionCount || "New"} label="Sessions" />
               <StatBlock value={coach.experience_years || "New"} label="Years Exp" bordered />
               <StatBlock value={ratingLabel} label="Rating" />
@@ -350,7 +398,7 @@ export function CoachProfileContent({
                 {(specializations.length ? specializations : skillLevels).slice(0, 5).map((item) => (
                   <span
                     key={item}
-                    className="rounded-full bg-[#e2e2e2] px-3 py-1 text-sm font-semibold text-[#1a1c1c]"
+                    className="inline-flex min-h-9 items-center rounded-full bg-[#e8e1d8] px-3.5 py-1.5 text-sm font-semibold leading-tight text-[#1a1c1c]"
                   >
                     {item}
                   </span>
@@ -392,15 +440,21 @@ export function CoachProfileContent({
                 </div>
 
                 <div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[#1a1c1c]">Certifications</h3>
+                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[#1a1c1c]">Credentials</h3>
                   {certifications.length > 0 ? (
-                    <ul className="space-y-3">
+                    <ul className="grid gap-3 sm:grid-cols-2">
                       {certifications.map((cert) => (
-                        <li key={cert} className="flex items-center gap-3">
-                          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#9c440f]/10">
-                            <Check className="size-4 text-[#9c440f]" />
+                        <li key={cert} className="group relative min-h-[86px] overflow-hidden rounded-[22px] border border-[#ded9d1] bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-[#9c440f]/35 hover:shadow-md">
+                          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#9c440f,#f4a228)]" />
+                          <div className="flex items-center gap-3">
+                          <span className="flex size-12 shrink-0 items-center justify-center rounded-[18px] bg-[#9c440f]/10 text-[#9c440f] ring-1 ring-[#9c440f]/10">
+                            <ShieldCheck className="size-5" />
                           </span>
-                          <span className="text-sm font-semibold text-[#1a1c1c]">{cert}</span>
+                          <span className="min-w-0">
+                            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[#9c440f]">Credential</span>
+                            <span className="mt-1 block text-sm font-black leading-snug text-[#1a1c1c]">{cert}</span>
+                          </span>
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -414,7 +468,7 @@ export function CoachProfileContent({
                     <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[#1a1c1c]">Who I Coach</h3>
                     <div className="flex flex-wrap gap-2">
                       {skillLevels.map((level) => (
-                        <span key={level} className="rounded-full border border-[#c4c7c7] px-3 py-1 text-sm font-semibold">
+                        <span key={level} className="inline-flex min-h-9 items-center rounded-full border border-[#c4c7c7] px-3.5 py-1.5 text-sm font-semibold leading-tight">
                           {level}
                         </span>
                       ))}
@@ -577,19 +631,19 @@ export function CoachProfileContent({
         </div>
 
         <aside className="hidden md:col-span-5 md:block lg:col-span-4">
-          <div className="sticky top-24 rounded-2xl border border-[#c4c7c7] bg-white p-6 shadow-sm">
+          <div className="sticky top-24 rounded-2xl border border-[#d8d2c9] bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-start justify-between">
               <div>
                 <div className="font-mono text-3xl font-black tracking-tight text-[#9c440f]">{money(hourlyRate)}</div>
                 <div className="text-sm font-medium text-[#444748]">per hour session</div>
               </div>
-              <button
-                type="button"
-                className="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2]"
-                aria-label="Save coach"
-              >
-                <Bookmark className="size-5" />
-              </button>
+              <CoachShareSheet
+                coachName={fullName}
+                disabled={!canSharePublicProfile}
+                profileUrl={profileUrl}
+                triggerClassName="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2] disabled:opacity-45"
+                triggerLabel=""
+              />
             </div>
 
             <div className="mb-6 space-y-4">
@@ -602,6 +656,22 @@ export function CoachProfileContent({
                 <span className="text-sm font-semibold">Free cancellation 24h prior</span>
               </div>
             </div>
+
+            {certifications.length > 0 && (
+              <div className="mb-6 rounded-2xl border border-[#ead7c6] bg-[#fff8f2] p-4">
+                <div className="mb-3 flex items-center gap-2 text-[#9c440f]">
+                  <Trophy className="size-4" />
+                  <p className="text-xs font-black uppercase tracking-[0.12em]">Credentials</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {certifications.slice(0, 3).map((cert) => (
+                    <span key={cert} className="inline-flex min-h-8 items-center rounded-full bg-white px-3 py-1 text-xs font-black leading-tight text-[#6e2a00] shadow-sm ring-1 ring-[#ead7c6]">
+                      {cert}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {isPreview ? (
               <button

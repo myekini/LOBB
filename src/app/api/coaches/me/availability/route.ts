@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import type { CoachAvailabilityRow, CoachAvailabilityBlock, CoachAvailabilitySlotBlock } from "@/lib/types";
 
+type AvailabilityBookingBlock = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  status: string;
+  player_name: string | null;
+};
+
 function missingSlotBlockTable(error: { code?: string; message?: string } | null) {
   return Boolean(
     error &&
@@ -20,7 +28,7 @@ export async function GET() {
       return NextResponse.json({ error: auth.error }, { status: auth.status });
     }
 
-    const [slotsResult, blocksResult, slotBlocksResult] = await Promise.all([
+    const [slotsResult, blocksResult, slotBlocksResult, bookingBlocksResult] = await Promise.all([
       auth.admin
         .from("coach_availability")
         .select("*")
@@ -37,6 +45,13 @@ export async function GET() {
         .select("*")
         .eq("coach_id", auth.user.id)
         .order("slot_starts_at"),
+      auth.admin
+        .from("bookings")
+        .select("id, starts_at, ends_at, status, players!bookings_player_id_fkey(full_name)")
+        .eq("coach_id", auth.user.id)
+        .in("status", ["pending", "pending_payment", "confirmed"])
+        .gte("starts_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order("starts_at"),
     ]);
 
     if (slotsResult.error) {
@@ -48,11 +63,24 @@ export async function GET() {
     if (slotBlocksResult.error && !missingSlotBlockTable(slotBlocksResult.error)) {
       return NextResponse.json({ error: slotBlocksResult.error.message }, { status: 500 });
     }
+    if (bookingBlocksResult.error) {
+      return NextResponse.json({ error: bookingBlocksResult.error.message }, { status: 500 });
+    }
 
     return NextResponse.json({
       slots: (slotsResult.data ?? []) as CoachAvailabilityRow[],
       blocks: (blocksResult.data ?? []) as CoachAvailabilityBlock[],
       slot_blocks: slotBlocksResult.error ? [] : ((slotBlocksResult.data ?? []) as CoachAvailabilitySlotBlock[]),
+      booking_blocks: (bookingBlocksResult.data ?? []).map((booking): AvailabilityBookingBlock => {
+        const player = Array.isArray(booking.players) ? booking.players[0] : booking.players;
+        return {
+          id: booking.id,
+          starts_at: new Date(booking.starts_at).toISOString(),
+          ends_at: new Date(booking.ends_at).toISOString(),
+          status: booking.status,
+          player_name: player?.full_name ?? null,
+        };
+      }),
     });
   } catch {
     return NextResponse.json({ error: "Unable to load availability" }, { status: 500 });

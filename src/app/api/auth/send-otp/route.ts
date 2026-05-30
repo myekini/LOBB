@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { createOtp, getTestOtp, isTestOtpEnabled, shouldUseTestOtp } from "@/lib/db-otp";
-import { formatNigerianPhoneNumber } from "@/lib/phone";
-import { sendOtpSms } from "@/lib/sms";
+import { createOtp } from "@/lib/db-otp";
 import { sendEmail, normalizeEmail } from "@/lib/email";
 
 function getRequestedRole(role: string | undefined) {
   if (role === "coach") return "coach";
-  if (role === "admin" && process.env.LOBB_ENABLE_DEV_LOGIN === "true") return "admin";
   return "player";
 }
 
@@ -45,7 +42,7 @@ function otpEmailText(code: string) {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { email?: string; phone?: string; role?: string };
+    const body = (await request.json()) as { email?: string; role?: string };
     const role = getRequestedRole(body.role);
 
     // ── Email OTP path (primary) ──────────────────────────────────────────────
@@ -67,44 +64,10 @@ export async function POST(request: Request) {
         text: otpEmailText(otp.code),
       });
 
-      const devCode = isTestOtpEnabled() ? otp.code : undefined;
-      return NextResponse.json({
-        email,
-        expiresAt: otp.expiresAt,
-        ...(devCode ? { devCode } : {}),
-      });
+      return NextResponse.json({ email, expiresAt: otp.expiresAt });
     }
 
-    // ── Phone / SMS OTP path (legacy — dev accounts only) ────────────────────
-    if (!body.phone) {
-      return NextResponse.json({ error: "Email address is required." }, { status: 400 });
-    }
-
-    const phone = formatNigerianPhoneNumber(body.phone);
-    const otp = await createOtp(phone, role);
-    if ("error" in otp) {
-      return NextResponse.json({ error: otp.error }, { status: 429 });
-    }
-
-    const isTestPhone = shouldUseTestOtp(phone);
-    if (!isTestPhone) {
-      try {
-        await sendOtpSms({
-          phone,
-          message: `Your LOBB login code is ${otp.code}. It expires in 10 minutes.`,
-        });
-      } catch (err) {
-        if (!isTestOtpEnabled()) throw err;
-        console.warn("[send-otp] SMS failed in test mode:", err instanceof Error ? err.message : err);
-      }
-    }
-
-    const devCode = isTestOtpEnabled() ? (isTestPhone ? getTestOtp() : otp.code) : undefined;
-    return NextResponse.json({
-      phone,
-      expiresAt: otp.expiresAt,
-      ...(devCode ? { devCode } : {}),
-    });
+    return NextResponse.json({ error: "Email address is required." }, { status: 400 });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unable to send OTP" },

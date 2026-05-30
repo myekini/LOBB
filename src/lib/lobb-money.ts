@@ -10,10 +10,10 @@ export function hoursUntilSession(startsAt: string) {
 
 // ─── 3-tier cancellation policy ───────────────────────────────────────────────
 //
-//  Coach / admin cancels  → player always gets 100% back (their fault)
-//  Player cancels ≥ 24 hr → 100% refund
-//  Player cancels 2–24 hr → 50% refund (coach kept preparation time)
-//  Player cancels < 2 hr  → 0% refund
+//  Cancellation policy:
+//  ≥ 72 hr → 100% refund
+//  24–72 hr → 50% refund
+//  < 24 hr → 0% refund
 //
 export type CancellationPolicy = {
   refundPercent: 0 | 50 | 100;
@@ -25,36 +25,29 @@ export function cancellationPolicy(
   startsAt: string,
   cancelledBy: "player" | "coach" | "admin" = "player"
 ): CancellationPolicy {
-  if (cancelledBy === "coach" || cancelledBy === "admin") {
+  void cancelledBy;
+  const hours = hoursUntilSession(startsAt);
+
+  if (hours >= 72) {
     return {
       refundPercent: 100,
       label: "Full refund",
-      note: "Full refund — session was cancelled by the coach.",
+      note: "Cancelling more than 72 hrs before — full refund in 5–7 business days.",
     };
   }
-
-  const hours = hoursUntilSession(startsAt);
 
   if (hours >= 24) {
     return {
-      refundPercent: 100,
-      label: "Full refund",
-      note: "Cancelling more than 24 hrs before — full refund in 5–7 business days.",
-    };
-  }
-
-  if (hours >= 2) {
-    return {
       refundPercent: 50,
       label: "50% refund",
-      note: "Late cancellation (2–24 hrs before) — 50% refund in 5–7 business days.",
+      note: "Cancelling 24–72 hrs before — 50% refund in 5–7 business days.",
     };
   }
 
   return {
     refundPercent: 0,
     label: "No refund",
-    note: "Cancellation within 2 hrs of the session — no refund applies.",
+    note: "Cancellation within 24 hrs of the session — no refund applies.",
   };
 }
 

@@ -3,9 +3,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { LobbToaster, OfflineState } from "@/providers/lobb-global-state";
-import { DevRoleSwitcher } from "@/components/dev/dev-role-switcher";
 import { LobbPostHogProvider } from "@/providers/posthog-provider";
 import { LobbMixpanelProvider } from "@/providers/mixpanel-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 const siteUrl = "https://lobb.ng";
 const siteDescription =
@@ -107,7 +107,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0D0D0D",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF8F5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D0D0D" },
+  ],
 };
 
 export default function RootLayout({
@@ -116,8 +119,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", geistSans.variable, geistMono.variable)}>
+    <html lang="en" className={cn("font-sans", geistSans.variable, geistMono.variable)} suppressHydrationWarning>
       <body className="antialiased">
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('lobb-theme') || 'light';
+                if (theme !== 'dark' && theme !== 'light') theme = 'light';
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.style.colorScheme = theme;
+              } catch (_) {
+                document.documentElement.dataset.theme = 'light';
+                document.documentElement.style.colorScheme = 'light';
+              }
+            `,
+          }}
+        />
         <div className="lobb-pwa-boot" aria-hidden="true">
           <div className="lobb-pwa-boot-mark">
             <svg width="68" height="68" viewBox="0 0 64 64" fill="none" className="lobb-boot-svg">
@@ -149,13 +167,14 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <LobbPostHogProvider>
-          <LobbMixpanelProvider />
-          <LobbToaster />
-          <OfflineState />
-          <DevRoleSwitcher />
-          {children}
-        </LobbPostHogProvider>
+        <ThemeProvider>
+          <LobbPostHogProvider>
+            <LobbMixpanelProvider />
+            <LobbToaster />
+            <OfflineState />
+            {children}
+          </LobbPostHogProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

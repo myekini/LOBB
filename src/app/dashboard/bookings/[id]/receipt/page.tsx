@@ -7,6 +7,7 @@ import { ArrowLeft, CalendarDays, CheckCircle2, CreditCard, MapPin, Printer, Rec
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
+import type { BookingWithDetails } from "@/lib/types";
 
 function formatPaidAt(iso: string | null | undefined) {
   if (!iso) return "Payment confirmed";
@@ -22,6 +23,35 @@ function formatPaidAt(iso: string | null | undefined) {
   });
 }
 
+function receiptBookingFromVerified(booking: BookingWithDetails): DashboardBooking {
+  return {
+    ...booking,
+    coaches: {
+      id: booking.coach_id,
+      full_name: booking.coach_full_name,
+      slug: booking.coach_slug,
+      profile_photo_url: booking.coach_profile_photo_url,
+      headline: null,
+      primary_location: null,
+    },
+    players: {
+      id: booking.player_id,
+      full_name: booking.player_full_name,
+      avatar_url: booking.player_avatar_url,
+    },
+    payments: [
+      {
+        paystack_reference: booking.paystack_reference,
+        status: booking.payment_status,
+        paid_at: booking.paid_at,
+      },
+    ],
+    reviews: null,
+    location_venue_id: null,
+    location_court_id: null,
+  };
+}
+
 export default function BookingReceiptPage() {
   const params = useParams<{ id: string }>();
   const [booking, setBooking] = useState<DashboardBooking | null>(null);
@@ -29,12 +59,26 @@ export default function BookingReceiptPage() {
 
   useEffect(() => {
     let alive = true;
+    const reference = new URLSearchParams(window.location.search).get("reference");
+
+    const loadFromReference = async () => {
+      if (!reference) throw new Error("Receipt not found");
+      const response = await fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`);
+      const payload = (await response.json()) as { booking?: BookingWithDetails; error?: string };
+      if (!response.ok || !payload.booking || payload.booking.id !== params.id) {
+        throw new Error(payload.error ?? "Receipt not found");
+      }
+      return receiptBookingFromVerified(payload.booking);
+    };
 
     fetch(`/api/bookings/${params.id}`)
       .then(async (response) => {
         const payload = (await response.json()) as { booking?: DashboardBooking; error?: string };
-        if (!response.ok || !payload.booking) throw new Error(payload.error ?? "Receipt not found");
-        if (alive) setBooking(payload.booking);
+        if (!response.ok || !payload.booking) return loadFromReference();
+        return payload.booking;
+      })
+      .then((nextBooking) => {
+        if (alive) setBooking(nextBooking);
       })
       .catch((error) => {
         showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load receipt" });

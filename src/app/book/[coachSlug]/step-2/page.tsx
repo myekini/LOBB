@@ -137,9 +137,14 @@ function BookingStep2Content() {
   const isContinueDisabled = useMemo(() => {
     if (mode === "custom") return customAddress.trim().length === 0;
     if (!selectedCourtId) return true;
-    if (isNatStadiumSelected && !selectedStadiumCourtId) return true;
+    if (isNatStadiumSelected) {
+      if (!selectedStadiumCourtId) return true;
+      // Guard: ensure the selected sub-court is actually accessible at this slot time
+      const sc = NATIONAL_STADIUM_COURTS.find((c) => c.id === selectedStadiumCourtId);
+      if (sc?.isMemberCourt && !memberCourtsAccessible) return true;
+    }
     return false;
-  }, [mode, customAddress, selectedCourtId, isNatStadiumSelected, selectedStadiumCourtId]);
+  }, [mode, customAddress, selectedCourtId, isNatStadiumSelected, selectedStadiumCourtId, memberCourtsAccessible]);
 
   const handleContinue = () => {
     const venueId  = mode === "curated" && selectedCourtId ? selectedCourtId : "";
@@ -160,7 +165,9 @@ function BookingStep2Content() {
     <BookingShell step={2} backHref={`/book/${slug}/step-1`}>
       {/* Slot recap */}
       {slot && (
-        <div className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+        <div className="overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
+          <div className="h-2 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+          <div className="p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Held slot</p>
@@ -174,11 +181,12 @@ function BookingStep2Content() {
               {formatCountdown(seconds)}
             </span>
           </div>
+          </div>
         </div>
       )}
 
       {/* Location header */}
-      <div className="mt-4 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+      <div className="mt-4 rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
             <MapPin className="size-4" />
@@ -192,11 +200,11 @@ function BookingStep2Content() {
         </div>
 
         {/* Mode toggle */}
-        <div className="mt-4 flex gap-1 rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-1">
+        <div className="mt-5 grid grid-cols-2 gap-1 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-1">
           <button
             type="button"
             onClick={() => setMode("curated")}
-            className={`flex-1 rounded-[14px] py-2.5 text-xs font-black transition-all duration-200 ${
+            className={`rounded-[14px] py-3 text-xs font-black transition-all duration-200 ${
               mode === "curated" ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-sm" : "text-[var(--lobb-text-secondary)]"
             }`}
           >
@@ -205,7 +213,7 @@ function BookingStep2Content() {
           <button
             type="button"
             onClick={() => setMode("custom")}
-            className={`flex-1 rounded-[14px] py-2.5 text-xs font-black transition-all duration-200 ${
+            className={`rounded-[14px] py-3 text-xs font-black transition-all duration-200 ${
               mode === "custom" ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-sm" : "text-[var(--lobb-text-secondary)]"
             }`}
           >
@@ -215,10 +223,16 @@ function BookingStep2Content() {
 
         {/* Curated court picker */}
         {mode === "curated" && (
-          <div className="mt-4 grid gap-2 animate-in fade-in-0 duration-200 sm:grid-cols-2">
+          <div className="mt-5 grid gap-2.5 animate-in fade-in-0 duration-200 sm:grid-cols-2">
             {courtsToShow.map((court) => {
               const isSelected = selectedCourtId === court.id;
-              const isLocked = court.accessRule === "members_only";
+              // members_only → always locked
+              // members_weekday_restricted (non-National-Stadium) → locked outside public hours
+              const isLocked =
+                court.accessRule === "members_only" ||
+                (court.accessRule === "members_weekday_restricted" &&
+                  !court.isNationalStadium &&
+                  !isMemberCourtPubliclyAccessible(slot));
               return (
                 <button
                   key={court.id}
@@ -229,11 +243,11 @@ function BookingStep2Content() {
                     setSelectedStadiumCourtId(""); // reset stadium sub-court on change
                   }}
                   disabled={isLocked}
-                  className={`w-full rounded-2xl border p-3.5 text-left transition-all duration-200 active:scale-[0.99] ${
+                  className={`w-full rounded-[20px] border p-4 text-left transition-all duration-200 active:scale-[0.99] ${
                     isLocked
                       ? "cursor-not-allowed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] opacity-50"
                       : isSelected
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] shadow-[0_8px_24px_rgba(196,98,45,0.08)]"
+                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] shadow-[0_12px_28px_rgba(196,98,45,0.12)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] hover:border-[var(--lobb-clay)]/30 hover:bg-[var(--lobb-bg-elevated)]"
                   }`}
                 >
@@ -285,7 +299,7 @@ function BookingStep2Content() {
               onChange={(e) => setCustomAddress(e.target.value)}
               placeholder="e.g. Lekki Phase 1 Tennis Club, Court 2, Lagos"
               rows={3}
-              className="w-full resize-none rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-sm font-semibold outline-none shadow-sm transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+            className="w-full resize-none rounded-[20px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none shadow-sm transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
             />
           </div>
         )}
@@ -393,7 +407,7 @@ function BookingStep2Content() {
       </div>
 
       {/* Note to coach */}
-      <label className="mt-4 block rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+      <label className="mt-4 block rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
         <span className="text-sm font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">
           Note to coach{" "}
           <span className="text-[10px] font-bold tracking-normal text-[var(--lobb-text-secondary)] lowercase">(optional)</span>
@@ -403,13 +417,13 @@ function BookingStep2Content() {
           onChange={(e) => setNote(e.target.value)}
           placeholder="Focus area, injury note, or anything the coach should know"
           rows={3}
-          className="mt-2 h-24 w-full resize-none rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4 text-sm font-semibold outline-none shadow-sm transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+          className="mt-3 h-24 w-full resize-none rounded-[20px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none shadow-sm transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
         />
       </label>
 
       {/* Location preview */}
       {finalLocation && (
-        <div className="mt-4 rounded-2xl border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay-light)] p-4 animate-in fade-in-50 duration-300">
+        <div className="mt-4 rounded-[22px] border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay-light)] p-4 shadow-[var(--lobb-shadow-card)] animate-in fade-in-50 duration-300">
           <div className="flex gap-3 items-start">
             <MapPin className="size-4 text-[var(--lobb-clay)] shrink-0 mt-0.5" />
             <div>

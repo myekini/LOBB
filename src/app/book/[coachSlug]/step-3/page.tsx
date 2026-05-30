@@ -143,7 +143,9 @@ function BookingStep3Content() {
       backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}${venueId ? `&venue_id=${venueId}` : ""}${courtId ? `&court_id=${courtId}` : ""}`}
     >
       {/* Countdown */}
-      <div className="mb-4 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+      <div className="mb-4 overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
+        <div className="h-2 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+        <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Review & pay</p>
@@ -153,13 +155,25 @@ function BookingStep3Content() {
             {formatCountdown(seconds)}
           </span>
         </div>
+        </div>
       </div>
 
-      <section className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+      <section className="overflow-hidden rounded-[30px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
+        <div className="bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)]">
+          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">Payment summary</p>
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-black">{coach ? money(total) : "Loading"}</h2>
+              <p className="mt-1 text-xs font-semibold text-white/60">60-minute private coaching session</p>
+            </div>
+            <ShieldCheck className="size-7 text-[var(--lobb-clay)]" />
+          </div>
+        </div>
+        <div className="p-4 sm:p-5">
         {/* Coach identity */}
         {coach && (
           <div className="mb-4 flex items-center gap-3.5 border-b border-[var(--lobb-border-subtle)] pb-4">
-            <div className="size-12 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+            <div className="size-14 shrink-0 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -179,17 +193,17 @@ function BookingStep3Content() {
         {/* Session details */}
         <div className="grid gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
           {slot && (
-            <div className="flex items-center gap-3 rounded-2xl bg-[var(--lobb-bg-secondary)] p-3">
+            <div className="flex items-center gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <CalendarDays className="size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="text-[var(--lobb-text-primary)]">{formatSlotShort(slot)} - {formatSlotEnd(slot)}</span>
             </div>
           )}
-          <div className="flex items-center gap-3 rounded-2xl bg-[var(--lobb-bg-secondary)] p-3">
+          <div className="flex items-center gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
             <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" />
             <span className="text-[var(--lobb-text-primary)]">60 minutes</span>
           </div>
           {location && (
-            <div className="flex items-start gap-3 rounded-2xl bg-[var(--lobb-bg-secondary)] p-3">
+            <div className="flex items-start gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="leading-relaxed text-[var(--lobb-text-primary)]">{location}</span>
             </div>
@@ -210,7 +224,7 @@ function BookingStep3Content() {
               <span className="font-black text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
             </div>
             <div className="pt-2">
-              <div className="flex items-center justify-between rounded-2xl border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-3.5">
+              <div className="flex items-center justify-between rounded-[20px] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
                 <span className="text-xs font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">Total</span>
                 <span className="text-xl font-black text-[var(--lobb-clay)]">{money(total)}</span>
               </div>
@@ -223,10 +237,11 @@ function BookingStep3Content() {
             <SkeletonBlock className="h-12 w-full rounded-2xl" />
           </div>
         )}
+        </div>
       </section>
 
       {/* Escrow Shield Trust Banner */}
-      <div className="mt-4 flex items-start gap-3 rounded-2xl border border-emerald-500/10 bg-emerald-500/[0.04] p-4 text-xs font-semibold leading-relaxed text-emerald-950 shadow-sm">
+      <div className="mt-4 flex items-start gap-3 rounded-[22px] border border-emerald-500/15 bg-emerald-500/[0.06] p-4 text-xs font-semibold leading-relaxed text-emerald-950 shadow-sm">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
         <div>
           <p className="text-[10px] font-black uppercase tracking-wider text-emerald-900">Protected payment</p>

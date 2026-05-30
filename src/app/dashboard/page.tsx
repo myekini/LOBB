@@ -42,7 +42,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-4 pb-28 pt-7 text-[var(--lobb-black)] sm:px-6 lg:pt-10">
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 pb-28 pt-7 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-10">
       <section className="mx-auto max-w-5xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -52,13 +52,13 @@ export default function DashboardPage() {
           <PlayerDesktopNav active="bookings" />
         </div>
 
-        <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1 shadow-[0_12px_28px_rgba(13,13,13,0.05)] sm:max-w-md">
+        <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 shadow-[var(--lobb-shadow-card)] sm:max-w-md">
           {(["upcoming", "past"] as const).map((item) => (
             <button
               key={item}
               onClick={() => setTab(item)}
               className={`h-11 rounded-[14px] text-sm font-black capitalize transition ${
-                tab === item ? "bg-[var(--lobb-black)] text-white shadow-[0_8px_18px_rgba(13,13,13,0.18)]" : "text-[var(--lobb-muted)]"
+                tab === item ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]" : "text-[var(--lobb-text-secondary)]"
               }`}
             >
               {item}
@@ -106,15 +106,15 @@ function BookingCard({ booking }: { booking: DashboardBooking }) {
         : booking.status;
 
   return (
-    <article className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.06)] sm:p-5">
+    <article className="rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[15px] font-black leading-5 sm:text-base">{formatBookingDate(booking.starts_at)}</p>
         <p className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black ${
           isConfirmed
-            ? "bg-[#e8f4ed] text-[var(--lobb-success)]"
+            ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]"
             : isUpcoming
-              ? "bg-[#fff7e0] text-[var(--lobb-warning)]"
-              : "bg-[var(--lobb-surface-2)] text-[var(--lobb-black)]"
+              ? "bg-[var(--lobb-warning)]/12 text-[var(--lobb-warning)]"
+              : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)]"
         }`}>
           {isConfirmed ? <Circle className="size-2 fill-current" /> : isUpcoming ? <Clock3 className="size-3.5" /> : <CheckCircle2 className="size-3.5" />}
           {statusLabel}
@@ -135,7 +135,7 @@ function BookingCard({ booking }: { booking: DashboardBooking }) {
       </div>
 
       {!isConfirmed && isUpcoming && (
-        <p className="mt-4 flex items-start gap-2 rounded-2xl border border-[#ffe0b2] bg-[#fffaf0] p-3 text-xs font-semibold leading-5 text-[#7c4a03]">
+        <p className="mt-4 flex items-start gap-2 rounded-2xl border border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10 p-3 text-xs font-semibold leading-5 text-[var(--lobb-text-primary)]">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           {payment?.status === "paid"
             ? "Payment is recorded. We are finalizing this booking confirmation."

@@ -9,23 +9,28 @@ import { CoachCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skele
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
 import { track } from "@/lib/analytics";
 
+const MIN_ADVANCE_MS = 24 * 60 * 60 * 1000;
+function isTooSoon(iso: string): boolean {
+  return new Date(iso).getTime() < Date.now() + MIN_ADVANCE_MS;
+}
+
 type DayGroup = {
   dateStr: string;
   label: string;
   shortLabel: string;
   weekday: string;
   day: string;
-  slots: { iso: string; label: string }[];
+  slots: { iso: string; label: string; tooSoon: boolean }[];
 };
 
 function groupSlots(raw: AvailableSlot[]): DayGroup[] {
-  const map = new Map<string, { iso: string; label: string }[]>();
+  const map = new Map<string, { iso: string; label: string; tooSoon: boolean }[]>();
   for (const s of raw) {
     const d     = new Date(s.slot_starts_at);
     const key   = d.toLocaleDateString("en-CA");
     const label = d.toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", hour12: true });
     const arr   = map.get(key) ?? [];
-    arr.push({ iso: s.slot_starts_at, label });
+    arr.push({ iso: s.slot_starts_at, label, tooSoon: isTooSoon(s.slot_starts_at) });
     map.set(key, arr);
   }
   return Array.from(map.entries())
@@ -48,11 +53,12 @@ function BookingStep1Content() {
   const router = useRouter();
   const slug   = params.coachSlug;
 
-  const [coach,     setCoach]     = useState<CoachPublicProfile | null>(null);
-  const [groups,    setGroups]    = useState<DayGroup[]>([]);
-  const [loading,   setLoading]   = useState(true);
-  const [locking,   setLocking]   = useState(false);
-  const [weekStart, setWeekStart] = useState(0);
+  const [coach,       setCoach]       = useState<CoachPublicProfile | null>(null);
+  const [groups,      setGroups]      = useState<DayGroup[]>([]);
+  const [coachStatus, setCoachStatus] = useState<string | null>(null);
+  const [loading,     setLoading]     = useState(true);
+  const [locking,     setLocking]     = useState(false);
+  const [weekStart,   setWeekStart]   = useState(0);
 
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
@@ -69,10 +75,12 @@ function BookingStep1Content() {
         setCoach(c);
       }
       if (slotsRes.ok) {
-        const { slots } = (await slotsRes.json()) as { slots: AvailableSlot[] };
-        const g = groupSlots(slots);
+        const data = (await slotsRes.json()) as { slots: AvailableSlot[]; status?: string };
+        setCoachStatus(data.status ?? null);
+        const g = groupSlots(data.slots);
         setGroups(g);
-        if (g.length > 0) setSelectedDate(g[0].dateStr);
+        const firstBookable = g.find((day) => day.slots.some((s) => !s.tooSoon));
+        if (firstBookable) setSelectedDate(firstBookable.dateStr);
       }
     } finally {
       setLoading(false);
@@ -170,9 +178,11 @@ function BookingStep1Content() {
     <BookingShell step={1} backHref={`/coaches/${slug}`}>
       {/* Coach card */}
       {coach && (
-        <section className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+        <section className="overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
+          <div className="h-2 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+          <div className="p-4 sm:p-5">
           <div className="flex items-center gap-4">
-            <div className="relative size-14 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-sm">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-sm">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -202,11 +212,12 @@ function BookingStep1Content() {
               </div>
             </div>
           </div>
+          </div>
         </section>
       )}
 
       {/* Week navigation */}
-      <div className="mt-4 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+      <div className="mt-4 rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
         <div className="flex items-center justify-between gap-3 px-1">
           <div>
             <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
@@ -236,27 +247,31 @@ function BookingStep1Content() {
         </div>
 
         {/* Day grid */}
-        <div className="mt-4 grid grid-cols-7 gap-1.5">
+        <div className="mt-5 grid grid-cols-7 gap-2">
           {visibleGroups.map((item) => {
-            const hasSlots = item.slots.length > 0;
-            const isSelected = item.dateStr === selectedDate && hasSlots;
+            const hasSlots    = item.slots.length > 0;
+            const hasBookable = item.slots.some((s) => !s.tooSoon);
+            const isSelected  = item.dateStr === selectedDate && hasBookable;
             return (
               <button
                 key={item.dateStr}
-                disabled={!hasSlots}
+                disabled={!hasBookable}
                 onClick={() => { setSelectedDate(item.dateStr); setSelectedSlot(""); }}
-                className={`relative flex min-h-[72px] flex-col items-center justify-center gap-1 rounded-2xl text-xs font-semibold transition-all duration-300 active:scale-95 ${
+                className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-[18px] text-xs font-semibold transition-all duration-300 active:scale-95 ${
                   isSelected
-                    ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[0_12px_24px_rgba(13,13,13,0.18)] scale-[1.04]"
-                    : hasSlots
-                    ? "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] hover:border-[var(--lobb-clay)]/50 hover:bg-[var(--lobb-bg-elevated)]"
+                    ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[0_16px_30px_rgba(13,13,13,0.2)] scale-[1.03]"
+                    : hasBookable
+                    ? "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] hover:border-[var(--lobb-clay)]/50 hover:bg-[var(--lobb-bg-elevated)]"
                     : "cursor-not-allowed border border-transparent bg-[var(--lobb-bg-secondary)]/70 text-[var(--lobb-text-tertiary)] opacity-45"
                 }`}
               >
                 <span className={`text-[9px] font-black uppercase tracking-wider ${isSelected ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{item.weekday}</span>
-                <span className="text-base font-black leading-none">{item.day}</span>
-                {hasSlots && (
+                <span className="text-xl font-black leading-none">{item.day}</span>
+                {hasBookable && (
                   <span className={`mt-0.5 size-1.5 rounded-full ${isSelected ? "bg-white animate-pulse" : "bg-[var(--lobb-clay)]"}`} />
+                )}
+                {hasSlots && !hasBookable && (
+                  <span className="mt-0.5 size-1.5 rounded-full bg-[var(--lobb-text-tertiary)]/40" />
                 )}
               </button>
             );
@@ -267,28 +282,33 @@ function BookingStep1Content() {
       {/* Time slots */}
       {selectedGroup ? (
         <>
-          <div className="mt-5 flex items-center justify-between px-1">
+          <div className="mt-6 flex items-center justify-between px-1">
             <h3 className="text-sm font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">Pick a time</h3>
             <span className="rounded-full bg-[var(--lobb-clay-light)] px-2.5 py-1 text-xs font-bold text-[var(--lobb-clay)]">
               {selectedGroup.label}
             </span>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
             {selectedGroup.slots.map((slot) => {
-              const isActive = selectedSlot === slot.iso;
+              const isActive   = selectedSlot === slot.iso;
+              const isDisabled = slot.tooSoon;
               return (
                 <button
                   key={slot.iso}
-                  onClick={() => setSelectedSlot(slot.iso)}
-                  className={`flex h-14 flex-col items-center justify-center gap-0.5 rounded-2xl border text-center transition-all duration-300 active:scale-95 ${
-                    isActive
-                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white shadow-[0_12px_24px_rgba(196,98,45,0.18)] scale-[1.02]"
-                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/50"
+                  disabled={isDisabled}
+                  onClick={() => !isDisabled && setSelectedSlot(slot.iso)}
+                  title={isDisabled ? "Must be booked at least 24 hours in advance" : undefined}
+                  className={`flex h-16 flex-col items-center justify-center gap-0.5 rounded-[18px] border text-center transition-all duration-300 ${
+                    isDisabled
+                      ? "cursor-not-allowed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]/60 opacity-40"
+                      : isActive
+                      ? "active:scale-95 border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white shadow-[0_14px_28px_rgba(196,98,45,0.22)] scale-[1.02]"
+                      : "active:scale-95 border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/50"
                   }`}
                 >
                   <span className="text-sm font-black">{slot.label}</span>
                   <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? "text-white/80" : "text-[var(--lobb-text-tertiary)]"}`}>
-                    60 mins
+                    {isDisabled ? "24h advance" : "60 mins"}
                   </span>
                 </button>
               );
@@ -297,15 +317,28 @@ function BookingStep1Content() {
         </>
       ) : (
         <div className="mt-6 rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center">
-          <p className="text-sm font-black text-[var(--lobb-text-primary)]">No slots this week</p>
-          <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
-            {weekStart === 0 ? "Try the next week →" : "No availability in the next 2 weeks"}
-          </p>
+          {coachStatus && coachStatus !== "active" ? (
+            <>
+              <p className="text-sm font-black text-[var(--lobb-text-primary)]">
+                {coachStatus === "pending" ? "Pending review" : "Not accepting bookings"}
+              </p>
+              <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                This coach is currently under review and not yet accepting bookings.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-black text-[var(--lobb-text-primary)]">No slots this week</p>
+              <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                {weekStart === 0 ? "Try the next week →" : "No availability in the next 2 weeks"}
+              </p>
+            </>
+          )}
         </div>
       )}
 
       {/* Info strip */}
-      <div className="mt-5 rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+      <div className="mt-5 rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold text-[var(--lobb-text-secondary)] shadow-[var(--lobb-shadow-card)]">
         <p className="flex items-center gap-2">
           <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" /> Sessions are 60 minutes.
         </p>

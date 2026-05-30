@@ -15,12 +15,11 @@ export async function GET(
   try {
     const admin = createAdminClient();
 
-    // Resolve slug/id → coach id (must be active)
+    // Resolve slug/id → coach (include status so we can surface pending state)
     const { data: coach, error: coachErr } = await admin
       .from("coaches")
-      .select("id")
-      .or(`slug.eq.${slug},id.eq.${slug}`)
-      .eq("status", "active")
+      .select("id, status")
+      .eq("slug", slug)
       .maybeSingle();
 
     if (coachErr) {
@@ -28,6 +27,9 @@ export async function GET(
     }
     if (!coach) {
       return NextResponse.json({ error: "Coach not found" }, { status: 404 });
+    }
+    if (coach.status !== "active") {
+      return NextResponse.json({ slots: [], status: coach.status });
     }
 
     // Call the DB function — window is today → today+14 days

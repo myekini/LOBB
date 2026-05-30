@@ -26,33 +26,38 @@ export async function POST(request: Request) {
   if (!bankCode) return NextResponse.json({ error: "bank_code is required" }, { status: 400 });
   if (!bankName) return NextResponse.json({ error: "bank_name is required" }, { status: 400 });
 
-  const { data: coach, error: coachError } = await auth.admin
-    .from("coaches")
-    .select("full_name")
-    .eq("id", auth.user.id)
-    .maybeSingle();
+  try {
+    const { data: coach, error: coachError } = await auth.admin
+      .from("coaches")
+      .select("full_name")
+      .eq("id", auth.user.id)
+      .maybeSingle();
 
-  if (coachError) return NextResponse.json({ error: coachError.message }, { status: 500 });
+    if (coachError) return NextResponse.json({ error: coachError.message }, { status: 500 });
 
-  const subaccount = await createSubaccount({
-    business_name: body.business_name?.trim() || coach?.full_name || "LOBB Coach",
-    settlement_bank: bankCode,
-    account_number: accountNumber,
-    percentage_charge: 85,
-  });
+    const subaccount = await createSubaccount({
+      business_name: body.business_name?.trim() || coach?.full_name || "LOBB Coach",
+      settlement_bank: bankCode,
+      account_number: accountNumber,
+      percentage_charge: 85,
+    });
 
-  const { data, error } = await auth.admin
-    .from("coaches")
-    .update({
-      bank_account_number: accountNumber,
-      bank_code: bankCode,
-      bank_name: bankName,
-      paystack_subaccount_code: subaccount.subaccount_code,
-    })
-    .eq("id", auth.user.id)
-    .select("id, bank_account_number, bank_code, bank_name, paystack_subaccount_code")
-    .single();
+    const { data, error } = await auth.admin
+      .from("coaches")
+      .update({
+        bank_account_number: accountNumber,
+        bank_code: bankCode,
+        bank_name: bankName,
+        paystack_subaccount_code: subaccount.subaccount_code,
+      })
+      .eq("id", auth.user.id)
+      .select("id, bank_account_number, bank_code, bank_name, paystack_subaccount_code")
+      .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ bank: data });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ bank: data });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Could not save bank details";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
