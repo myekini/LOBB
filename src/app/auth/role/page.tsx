@@ -88,7 +88,7 @@ export default function RolePage() {
     }
 
     track("Role Selected", { role: selected });
-    router.push(selected === "player" ? "/auth/setup/player" : "/auth/setup/coach/1");
+    router.replace(selected === "player" ? "/auth/setup/player" : "/auth/setup/coach/1");
   };
 
   return (

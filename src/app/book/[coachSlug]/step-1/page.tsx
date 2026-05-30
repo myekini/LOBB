@@ -8,6 +8,7 @@ import { showLobbToast } from "@/providers/lobb-global-state";
 import { CoachCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
 import { track } from "@/lib/analytics";
+import { readApiError, toastAppError } from "@/lib/client-errors";
 
 const MIN_ADVANCE_MS = 24 * 60 * 60 * 1000;
 function isTooSoon(iso: string): boolean {
@@ -134,9 +135,13 @@ function BookingStep1Content() {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ coach_slug: slug, slot_starts_at: selectedSlot }),
       });
-      const json = (await res.json()) as { lock_id?: string; expires_at?: string; error?: string };
-      if (!res.ok || !json.lock_id) {
-        showLobbToast({ type: "error", message: json.error ?? "Slot unavailable. Choose another." });
+      if (!res.ok) {
+        toastAppError(await readApiError(res, "BOOKING_SLOT_TAKEN"), "BOOKING_SLOT_TAKEN");
+        return;
+      }
+      const json = (await res.json()) as { lock_id?: string; expires_at?: string };
+      if (!json.lock_id) {
+        toastAppError(new Error("Slot unavailable. Choose another."), "BOOKING_SLOT_TAKEN");
         return;
       }
       showLobbToast({ type: "info", message: "Slot held for 10 minutes." });
@@ -150,7 +155,7 @@ function BookingStep1Content() {
         `/book/${slug}/step-2?slot=${encodeURIComponent(selectedSlot)}&lock=${json.lock_id}&expires=${encodeURIComponent(json.expires_at!)}`
       );
     } catch {
-      showLobbToast({ type: "error", message: "Network error. Please try again." });
+      toastAppError(null, "NETWORK_ERROR");
     } finally {
       setLocking(false);
     }

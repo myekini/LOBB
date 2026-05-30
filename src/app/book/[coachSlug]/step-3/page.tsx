@@ -8,6 +8,7 @@ import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { CoachPublicProfile } from "@/lib/types";
 import { track } from "@/lib/analytics";
+import { readApiError, toastAppError } from "@/lib/client-errors";
 
 const LOBB_FEE_RATE = 0.05;
 
@@ -114,11 +115,15 @@ function BookingStep3Content() {
           location_court_id: courtId || undefined,
         }),
       });
+      if (!res.ok) {
+        toastAppError(await readApiError(res, "PAYMENT_INIT_FAILED"), "PAYMENT_INIT_FAILED");
+        return;
+      }
       const json = (await res.json()) as {
-        booking_id?: string; reference?: string; paystack_url?: string; error?: string;
+        booking_id?: string; reference?: string; paystack_url?: string;
       };
-      if (!res.ok || !json.paystack_url) {
-        showLobbToast({ type: "error", message: json.error ?? "Could not initiate payment. Try again." });
+      if (!json.paystack_url) {
+        toastAppError(new Error("Could not initiate payment. Try again."), "PAYMENT_INIT_FAILED");
         return;
       }
       track("Payment Initiated", {
@@ -131,7 +136,7 @@ function BookingStep3Content() {
       });
       window.location.href = json.paystack_url;
     } catch {
-      showLobbToast({ type: "error", message: "Network error. Please try again." });
+      toastAppError(null, "NETWORK_ERROR");
     } finally {
       setPaying(false);
     }

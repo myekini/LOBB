@@ -405,7 +405,7 @@ export default function Home() {
       
       {/* Background Canvas: Premium Glowing Spotlight & Grid Lines */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="lobb-landing-top-gradient absolute inset-x-0 top-0 h-[360px] bg-[linear-gradient(180deg,#fffaf2,rgba(250,248,245,0))]" />
+        <div className="lobb-landing-top-gradient absolute inset-x-0 top-0 h-[360px] bg-[linear-gradient(180deg,var(--lobb-bg-secondary),transparent)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_8%,rgba(196,98,45,0.12),transparent_30%),radial-gradient(circle_at_90%_12%,rgba(45,106,79,0.08),transparent_28%)]" />
         <div
           className="lobb-landing-court-texture absolute inset-0 opacity-[0.035] mix-blend-multiply pointer-events-none filter blur-[1px]"
@@ -415,30 +415,30 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/85 px-5 backdrop-blur-md sm:px-8 lg:px-12">
-        <Link href="/" className="flex items-center gap-2.5 group">
+      <header className="relative z-20 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/90 px-4 backdrop-blur-md sm:px-6 md:px-8 lg:px-12">
+        <Link href="/" className="group flex min-w-0 items-center gap-2.5">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] transition-all duration-300 group-hover:border-[var(--lobb-clay)]/40">
             <LobbMark size={16} />
           </span>
           <span className="text-[13px] font-black tracking-[0.16em] uppercase text-[var(--lobb-black)]">LOBB</span>
         </Link>
         <nav />
-        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
-          <Link href="/auth/login" className="hidden sm:inline-flex h-9 items-center px-4 text-xs font-bold uppercase tracking-widest text-[var(--lobb-muted)] transition-colors hover:text-[var(--lobb-black)]">
+        <div className="flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-3">
+          <Link href="/auth/login" className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-black)] transition-colors hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] sm:border-transparent sm:bg-transparent sm:px-4 sm:text-xs sm:tracking-widest sm:text-[var(--lobb-muted)] sm:hover:text-[var(--lobb-black)]">
             Log in
           </Link>
           <ThemeToggle />
-          <Link href="/auth/signup/player" className="flex h-9 shrink-0 items-center justify-center rounded-full bg-[var(--lobb-black)] px-4 text-xs font-black uppercase tracking-widest text-white transition-all duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.97] sm:px-5">
+          <Link href="/auth/signup/player" className="flex h-9 shrink-0 items-center justify-center rounded-full bg-[var(--lobb-black)] px-3 text-[10px] font-black uppercase tracking-[0.12em] text-white transition-all duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.97] sm:px-5 sm:text-xs sm:tracking-widest">
             Sign up
           </Link>
         </div>
       </header>
 
       {/* Hero section */}
-      <section className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-5 py-8 sm:px-8 sm:py-10 lg:min-h-[calc(100dvh-108px)] lg:px-12 lg:py-8">
-        <div className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-12 lg:gap-10">
-          <div className="flex select-none flex-col text-left lg:col-span-7">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3.5 py-1.5 self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+      <section className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 items-center px-4 py-7 sm:px-6 sm:py-10 md:px-10 lg:min-h-[calc(100dvh-108px)] lg:px-12 lg:py-8">
+        <div className="grid w-full grid-cols-1 items-center gap-8 md:gap-10 lg:grid-cols-12 lg:gap-12">
+          <div className="mx-auto flex max-w-[680px] select-none flex-col text-left md:items-center md:text-center lg:col-span-7 lg:mx-0 lg:items-start lg:text-left">
+            <div className="mb-5 inline-flex items-center gap-2 self-start rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3.5 py-1.5 animate-in fade-in-0 slide-in-from-bottom-2 duration-500 md:self-center lg:self-start">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#D96B27]"></span>
@@ -447,14 +447,14 @@ export default function Home() {
                 Lagos Tennis
               </span>
             </div>
-            <h1 className="text-[38px] sm:text-[52px] lg:text-[66px] font-black leading-[1.06] text-[var(--lobb-black)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
+            <h1 className="text-[38px] font-black leading-[1.06] text-[var(--lobb-black)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75 sm:text-[52px] lg:text-[66px]">
               Precision Coaching.<br />
               <span className="text-[var(--lobb-clay)]">Perfect Timing.</span>
             </h1>
             <p className="mt-5 max-w-[480px] text-[14px] sm:text-[16px] leading-[1.7] text-[var(--lobb-muted)] animate-in fade-in-0 duration-700 delay-150">
               Find certified tennis coaches across Lagos — Lekki, Ikoyi, VI, and beyond. Browse real profiles, check live availability, book your session, and pay securely through Paystack.
             </p>
-            <div className="mt-8 flex flex-col gap-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 sm:flex-row sm:flex-wrap">
+            <div className="mt-8 flex w-full flex-col gap-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center lg:justify-start">
               <Link href="/coaches" className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-6 text-center text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98] sm:px-8">
                 <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 Browse coaches
@@ -464,7 +464,7 @@ export default function Home() {
                 Become a coach
               </Link>
             </div>
-            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 animate-in fade-in-0 duration-500 delay-250">
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 animate-in fade-in-0 duration-500 delay-250 md:justify-center lg:justify-start">
               {["Verified coaches", "Instant booking", "All of Lagos"].map((f) => (
                 <div key={f} className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--lobb-muted)]">
                   <Check className="size-3 shrink-0 text-[#D96B27]" />
@@ -474,7 +474,7 @@ export default function Home() {
             </div>
 
             {coachesReady && coachCount > 0 && (
-              <div className="mt-7 flex items-center gap-3 animate-in fade-in-0 duration-500 delay-300">
+              <div className="mt-7 flex items-center gap-3 animate-in fade-in-0 duration-500 delay-300 md:justify-center lg:justify-start">
                 <div className="flex -space-x-2.5 overflow-hidden">
                   {liveCoaches.slice(0, 4).map((coach) => (
                     <Link
@@ -499,8 +499,8 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className="flex items-center justify-center lg:col-span-5 lg:justify-end">
-            <div className="lobb-booking-widget group relative w-full max-w-[420px] select-none overflow-hidden rounded-[28px] border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-transparent p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in-0 duration-700 delay-200 sm:p-6">
+          <div className="flex items-center justify-center md:px-6 lg:col-span-5 lg:justify-end lg:px-0">
+            <div className="lobb-booking-widget group relative w-full max-w-[400px] select-none overflow-hidden rounded-[28px] border border-white/[0.06] bg-gradient-to-b from-white/[0.04] to-transparent p-5 shadow-[0_24px_80px_rgba(0,0,0,0.6)] backdrop-blur-2xl animate-in fade-in-0 duration-700 delay-200 sm:max-w-[420px] sm:p-6 md:max-w-[440px]">
               <div className="absolute -right-20 -top-20 w-48 h-48 bg-[#D96B27]/10 rounded-full filter blur-2xl pointer-events-none" />
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-4">
                 <div className="flex items-center gap-3">
@@ -642,7 +642,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-20 flex min-h-11 shrink-0 items-center justify-between gap-4 border-t border-[var(--lobb-border)] bg-[var(--lobb-bg)]/85 px-5 py-3 backdrop-blur-md sm:px-8 lg:px-12 select-none">
+      <footer className="relative z-20 flex min-h-11 shrink-0 flex-col items-start justify-between gap-3 border-t border-[var(--lobb-border)] bg-[var(--lobb-bg)]/85 px-4 py-3 backdrop-blur-md select-none sm:flex-row sm:items-center sm:px-6 md:px-8 lg:px-12">
         <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-muted)]">&copy; {new Date().getFullYear()} LOBB</span>
         <div className="flex items-center gap-5 text-[9px] font-semibold uppercase tracking-widest text-[var(--lobb-muted)]">
           <Link href="/terms" className="hover:text-[var(--lobb-black)] transition-colors">Terms</Link>

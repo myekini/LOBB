@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
-import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   durationMinutes,
   firstJoin,
@@ -14,6 +13,7 @@ import {
 } from "@/lib/dashboard-client-types";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { cancellationPolicy } from "@/lib/lobb-money";
+import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
 
 function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
   const profile = firstJoin(value);
@@ -38,12 +38,13 @@ export default function BookingDetailPage() {
 
     fetch(`/api/bookings/${params.id}`)
       .then(async (response) => {
-        const payload = (await response.json()) as { booking?: DashboardBooking; error?: string };
-        if (!response.ok || !payload.booking) throw new Error(payload.error ?? "Booking not found");
+        if (!response.ok) throw await readApiError(response, "NOT_FOUND");
+        const payload = (await response.json()) as { booking?: DashboardBooking };
+        if (!payload.booking) throw new Error("Booking not found");
         if (alive) setBooking(payload.booking);
       })
       .catch((error) => {
-        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load booking" });
+        toastAppError(error, "NOT_FOUND");
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -63,12 +64,11 @@ export default function BookingDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: "Cancelled by player from dashboard" }),
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Unable to cancel booking");
-      showLobbToast({ type: "success", message: "Booking cancelled." });
+      if (!response.ok) throw await readApiError(response, "UNKNOWN_ERROR");
+      toastAppSuccess("Booking cancelled.");
       router.push("/dashboard");
     } catch (error) {
-      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to cancel booking" });
+      toastAppError(error, "UNKNOWN_ERROR");
     } finally {
       setCancelling(false);
       setShowCancel(false);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import type { CoachAvailabilityRow, CoachAvailabilityBlock, CoachAvailabilitySlotBlock } from "@/lib/types";
+import { apiError } from "@/lib/api-response";
 
 type AvailabilityBookingBlock = {
   id: string;
@@ -25,7 +26,7 @@ export async function GET() {
   try {
     const auth = await requireRole(["coach", "admin"]);
     if (auth.error) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+      return apiError(auth.status === 401 ? "AUTH_EXPIRED" : "FORBIDDEN", auth.status);
     }
 
     const [slotsResult, blocksResult, slotBlocksResult, bookingBlocksResult] = await Promise.all([
@@ -55,16 +56,16 @@ export async function GET() {
     ]);
 
     if (slotsResult.error) {
-      return NextResponse.json({ error: slotsResult.error.message }, { status: 500 });
+      return apiError("AVAILABILITY_LOAD_FAILED", 500);
     }
     if (blocksResult.error) {
-      return NextResponse.json({ error: blocksResult.error.message }, { status: 500 });
+      return apiError("AVAILABILITY_LOAD_FAILED", 500);
     }
     if (slotBlocksResult.error && !missingSlotBlockTable(slotBlocksResult.error)) {
-      return NextResponse.json({ error: slotBlocksResult.error.message }, { status: 500 });
+      return apiError("AVAILABILITY_LOAD_FAILED", 500);
     }
     if (bookingBlocksResult.error) {
-      return NextResponse.json({ error: bookingBlocksResult.error.message }, { status: 500 });
+      return apiError("AVAILABILITY_LOAD_FAILED", 500);
     }
 
     return NextResponse.json({
@@ -83,7 +84,7 @@ export async function GET() {
       }),
     });
   } catch {
-    return NextResponse.json({ error: "Unable to load availability" }, { status: 500 });
+    return apiError("AVAILABILITY_LOAD_FAILED", 500);
   }
 }
 
@@ -104,7 +105,7 @@ export async function PUT(request: Request) {
   try {
     const auth = await requireRole(["coach", "admin"]);
     if (auth.error) {
-      return NextResponse.json({ error: auth.error }, { status: auth.status });
+      return apiError(auth.status === 401 ? "AUTH_EXPIRED" : "FORBIDDEN", auth.status);
     }
 
     const body = (await request.json()) as PutBody;
@@ -115,13 +116,13 @@ export async function PUT(request: Request) {
       for (const s of body.slots) {
         const dow = Number(s.day_of_week);
         if (!Number.isInteger(dow) || dow < 0 || dow > 6) {
-          return NextResponse.json({ error: "day_of_week must be 0–6" }, { status: 400 });
+          return apiError("VALIDATION_ERROR", 400, { message: "Choose valid days for your weekly hours." });
         }
         if (typeof s.starts_at !== "string" || typeof s.ends_at !== "string") {
-          return NextResponse.json({ error: "starts_at and ends_at must be strings" }, { status: 400 });
+          return apiError("AVAILABILITY_INVALID_HOURS", 400);
         }
         if (s.starts_at >= s.ends_at) {
-          return NextResponse.json({ error: "starts_at must be before ends_at" }, { status: 400 });
+          return apiError("AVAILABILITY_INVALID_HOURS", 400);
         }
         slots.push({ day_of_week: dow, starts_at: s.starts_at, ends_at: s.ends_at });
       }
@@ -134,7 +135,7 @@ export async function PUT(request: Request) {
 
       for (let index = 1; index < daySlots.length; index += 1) {
         if (timeToMinutes(daySlots[index].starts_at) < timeToMinutes(daySlots[index - 1].ends_at)) {
-          return NextResponse.json({ error: "Availability windows cannot overlap." }, { status: 400 });
+          return apiError("AVAILABILITY_OVERLAP", 400);
         }
       }
     }
@@ -144,7 +145,7 @@ export async function PUT(request: Request) {
     if (Array.isArray(body.blocked_dates)) {
       for (const d of body.blocked_dates) {
         if (typeof d !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-          return NextResponse.json({ error: `Invalid date format: ${d}` }, { status: 400 });
+          return apiError("VALIDATION_ERROR", 400, { message: "Blocked dates must use a valid date format." });
         }
         blockedDates.push(d);
       }
@@ -155,12 +156,12 @@ export async function PUT(request: Request) {
     if (Array.isArray(body.blocked_slots)) {
       for (const s of body.blocked_slots) {
         if (typeof s.slot_starts_at !== "string" || typeof s.slot_ends_at !== "string") {
-          return NextResponse.json({ error: "slot_starts_at and slot_ends_at must be strings" }, { status: 400 });
+          return apiError("VALIDATION_ERROR", 400, { message: "Blocked slots need valid start and end times." });
         }
         const starts = new Date(s.slot_starts_at).getTime();
         const ends = new Date(s.slot_ends_at).getTime();
         if (!Number.isFinite(starts) || !Number.isFinite(ends) || starts >= ends) {
-          return NextResponse.json({ error: "Invalid blocked slot time range" }, { status: 400 });
+          return apiError("VALIDATION_ERROR", 400, { message: "Blocked slots need a valid time range." });
         }
         blockedSlots.push({
           slot_starts_at: new Date(starts).toISOString(),
@@ -177,7 +178,7 @@ export async function PUT(request: Request) {
       .eq("coach_id", auth.user.id);
 
     if (deleteSlotErr) {
-      return NextResponse.json({ error: deleteSlotErr.message }, { status: 500 });
+      return apiError("AVAILABILITY_SAVE_FAILED", 500);
     }
 
     if (slots.length > 0) {
@@ -186,7 +187,7 @@ export async function PUT(request: Request) {
         .insert(slots.map((s) => ({ coach_id: auth.user.id, is_active: true, ...s })));
 
       if (insertSlotErr) {
-        return NextResponse.json({ error: insertSlotErr.message }, { status: 500 });
+        return apiError("AVAILABILITY_SAVE_FAILED", 500);
       }
     }
 
@@ -197,7 +198,7 @@ export async function PUT(request: Request) {
       .eq("coach_id", auth.user.id);
 
     if (deleteBlockErr) {
-      return NextResponse.json({ error: deleteBlockErr.message }, { status: 500 });
+      return apiError("AVAILABILITY_SAVE_FAILED", 500);
     }
 
     if (blockedDates.length > 0) {
@@ -206,7 +207,7 @@ export async function PUT(request: Request) {
         .insert(blockedDates.map((d) => ({ coach_id: auth.user.id, blocked_date: d })));
 
       if (insertBlockErr) {
-        return NextResponse.json({ error: insertBlockErr.message }, { status: 500 });
+        return apiError("AVAILABILITY_SAVE_FAILED", 500);
       }
     }
 
@@ -216,7 +217,7 @@ export async function PUT(request: Request) {
       .eq("coach_id", auth.user.id);
 
     if (deleteSlotBlockErr && !missingSlotBlockTable(deleteSlotBlockErr)) {
-      return NextResponse.json({ error: deleteSlotBlockErr.message }, { status: 500 });
+      return apiError("AVAILABILITY_SAVE_FAILED", 500);
     }
 
     if (blockedSlots.length > 0 && !deleteSlotBlockErr) {
@@ -225,12 +226,12 @@ export async function PUT(request: Request) {
         .insert(blockedSlots.map((s) => ({ coach_id: auth.user.id, ...s })));
 
       if (insertSlotBlockErr) {
-        return NextResponse.json({ error: insertSlotBlockErr.message }, { status: 500 });
+        return apiError("AVAILABILITY_SAVE_FAILED", 500);
       }
     }
 
     return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ error: "Unable to save availability" }, { status: 500 });
+    return apiError("AVAILABILITY_SAVE_FAILED", 500);
   }
 }

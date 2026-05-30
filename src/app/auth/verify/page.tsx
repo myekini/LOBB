@@ -150,7 +150,7 @@ export default function VerifyPage() {
 
     if (safeNextPath && profile?.role && profile.full_name) {
       track("User Signed In", { role: profile.role });
-      router.push(safeNextPath);
+      router.replace(safeNextPath);
       return;
     }
 
@@ -158,13 +158,13 @@ export default function VerifyPage() {
 
     if (profile?.role === "coach") {
       track("User Signed In", { role: "coach" });
-      router.push(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
+      router.replace(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
       return;
     }
 
     if (profile?.role === "admin") {
       track("User Signed In", { role: "admin" });
-      router.push("/admin");
+      router.replace("/admin");
       return;
     }
 
@@ -178,11 +178,11 @@ export default function VerifyPage() {
           .update({ role: "coach" })
           .eq("id", userId);
         track("User Signed In", { role: "coach" });
-        router.push("/auth/setup/coach/1");
+        router.replace("/auth/setup/coach/1");
         return;
       }
       track("User Signed In", { role: "player" });
-      router.push(profile.full_name ? "/" : "/auth/setup/player");
+      router.replace(profile.full_name ? "/" : "/auth/setup/player");
       return;
     }
 
@@ -193,12 +193,12 @@ export default function VerifyPage() {
         { onConflict: "id" }
       );
       track("User Signed In", { role: intendedRole });
-      router.push(intendedRole === "coach" ? "/auth/setup/coach/1" : "/auth/setup/player");
+      router.replace(intendedRole === "coach" ? "/auth/setup/coach/1" : "/auth/setup/player");
       return;
     }
 
     // No role, no intent — show the picker
-    router.push("/auth/role");
+    router.replace("/auth/role");
   };
 
   const fillAllDigits = (value: string) => {

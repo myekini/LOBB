@@ -17,6 +17,9 @@ import {
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { LobbBrandLoader } from "@/components/common/lobb-skeleton";
 import type { BookingWithDetails } from "@/lib/types";
+import { LobbErrorBanner } from "@/components/common/lobb-error";
+import { appError, type AppErrorPayload } from "@/lib/app-errors";
+import { readApiError, toastAppError } from "@/lib/client-errors";
 
 function money(v: number) { return `₦${v.toLocaleString()}`; }
 
@@ -47,9 +50,15 @@ function BookingConfirmContent() {
   const [loading,       setLoading]       = useState(true);
   const [failed,        setFailed]        = useState(false);
   const [paymentFailed, setPaymentFailed] = useState(false);
+  const [confirmError,  setConfirmError]  = useState<AppErrorPayload | null>(null);
 
   useEffect(() => {
-    if (!reference) { setFailed(true); setLoading(false); return; }
+    if (!reference) {
+      setConfirmError(appError("PAYMENT_NOT_FOUND"));
+      setFailed(true);
+      setLoading(false);
+      return;
+    }
 
     let cancelled = false;
     let attempts  = 0;
@@ -58,16 +67,23 @@ function BookingConfirmContent() {
       attempts += 1;
       fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`)
         .then(async (res) => {
-          const json = (await res.json()) as { booking?: BookingWithDetails; error?: string };
           // 402 = Paystack confirmed the payment failed (abandoned/failed status)
           if (res.status === 402) {
-            if (!cancelled) { setPaymentFailed(true); setLoading(false); }
+            const paymentError = await readApiError(res, "PAYMENT_FAILED");
+            if (!cancelled) {
+              setConfirmError(paymentError);
+              toastAppError(paymentError, "PAYMENT_FAILED");
+              setPaymentFailed(true);
+              setLoading(false);
+            }
             return;
           }
-          if (!res.ok || !json.booking) throw new Error(json.error ?? "Not found");
+          if (!res.ok) throw await readApiError(res, "PAYMENT_VERIFY_FAILED");
+          const json = (await res.json()) as { booking?: BookingWithDetails };
+          if (!json.booking) throw appError("PAYMENT_VERIFY_FAILED");
           // Booking exists but confirmation webhook hasn't arrived yet — keep retrying
           if (json.booking.status !== "confirmed" && json.booking.payment_status !== "paid") {
-            throw new Error("Payment still processing");
+            throw appError("PAYMENT_PENDING");
           }
           if (cancelled) return;
           setBooking(json.booking);
@@ -81,7 +97,7 @@ function BookingConfirmContent() {
           showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
           setLoading(false);
         })
-        .catch(() => {
+        .catch((err) => {
           if (cancelled) return;
           if (attempts < 12) {
             // Progressive backoff: ~1.5s, 3s, then capped at 7s per attempt (~60s total window)
@@ -89,6 +105,7 @@ function BookingConfirmContent() {
             window.setTimeout(verify, delay);
             return;
           }
+          setConfirmError(toastAppError(err, "PAYMENT_VERIFY_FAILED"));
           setFailed(true);
           setLoading(false);
         });
@@ -114,6 +131,7 @@ function BookingConfirmContent() {
           <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">
             Your payment did not go through. No charge was made. Please try booking again.
           </p>
+          <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_FAILED" className="mt-5 text-left" />
           <Link
             href="/"
             className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)]"
@@ -137,6 +155,7 @@ function BookingConfirmContent() {
             This can take a minute. Check My Bookings — it will appear there once confirmed.
             If you were charged, save this reference:
           </p>
+          <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_PENDING" className="mt-5 text-left" />
           {reference && (
             <p className="mt-3 rounded-lg bg-[var(--lobb-surface)] px-4 py-2 font-mono text-sm font-bold select-all">
               {reference}

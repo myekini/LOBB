@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { apiError } from "@/lib/api-response";
 
 const LOCK_MINUTES      = 10;
 const MIN_ADVANCE_HOURS = 24;
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
     const supabase = createClient();
     const { data: { user }, error: userErr } = await supabase.auth.getUser();
     if (userErr || !user) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+      return apiError("AUTH_EXPIRED", 401);
     }
 
     // Must be a player
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
     if (profile?.role !== "player") {
-      return NextResponse.json({ error: "Only players can lock slots" }, { status: 403 });
+      return apiError("FORBIDDEN", 403, { message: "Only players can lock booking slots." });
     }
 
     // Must have a players row (completed profile)
@@ -32,10 +33,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .maybeSingle();
     if (!player) {
-      return NextResponse.json(
-        { error: "Complete your player profile first" },
-        { status: 403 }
-      );
+      return apiError("BOOKING_PROFILE_REQUIRED", 403);
     }
 
     // ── Parse + validate body ─────────────────────────────────────────────────
@@ -43,12 +41,12 @@ export async function POST(request: Request) {
     const { coach_slug, slot_starts_at } = body;
 
     if (!coach_slug || !slot_starts_at) {
-      return NextResponse.json({ error: "coach_slug and slot_starts_at are required" }, { status: 400 });
+      return apiError("VALIDATION_ERROR", 400, { message: "Choose a coach and time before continuing." });
     }
 
     const slotMs = new Date(slot_starts_at).getTime();
     if (Number.isNaN(slotMs)) {
-      return NextResponse.json({ error: "Invalid slot_starts_at" }, { status: 400 });
+      return apiError("VALIDATION_ERROR", 400, { message: "Choose a valid session time.", field: "slot_starts_at" });
     }
 
     const nowMs      = Date.now();
@@ -56,16 +54,10 @@ export async function POST(request: Request) {
     const maxMs      = nowMs + MAX_ADVANCE_DAYS  * 24 * 60 * 60 * 1000;
 
     if (slotMs < minMs) {
-      return NextResponse.json(
-        { error: "Slot must be at least 24 hours in the future" },
-        { status: 400 }
-      );
+      return apiError("BOOKING_SLOT_TOO_SOON", 400);
     }
     if (slotMs > maxMs) {
-      return NextResponse.json(
-        { error: "Slot is outside the 14-day booking window" },
-        { status: 400 }
-      );
+      return apiError("BOOKING_SLOT_TOO_FAR", 400);
     }
 
     // ── Resolve coach ─────────────────────────────────────────────────────────
@@ -79,7 +71,7 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (coachErr || !coach) {
-      return NextResponse.json({ error: "Coach not found" }, { status: 404 });
+      return apiError("BOOKING_COACH_UNAVAILABLE", 404);
     }
 
     const { data: slots, error: slotsErr } = await admin.rpc("get_coach_available_slots", {
@@ -87,7 +79,7 @@ export async function POST(request: Request) {
     });
 
     if (slotsErr) {
-      return NextResponse.json({ error: slotsErr.message }, { status: 500 });
+      return apiError("BOOKING_COACH_UNAVAILABLE", 500);
     }
 
     const requestedSlotMs = new Date(slot_starts_at).getTime();
@@ -96,7 +88,7 @@ export async function POST(request: Request) {
     );
 
     if (!slotIsAvailable) {
-      return NextResponse.json({ error: "This slot is no longer available. Please choose another." }, { status: 409 });
+      return apiError("BOOKING_SLOT_TAKEN", 409);
     }
 
     // ── Clean up expired locks for this coach/slot ────────────────────────────
@@ -124,12 +116,9 @@ export async function POST(request: Request) {
     if (lockErr) {
       // Unique constraint violation means slot is already locked
       if (lockErr.code === "23505") {
-        return NextResponse.json(
-          { error: "This slot was just taken. Please choose another." },
-          { status: 409 }
-        );
+        return apiError("BOOKING_SLOT_TAKEN", 409);
       }
-      return NextResponse.json({ error: lockErr.message }, { status: 500 });
+      return apiError("BOOKING_LOCK_INVALID", 500);
     }
 
     return NextResponse.json({
@@ -137,6 +126,6 @@ export async function POST(request: Request) {
       expires_at: lock.expires_at,
     });
   } catch {
-    return NextResponse.json({ error: "Unable to lock slot" }, { status: 500 });
+    return apiError("BOOKING_LOCK_INVALID", 500);
   }
 }

@@ -4,13 +4,14 @@ import { verifyTransaction } from "@/lib/paystack";
 import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendPaymentFailedEmail, sendPaymentReceiptEmail } from "@/lib/email-notifications";
 import { sendBookingConfirmedSms } from "@/lib/sms-notifications";
 import type { BookingRow, BookingWithDetails } from "@/lib/types";
+import { apiError } from "@/lib/api-response";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const reference = searchParams.get("reference");
 
   if (!reference) {
-    return NextResponse.json({ error: "reference is required" }, { status: 400 });
+    return apiError("VALIDATION_ERROR", 400, { message: "Payment reference is required." });
   }
 
   try {
@@ -24,7 +25,7 @@ export async function GET(request: Request) {
       .maybeSingle();
 
     if (payErr || !payment?.booking_id) {
-      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+      return apiError("PAYMENT_NOT_FOUND", 404);
     }
 
     if (payment.status === "paid") {
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
           .neq("status", "paid");
 
         if (updatePaymentErr) {
-          return NextResponse.json({ error: updatePaymentErr.message }, { status: 500 });
+          return apiError("PAYMENT_VERIFY_FAILED", 500);
         }
 
         const { data: updatedBooking, error: updateBookingErr } = await admin
@@ -73,7 +74,7 @@ export async function GET(request: Request) {
           .maybeSingle();
 
         if (updateBookingErr) {
-          return NextResponse.json({ error: updateBookingErr.message }, { status: 500 });
+          return apiError("PAYMENT_VERIFY_FAILED", 500);
         }
 
         // Remove slot lock and reserve court slot if applicable
@@ -188,7 +189,7 @@ export async function GET(request: Request) {
             cp.data
           ).catch(() => null);
         }
-        return NextResponse.json({ error: "Payment was not completed" }, { status: 402 });
+        return apiError("PAYMENT_FAILED", 402);
       }
       // txn null (Paystack unreachable) or status "pending" → fall through and return
       // current booking state so the client can display it and retry if needed
@@ -206,7 +207,7 @@ export async function GET(request: Request) {
       .single();
 
     if (bookingErr || !booking) {
-      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+      return apiError("NOT_FOUND", 404, { message: "Booking not found for this payment." });
     }
 
     // Fetch profiles directly by id — avoids FK hint ambiguity with coaches/players tables
@@ -237,6 +238,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ booking: detail });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Verification failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiError("PAYMENT_VERIFY_FAILED", 500, { message });
   }
 }

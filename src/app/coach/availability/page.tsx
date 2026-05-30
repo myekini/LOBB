@@ -8,6 +8,9 @@ import type { CoachAvailabilityBlock, CoachAvailabilityRow, CoachAvailabilitySlo
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { LobbErrorBanner } from "@/components/common/lobb-error";
+import { appError, type AppErrorPayload } from "@/lib/app-errors";
+import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -180,13 +183,13 @@ export default function CoachAvailabilityPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<AppErrorPayload | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/coaches/me/availability");
-      if (!response.ok) throw new Error("Failed to load availability");
+      if (!response.ok) throw await readApiError(response, "AVAILABILITY_LOAD_FAILED");
       const json = (await response.json()) as {
         slots: CoachAvailabilityRow[];
         blocks: CoachAvailabilityBlock[];
@@ -209,8 +212,8 @@ export default function CoachAvailabilityPage() {
           ends_at: new Date(booking.ends_at).toISOString(),
         }))
       );
-    } catch {
-      setError("Could not load your availability. Please refresh.");
+    } catch (err) {
+      setError(toastAppError(err, "AVAILABILITY_LOAD_FAILED"));
     } finally {
       setLoading(false);
     }
@@ -357,20 +360,20 @@ export default function CoachAvailabilityPage() {
 
   const save = async () => {
     setSaving(true);
-    setError("");
+    setError(null);
     setSaved(false);
 
     for (const window of windows) {
       if (window.start >= window.end) {
         setSaving(false);
-        setError(`${DAY_NAMES[window.dow]}: end time must be after start time.`);
+        setError(appError("AVAILABILITY_INVALID_HOURS", { message: `${DAY_NAMES[window.dow]}: end time must be after start time.` }));
         return;
       }
     }
     const overlapDay = hasOverlaps(windows);
     if (overlapDay) {
       setSaving(false);
-      setError(`${overlapDay}: availability windows cannot overlap.`);
+      setError(appError("AVAILABILITY_OVERLAP", { message: `${overlapDay}: availability windows cannot overlap.` }));
       return;
     }
 
@@ -393,16 +396,13 @@ export default function CoachAvailabilityPage() {
         }),
       });
       if (!response.ok) {
-        const json = (await response.json()) as { error?: string };
-        throw new Error(json.error ?? "Save failed");
+        throw await readApiError(response, "AVAILABILITY_SAVE_FAILED");
       }
       setSaved(true);
       setDirty(false);
-      showLobbToast({ type: "success", message: "Availability saved" });
+      toastAppSuccess("Availability saved");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not save. Try again.";
-      setError(message);
-      showLobbToast({ type: "error", message });
+      setError(toastAppError(err, "AVAILABILITY_SAVE_FAILED"));
     } finally {
       setSaving(false);
     }
@@ -482,11 +482,7 @@ export default function CoachAvailabilityPage() {
               weekCells={weekCells}
               windows={windows}
             />
-            {error && (
-              <p className="mt-5 rounded-[14px] bg-[#fff0e8] px-4 py-3 text-sm font-black text-[var(--lobb-clay-dark)]">
-                {error}
-              </p>
-            )}
+            <LobbErrorBanner error={error} fallbackCode="AVAILABILITY_SAVE_FAILED" actionLabel={error?.code === "AVAILABILITY_LOAD_FAILED" ? "Try again" : undefined} onAction={error?.code === "AVAILABILITY_LOAD_FAILED" ? load : undefined} className="mt-5" />
           </>
         )}
       </section>

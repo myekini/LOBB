@@ -6,6 +6,7 @@ import { loadCoachBookings, loadPlayerBookings } from "@/lib/dashboard-queries";
 import { initializeTransaction, generateReference } from "@/lib/paystack";
 import { sendBookingPaymentInitiatedCoachSms } from "@/lib/sms-notifications";
 import type { NotificationBookingInfo } from "@/lib/notification-messages";
+import { apiError } from "@/lib/api-response";
 
 const PLATFORM_COMMISSION_RATE = 0.15; // LOBB's cut from coach rate
 const CONVENIENCE_FEE_RATE = 0.05; // charged to player
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     const supabase = createClient();
     const { data: { user }, error: userErr } = await supabase.auth.getUser();
     if (userErr || !user) {
-      return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+      return apiError("AUTH_EXPIRED", 401);
     }
 
     const { data: profile } = await supabase
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
       .single();
 
     if (profile?.role !== "player") {
-      return NextResponse.json({ error: "Only players can create bookings" }, { status: 403 });
+      return apiError("FORBIDDEN", 403, { message: "Only players can create bookings." });
     }
 
     const { data: player } = await supabase
@@ -83,10 +84,7 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (!player) {
-      return NextResponse.json(
-        { error: "Complete your player profile before booking" },
-        { status: 403 }
-      );
+      return apiError("BOOKING_PROFILE_REQUIRED", 403);
     }
 
     // ── Parse body ────────────────────────────────────────────────────────────
@@ -103,10 +101,7 @@ export async function POST(request: Request) {
     const { coach_slug, slot_starts_at, lock_id, location, player_notes, location_venue_id, location_court_id } = body;
 
     if (!coach_slug || !slot_starts_at || !lock_id || !location?.trim()) {
-      return NextResponse.json(
-        { error: "coach_slug, slot_starts_at, lock_id, and location are required" },
-        { status: 400 }
-      );
+      return apiError("VALIDATION_ERROR", 400, { message: "Choose a slot and court before continuing." });
     }
 
     const admin = createAdminClient();
@@ -120,16 +115,16 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (lockErr || !lock) {
-      return NextResponse.json({ error: "Slot lock not found" }, { status: 404 });
+      return apiError("BOOKING_LOCK_INVALID", 404);
     }
     if (lock.booking_id) {
-      return NextResponse.json({ error: "This lock is already used" }, { status: 409 });
+      return apiError("BOOKING_LOCK_INVALID", 409, { message: "This booking hold has already been used. Please choose the slot again." });
     }
     if (new Date(lock.expires_at) < new Date()) {
-      return NextResponse.json({ error: "Slot lock has expired. Please start over." }, { status: 410 });
+      return apiError("BOOKING_LOCK_EXPIRED", 410);
     }
     if (new Date(lock.slot_starts_at).getTime() !== new Date(slot_starts_at).getTime()) {
-      return NextResponse.json({ error: "Slot does not match the active lock. Please start over." }, { status: 400 });
+      return apiError("BOOKING_LOCK_INVALID", 400);
     }
 
     // ── Fetch coach details ────────────────────────────────────────────────────
@@ -141,20 +136,17 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (coachErr || !coach) {
-      return NextResponse.json({ error: "Coach not found" }, { status: 404 });
+      return apiError("BOOKING_COACH_UNAVAILABLE", 404);
     }
 
     // Ensure the lock actually belongs to this coach
     if (lock.coach_id !== coach.id) {
-      return NextResponse.json({ error: "Lock/coach mismatch" }, { status: 400 });
+      return apiError("BOOKING_LOCK_INVALID", 400);
     }
 
     // ── Guard: coach must have a Paystack subaccount for split payouts ─────────
     if (!coach.paystack_subaccount_code) {
-      return NextResponse.json(
-        { error: "This coach hasn't set up their payout account yet and cannot accept bookings." },
-        { status: 403 }
-      );
+      return apiError("BOOKING_PAYMENT_ACCOUNT_MISSING", 403);
     }
 
     // ── Guard: prevent National Stadium court double-booking ──────────────────
@@ -168,10 +160,7 @@ export async function POST(request: Request) {
         .maybeSingle();
 
       if (courtConflict) {
-        return NextResponse.json(
-          { error: "This court is already booked for that time. Please go back and choose a different court." },
-          { status: 409 }
-        );
+        return apiError("BOOKING_COURT_TAKEN", 409);
       }
     }
 
@@ -233,7 +222,7 @@ export async function POST(request: Request) {
       .single();
 
     if (bookingErr || !booking) {
-      return NextResponse.json({ error: bookingErr?.message ?? "Booking failed" }, { status: 500 });
+      return apiError("PAYMENT_INIT_FAILED", 500);
     }
 
     // Create payment record
@@ -250,7 +239,7 @@ export async function POST(request: Request) {
     if (paymentErr) {
       // Roll back booking
       await admin.from("bookings").delete().eq("id", booking.id);
-      return NextResponse.json({ error: paymentErr.message }, { status: 500 });
+      return apiError("PAYMENT_INIT_FAILED", 500);
     }
 
     // Attach booking_id to the lock (marks it as used)
@@ -286,6 +275,6 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unable to create booking";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiError("PAYMENT_INIT_FAILED", 500, { message });
   }
 }
