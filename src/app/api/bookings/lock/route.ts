@@ -5,7 +5,7 @@ import { apiError } from "@/lib/api-response";
 
 const LOCK_MINUTES      = 10;
 const MIN_ADVANCE_HOURS = 24;
-const MAX_ADVANCE_DAYS  = 14;
+const MAX_ADVANCE_DAYS  = 30;
 
 export async function POST(request: Request) {
   try {

@@ -70,7 +70,7 @@ export async function GET(request: Request) {
           .update({ status: "confirmed" })
           .eq("id", payment.booking_id)
           .in("status", ["pending", "pending_payment"])
-          .select("id, coach_id, player_id, starts_at, ends_at, location, player_notes, location_venue_id, location_court_id, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
+          .select("id, human_ref, coach_id, player_id, starts_at, ends_at, location, player_notes, location_venue_id, location_court_id, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
           .maybeSingle();
 
         if (updateBookingErr) {
@@ -129,6 +129,7 @@ export async function GET(request: Request) {
             const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
             const info = {
               bookingId:    updatedBooking.id,
+              humanRef:     updatedBooking.human_ref ?? null,
               coachName:   cp.data?.full_name  ?? "Your coach",
               playerName:  pp.data?.full_name  ?? "Your player",
               startsAt:    updatedBooking.starts_at,

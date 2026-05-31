@@ -7,6 +7,7 @@ type EmailTemplate = {
 
 export type EmailBookingInfo = {
   bookingId: string;
+  humanRef?: string | null;
   coachName: string;
   playerName: string;
   startsAt: string;
@@ -75,9 +76,9 @@ const BRAND = {
 };
 
 const SOCIAL_LINKS = [
-  { label: "Instagram", short: "IG", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng" },
-  { label: "X", short: "X", href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng" },
-  { label: "Website", short: "WWW", href: appUrl("/") },
+  { label: "Instagram", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng" },
+  { label: "X / Twitter", href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng" },
+  { label: "lobb.ng", href: appUrl("/") },
 ];
 
 function shell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
@@ -86,24 +87,24 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
     : "";
   const socialHtml = SOCIAL_LINKS.map(
     (item) => `
-      <td style="padding-right:10px;">
-        <a href="${escapeHtml(item.href)}" aria-label="${escapeHtml(item.label)}" style="display:inline-block;min-width:38px;border:1px solid rgba(245,230,220,0.24);border-radius:999px;background:rgba(245,230,220,0.08);color:#ffffff;text-align:center;text-decoration:none;font:900 11px Arial,Helvetica,sans-serif;letter-spacing:0.04em;padding:10px 11px;">
-          ${escapeHtml(item.short)}
+      <td style="padding-right:8px;">
+        <a href="${escapeHtml(item.href)}" style="display:inline-block;border:1px solid rgba(245,230,220,0.20);border-radius:999px;background:rgba(255,255,255,0.06);color:#F5E6DC;text-decoration:none;font:700 11px Arial,Helvetica,sans-serif;letter-spacing:0.03em;padding:8px 14px;white-space:nowrap;">
+          ${escapeHtml(item.label)}
         </a>
       </td>`
   ).join("");
+  // Inline SVG logo mark as data URI (works in all major email clients)
+  const svgMark = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 64 64" fill="none"><path d="M 8 56 C 8 4 56 4 56 56" stroke="${BRAND.clay}" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="17" r="5.5" fill="${BRAND.clay}"/></svg>`;
+  const svgDataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMark)}`;
   const logoMark = `
     <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
       <tr>
-        <td style="width:44px;height:44px;border-radius:16px;background:${BRAND.ink};text-align:center;vertical-align:middle;box-shadow:0 10px 24px rgba(26,23,20,0.16);">
-          <div style="width:44px;height:44px;border-radius:16px;background:${BRAND.ink};text-align:center;">
-            <div style="padding-top:8px;color:${BRAND.clay};font:900 20px/18px Arial,Helvetica,sans-serif;">L</div>
-            <div style="width:18px;height:3px;margin:4px auto 0;border-radius:999px;background:${BRAND.clay};"></div>
-          </div>
+        <td style="width:44px;height:44px;border-radius:14px;background:${BRAND.ink};text-align:center;vertical-align:middle;box-shadow:0 8px 20px rgba(26,23,20,0.18);">
+          <img src="${svgDataUri}" width="24" height="24" alt="LOBB" style="display:block;margin:10px auto;" />
         </td>
         <td style="padding-left:12px;">
           <p style="margin:0;color:${BRAND.ink};font:900 15px Arial,Helvetica,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">LOBB</p>
-          <p style="margin:3px 0 0;color:${BRAND.faint};font:800 11px Arial,Helvetica,sans-serif;">Lagos tennis, booked cleanly</p>
+          <p style="margin:3px 0 0;color:${BRAND.faint};font:700 11px Arial,Helvetica,sans-serif;">Lagos tennis, booked cleanly</p>
         </td>
       </tr>
     </table>`;
@@ -144,12 +145,12 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
               <td style="vertical-align:top;">
                 <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                   <tr>
-                    <td style="width:42px;height:42px;border-radius:15px;background:#ffffff;text-align:center;vertical-align:middle;">
-                      <div style="color:${BRAND.clay};font:900 19px/42px Arial,Helvetica,sans-serif;">L</div>
+                    <td style="width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(245,230,220,0.16);text-align:center;vertical-align:middle;">
+                      <img src="${svgDataUri}" width="22" height="22" alt="LOBB" style="display:block;margin:10px auto;" />
                     </td>
                     <td style="padding-left:12px;">
                       <p style="margin:0;color:#ffffff;font:900 15px Arial,Helvetica,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">LOBB</p>
-                      <p style="margin:4px 0 0;font:800 12px Arial,Helvetica,sans-serif;color:#D8D0C3;">Book. Pay. Play.</p>
+                      <p style="margin:4px 0 0;font:700 11px Arial,Helvetica,sans-serif;color:#D8D0C3;">Book. Pay. Play.</p>
                     </td>
                   </tr>
                 </table>
@@ -230,6 +231,7 @@ function noteCard(title: string, body: string, tone: "default" | "success" | "wa
 export function bookingConfirmedPlayerEmail(info: EmailBookingInfo): EmailTemplate {
   const subject = `Your session with ${info.coachName} is confirmed`;
   const preview = `You are booked for ${formatDate(info.startsAt)}.`;
+  const displayRef = info.humanRef ?? info.reference ?? info.bookingId;
   const html = shell(
     "Booking confirmed",
     preview,
@@ -239,7 +241,7 @@ export function bookingConfirmedPlayerEmail(info: EmailBookingInfo): EmailTempla
       ["Date", formatDate(info.startsAt)],
       ["Location", info.location],
       ["Duration", "60 minutes"],
-      ["Reference", info.reference],
+      ["Booking ref", displayRef],
       ["Coach phone", info.coachPhone],
     ])}`,
     { label: "View booking", href: appUrl(`/dashboard/bookings/${info.bookingId}`) }
@@ -256,31 +258,30 @@ export function bookingConfirmedPlayerEmail(info: EmailBookingInfo): EmailTempla
 export function paymentReceiptEmail(info: EmailBookingInfo): EmailTemplate {
   const total = info.totalAmountNgn ?? 0;
   const subject = "Receipt for your LOBB session";
-  const preview = `${money(total)} paid for your session with ${info.coachName}.`;
+  const preview = `${money(total)} paid · ${info.coachName} · ${formatDate(info.startsAt)}`;
   const paidAt = info.paidAt ? formatDate(info.paidAt) : "Payment confirmed";
+  const displayRef = info.humanRef ?? info.reference ?? info.bookingId;
   const html = shell(
-    `Thanks for your payment, ${info.playerName}`,
+    `Payment confirmed — ${money(total)}`,
     preview,
     `<div style="border-bottom:1px solid ${BRAND.line};padding-bottom:22px;">
-      <p style="margin:0;color:${BRAND.muted};font:800 12px Arial,Helvetica,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">Total paid</p>
-      <p style="margin:8px 0 0;color:${BRAND.ink};font:900 42px/1 Arial,Helvetica,sans-serif;letter-spacing:-0.03em;">${money(total)}</p>
-      <p style="margin:10px 0 0;color:${BRAND.muted};font:700 14px/1.6 Arial,Helvetica,sans-serif;">Your LOBB court session is confirmed. Keep this receipt for your records.</p>
+      <p style="margin:0;color:${BRAND.muted};font:800 11px Arial,Helvetica,sans-serif;letter-spacing:0.16em;text-transform:uppercase;">Total paid</p>
+      <p style="margin:6px 0 0;color:${BRAND.ink};font:900 44px/1 Arial,Helvetica,sans-serif;letter-spacing:-0.03em;">${money(total)}</p>
+      <p style="margin:10px 0 0;color:${BRAND.muted};font:700 13px/1.6 Arial,Helvetica,sans-serif;">Your session is confirmed and your spot is held. See you on court.</p>
     </div>
     ${amountTable([
-      ["Coach session", info.sessionFeeNgn, "normal"],
-      ["LOBB convenience fee", info.convenienceFeeNgn, "normal"],
-      ["Total", total, "strong"],
+      ["Session fee", info.sessionFeeNgn, "normal"],
+      ["LOBB service fee (5%)", info.convenienceFeeNgn, "normal"],
+      ["Total charged", total, "strong"],
     ])}
     ${detailTable([
       ["Coach", info.coachName],
-      ["Player", info.playerName],
-      ["Session", `${formatDate(info.startsAt)}${info.endsAt ? ` - ${formatTime(info.endsAt)}` : ""}`],
+      ["Session", `${formatDate(info.startsAt)}${info.endsAt ? ` – ${formatTime(info.endsAt)}` : ""}`],
       ["Location", info.location],
-      ["Payment", info.paymentMethod ?? "Paystack"],
       ["Paid", paidAt],
-      ["Receipt ID", info.reference ?? info.bookingId],
+      ["Booking ref", displayRef],
     ])}
-    ${noteCard("What happens next", "Your coach has the session details. Use the receipt page if you need a cleaner printable record.", "success")}`,
+    ${noteCard("Protected payment", "LOBB holds payment securely and releases it to the coach after the session is completed.", "success")}`,
     { label: "View receipt", href: receiptUrl(info) }
   );
 
@@ -435,7 +436,7 @@ export function bookingConfirmedCoachEmail(info: EmailBookingInfo): EmailTemplat
       ["Duration", "60 minutes"],
       ["Player phone", info.playerPhone],
       ["Note", info.playerNotes],
-      ["Reference", info.reference],
+      ["Booking ref", info.humanRef ?? info.reference],
     ])}
     ${noteCard("Coach checklist", "Confirm the location, review the player note, and keep your availability current after the session.", "success")}`,
     { label: "Open coach booking", href: appUrl(`/coach/bookings/${info.bookingId}`) }

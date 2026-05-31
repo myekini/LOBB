@@ -260,40 +260,42 @@ export default function CoachAvailabilityPage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-2xl space-y-5 px-4 pt-5 pb-6 sm:px-6">
+      <section className="mx-auto max-w-6xl px-4 pt-5 pb-6 sm:px-6">
         {loading ? (
-          <div className="space-y-4">
+          <div className="grid gap-5 lg:grid-cols-2">
             <SkeletonBlock className="h-56 rounded-[26px]" />
             <SkeletonBlock className="h-80 rounded-[26px]" />
           </div>
         ) : (
           <>
-            {/* ── Section 1: Weekly hours ─────────────────────────────────── */}
-            <WeeklyHoursSection
-              addWindow={addWindow}
-              applyQuick={applyQuick}
-              quickEnd={quickEnd}
-              quickStart={quickStart}
-              removeWindow={removeWindow}
-              selectedDows={selectedDows}
-              setQuickEnd={setQuickEnd}
-              setQuickStart={setQuickStart}
-              setSelectedDows={setSelectedDows}
-              updateWindow={updateWindow}
-              windows={windows}
-            />
+            <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+              {/* ── Section 1: Weekly hours ───────────────────────────────── */}
+              <WeeklyHoursSection
+                addWindow={addWindow}
+                applyQuick={applyQuick}
+                quickEnd={quickEnd}
+                quickStart={quickStart}
+                removeWindow={removeWindow}
+                selectedDows={selectedDows}
+                setQuickEnd={setQuickEnd}
+                setQuickStart={setQuickStart}
+                setSelectedDows={setSelectedDows}
+                updateWindow={updateWindow}
+                windows={windows}
+              />
 
-            {/* ── Section 2: Days off ─────────────────────────────────────── */}
-            <DaysOffSection
-              blockedDates={blockedDates}
-              calendarCells={calendarCells}
-              month={month}
-              setMonth={setMonth}
-              today={today}
-              toggleDate={toggleDate}
-              upcomingClosed={upcomingClosed}
-              windows={windows}
-            />
+              {/* ── Section 2: Days off ───────────────────────────────────── */}
+              <DaysOffSection
+                blockedDates={blockedDates}
+                calendarCells={calendarCells}
+                month={month}
+                setMonth={setMonth}
+                today={today}
+                toggleDate={toggleDate}
+                upcomingClosed={upcomingClosed}
+                windows={windows}
+              />
+            </div>
 
             <LobbErrorBanner
               error={error}
@@ -307,7 +309,7 @@ export default function CoachAvailabilityPage() {
 
       {/* Save footer */}
       <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/96 p-3 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-2xl items-center gap-3">
+        <div className="mx-auto flex max-w-6xl items-center gap-3">
           <span className={`hidden shrink-0 text-[11px] font-bold sm:block ${dirty ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-success)]"}`}>
             {dirty ? "● Unsaved changes" : saved ? "✓ Saved" : ""}
           </span>

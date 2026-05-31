@@ -234,15 +234,15 @@ function BookingStep1Content() {
           <div className="flex items-center gap-1.5">
             <button
               disabled={weekStart === 0}
-              onClick={() => { setWeekStart(0); setSelectedSlot(""); }}
+              onClick={() => { setWeekStart(Math.max(0, weekStart - 7)); setSelectedSlot(""); }}
               className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-sm transition-all hover:border-[var(--lobb-clay)] disabled:opacity-30 disabled:shadow-none"
               aria-label="Previous week"
             >
               <ChevronLeft className="size-4 text-[var(--lobb-text-primary)]" />
             </button>
             <button
-              disabled={weekStart === 7}
-              onClick={() => { setWeekStart(7); setSelectedSlot(""); }}
+              disabled={weekStart >= 21}
+              onClick={() => { setWeekStart(weekStart + 7); setSelectedSlot(""); }}
               className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-sm transition-all hover:border-[var(--lobb-clay)] disabled:opacity-30 disabled:shadow-none"
               aria-label="Next week"
             >
@@ -335,7 +335,7 @@ function BookingStep1Content() {
             <>
               <p className="text-sm font-black text-[var(--lobb-text-primary)]">No slots this week</p>
               <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
-                {weekStart === 0 ? "Try the next week →" : "No availability in the next 2 weeks"}
+                {weekStart === 0 ? "Try the next week →" : "No availability in the next 4 weeks"}
               </p>
             </>
           )}

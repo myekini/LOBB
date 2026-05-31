@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     .update({ status: "confirmed" })
     .eq("id", payment.booking_id)
     .in("status", ["pending", "pending_payment"])
-    .select("id, coach_id, player_id, starts_at, ends_at, location, player_notes, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
+    .select("id, human_ref, coach_id, player_id, starts_at, ends_at, location, player_notes, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
     .maybeSingle();
 
   // ── Remove slot lock ───────────────────────────────────────────────────────
@@ -125,6 +125,7 @@ export async function POST(request: Request) {
 
     const info = {
       bookingId:     booking.id,
+      humanRef:      booking.human_ref ?? null,
       coachName:    coachProfile.data?.full_name  ?? "Your coach",
       playerName:   playerProfile.data?.full_name ?? "Your player",
       startsAt:     booking.starts_at,
