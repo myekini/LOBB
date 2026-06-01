@@ -128,7 +128,7 @@ export async function POST(request: Request) {
     // ── Fetch coach details ────────────────────────────────────────────────────
     const { data: coach, error: coachErr } = await admin
       .from("coaches")
-      .select("id, hourly_rate_ngn, paystack_recipient_code, full_name")
+      .select("id, hourly_rate_ngn, paystack_recipient_code, paystack_subaccount_code, full_name")
       .eq("slug", coach_slug)
       .eq("status", "active")
       .maybeSingle();
@@ -142,8 +142,12 @@ export async function POST(request: Request) {
       return apiError("BOOKING_LOCK_INVALID", 400);
     }
 
-    // ── Guard: coach must have a Paystack transfer recipient for escrow payouts ─
-    if (!coach.paystack_recipient_code) {
+    // ── Guard: coach must have connected their bank at some point ─────────────
+    // With the Transfer API escrow model, money lands in LOBB's account first;
+    // paystack_recipient_code is only required when the cron pays out (post-session).
+    // Coaches who onboarded under the old subaccount model are still bookable —
+    // they'll need to re-onboard for automated payouts, but bookings should not block.
+    if (!coach.paystack_recipient_code && !coach.paystack_subaccount_code) {
       return apiError("BOOKING_PAYMENT_ACCOUNT_MISSING", 403);
     }
 
