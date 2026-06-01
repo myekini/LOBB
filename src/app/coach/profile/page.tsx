@@ -85,15 +85,15 @@ function buildSections(coach: CoachRow): Section[] {
     },
     {
       label: "Court Access",
-      detail:
-        coach.court_access === "coach_has_access"
-          ? "Coach has access"
-          : coach.court_access === "player_arranges"
-          ? "Player arranges court"
-          : coach.court_access === "coach_can_recommend"
-          ? "Can recommend courts"
-          : "Not set",
-      done: Boolean(coach.court_access),
+      detail: (() => {
+        const courts = coach.courts_worked_with ?? [];
+        if (courts.length > 0) return `${courts.length} court${courts.length > 1 ? "s" : ""} listed`;
+        if (coach.court_access === "coach_has_access") return "Coach has access";
+        if (coach.court_access === "player_arranges") return "Player arranges court";
+        if (coach.court_access === "coach_can_recommend") return "Can recommend courts";
+        return "Not set";
+      })(),
+      done: Boolean(coach.court_access) || (coach.courts_worked_with ?? []).length > 0,
       href: "/coach/profile/edit#court-access",
     },
   ];
@@ -121,7 +121,7 @@ export default async function CoachProfilePage() {
     .from("coaches")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (error || !coach) redirect("/auth/setup/coach/1");
 

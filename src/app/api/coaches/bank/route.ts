@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
-import { createSubaccount } from "@/lib/paystack";
+import { createTransferRecipient } from "@/lib/paystack";
 
 export async function POST(request: Request) {
   const auth = await requireRole("coach");
@@ -13,7 +13,6 @@ export async function POST(request: Request) {
     account_number?: string;
     bank_code?: string;
     bank_name?: string;
-    business_name?: string;
   };
 
   const accountNumber = (body.bank_account_number ?? body.account_number ?? "").trim();
@@ -35,11 +34,10 @@ export async function POST(request: Request) {
 
     if (coachError) return NextResponse.json({ error: coachError.message }, { status: 500 });
 
-    const subaccount = await createSubaccount({
-      business_name: body.business_name?.trim() || coach?.full_name || "LOBB Coach",
-      settlement_bank: bankCode,
+    const recipient = await createTransferRecipient({
+      name: coach?.full_name || "LOBB Coach",
       account_number: accountNumber,
-      percentage_charge: 85,
+      bank_code: bankCode,
     });
 
     const { data, error } = await auth.admin
@@ -48,10 +46,10 @@ export async function POST(request: Request) {
         bank_account_number: accountNumber,
         bank_code: bankCode,
         bank_name: bankName,
-        paystack_subaccount_code: subaccount.subaccount_code,
+        paystack_recipient_code: recipient.recipient_code,
       })
       .eq("id", auth.user.id)
-      .select("id, bank_account_number, bank_code, bank_name, paystack_subaccount_code")
+      .select("id, bank_account_number, bank_code, bank_name, paystack_recipient_code")
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

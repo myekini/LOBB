@@ -111,12 +111,17 @@ export async function updateSession(request: NextRequest) {
 
   const isCoachSetupRoute = pathname.startsWith("/auth/setup/coach");
   const isCoachAppRoute = coachRoutes.some((r) => pathname.startsWith(r));
+  const isCoachProfileRoute =
+    pathname === "/coach/profile" ||
+    pathname.startsWith("/coach/profile/") ||
+    pathname.startsWith("/coach/settings");
 
   // Guard: coach accessing app routes but onboarding is incomplete
   if (
     profile?.role === "coach" &&
     isCoachAppRoute &&
-    !isCoachSetupRoute
+    !isCoachSetupRoute &&
+    !isCoachProfileRoute
   ) {
     const { data: coach } = await supabase
       .from("coaches")

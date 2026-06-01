@@ -439,24 +439,24 @@ export default function Home() {
               </span>
             </div>
             <h1 className="text-[38px] font-black leading-[1.06] text-[var(--lobb-black)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75 sm:text-[52px] lg:text-[66px]">
-              Precision Coaching.<br />
-              <span className="text-[var(--lobb-clay)]">Perfect Timing.</span>
+              Book verified tennis<br />
+              <span className="text-[var(--lobb-clay)]">coaches in Lagos.</span>
             </h1>
             <p className="mt-5 max-w-[480px] text-[14px] sm:text-[16px] leading-[1.7] text-[var(--lobb-muted)] animate-in fade-in-0 duration-700 delay-150">
-              Find certified tennis coaches across Lagos — Lekki, Ikoyi, VI, and beyond. Browse real profiles, check live availability, book your session, and pay securely through Paystack.
+              Choose a coach, pick an available time, and pay securely with Paystack. Find sessions in Lekki, Ikoyi, VI, and other Lagos areas.
             </p>
             <div className="mt-8 flex w-full flex-col gap-3 animate-in fade-in-0 slide-in-from-bottom-4 duration-500 delay-200 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-center">
               <Link href="/coaches" className="group relative inline-flex h-12 items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-[#D96B27] to-[#C4622D] px-6 text-center text-xs font-bold uppercase tracking-widest text-white shadow-[0_8px_32px_rgba(217,107,39,0.25)] transition-all duration-300 hover:shadow-[0_12px_40px_rgba(217,107,39,0.4)] hover:-translate-y-0.5 active:scale-[0.98] sm:px-8">
                 <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                Browse coaches
+                Find a coach
                 <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
               <Link href="/auth/signup/coach" className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-6 text-center text-xs font-bold uppercase tracking-widest text-[var(--lobb-black)] transition-all duration-300 hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98] sm:px-8">
-                Become a coach
+                Join as a coach
               </Link>
             </div>
             <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 animate-in fade-in-0 duration-500 delay-250">
-              {["Verified coaches", "Instant booking", "All of Lagos"].map((f) => (
+              {["Verified coaches", "Real availability", "Secure payment"].map((f) => (
                 <div key={f} className="flex items-center gap-1.5 text-[11px] font-semibold text-[var(--lobb-muted)]">
                   <Check className="size-3 shrink-0 text-[#D96B27]" />
                   {f}

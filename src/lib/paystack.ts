@@ -151,6 +151,80 @@ export async function createSubaccount(input: CreateSubaccountInput): Promise<Cr
   return json.data;
 }
 
+// ─── Transfer recipients ───────────────────────────────────────────────────────
+
+export type CreateTransferRecipientInput = {
+  name: string;
+  account_number: string;
+  bank_code: string;
+  description?: string;
+};
+
+export type CreateTransferRecipientResult = {
+  recipient_code: string;
+};
+
+export async function createTransferRecipient(
+  input: CreateTransferRecipientInput
+): Promise<CreateTransferRecipientResult> {
+  const res = await fetch(`${PAYSTACK_BASE}/transferrecipient`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      type: "nuban",
+      name: input.name,
+      account_number: input.account_number,
+      bank_code: input.bank_code,
+      currency: "NGN",
+      description: input.description ?? "LOBB coach payout recipient",
+    }),
+  });
+  const json = (await res.json()) as {
+    status: boolean;
+    message: string;
+    data: { recipient_code: string };
+  };
+  if (!json.status) throw new Error(json.message || "Paystack recipient creation failed");
+  return { recipient_code: json.data.recipient_code };
+}
+
+// ─── Transfers ─────────────────────────────────────────────────────────────────
+
+export type CreateTransferInput = {
+  amount_kobo: number;
+  recipient_code: string;
+  reference?: string;
+  reason?: string;
+};
+
+export type CreateTransferResult = {
+  transfer_code: string;
+  status: string;
+};
+
+export async function createTransfer(
+  input: CreateTransferInput
+): Promise<CreateTransferResult> {
+  const res = await fetch(`${PAYSTACK_BASE}/transfer`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({
+      source: "balance",
+      amount: input.amount_kobo,
+      recipient: input.recipient_code,
+      reference: input.reference,
+      reason: input.reason ?? "LOBB session payout",
+    }),
+  });
+  const json = (await res.json()) as {
+    status: boolean;
+    message: string;
+    data: CreateTransferResult;
+  };
+  if (!json.status) throw new Error(json.message || "Paystack transfer failed");
+  return json.data;
+}
+
 // ─── Webhook signature ─────────────────────────────────────────────────────────
 
 export function verifyWebhookSignature(rawBody: string, signature: string): boolean {

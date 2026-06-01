@@ -70,40 +70,16 @@ export async function GET(request: Request) {
           .update({ status: "confirmed" })
           .eq("id", payment.booking_id)
           .in("status", ["pending", "pending_payment"])
-          .select("id, human_ref, coach_id, player_id, starts_at, ends_at, location, player_notes, location_venue_id, location_court_id, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
+          .select("id, human_ref, coach_id, player_id, starts_at, ends_at, location, player_notes, hourly_rate_ngn, convenience_fee_ngn, total_amount_ngn")
           .maybeSingle();
 
         if (updateBookingErr) {
           return apiError("PAYMENT_VERIFY_FAILED", 500);
         }
 
-        // Remove slot lock and reserve court slot if applicable
+        // Remove slot lock
         if (updatedBooking) {
           await admin.from("slot_locks").delete().eq("booking_id", updatedBooking.id);
-
-          // Reserve the National Stadium court slot to prevent double-booking
-          if (updatedBooking.location_venue_id === "national_stadium" && updatedBooking.location_court_id) {
-            const { error: courtErr } = await admin.from("court_slot_bookings").upsert(
-              {
-                court_id:      updatedBooking.location_court_id,
-                venue_id:      updatedBooking.location_venue_id,
-                booking_id:    updatedBooking.id,
-                coach_id:      updatedBooking.coach_id,
-                player_id:     updatedBooking.player_id,
-                slot_starts_at: updatedBooking.starts_at,
-                slot_ends_at:   updatedBooking.ends_at,
-              },
-              { onConflict: "court_id,slot_starts_at", ignoreDuplicates: false }
-            );
-            if (courtErr) {
-              // Court was double-booked despite the pre-check (race condition).
-              // Payment is already confirmed — log the conflict for admin resolution
-              // rather than failing the verify response.
-              console.error("[court-conflict] booking=%s court=%s starts=%s error=%s",
-                updatedBooking.id, updatedBooking.location_court_id,
-                updatedBooking.starts_at, courtErr.message);
-            }
-          }
 
           // Send and schedule transactional emails (webhook may not have fired yet).
           // Atomically claim the event record first (INSERT ... ON CONFLICT DO NOTHING).

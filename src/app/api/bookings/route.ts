@@ -94,11 +94,9 @@ export async function POST(request: Request) {
       lock_id?: string;
       location?: string;
       player_notes?: string;
-      location_venue_id?: string;
-      location_court_id?: string;
     };
 
-    const { coach_slug, slot_starts_at, lock_id, location, player_notes, location_venue_id, location_court_id } = body;
+    const { coach_slug, slot_starts_at, lock_id, location, player_notes } = body;
 
     if (!coach_slug || !slot_starts_at || !lock_id || !location?.trim()) {
       return apiError("VALIDATION_ERROR", 400, { message: "Choose a slot and court before continuing." });
@@ -130,7 +128,7 @@ export async function POST(request: Request) {
     // ── Fetch coach details ────────────────────────────────────────────────────
     const { data: coach, error: coachErr } = await admin
       .from("coaches")
-      .select("id, hourly_rate_ngn, paystack_subaccount_code, full_name")
+      .select("id, hourly_rate_ngn, paystack_recipient_code, full_name")
       .eq("slug", coach_slug)
       .eq("status", "active")
       .maybeSingle();
@@ -144,32 +142,20 @@ export async function POST(request: Request) {
       return apiError("BOOKING_LOCK_INVALID", 400);
     }
 
-    // ── Guard: coach must have a Paystack subaccount for split payouts ─────────
-    if (!coach.paystack_subaccount_code) {
+    // ── Guard: coach must have a Paystack transfer recipient for escrow payouts ─
+    if (!coach.paystack_recipient_code) {
       return apiError("BOOKING_PAYMENT_ACCOUNT_MISSING", 403);
-    }
-
-    // ── Guard: prevent National Stadium court double-booking ──────────────────
-    if (location_venue_id === "national_stadium" && location_court_id) {
-      const starts_at_check = new Date(slot_starts_at);
-      const { data: courtConflict } = await admin
-        .from("court_slot_bookings")
-        .select("id")
-        .eq("court_id", location_court_id)
-        .eq("slot_starts_at", starts_at_check.toISOString())
-        .maybeSingle();
-
-      if (courtConflict) {
-        return apiError("BOOKING_COURT_TAKEN", 409);
-      }
     }
 
     // ── Calculate fees ────────────────────────────────────────────────────────
     const session_fee = coach.hourly_rate_ngn;
     const platform_commission = Math.round(session_fee * PLATFORM_COMMISSION_RATE);
     const convenience_fee = Math.round(session_fee * CONVENIENCE_FEE_RATE);
-    const coach_payout = session_fee - platform_commission;
     const total_amount = session_fee + convenience_fee;
+    // coach_payout must equal exactly what Paystack routes to the coach's subaccount:
+    // 85% of the gross total (not 85% of session_fee alone, which would understate by the
+    // convenience fee share). This keeps the DB figure authoritative for earnings views.
+    const coach_payout = Math.round(total_amount * (1 - PLATFORM_COMMISSION_RATE));
 
     // ── Compute session times ─────────────────────────────────────────────────
     const starts_at = new Date(slot_starts_at);
@@ -185,7 +171,6 @@ export async function POST(request: Request) {
       amount_kobo:  total_amount * 100,
       reference,
       callback_url: `${appUrl}/book/confirm?reference=${encodeURIComponent(reference)}`,
-      subaccount:   coach.paystack_subaccount_code ?? undefined,
       metadata: {
         player_id:   user.id,
         coach_id:    coach.id,
@@ -202,8 +187,6 @@ export async function POST(request: Request) {
         starts_at:        starts_at.toISOString(),
         ends_at:          ends_at.toISOString(),
         location:             location.trim(),
-        location_venue_id:    location_venue_id || null,
-        location_court_id:    location_court_id || null,
         player_notes:         player_notes?.trim() || null,
         status:               "pending",
         hourly_rate_ngn:  session_fee,

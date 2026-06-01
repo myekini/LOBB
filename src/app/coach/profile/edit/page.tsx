@@ -10,6 +10,7 @@ import {
   CERTIFICATION_OPTIONS,
   COURT_ACCESS_OPTIONS,
   HOURLY_RATE_OPTIONS,
+  LAGOS_COURTS,
   LANGUAGE_OPTIONS,
   LAGOS_LOCATIONS,
   SKILL_LEVEL_OPTIONS,
@@ -33,6 +34,7 @@ type ProfileFormSnapshot = {
   certifications: string[];
   languages: string[];
   courtAccess: CourtAccess;
+  courtsWorkedWith: string[];
   photoUrl: string;
 };
 
@@ -101,6 +103,7 @@ export default function CoachProfileEditPage() {
   const [certifications, setCertifications] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [courtAccess, setCourtAccess] = useState<CourtAccess>("player_arranges");
+  const [courtsWorkedWith, setCourtsWorkedWith] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
@@ -124,6 +127,7 @@ export default function CoachProfileEditPage() {
         certifications,
         languages,
         courtAccess,
+        courtsWorkedWith,
         photoUrl,
       }),
     [
@@ -140,6 +144,7 @@ export default function CoachProfileEditPage() {
       certifications,
       languages,
       courtAccess,
+      courtsWorkedWith,
       photoUrl,
     ]
   );
@@ -174,6 +179,7 @@ export default function CoachProfileEditPage() {
             certifications: coach.certifications ?? [],
             languages: coach.languages ?? [],
             courtAccess: coach.court_access ? (coach.court_access as CourtAccess) : "player_arranges",
+            courtsWorkedWith: coach.courts_worked_with ?? [],
             photoUrl: coach.profile_photo_url ?? "",
           };
           setFullName(loaded.fullName);
@@ -189,6 +195,7 @@ export default function CoachProfileEditPage() {
           setCertifications(loaded.certifications);
           setLanguages(loaded.languages);
           setCourtAccess(loaded.courtAccess);
+          setCourtsWorkedWith(loaded.courtsWorkedWith);
           setPhotoUrl(loaded.photoUrl);
           setInitialSnapshot(formSnapshot(loaded));
           setLoading(false);
@@ -260,6 +267,7 @@ export default function CoachProfileEditPage() {
           certifications,
           languages,
           court_access: courtAccess,
+          courts_worked_with: courtsWorkedWith,
           profile_photo_url: finalPhotoUrl || null,
         }),
       });
@@ -288,6 +296,7 @@ export default function CoachProfileEditPage() {
             certifications,
             languages,
             courtAccess,
+            courtsWorkedWith,
             photoUrl: finalPhotoUrl,
           })
         );
@@ -588,6 +597,38 @@ export default function CoachProfileEditPage() {
                 >
                   {opt.label}
                   {courtAccess === opt.value && <CheckCircle2 className="size-5 shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Courts I work with ───────────────────────────── */}
+          <section>
+            <SectionHead id="courts-worked-with" title="Courts I Work With" />
+            <p className="mb-3 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+              Select courts you have access to or regularly use. Shown on your public profile so players know where to expect to train.
+            </p>
+            <div className="space-y-2">
+              {LAGOS_COURTS.map((court) => (
+                <button
+                  key={court.id}
+                  type="button"
+                  onClick={() => setCourtsWorkedWith(toggle(court.id, courtsWorkedWith))}
+                  className={`flex w-full items-start justify-between rounded-2xl border px-4 py-3.5 text-left transition ${
+                    courtsWorkedWith.includes(court.id)
+                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8]"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]"
+                  }`}
+                >
+                  <span className="min-w-0">
+                    <span className={`block text-sm font-black leading-tight ${courtsWorkedWith.includes(court.id) ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-primary)]"}`}>
+                      {court.name}
+                    </span>
+                    <span className="mt-0.5 block text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                      {court.area}{court.publicNote ? ` · ${court.publicNote}` : ""}
+                    </span>
+                  </span>
+                  {courtsWorkedWith.includes(court.id) && <CheckCircle2 className="ml-3 mt-0.5 size-5 shrink-0 text-[var(--lobb-clay)]" />}
                 </button>
               ))}
             </div>

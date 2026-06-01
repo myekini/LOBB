@@ -25,6 +25,7 @@ import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
+import { LAGOS_COURTS } from "@/lib/types";
 import { CoachShareSheet } from "@/features/coaches/coach-share-sheet";
 
 type Tab = "about" | "availability" | "reviews";
@@ -138,6 +139,9 @@ export function CoachProfileContent({
   const reviewCount = coach.review_count ?? reviews.length;
   const sessionCount = coach.session_count ?? 0;
   const courtLabel = COURT_ACCESS_LABELS[coach.court_access] ?? "Court details pending";
+  const courtsWorkedWith = (coach.courts_worked_with ?? [])
+    .map((id) => LAGOS_COURTS.find((c) => c.id === id))
+    .filter(Boolean) as typeof LAGOS_COURTS;
   const locations = [primaryLocation, ...serviceAreas.filter((area) => area && area !== primaryLocation)];
   const selectedSlotDay = slots[selectedDay];
   const bookingHref = coach.slug ? `/book/${coach.slug}/step-1` : "#";
@@ -405,10 +409,29 @@ export function CoachProfileContent({
                 ))}
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg border border-[#c4c7c7]/30 bg-[#f3f3f3] p-3 text-[#1a1c1c]">
-                <Building2 className="size-5 text-[#9c440f]" />
-                <span className="text-sm font-semibold">{courtLabel}</span>
-              </div>
+              {courtsWorkedWith.length > 0 ? (
+                <div className="rounded-xl border border-[#c4c7c7]/30 bg-[#f3f3f3] p-3">
+                  <div className="mb-2 flex items-center gap-2 text-[#9c440f]">
+                    <Building2 className="size-4 shrink-0" />
+                    <span className="text-xs font-black uppercase tracking-[0.08em]">Courts I work with</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {courtsWorkedWith.map((court) => (
+                      <span
+                        key={court.id}
+                        className="inline-flex items-center rounded-full border border-[#c4c7c7] bg-white px-3 py-1 text-xs font-semibold text-[#1a1c1c]"
+                      >
+                        {court.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 rounded-lg border border-[#c4c7c7]/30 bg-[#f3f3f3] p-3 text-[#1a1c1c]">
+                  <Building2 className="size-5 text-[#9c440f]" />
+                  <span className="text-sm font-semibold">{courtLabel}</span>
+                </div>
+              )}
 
               {languages.length > 0 && (
                 <p className="text-sm font-medium text-[#444748]">Speaks: {languages.join(", ")}</p>

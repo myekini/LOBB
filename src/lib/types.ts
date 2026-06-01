@@ -33,9 +33,11 @@ export type CoachRow = {
   languages: string[];
   certifications: string[];
   court_access: CourtAccess;
+  courts_worked_with: string[];
   demo_video_url: string | null;
   profile_photo_url: string | null;
   paystack_subaccount_code: string | null;
+  paystack_recipient_code: string | null;
   bank_account_number: string | null;
   bank_code: string | null;
   bank_name: string | null;
@@ -49,7 +51,7 @@ export type CoachRow = {
 /** Public profile returned by the coach_profiles_public view */
 export type CoachPublicProfile = Omit<
   CoachRow,
-  "paystack_subaccount_code" | "updated_at"
+  "paystack_subaccount_code" | "paystack_recipient_code" | "updated_at"
 > & {
   avg_rating: number | null;
   review_count: number;
@@ -218,25 +220,20 @@ export type LagosCourtEntry = {
   isNationalStadium?: boolean;
 };
 
-export type NationalStadiumCourt = {
+export type NationalStadiumCourtEntry = {
   id: string;
   label: string;
-  isMemberCourt: boolean;
-  publicWeekdaysBefore4pm: boolean;
-  notes?: string;
+  isMemberCourt?: boolean;
 };
 
-export const NATIONAL_STADIUM_COURTS: NationalStadiumCourt[] = [
-  // 3 front courts — members only except weekdays before 4pm
-  { id: "nat_front_1", label: "Front Court 1", isMemberCourt: true, publicWeekdaysBefore4pm: true, notes: "Members only · Open weekdays before 4pm" },
-  { id: "nat_front_2", label: "Front Court 2", isMemberCourt: true, publicWeekdaysBefore4pm: true, notes: "Members only · Open weekdays before 4pm" },
-  { id: "nat_front_3", label: "Front Court 3", isMemberCourt: true, publicWeekdaysBefore4pm: true, notes: "Members only · Open weekdays before 4pm" },
-  // Center court — open to all
-  { id: "nat_center",  label: "Center Court",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
-  // 3 back courts — open to all
-  { id: "nat_back_1",  label: "Back Court 1",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
-  { id: "nat_back_2",  label: "Back Court 2",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
-  { id: "nat_back_3",  label: "Back Court 3",  isMemberCourt: false, publicWeekdaysBefore4pm: false },
+export const NATIONAL_STADIUM_COURTS: NationalStadiumCourtEntry[] = [
+  { id: "nat_front_1", label: "Front Court 1", isMemberCourt: true },
+  { id: "nat_front_2", label: "Front Court 2", isMemberCourt: true },
+  { id: "nat_front_3", label: "Front Court 3", isMemberCourt: true },
+  { id: "nat_center", label: "Center Court" },
+  { id: "nat_back_1", label: "Back Court 1" },
+  { id: "nat_back_2", label: "Back Court 2" },
+  { id: "nat_back_3", label: "Back Court 3" },
 ];
 
 export const LAGOS_COURTS: LagosCourtEntry[] = [

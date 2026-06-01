@@ -48,9 +48,6 @@ function BookingStep3Content() {
   const expiresAt = search.get("expires")  ?? "";
   const location  = search.get("location") ?? "";
   const note      = search.get("note")     ?? "";
-  const venueId   = search.get("venue_id") ?? "";
-  const courtId   = search.get("court_id") ?? "";
-
   const [coach,   setCoach]   = useState<CoachPublicProfile | null>(null);
   const [paying,  setPaying]  = useState(false);
   const [seconds, setSeconds] = useState(() => {
@@ -111,8 +108,6 @@ function BookingStep3Content() {
           lock_id:       lockId,
           location,
           player_notes:  note || undefined,
-          location_venue_id: venueId || undefined,
-          location_court_id: courtId || undefined,
         }),
       });
       if (!res.ok) {
@@ -145,7 +140,7 @@ function BookingStep3Content() {
   return (
     <BookingShell
       step={3}
-      backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}${venueId ? `&venue_id=${venueId}` : ""}${courtId ? `&court_id=${courtId}` : ""}`}
+      backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}`}
     >
       {/* Countdown */}
       <div className="mb-4 overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
@@ -251,7 +246,9 @@ function BookingStep3Content() {
         <div>
           <p className="text-[10px] font-black uppercase tracking-wider text-emerald-900">Protected payment</p>
           <p className="mt-1 font-medium text-emerald-800">
-            LOBB holds payment securely and releases it after the session is completed.
+            {coach
+              ? `Your ${money(total)} is held safely and only released to ${coach.full_name?.split(" ")[0]} after your session. Something goes wrong? We've got you.`
+              : "Your payment is held safely and only released to the coach after your session. Something goes wrong? We've got you."}
           </p>
         </div>
       </div>

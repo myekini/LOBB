@@ -94,7 +94,9 @@ Three-step wizard at `/book/[coachSlug]/step-1` → `step-2` → `step-3`.
   - Returns `lock_id` + `expires_at`; countdown shown on steps 2 & 3
 
 ### Step 2 — Session details
-- Player enters court/location (required) and a note to the coach (optional)
+- Player types in the court/location (required free-text field)
+- Quick-select chips show the coach's preferred courts from their profile ("Courts I work with") for one-tap autofill
+- Optional note to the coach (focus area, injury note, etc.)
 - Countdown pill changes colour: clay → amber at 4 min → red at 2 min
 - If timer hits zero → redirected back to coach profile
 
@@ -136,10 +138,12 @@ Three-step wizard at `/book/[coachSlug]/step-1` → `step-2` → `step-3`.
 
 **Provider:** Paystack
 
-**Flow:**
+### Money flow — what actually happens
 
 ```
-Player pays on Paystack checkout
+Player pays ₦21,000 on Paystack checkout (e.g. ₦20k session + ₦1k convenience fee)
+        ↓
+Full ₦21,000 lands in LOBB's Paystack account (no subaccount split)
         ↓
 Paystack webhook fires (charge.success)
         ↓
@@ -149,32 +153,66 @@ Paystack webhook fires (charge.success)
   → update payment: pending → paid
   → update booking: pending → confirmed
   → remove slot lock
-  → send SMS to player + coach
-  → schedule reminder jobs
+  → send SMS + email to player + coach
+  → schedule reminder and review jobs
         ↓
 Session happens
         ↓
-Cron: release-escrow runs 2 hrs after session ends
-  → calls release_escrow(booking_id) Supabase RPC
-  → booking status: confirmed → completed
-  → escrow_released_at timestamp set
+Cron: /api/cron/release-escrow (runs hourly, authenticated with ADMIN_SECRET)
+  → Pass 1: finds confirmed bookings where ends_at + 2 hours ≤ now()
+    → calls release_escrow(booking_id) Supabase RPC
+    → booking status: confirmed → completed
+    → escrow_released_at timestamp set
+  → Pass 2: finds completed bookings with escrow_released_at set but no paystack_transfer_code
+    → calls POST /transfer on Paystack for each
+    → amount: coach_payout_ngn × 100 kobo
+    → recipient: coach's paystack_recipient_code (RCPT_xxx)
+    → stores paystack_transfer_code on booking row
         ↓
-Admin triggers payout to coach bank account
+₦17,850 (85%) transferred to coach's bank account via Paystack Transfer API
+₦3,150  (15%) stays in LOBB's Paystack account as platform revenue
 ```
 
-**Verification resilience:**
-- Webhook and `/api/payments/verify` both confirm successful transactions
-- Webhook signature verification uses Paystack HMAC-SHA512
-- Verification accepts both `pending` and `pending_payment` bookings
-- If payment is already `paid`, verification repairs booking status to `confirmed` and clears related slot locks
-- `paystack_events` prevents duplicate webhook/SMS processing
+### Fee breakdown
 
-**Subaccount split (when coach has a Paystack subaccount):**
-- LOBB charges 15% commission (`platform_commission = session_fee × 0.15`)
-- Coach receives 85% (`coach_payout = session_fee × 0.85`)
-- 5% convenience fee is charged on top (player pays it, LOBB keeps it)
+For a ₦20,000/hr coach:
 
-**Reference format:** `LOBB-{timestamp-base36}-{random}` e.g. `LOBB-LQK7F2-3XY8Z`
+| Line | Formula | Amount |
+| ---- | ------- | ------ |
+| Session fee | `coach.hourly_rate_ngn` | ₦20,000 |
+| Convenience fee (player pays) | `session_fee × 0.05` | ₦1,000 |
+| **Total charged to player** | `session_fee + convenience_fee` | **₦21,000** |
+| Coach payout (transfer) | `total × 0.85` | ₦17,850 |
+| LOBB revenue | `total × 0.15` | ₦3,150 |
+
+The `platform_commission_ngn` column (`session_fee × 0.15 = ₦3,000`) is stored for internal accounting reference but **LOBB's actual Paystack receipt is ₦3,150** (15% of gross total including convenience fee).
+
+### Escrow — true financial hold
+
+**How it works:** All money lands in LOBB's Paystack account at payment time. The coach's 85% stays in LOBB's balance for the full 2-hour window after the session ends. The `release_escrow` cron both marks the booking `completed` and programmatically transfers the coach's share via Paystack's Transfer API. LOBB controls the timing end-to-end.
+
+**Dispute window:** Before `release_escrow` runs (i.e. within the 2-hour post-session window), admin can call the Paystack refund API (`POST /refund`) to reverse the full transaction. Once `escrow_released_at` is set and the transfer has fired, refunds require Paystack support.
+
+**Transfer retry:** If the Paystack transfer fails (network error, OTP required), the cron retries on its next run by querying `completed` bookings with `escrow_released_at IS NOT NULL AND paystack_transfer_code IS NULL`. The admin payout trigger can also manually retry these.
+
+**Important Paystack account setting:** Automated transfers require "Disable OTP for transfers" to be enabled in the LOBB Paystack dashboard settings. This is an account-level toggle, not a code change.
+
+### Transfer recipient setup
+
+- Coach enters bank account during onboarding
+- `POST /api/coaches/bank` calls `createTransferRecipient({ type: "nuban", ... })` on Paystack
+- `paystack_recipient_code` (format: `RCPT_xxx`) stored on the `coaches` row
+- Booking creation blocks with 403 if the coach has no recipient code (`!coach.paystack_recipient_code`)
+
+### Verification resilience
+
+- Webhook and `/api/payments/verify` both confirm successful transactions independently
+- Webhook signature verified via HMAC-SHA512 (`PAYSTACK_WEBHOOK_SECRET`)
+- `paystack_events` table provides idempotency — both paths check it before sending notifications
+- Verify endpoint retries with progressive backoff (up to 12 attempts, ~60s window) to handle webhook delay
+- If payment already `paid`, verify repairs booking to `confirmed` and clears slot locks
+
+**Reference format:** `LB-{YYMM}-{XXXXX}` e.g. `LB-2606-A3F7K`
 
 ---
 
@@ -242,23 +280,37 @@ SMS jobs are queued in the `sms_jobs` table and processed by `/api/notifications
 
 ## 7. Coach Payout
 
-Payouts are currently **manual** (admin-triggered). Wallet system is a future phase.
+### How coach payment actually reaches the bank
 
-**Payout flow:**
-1. Session completes → escrow released (2 hrs after `ends_at`)
-2. Admin reviews coach's completed bookings at `/admin/earnings`
-3. Admin triggers `POST /api/admin/payouts/trigger` with `{ coach_id, booking_ids? }`
-4. System calculates total: `SUM(coach_payout_ngn)` for selected completed bookings
-5. Payout record created in `payouts` table (status: `processed`)
-6. Coach gets WhatsApp SMS: "₦X sent to your bank for N sessions"
-7. Admin audit log entry created
+LOBB holds all payments in its Paystack balance. After the 2-hour escrow window closes, the `release_escrow` cron automatically transfers `coach_payout_ngn` to the coach's registered bank account:
 
-**Coach sees** their earnings breakdown at `/coach/earnings`:
-- Per-session breakdown
-- Total earned, total pending payout
+1. Cron marks the booking `completed` via `release_escrow()` RPC
+2. Cron calls Paystack `POST /transfer` with `source: "balance"`, `amount`, and the coach's `paystack_recipient_code`
+3. `paystack_transfer_code` stored on the booking row for traceability
+4. Paystack settles to the coach's bank on its settlement cycle (typically T+1 business days)
 
-**Future: LOBB credit wallet**
-Refunds → LOBB credits (instant, no 5–7 day delay). Credits applied at checkout. Avoids CBN e-money licence risk at current scale. Not built yet.
+### Admin payout trigger — manual recovery
+
+`POST /api/admin/payouts/trigger` is a **recovery and manual override tool**. It handles:
+
+- Bookings that are `completed` with `escrow_released_at` set but `paystack_transfer_code IS NULL` (auto-transfer failed)
+- Admin-initiated manual payouts for a specific coach or set of bookings
+
+**What the trigger does:**
+
+1. Queries `completed` bookings for the coach where `paystack_transfer_code IS NULL`
+2. Calls `POST /transfer` on Paystack per booking
+3. Stores `paystack_transfer_code` on each booking
+4. Inserts a `payouts` row: `{ coach_id, amount_ngn, session_count, booking_ids, status: "processed" | "partial" }`
+5. Sends coach a WhatsApp SMS: "₦X processed for N sessions"
+6. Writes to `admin_audit_log`
+
+### Coach earnings view (`/coach/earnings`)
+
+- Per-session breakdown with `coach_payout_ngn` per booking
+- Earnings summary: net this week, net this month, net all-time
+- `pending_payout_ngn` = sum of `coach_payout_ngn` for confirmed + completed bookings not yet in a processed payout record
+- Bank details status and link to update via `/coach/settings`
 
 ---
 
@@ -525,7 +577,6 @@ Rules:
 | `bookings` | One row per session; tracks status lifecycle from `pending` → `confirmed` → `completed` |
 | `payments` | Paystack transaction record linked 1-to-1 with a booking |
 | `paystack_events` | Webhook idempotency log keyed on Paystack reference |
-| `court_slot_bookings` | National Stadium court reservations linked to a booking |
 
 ### Coach availability setup
 
@@ -579,15 +630,17 @@ Validations:
 Fee calculation (authoritative server-side):
 
 ```
-session_fee       = coach.hourly_rate_ngn
-platform_commission = round(session_fee × 0.15)   // LOBB's cut, deducted from coach
-convenience_fee   = round(session_fee × 0.05)      // charged on top to player
-coach_payout      = session_fee − platform_commission
-total_amount      = session_fee + convenience_fee
+session_fee         = coach.hourly_rate_ngn
+platform_commission = round(session_fee × 0.15)     // stored for internal accounting
+convenience_fee     = round(session_fee × 0.05)     // charged on top to player
+total_amount        = session_fee + convenience_fee  // gross charged to player
+coach_payout        = round(total_amount × 0.85)    // transferred to coach after escrow window
+// LOBB receives: total_amount × 0.15 (= platform_commission + 85% of convenience_fee)
 ```
 
 Sequence:
-1. Initialise Paystack transaction (`email`, `amount_kobo = total_amount × 100`, `subaccount = coach.paystack_subaccount_code`).
+
+1. Initialise Paystack transaction (`email`, `amount_kobo = total_amount × 100`) — no subaccount split; full amount goes to LOBB.
 2. Insert `bookings` row with `status = 'pending'`.
 3. Insert `payments` row with `status = 'pending'`.
 4. Mark lock as used: `UPDATE slot_locks SET booking_id = [new_id]`.
@@ -606,7 +659,6 @@ Both paths are idempotent and can run independently:
 - Called by the confirmation page with exponential backoff (4 attempts, ~1.4 s–5.6 s).
 - If payment is already `paid`, repairs booking to `confirmed` and clears locks.
 - Otherwise calls Paystack API directly to verify; applies the same state transitions as the webhook.
-- On National Stadium bookings: inserts into `court_slot_bookings` (`ON CONFLICT DO NOTHING`) to reserve the specific court.
 
 ### Coach booking management
 

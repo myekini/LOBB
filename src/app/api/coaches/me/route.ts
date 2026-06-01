@@ -19,6 +19,7 @@ type CoachUpdatePayload = Partial<
     | "languages"
     | "certifications"
     | "court_access"
+    | "courts_worked_with"
     | "profile_photo_url"
   >
 > & { email?: string | null };
@@ -139,6 +140,9 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "Invalid court access value" }, { status: 400 });
       }
       allowed.court_access = body.court_access as CourtAccess;
+    }
+    if (Array.isArray(body.courts_worked_with)) {
+      allowed.courts_worked_with = body.courts_worked_with.map(String);
     }
     if (typeof body.profile_photo_url === "string") {
       allowed.profile_photo_url = body.profile_photo_url.trim() || null;
