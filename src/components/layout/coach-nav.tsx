@@ -3,21 +3,20 @@
 import Link from "next/link";
 import { CalendarDays, Home, User, WalletCards } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const items = [
-  { href: "/coach/dashboard", label: "Home", icon: Home },
-  { href: "/coach/bookings", label: "Bookings", icon: CalendarDays },
-  { href: "/coach/earnings", label: "Earnings", icon: WalletCards },
-  { href: "/coach/profile", label: "Profile", icon: User },
+  { href: "/coach/dashboard", label: "Home",     icon: Home },
+  { href: "/coach/bookings",  label: "Bookings", icon: CalendarDays },
+  { href: "/coach/earnings",  label: "Earnings", icon: WalletCards },
+  { href: "/coach/profile",   label: "Profile",  icon: User },
 ] as const;
 
 type ActiveTab = "home" | "bookings" | "earnings" | "profile";
 
 export function CoachBottomNav({ active }: { active: ActiveTab }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 md:hidden">
-      <div className="mx-auto flex max-w-[390px] items-center justify-between rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1.5 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-3xl animate-in slide-in-from-bottom-5 duration-500 fill-mode-both">
+    <nav className="fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2 md:hidden">
+      <div className="mx-auto flex max-w-[390px] items-center justify-around rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/96 p-1.5 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-xl">
         {items.map((item) => {
           const isActive = item.label.toLowerCase() === active;
           const Icon = item.icon;
@@ -25,28 +24,30 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "group relative flex h-[54px] flex-1 flex-col items-center justify-center gap-1 rounded-[18px] text-[var(--lobb-text-tertiary)] transition-all duration-300 active:scale-[0.95]",
-                isActive ? "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]" : "hover:text-[var(--lobb-text-primary)]"
+                "relative flex h-[52px] flex-1 flex-col items-center justify-center gap-[3px] rounded-[18px] transition-all duration-200 active:scale-[0.92]",
+                isActive
+                  ? "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
+                  : "text-[var(--lobb-text-tertiary)]"
               )}
             >
               <Icon
-                className={cn("size-[18px] transition-transform duration-300 group-hover:scale-105", isActive && "text-[var(--lobb-clay)]")}
+                className={cn(
+                  "size-[19px] transition-transform duration-200",
+                  isActive ? "scale-110 text-[var(--lobb-clay)]" : "scale-100"
+                )}
                 strokeWidth={isActive ? 2.5 : 1.85}
               />
               <span className={cn(
-                "text-[9px] font-black tracking-wider uppercase leading-none transition-colors",
+                "text-[9px] font-black tracking-wider uppercase leading-none",
                 isActive ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-tertiary)]"
               )}>
                 {item.label}
               </span>
-              {isActive && (
-                <span className="absolute bottom-1.5 size-1.5 rounded-full bg-[var(--lobb-clay)] animate-pulse" />
-              )}
             </Link>
           );
         })}
-        <ThemeToggle className="h-[54px] flex-1 rounded-[18px] border-0 bg-transparent" />
       </div>
     </nav>
   );
@@ -77,7 +78,6 @@ export function CoachDesktopNav({ active }: { active: ActiveTab }) {
           </Link>
         );
       })}
-      <ThemeToggle />
     </nav>
   );
 }

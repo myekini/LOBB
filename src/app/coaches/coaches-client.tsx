@@ -91,7 +91,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
           </Link>
           <h1 className="text-[15px] font-black">Book a Coach</h1>
           <div className="flex items-center gap-2">
-            <PlayerDesktopNav active="browse" />
+            <PlayerDesktopNav active="coaches" />
             <button
               onClick={() => setShowSort(true)}
               className="hidden h-10 items-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3 text-xs font-black sm:flex"
@@ -271,7 +271,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
         </BottomSheet>
       )}
 
-      <PlayerBottomNav active="browse" />
+      <PlayerBottomNav active="coaches" />
     </main>
   );
 

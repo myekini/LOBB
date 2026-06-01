@@ -7,7 +7,7 @@
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "background_color": "#F2F1EF",
+  "background_color": "#0D0D0D",
   "theme_color": "#0D0D0D",
   "orientation": "portrait",
   "categories": ["sports", "health", "fitness"],
