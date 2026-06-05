@@ -308,20 +308,180 @@
     margin-top: -0.4rem;
   }
 
-
-  [data-theme="dark"] .lobb-onboarding-wash {
-    background: radial-gradient(circle at 50% 0%, rgba(196, 98, 45, 0.16), transparent 42%);
+  .lobb-landing {
+    --landing-bg: #fbfaf7;
+    --landing-panel: #fffefa;
+    --landing-band: rgba(255, 254, 250, 0.72);
+    --landing-border: rgba(26, 23, 20, 0.095);
+    --landing-muted: #6b625a;
+    --landing-shadow-soft: 0 22px 64px rgba(58, 43, 20, 0.085);
+    --landing-shadow-panel: 0 12px 34px rgba(58, 43, 20, 0.05);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.58), transparent 420px),
+      var(--landing-bg);
+    color: var(--lobb-text-primary);
   }
 
-  [data-theme="dark"] .lobb-onboarding-glow {
-    opacity: 1;
+  .lobb-landing-header {
+    background: rgba(251, 250, 247, 0.84);
+    border-color: var(--landing-border);
+  }
+
+  .lobb-landing-panel {
     background:
-      radial-gradient(circle at 20% 0%, rgba(196, 98, 45, 0.16), transparent 34%),
-      radial-gradient(circle at 90% 12%, rgba(123, 143, 199, 0.12), transparent 28%);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0)),
+      var(--landing-panel);
+    border-color: var(--landing-border);
+    box-shadow: var(--landing-shadow-panel);
+  }
+
+  .lobb-landing-band {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.18)),
+      var(--landing-band);
+    border-color: var(--landing-border);
+  }
+
+  .lobb-hero-visual {
+    box-shadow: var(--landing-shadow-soft);
+  }
+
+  .lobb-dark-panel {
+    background:
+      linear-gradient(135deg, rgba(196, 98, 45, 0.14), rgba(255, 255, 255, 0.025) 32%, transparent 70%),
+      #0d0d0d;
+    border-color: rgba(13, 13, 13, 0.88);
+  }
+
+  .lobb-app-page {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.54), transparent 360px),
+      radial-gradient(ellipse 72% 38% at 50% -14%, rgba(196, 98, 45, 0.08), transparent 62%),
+      var(--lobb-bg-primary);
+  }
+
+  .lobb-app-header {
+    background: color-mix(in srgb, var(--lobb-bg-primary) 88%, transparent);
+    border-color: color-mix(in srgb, var(--lobb-border-subtle) 86%, transparent);
+  }
+
+  .lobb-app-card,
+  .lobb-app-panel,
+  .lobb-settings-group {
+    border-radius: 14px;
+    border-color: color-mix(in srgb, var(--lobb-border-subtle) 86%, transparent);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.58), rgba(255,255,255,0)),
+      var(--lobb-bg-elevated);
+    box-shadow: 0 12px 34px rgba(58, 43, 20, 0.055);
+  }
+
+  .lobb-app-panel {
+    border-radius: 12px;
+  }
+
+  .lobb-segmented {
+    border-radius: 14px;
+    box-shadow: 0 10px 26px rgba(58, 43, 20, 0.045);
+  }
+
+  .lobb-segmented button {
+    border-radius: 10px;
+  }
+
+  .lobb-bottom-nav {
+    border: 1px solid color-mix(in srgb, var(--lobb-border-subtle) 82%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--lobb-bg-elevated) 92%, transparent);
+    box-shadow: 0 18px 44px rgba(58, 43, 20, 0.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .lobb-bottom-nav a {
+    border-radius: 12px;
+  }
+
+  .lobb-desktop-nav {
+    border: 1px solid color-mix(in srgb, var(--lobb-border-subtle) 74%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--lobb-bg-elevated) 76%, transparent);
+    padding: 0.25rem;
+    box-shadow: 0 8px 24px rgba(58, 43, 20, 0.04);
+  }
+
+  .lobb-desktop-nav a {
+    border-radius: 999px;
+  }
+
+  .lobb-settings-group {
+    border-radius: 12px;
+  }
+
+
+  .lobb-onboarding {
+    --onboarding-bg: #fbfaf7;
+    --onboarding-panel: rgba(255, 254, 250, 0.92);
+    --onboarding-panel-border: rgba(26, 23, 20, 0.09);
+    --onboarding-field: rgba(242, 239, 233, 0.72);
+    --onboarding-field-focus: rgba(255, 254, 250, 0.95);
+    --onboarding-shadow: 0 28px 78px rgba(58, 43, 20, 0.10);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.55), transparent 52vh),
+      var(--onboarding-bg);
+  }
+
+  .lobb-onboarding-wash {
+    background:
+      radial-gradient(ellipse 72% 46% at 50% -8%, rgba(196, 98, 45, 0.10), transparent 62%),
+      radial-gradient(ellipse 46% 36% at 86% 84%, rgba(45, 106, 79, 0.055), transparent 64%);
+  }
+
+  .lobb-onboarding-grid {
+    background-image:
+      linear-gradient(90deg, rgba(26, 23, 20, 0.026) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(26, 23, 20, 0.022) 1px, transparent 1px);
+    background-size: 76px 76px;
+    mask-image: linear-gradient(180deg, black, transparent 72%);
+  }
+
+  .lobb-onboarding-court {
+    color: var(--lobb-black);
+    opacity: 0.03;
   }
 
   .lobb-onboarding-panel {
     max-width: min(430px, 100vw);
+    background: transparent;
+  }
+
+  @media (min-width: 1024px) {
+    .lobb-onboarding-panel {
+      max-width: 560px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255,255,255,0)),
+        var(--onboarding-panel);
+      border-color: var(--onboarding-panel-border);
+      box-shadow: var(--onboarding-shadow);
+      backdrop-filter: blur(18px);
+    }
+  }
+
+  .lobb-onboarding-progress {
+    background: rgba(26, 23, 20, 0.08);
+  }
+
+  .lobb-onboarding input,
+  .lobb-onboarding textarea,
+  .lobb-onboarding select {
+    letter-spacing: 0;
+  }
+
+  .lobb-onboarding .bg-\[var\(--lobb-surface-2\)\] {
+    background-color: var(--onboarding-field);
+  }
+
+  .lobb-onboarding .focus-within\:bg-\[var\(--lobb-surface\)\]:focus-within {
+    background-color: var(--onboarding-field-focus);
   }
 
   [data-theme="dark"] .lobb-onboarding-panel {
@@ -329,6 +489,39 @@
       linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
       var(--lobb-bg-primary);
     border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme="dark"] .lobb-onboarding {
+    --onboarding-bg: #050505;
+    --onboarding-panel: rgba(16, 14, 12, 0.92);
+    --onboarding-panel-border: rgba(255, 255, 255, 0.075);
+    --onboarding-field: rgba(255, 255, 255, 0.045);
+    --onboarding-field-focus: rgba(255, 255, 255, 0.07);
+    --onboarding-shadow: 0 28px 84px rgba(0, 0, 0, 0.54);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.025), transparent 52vh),
+      #050505;
+  }
+
+  [data-theme="dark"] .lobb-onboarding-wash {
+    background:
+      radial-gradient(ellipse 72% 46% at 50% -8%, rgba(196, 98, 45, 0.16), transparent 62%),
+      radial-gradient(ellipse 46% 36% at 86% 84%, rgba(45, 106, 79, 0.10), transparent 64%);
+  }
+
+  [data-theme="dark"] .lobb-onboarding-grid {
+    background-image:
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  }
+
+  [data-theme="dark"] .lobb-onboarding-court {
+    color: white;
+    opacity: 0.045;
+  }
+
+  [data-theme="dark"] .lobb-onboarding-progress {
+    background: rgba(255, 255, 255, 0.08);
   }
 
   [data-theme="dark"] .lobb-onboarding-desktop-panel {
@@ -339,32 +532,69 @@
   }
 
   [data-theme="dark"] .lobb-landing {
-    background: #050505;
+    --landing-bg: #050505;
+    --landing-panel: #15120f;
+    --landing-band: rgba(255, 255, 255, 0.035);
+    --landing-border: rgba(255, 255, 255, 0.075);
+    --landing-muted: rgba(255, 255, 255, 0.58);
+    --landing-shadow-soft: 0 28px 86px rgba(0, 0, 0, 0.56);
+    --landing-shadow-panel: none;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.025), transparent 420px),
+      #050505;
     color: white;
   }
 
   [data-theme="dark"] .lobb-landing header,
   [data-theme="dark"] .lobb-landing footer {
-    border-color: rgba(255, 255, 255, 0.06);
+    border-color: var(--landing-border);
     background: rgba(5, 5, 5, 0.62);
   }
 
-  [data-theme="dark"] .lobb-landing h1 {
-    color: white;
+  [data-theme="dark"] .lobb-landing-panel {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+      var(--landing-panel);
+    border-color: var(--landing-border);
   }
 
-  [data-theme="dark"] .lobb-landing p,
-  [data-theme="dark"] .lobb-landing footer span,
-  [data-theme="dark"] .lobb-landing footer a {
-    color: rgba(255, 255, 255, 0.46);
+  [data-theme="dark"] .lobb-landing-band {
+    background: var(--landing-band);
+    border-color: var(--landing-border);
   }
 
-  [data-theme="dark"] .lobb-landing .bg-\[var\(--lobb-surface\)\] {
-    background-color: rgba(255, 255, 255, 0.04);
+  [data-theme="dark"] .lobb-app-page {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 360px),
+      radial-gradient(ellipse 72% 38% at 50% -14%, rgba(196, 98, 45, 0.11), transparent 62%),
+      var(--lobb-bg-primary);
   }
 
-  [data-theme="dark"] .lobb-landing .border-\[var\(--lobb-border\)\] {
+  [data-theme="dark"] .lobb-app-header {
+    background: color-mix(in srgb, var(--lobb-bg-primary) 78%, transparent);
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+
+  [data-theme="dark"] .lobb-app-card,
+  [data-theme="dark"] .lobb-app-panel,
+  [data-theme="dark"] .lobb-settings-group {
+    border-color: rgba(255, 255, 255, 0.075);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.012)),
+      var(--lobb-bg-elevated);
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.22);
+  }
+
+  [data-theme="dark"] .lobb-bottom-nav {
     border-color: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--lobb-bg-elevated) 86%, transparent);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  }
+
+  [data-theme="dark"] .lobb-desktop-nav {
+    border-color: rgba(255, 255, 255, 0.07);
+    background: color-mix(in srgb, var(--lobb-bg-elevated) 72%, transparent);
+    box-shadow: none;
   }
 
   [data-theme="dark"] .bg-\[var\(--lobb-black\)\].text-white,
@@ -413,45 +643,104 @@
     mix-blend-mode: overlay;
   }
 
-  /* ── Booking preview widget: light mode adaptations ── */
+  html:not([data-theme="dark"]) .lobb-landing-top-gradient {
+    background: linear-gradient(180deg, rgba(238, 232, 222, 0.72), transparent);
+  }
+
+  html:not([data-theme="dark"]) .lobb-landing-court-texture {
+    opacity: 0.045;
+    filter: saturate(0.72) contrast(0.96);
+    mix-blend-mode: multiply;
+  }
+
+  .lobb-booking-widget {
+    color: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(22px);
+  }
+
+  .lobb-booking-head,
+  .lobb-booking-total {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
+  .lobb-booking-total {
+    border-bottom: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
+  }
+
+  .lobb-booking-kicker,
+  .lobb-booking-label {
+    color: rgba(255, 255, 255, 0.46);
+  }
+
+  .lobb-booking-title,
+  .lobb-booking-value,
+  .lobb-booking-price {
+    color: rgba(255, 255, 255, 0.94);
+  }
+
+  .lobb-booking-location {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .lobb-booking-icon {
+    color: var(--lobb-clay);
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .lobb-booking-tile {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .lobb-booking-paymark {
+    background: white;
+    color: #0d0d0d;
+  }
+
   html:not([data-theme="dark"]) .lobb-booking-widget {
-    background-image: none;
-    background-color: var(--lobb-bg-elevated);
-    border-color: var(--lobb-border-subtle);
-    box-shadow: var(--lobb-shadow-modal);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 253, 249, 0.86));
+    border-color: rgba(255, 255, 255, 0.62);
+    box-shadow: 0 28px 64px rgba(13, 13, 13, 0.18), 0 0 0 1px rgba(58, 43, 20, 0.06);
     backdrop-filter: none;
   }
 
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white { color: var(--lobb-text-primary); }
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white\/80 { color: var(--lobb-text-primary); }
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white\/50,
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white\/40 { color: var(--lobb-text-secondary); }
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white\/35,
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white\/30 { color: var(--lobb-text-tertiary); }
-  html:not([data-theme="dark"]) .lobb-booking-widget .text-white\/18 { color: var(--lobb-text-tertiary); }
-
-  html:not([data-theme="dark"]) .lobb-booking-widget .border-white\/\[0\.06\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .border-white\/\[0\.04\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .border-white\/\[0\.02\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .border-white\/\[0\.10\] {
-    border-color: var(--lobb-border-subtle);
+  html:not([data-theme="dark"]) .lobb-booking-head,
+  html:not([data-theme="dark"]) .lobb-booking-total {
+    border-color: rgba(26, 23, 20, 0.09);
   }
 
-  html:not([data-theme="dark"]) .lobb-booking-widget .bg-white\/\[0\.01\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .bg-white\/\[0\.02\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .bg-white\/\[0\.04\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .bg-white\/\[0\.06\],
-  html:not([data-theme="dark"]) .lobb-booking-widget .bg-white\/\[0\.08\] {
-    background-color: var(--lobb-bg-secondary);
+  html:not([data-theme="dark"]) .lobb-booking-kicker,
+  html:not([data-theme="dark"]) .lobb-booking-label {
+    color: var(--lobb-text-tertiary);
   }
 
-  html:not([data-theme="dark"]) .lobb-booking-widget [data-keep-light].bg-white {
-    background-color: var(--lobb-bg-inverse);
-    color: white;
+  html:not([data-theme="dark"]) .lobb-booking-title,
+  html:not([data-theme="dark"]) .lobb-booking-value,
+  html:not([data-theme="dark"]) .lobb-booking-price {
+    color: var(--lobb-text-primary);
   }
 
-  html:not([data-theme="dark"]) .lobb-booking-widget .ring-\[\#050505\] {
-    --tw-ring-color: var(--lobb-bg-elevated);
+  html:not([data-theme="dark"]) .lobb-booking-location {
+    color: var(--lobb-text-secondary);
+  }
+
+  html:not([data-theme="dark"]) .lobb-booking-icon {
+    color: var(--lobb-clay);
+    background: rgba(196, 98, 45, 0.10);
+  }
+
+  html:not([data-theme="dark"]) .lobb-booking-tile {
+    background: rgba(242, 239, 233, 0.66);
+    box-shadow: inset 0 0 0 1px rgba(26, 23, 20, 0.035);
+  }
+
+  html:not([data-theme="dark"]) .lobb-booking-paymark {
+    background: var(--lobb-bg-inverse);
+    color: var(--lobb-text-inverse);
   }
 }
 

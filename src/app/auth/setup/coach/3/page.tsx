@@ -235,7 +235,7 @@ export default function CoachSetupStep3Page() {
         </div>
 
         <div className="mt-10 pb-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
+          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 import { loadCoachBookings } from "@/lib/dashboard-queries";
 
 function profileChecklistProgress(coach: Record<string, unknown> | null) {
@@ -16,21 +17,11 @@ function profileChecklistProgress(coach: Record<string, unknown> | null) {
     Boolean(coach?.primary_location),
     Number(coach?.hourly_rate_ngn) >= 1000,
   ];
-
   const completed = checks.filter(Boolean).length;
-  return {
-    completed,
-    total: checks.length,
-    percent: Math.round((completed / checks.length) * 100),
-  };
+  return { completed, total: checks.length, percent: Math.round((completed / checks.length) * 100) };
 }
 
-export async function GET() {
-  const auth = await requireRole(["coach", "admin"]);
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
+export const GET = withRole(["coach", "admin"], async (_request, auth) => {
   const coachId = auth.user.id;
 
   const [coachResult, bookingsResult, earningsResult, reviewsResult, availabilityResult] = await Promise.all([
@@ -46,11 +37,11 @@ export async function GET() {
     auth.admin.from("coach_availability").select("id").eq("coach_id", coachId),
   ]);
 
-  if (coachResult.error) return NextResponse.json({ error: coachResult.error.message }, { status: 500 });
-  if (bookingsResult.error) return NextResponse.json({ error: bookingsResult.error.message }, { status: 500 });
-  if (earningsResult.error) return NextResponse.json({ error: earningsResult.error.message }, { status: 500 });
-  if (reviewsResult.error) return NextResponse.json({ error: reviewsResult.error.message }, { status: 500 });
-  if (availabilityResult.error) return NextResponse.json({ error: availabilityResult.error.message }, { status: 500 });
+  if (coachResult.error) return internalError(coachResult.error);
+  if (bookingsResult.error) return internalError(bookingsResult.error);
+  if (earningsResult.error) return internalError(earningsResult.error);
+  if (reviewsResult.error) return internalError(reviewsResult.error);
+  if (availabilityResult.error) return internalError(availabilityResult.error);
 
   const bookings = bookingsResult.data ?? [];
   const now = Date.now();
@@ -58,7 +49,7 @@ export async function GET() {
   return NextResponse.json({
     coach: coachResult.data,
     upcoming_bookings: bookings.filter(
-      (booking) => booking.status === "confirmed" && new Date(booking.starts_at).getTime() >= now
+      (b) => b.status === "confirmed" && new Date(b.starts_at).getTime() >= now
     ),
     recent_bookings: bookings.slice(0, 10),
     earnings: earningsResult.data,
@@ -67,4 +58,4 @@ export async function GET() {
     profile_completion: profileChecklistProgress(coachResult.data),
     reviews: reviewsResult.data ?? [],
   });
-}
+});

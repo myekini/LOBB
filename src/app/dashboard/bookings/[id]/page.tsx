@@ -77,7 +77,7 @@ export default function BookingDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
+      <main className="lobb-app-page min-h-screen px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
         <section className="mx-auto max-w-5xl">
           <BookingCardSkeleton />
           <div className="mt-7 space-y-4">
@@ -91,7 +91,7 @@ export default function BookingDetailPage() {
 
   if (!booking) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 py-10 text-[var(--lobb-text-primary)] sm:px-6">
+      <main className="lobb-app-page min-h-screen px-4 py-10 text-[var(--lobb-text-primary)] sm:px-6">
         <section className="mx-auto max-w-3xl">
           <h1 className="text-xl font-black">Booking not found</h1>
           <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
@@ -108,10 +108,10 @@ export default function BookingDetailPage() {
   const policyNote = policy.note;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
+    <main className="lobb-app-page min-h-screen px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
       <section className="mx-auto max-w-5xl">
         <header className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
-          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]" aria-label="Go back">
+          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
           <h1 className="truncate text-center font-black">Booking detail</h1>
@@ -120,7 +120,7 @@ export default function BookingDetailPage() {
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div>
-            <section className="overflow-hidden rounded-[28px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+            <section className="overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] opacity-55">
                 <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
@@ -137,9 +137,9 @@ export default function BookingDetailPage() {
               </p>
             </section>
 
-            <section className="mt-5 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+            <section className="lobb-app-card mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
               <div className="flex items-start gap-3">
-                <div className="size-14 shrink-0 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+                <div className="size-14 shrink-0 overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
                   {coach?.profile_photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -163,17 +163,17 @@ export default function BookingDetailPage() {
 
               {coachPhone ? (
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[15px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]">
+                  <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]">
                     <Phone className="size-4 text-[var(--lobb-clay)]" /> Call
                   </a>
-                  <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[15px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-black">
+                  <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-black">
                     <MessageCircle className="size-4 text-[var(--lobb-clay)]" /> WhatsApp
                   </a>
                 </div>
               ) : null}
             </section>
 
-            <section className="mt-5 rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+            <section className="lobb-app-card mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
               <InfoRow icon={MapPin} label="Location" value={booking.location || "Location not specified"} />
               {booking.player_notes && (
                 <div className="mt-4 border-t border-[var(--lobb-border-subtle)] pt-4">
@@ -184,7 +184,7 @@ export default function BookingDetailPage() {
             </section>
           </div>
 
-          <aside className="rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-card)] lg:sticky lg:top-6">
+          <aside className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 lg:sticky lg:top-6">
         <DetailSection title="Payment" compact>
           <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
             <CreditCard className="size-4 text-[var(--lobb-clay)]" />
@@ -196,8 +196,8 @@ export default function BookingDetailPage() {
           <p className="mt-3 break-all rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold text-[var(--lobb-text-secondary)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
         </DetailSection>
 
-        <DetailSection title="Cancellation Policy">
-          <div className={`rounded-[20px] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : policy.refundPercent === 50 ? "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10"}`}>
+        <DetailSection title="Cancellation policy">
+          <div className={`rounded-[16px] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : policy.refundPercent === 50 ? "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10"}`}>
             <p className="flex items-start gap-2 text-sm font-black">
               <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
               {policy.label}
@@ -207,14 +207,14 @@ export default function BookingDetailPage() {
         </DetailSection>
 
         {isUpcoming && (
-          <button onClick={() => setShowCancel(true)} className="mt-6 h-12 w-full rounded-[16px] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-black text-[var(--lobb-error)]">
-            Cancel Booking
+          <button onClick={() => setShowCancel(true)} className="mt-6 h-12 w-full rounded-[12px] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-black text-[var(--lobb-error)]">
+            Cancel booking
           </button>
         )}
 
-        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-black">
+        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-black">
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
-          View Receipt
+          View receipt
         </Link>
         <Link href="/dashboard" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
           Back to bookings
@@ -225,20 +225,26 @@ export default function BookingDetailPage() {
 
       {showCancel && (
         <div className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4" onClick={() => setShowCancel(false)}>
-          <section className="mx-auto w-full max-w-md rounded-[24px] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]" onClick={(event) => event.stopPropagation()}>
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-booking-title"
+            className="mx-auto w-full max-w-md border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="flex items-start justify-between gap-4">
-              <h2 className="text-lg font-black">Cancel this booking?</h2>
-              <button onClick={() => setShowCancel(false)} aria-label="Close"><X className="size-5" /></button>
+              <h2 id="cancel-booking-title" className="text-lg font-black">Cancel this booking?</h2>
+              <button type="button" onClick={() => setShowCancel(false)} aria-label="Close"><X className="size-5" /></button>
             </div>
             <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
               <strong>{policy.label}.</strong> {policyNote}
             </p>
             <div className="mt-6 grid grid-cols-2 gap-3">
-              <button onClick={() => setShowCancel(false)} className="h-12 rounded-full bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
-                Keep Booking
+              <button type="button" onClick={() => setShowCancel(false)} className="h-12 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
+                Keep booking
               </button>
-              <button disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-full border border-[var(--lobb-error)]/35 text-sm font-black text-[var(--lobb-error)] disabled:opacity-60">
-                {cancelling ? "Cancelling..." : "Yes, Cancel"}
+              <button type="button" disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-[12px] border border-[var(--lobb-error)]/35 text-sm font-black text-[var(--lobb-error)] disabled:opacity-60">
+                {cancelling ? "Cancelling" : "Cancel booking"}
               </button>
             </div>
           </section>

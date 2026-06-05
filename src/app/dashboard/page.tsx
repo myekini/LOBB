@@ -42,22 +42,22 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 pb-28 pt-7 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-10">
+    <main className="lobb-app-page min-h-screen px-4 pb-28 pt-7 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-10">
       <section className="mx-auto max-w-5xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">Player dashboard</p>
-            <h1 className="mt-1 text-[26px] font-black tracking-tight sm:text-[34px]">My Bookings</h1>
+            <p className="text-xs font-black text-[var(--lobb-clay)]">Player dashboard</p>
+            <h1 className="mt-1 text-[26px] font-black tracking-tight sm:text-[34px]">My bookings</h1>
           </div>
           <PlayerDesktopNav active="bookings" />
         </div>
 
-        <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 shadow-[var(--lobb-shadow-card)] sm:max-w-md">
+        <div className="lobb-segmented mt-6 grid grid-cols-2 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 sm:max-w-md">
           {(["upcoming", "past"] as const).map((item) => (
             <button
               key={item}
               onClick={() => setTab(item)}
-              className={`h-11 rounded-[14px] text-sm font-black capitalize transition ${
+              className={`h-11 text-sm font-black capitalize transition ${
                 tab === item ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]" : "text-[var(--lobb-text-secondary)]"
               }`}
             >
@@ -67,7 +67,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="my-7 flex items-center gap-3">
-          <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">{tab}</span>
+          <span className="text-xs font-black text-[var(--lobb-muted)] capitalize">{tab}</span>
           <span className="h-px flex-1 bg-[var(--lobb-border)]" />
         </div>
 
@@ -106,10 +106,10 @@ function BookingCard({ booking }: { booking: DashboardBooking }) {
         : booking.status;
 
   return (
-    <article className="rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+    <article className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <p className="text-[15px] font-black leading-5 sm:text-base">{formatBookingDate(booking.starts_at)}</p>
-        <p className={`inline-flex shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black ${
+        <p className={`inline-flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs font-black ${
           isConfirmed
             ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]"
             : isUpcoming
@@ -146,19 +146,19 @@ function BookingCard({ booking }: { booking: DashboardBooking }) {
       <div className="mt-5 flex gap-2">
         {isUpcoming ? (
           <>
-            <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-full border border-[var(--lobb-border)] text-xs font-black">
-              View Details
+          <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] text-xs font-black transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)]">
+              View details
             </Link>
-            <button disabled={!isConfirmed} className="h-10 flex-1 rounded-full border border-[var(--lobb-border)] text-xs font-black text-[var(--lobb-muted)] disabled:opacity-45">
+            <button disabled={!isConfirmed} className="h-10 flex-1 rounded-[12px] border border-[var(--lobb-border)] text-xs font-black text-[var(--lobb-muted)] transition disabled:opacity-45">
               Cancel
             </button>
           </>
         ) : booking.can_leave_review ? (
-          <Link href={`/dashboard/review/${booking.id}`} className="ml-auto flex h-10 items-center justify-center rounded-full border border-[var(--lobb-clay)] px-5 text-xs font-black text-[var(--lobb-clay)]">
-            Leave a Review
+          <Link href={`/dashboard/review/${booking.id}`} className="ml-auto flex h-10 items-center justify-center rounded-[12px] border border-[var(--lobb-clay)] px-5 text-xs font-black text-[var(--lobb-clay)]">
+            Leave a review
           </Link>
         ) : (
-          <span className="ml-auto flex h-10 items-center justify-center rounded-full bg-[var(--lobb-surface-2)] px-5 text-xs font-black text-[var(--lobb-muted)]">
+          <span className="ml-auto flex h-10 items-center justify-center rounded-[12px] bg-[var(--lobb-surface-2)] px-5 text-xs font-black text-[var(--lobb-muted)]">
             Review locked
           </span>
         )}
@@ -173,8 +173,8 @@ function EmptyBookings() {
       title="No upcoming sessions"
       body="No sessions yet. Find a coach and get on court."
       action={
-        <Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--lobb-clay)] px-6 text-sm font-black text-white">
-          Find a Coach
+        <Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-[16px] bg-[var(--lobb-clay)] px-6 text-sm font-black text-white">
+          Find a coach
         </Link>
       }
     />

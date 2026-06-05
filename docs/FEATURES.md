@@ -19,6 +19,7 @@ Lagos tennis coach booking platform. Verified coaches, real availability, secure
 11. [Infrastructure & Cron Jobs](#11-infrastructure--cron-jobs)
 12. [Booking Backend — Data Model & Logic](#12-booking-backend--data-model--logic)
 13. [Analytics](#13-analytics)
+14. [Security, Performance & Scalability](#14-security-performance--scalability)
 
 ---
 
@@ -789,3 +790,99 @@ Build these boards in Mixpanel once events are flowing:
 2. **Session recordings**: filter by users who hit `Booking Started` but not `Booking Confirmed` to watch where they left
 3. **User properties**: `role` is set on identify — use it to create player and coach cohorts
 4. **Feature flags**: wire future experiments (e.g. new booking UI) through PostHog flags
+
+---
+
+## 14. Security, Performance & Scalability
+
+### Shipped (June 2026)
+
+#### Authentication hardening
+
+| Fix | File | Detail |
+|-----|------|--------|
+| `AUTH_SESSION_SECRET` is required | `api/auth/verify-otp/route.ts` | Throws on startup if missing — no silent fallback to a hardcoded string |
+| OTP deletion is awaited | `lib/db-otp.ts` + `verify-otp/route.ts` | `consumeOtp` now fully awaits the DB delete; closes same-OTP-twice race window |
+| Payment callback URL hardened | `api/bookings/route.ts` | `callbackOrigin()` reads from `NEXT_PUBLIC_APP_URL` only; `x-forwarded-host` no longer trusted for Paystack redirect |
+
+#### Rate limiting
+
+Applied at the IP level on all high-value write endpoints. Implemented as a sliding-window in-memory counter (`src/lib/rate-limit.ts`).
+
+| Route | Limit | Window |
+| ----- | ----- | ------ |
+| `POST /api/auth/verify-otp` | 5 attempts | 15 min |
+| `POST /api/bookings/lock` | 10 locks | 5 min |
+| `POST /api/bookings` | 5 bookings | 10 min |
+| `GET /api/payments/verify` | 30 calls | 5 min |
+
+Blocked requests return `429` with a `Retry-After` header.
+
+> **Scale note:** The current limiter is per warm Vercel instance (in-memory `Map`). For multi-instance enforcement, replace `src/lib/rate-limit.ts` with `@upstash/ratelimit` + a Redis KV store — the call signature is identical.
+
+#### Webhook performance
+
+`POST /api/payments/webhook` and `GET /api/payments/verify` both use `waitUntil` (from `@vercel/functions`) to dispatch SMS and email notifications **after** the HTTP response is sent.
+
+- Paystack receives its `200` as soon as the booking is confirmed in the database
+- Players on the confirm page see the confirmed booking as soon as the DB is written, not after email/SMS delivery
+- Notification failures cannot cause webhook retries
+
+#### JWT role claims (middleware DB call eliminated)
+
+A Supabase custom access token hook (`public.custom_access_token_hook`) embeds `profiles.role` into every JWT as `app_metadata.role`.
+
+The middleware reads the role from the JWT — zero extra DB round-trips on authenticated page loads. Sessions that predate the hook fall back to a DB query automatically.
+
+**One-time action required:** In the Supabase dashboard → **Authentication → Hooks → Custom Access Token Hook**, select `public.custom_access_token_hook`. The SQL function was deployed in migration `20260605000001`.
+
+#### Stuck payout visibility
+
+- `bookings.transfer_last_error` column stores the Paystack error message when a cron transfer fails
+- Admin dashboard (`/admin`) shows an amber alert card when any `completed` booking has `escrow_released_at IS NOT NULL` and `paystack_transfer_code IS NULL`
+- Admin can navigate to Earnings and use the manual payout trigger per coach to retry
+
+#### Database indexes
+
+Applied in migration `20260605000002`. Cover the hot query paths identified by `EXPLAIN ANALYZE`:
+
+| Index | Table | Query it covers |
+| ----- | ----- | --------------- |
+| `bookings_escrow_release_idx` | `bookings` | Escrow cron: `status='confirmed' AND ends_at<=? AND escrow_released_at IS NULL` |
+| `bookings_pending_transfer_idx` | `bookings` | Transfer retry: `status='completed' AND paystack_transfer_code IS NULL` |
+| `slot_locks_coach_slot_idx` | `slot_locks` | Slot availability: `coach_id=? AND slot_starts_at=? AND expires_at>now()` |
+| `coach_availability_coach_active_idx` | `coach_availability` | Slot generation: `coach_id=? AND is_active=true` |
+| `coach_availability_blocks_coach_date_idx` | `coach_availability_blocks` | Date block lookup: `coach_id=? AND blocked_date=?` |
+| `coach_slot_blocks_coach_range_idx` | `coach_availability_slot_blocks` | Slot overlap check: `coach_id=? AND range` |
+| `profiles_email_idx` | `profiles` | OTP + admin lookup by email |
+
+---
+
+### Remaining / Backlog
+
+These items were identified in the June 2026 audit but not yet implemented. Ordered by priority.
+
+#### High
+
+| Item | Where | Detail |
+| ---- | ----- | ------ |
+| Supabase error messages reach the client | Multiple API routes | `error.message` from Supabase (which includes table/column names) is returned directly in JSON. Should be logged server-side and replaced with a generic message. |
+| `listUsers({ perPage: 1000 })` ceiling | `api/admin/setup/route.ts:51`, `api/auth/verify-otp/route.ts:130` | Full auth-user table scan. Fails silently beyond 1 000 users. Fix: query `profiles` by email directly instead of scanning `auth.users`. |
+| No default API protection | Pattern (all routes) | Every route must call `requireRole()` manually. A missed route is fully open. Consider a typed `withRole(handler, "player")` wrapper that enforces auth and removes the manual pattern. |
+
+#### Medium
+
+| Item | Detail |
+| ---- | ------ |
+| No Zod request validation | Body parsing is manual (cast + destructure). Replace with `z.parse()` at route entry for all POST/PUT bodies. |
+| Admin setup endpoint public | `/api/admin/setup` is reachable by anyone who knows `ADMIN_SETUP_SECRET`. Add Vercel firewall IP allowlist or convert to a local-only script. |
+| Player notes max length | `player_notes` is trimmed but has no server-side max. Add `.slice(0, 1000)` or a Zod `max(1000)` constraint. |
+
+#### Low / Scalability
+
+| Item | Detail |
+| ---- | ------ |
+| In-memory rate limiter | Current limiter is per Vercel instance. Upgrade to `@upstash/ratelimit` + Redis KV for cross-instance enforcement at scale. |
+| No HTTP caching on public routes | `GET /api/coaches` and `GET /api/coaches/[slug]` return fresh DB queries on every hit. Add `Cache-Control: s-maxage=60, stale-while-revalidate=300` headers. |
+| Admin booking list pagination | `/api/admin/bookings` has a hard `LIMIT 100`. Add cursor-based pagination with `?page=` and `?limit=` params. |
+| No audit logging for financial ops | Payment confirmation, escrow release, and transfers are not written to `admin_audit_log`. Add entries for traceability and compliance. |

@@ -37,7 +37,7 @@ export function LobbToaster() {
       setToasts((current) => [...current, { ...detail, id }].slice(-3));
       window.setTimeout(() => {
         setToasts((current) => current.filter((toast) => toast.id !== id));
-      }, 4000);
+      }, detail.type === "error" ? 6200 : 4400);
     };
 
     window.addEventListener("lobb:toast", onToast);
@@ -55,14 +55,15 @@ export function LobbToaster() {
         return (
           <div
             key={toast.id}
-            role="status"
+            role={toast.type === "error" ? "alert" : "status"}
+            aria-live={toast.type === "error" ? "assertive" : "polite"}
             className={cn(
-              "pointer-events-auto relative grid w-full max-w-[390px] grid-cols-[auto_1fr_auto] gap-3 overflow-hidden rounded-[22px] border border-white/55 bg-[var(--lobb-bg-elevated)]/94 px-4 py-3.5 text-[var(--lobb-text-primary)] shadow-[0_18px_54px_rgba(13,13,13,0.18)] backdrop-blur-2xl",
+              "pointer-events-auto relative grid w-full max-w-[390px] grid-cols-[auto_1fr_auto] gap-3 overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 py-3.5 text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-modal)]",
               "animate-[toastSlideDown_300ms_ease-out]"
             )}
           >
-            <span className="absolute inset-x-0 top-0 h-1" style={{ background: accent }} />
-            <span className="mt-0.5 flex size-10 items-center justify-center rounded-[15px] ring-1 ring-black/5" style={{ background: bg, color: accent }}>
+            <span className="absolute inset-y-3 left-0 w-1 rounded-r-full" style={{ background: accent }} />
+            <span className="mt-0.5 flex size-10 items-center justify-center rounded-[12px] ring-1 ring-black/5" style={{ background: bg, color: accent }}>
               <Icon className="size-4 shrink-0" />
             </span>
             <span className="min-w-0">
@@ -72,7 +73,7 @@ export function LobbToaster() {
             <button
               type="button"
               onClick={() => dismiss(toast.id)}
-              className="pointer-events-auto flex size-8 items-center justify-center rounded-full text-[var(--lobb-text-tertiary)] transition hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"
+              className="pointer-events-auto flex size-8 items-center justify-center rounded-[10px] text-[var(--lobb-text-tertiary)] transition hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"
               aria-label="Dismiss notification"
             >
               <X className="size-3.5" />
@@ -101,7 +102,7 @@ export function OfflineState() {
   if (!offline) return null;
 
   return (
-    <div className="fixed inset-x-3 top-3 z-[90] mx-auto grid min-h-11 max-w-md grid-cols-[auto_1fr] items-center gap-3 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-inverse)] px-4 py-3 text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)]">
+    <div role="status" aria-live="polite" className="fixed inset-x-3 top-3 z-[90] mx-auto grid min-h-11 max-w-md grid-cols-[auto_1fr] items-center gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-inverse)] px-4 py-3 text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)]">
       <CloudOff className="size-4 shrink-0 text-[var(--lobb-clay)]" />
       <span>
         <span className="block">Offline mode</span>

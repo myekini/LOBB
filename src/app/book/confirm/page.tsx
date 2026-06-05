@@ -81,7 +81,7 @@ function BookingConfirmContent() {
           if (!res.ok) throw await readApiError(res, "PAYMENT_VERIFY_FAILED");
           const json = (await res.json()) as { booking?: BookingWithDetails };
           if (!json.booking) throw appError("PAYMENT_VERIFY_FAILED");
-          // Booking exists but confirmation webhook hasn't arrived yet — keep retrying
+          // Booking exists but confirmation webhook has not arrived yet, so keep retrying.
           if (json.booking.status !== "confirmed" && json.booking.payment_status !== "paid") {
             throw appError("PAYMENT_PENDING");
           }
@@ -122,10 +122,10 @@ function BookingConfirmContent() {
 
   if (paymentFailed) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[var(--lobb-bg)] p-5">
+      <main className="lobb-app-page flex min-h-screen items-center justify-center p-5">
         <div className="w-full max-w-md text-center">
-          <div className="inline-flex size-16 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20">
-            <CreditCard className="size-8 text-red-500" />
+          <div className="inline-flex size-16 items-center justify-center rounded-full bg-[var(--lobb-error)]/10 border border-[var(--lobb-error)]/20">
+            <CreditCard className="size-8 text-[var(--lobb-error)]" />
           </div>
           <p className="mt-5 text-lg font-black text-[var(--lobb-black)]">Payment not completed</p>
           <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">
@@ -134,12 +134,12 @@ function BookingConfirmContent() {
           <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_FAILED" className="mt-5 text-left" />
           <Link
             href="/"
-            className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)]"
+            className="mt-8 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
           >
-            Browse Coaches
+            Browse coaches
           </Link>
           <Link href="/dashboard" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
-            My Bookings
+            My bookings
           </Link>
         </div>
       </main>
@@ -148,11 +148,11 @@ function BookingConfirmContent() {
 
   if (failed || !booking) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[var(--lobb-bg)] p-5">
+      <main className="lobb-app-page flex min-h-screen items-center justify-center p-5">
         <div className="w-full max-w-md text-center">
           <p className="text-lg font-black text-[var(--lobb-black)]">Payment is still being confirmed</p>
           <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">
-            This can take a minute. Check My Bookings — it will appear there once confirmed.
+            This can take a minute. Check your bookings, it will appear there once confirmed.
             If you were charged, save this reference:
           </p>
           <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_PENDING" className="mt-5 text-left" />
@@ -163,12 +163,12 @@ function BookingConfirmContent() {
           )}
           <Link
             href="/dashboard"
-            className="mt-8 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)]"
+            className="mt-8 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
           >
-            Go to My Bookings
+            Go to my bookings
           </Link>
           <Link href="/" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
-            Back to Home
+            Back to home
           </Link>
         </div>
       </main>
@@ -176,19 +176,19 @@ function BookingConfirmContent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[var(--lobb-bg)] p-5 text-[var(--lobb-black)]">
+    <main className="lobb-app-page flex min-h-screen flex-col items-center justify-center p-5 text-[var(--lobb-text-primary)]">
       <section className="w-full max-w-md">
         {/* Success header */}
         <div className="text-center">
-          <div className="inline-flex size-20 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 shadow-[0_12px_24px_rgba(16,185,129,0.15)] animate-[successPop_0.5s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+          <div className="inline-flex size-20 items-center justify-center rounded-[16px] border border-[var(--lobb-success)]/20 bg-[var(--lobb-success)]/10">
             <CheckCircle className="size-10 text-[var(--lobb-success)]" />
           </div>
-          <h1 className="mt-6 text-2.5xl font-black tracking-tight text-[var(--lobb-black)]">Booking Confirmed!</h1>
-          <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-muted)] uppercase tracking-wider">Details sent to your phone</p>
+          <h1 className="mt-6 text-2.5xl font-black tracking-tight text-[var(--lobb-text-primary)]">Booking confirmed</h1>
+          <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-text-secondary)]">Details sent to your phone</p>
         </div>
 
         {/* Booking receipt */}
-        <div className="mt-7 rounded-[32px] border border-[var(--lobb-border)] bg-gradient-to-b from-white to-[var(--lobb-surface)] p-6 shadow-[0_24px_50px_rgba(58,43,20,0.04)]">
+        <div className="lobb-app-card mt-7 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6">
           {/* Session time */}
           <div>
             <p className="flex items-center gap-2 text-sm font-black text-[var(--lobb-black)]">
@@ -196,7 +196,7 @@ function BookingConfirmContent() {
               {formatDateTime(booking.starts_at)}
             </p>
             <p className="ml-6 mt-1 text-xs font-bold text-[var(--lobb-muted)] uppercase tracking-wider">
-              {formatEndTime(booking.starts_at)} · 60 minutes session
+              {formatEndTime(booking.starts_at)}, 60 minute session
             </p>
           </div>
 
@@ -219,7 +219,7 @@ function BookingConfirmContent() {
               <p className="font-black text-base text-[var(--lobb-black)] tracking-tight">{booking.coach_full_name}</p>
               {booking.coach_slug && (
                 <Link href={`/coaches/${booking.coach_slug}`} className="text-xs font-semibold text-[var(--lobb-clay)] hover:underline">
-                  View profile →
+                  View profile
                 </Link>
               )}
             </div>
@@ -230,7 +230,7 @@ function BookingConfirmContent() {
             <div className="mt-4 flex gap-2.5">
               <a
                 href={`tel:${booking.coach_phone.replace(/\s/g, "")}`}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-white py-2.5 text-xs font-black shadow-sm transition-all hover:bg-[var(--lobb-surface)] active:scale-95 text-[var(--lobb-black)]"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] py-2.5 text-xs font-black text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-bg-secondary)] active:scale-95"
               >
                 <Phone className="size-3.5 text-[var(--lobb-clay)]" /> Call Coach
               </a>
@@ -238,7 +238,7 @@ function BookingConfirmContent() {
                 href={`https://wa.me/${toWhatsAppNumber(booking.coach_phone)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-white py-2.5 text-xs font-black shadow-sm transition-all hover:bg-[var(--lobb-surface)] active:scale-95 text-[var(--lobb-black)]"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] py-2.5 text-xs font-black text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-bg-secondary)] active:scale-95"
               >
                 <MessageCircle className="size-3.5 text-[var(--lobb-clay)]" /> WhatsApp
               </a>
@@ -280,19 +280,19 @@ function BookingConfirmContent() {
         {/* CTAs */}
         <Link
           href="/dashboard"
-          className="mt-7 flex h-14 w-full items-center justify-center rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.18)] transition-all hover:opacity-90 active:scale-98"
+          className="mt-7 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] transition-all active:scale-98"
         >
-          View My Bookings
+          View my bookings
         </Link>
         <Link
           href={`/dashboard/bookings/${booking.id}/receipt${booking.paystack_reference ?? reference ? `?reference=${encodeURIComponent(booking.paystack_reference ?? reference ?? "")}` : ""}`}
-          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black text-[var(--lobb-black)]"
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-sm font-black text-[var(--lobb-black)]"
         >
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
-          View Receipt
+          View receipt
         </Link>
-        <Link href="/" className="mt-4 block text-center text-xs font-black uppercase tracking-wider text-[var(--lobb-muted)] hover:text-[var(--lobb-clay)] transition-all">
-          Back to Home
+        <Link href="/" className="mt-4 block text-center text-xs font-black text-[var(--lobb-muted)] transition-all hover:text-[var(--lobb-clay)]">
+          Back to home
         </Link>
       </section>
     </main>

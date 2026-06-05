@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 
-export async function GET() {
-  const auth = await requireRole("admin");
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
-  const [metrics, coaches, bookings] = await Promise.all([
+export const GET = withRole("admin", async (_request, auth) => {
+  const [metrics, coaches, bookings, stuckTransfers] = await Promise.all([
     auth.admin.from("admin_core_metrics").select("*").maybeSingle(),
     auth.admin.from("coaches").select("*").eq("status", "pending_review").order("created_at").limit(5),
     auth.admin
@@ -15,16 +11,21 @@ export async function GET() {
       .select("*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url), players!bookings_player_id_fkey(id, full_name), payments(status, paystack_reference)")
       .order("starts_at", { ascending: false })
       .limit(8),
+    auth.admin
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "completed")
+      .not("escrow_released_at", "is", null)
+      .is("paystack_transfer_code", null),
   ]);
 
-  for (const result of [metrics, coaches, bookings]) {
-    if (result.error) {
-      return NextResponse.json({ error: result.error.message }, { status: 500 });
-    }
-  }
+  if (metrics.error) return internalError(metrics.error);
+  if (coaches.error) return internalError(coaches.error);
+  if (bookings.error) return internalError(bookings.error);
+  if (stuckTransfers.error) return internalError(stuckTransfers.error);
 
   const recentBookings = bookings.data ?? [];
-  const playerIds = Array.from(new Set(recentBookings.map((booking) => booking.player_id).filter(Boolean)));
+  const playerIds = Array.from(new Set(recentBookings.map((b) => b.player_id).filter(Boolean)));
   const avatarsByPlayerId = new Map<string, string | null>();
 
   if (playerIds.length > 0) {
@@ -33,10 +34,7 @@ export async function GET() {
       .select("id, avatar_url")
       .in("id", playerIds);
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
+    if (error) return internalError(error);
     for (const profile of profiles ?? []) {
       avatarsByPlayerId.set(profile.id, profile.avatar_url);
     }
@@ -45,11 +43,10 @@ export async function GET() {
   const bookingsWithPlayerAvatars = recentBookings.map((booking) => {
     const avatarUrl = avatarsByPlayerId.get(booking.player_id) ?? null;
     const players = Array.isArray(booking.players)
-      ? booking.players.map((player: { id: string; full_name: string }) => ({ ...player, avatar_url: avatarUrl }))
+      ? booking.players.map((p: { id: string; full_name: string }) => ({ ...p, avatar_url: avatarUrl }))
       : booking.players
         ? { ...booking.players, avatar_url: avatarUrl }
         : booking.players;
-
     return { ...booking, players };
   });
 
@@ -57,5 +54,6 @@ export async function GET() {
     metrics: metrics.data,
     pending_coach_approvals: coaches.data ?? [],
     recent_bookings: bookingsWithPlayerAvatars,
+    stuck_payouts: stuckTransfers.count ?? 0,
   });
-}
+});

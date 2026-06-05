@@ -2,12 +2,18 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { apiError } from "@/lib/api-response";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const LOCK_MINUTES      = 10;
 const MIN_ADVANCE_HOURS = 24;
 const MAX_ADVANCE_DAYS  = 30;
 
 export async function POST(request: Request) {
+  const rl = rateLimit(`booking-lock:${clientIp(request)}`, 10, 5 * 60 * 1000);
+  if (!rl.ok) {
+    return apiError("RATE_LIMITED", 429);
+  }
+
   try {
     // ── Auth ──────────────────────────────────────────────────────────────────
     const supabase = createClient();

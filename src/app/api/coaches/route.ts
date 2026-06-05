@@ -1,7 +1,9 @@
+// PUBLIC ROUTE — no authentication required
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { internalError } from "@/lib/api-response";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const admin = createAdminClient();
@@ -31,7 +33,9 @@ export async function GET(request: Request) {
   }
 
   const { data, error } = await query.limit(100);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return internalError(error);
 
-  return NextResponse.json({ coaches: data ?? [] });
+  return NextResponse.json({ coaches: data ?? [] }, {
+    headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" },
+  });
 }

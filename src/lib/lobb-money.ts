@@ -8,13 +8,6 @@ export function hoursUntilSession(startsAt: string) {
   return (new Date(startsAt).getTime() - Date.now()) / (60 * 60 * 1000);
 }
 
-// ─── 3-tier cancellation policy ───────────────────────────────────────────────
-//
-//  Cancellation policy:
-//  ≥ 72 hr → 100% refund
-//  24–72 hr → 50% refund
-//  < 24 hr → 0% refund
-//
 export type CancellationPolicy = {
   refundPercent: 0 | 50 | 100;
   label: string;
@@ -32,7 +25,7 @@ export function cancellationPolicy(
     return {
       refundPercent: 100,
       label: "Full refund",
-      note: "Cancelling more than 72 hrs before — full refund in 5–7 business days.",
+      note: "Cancel more than 72 hrs before the session for a full refund in 5 to 7 business days.",
     };
   }
 
@@ -40,14 +33,14 @@ export function cancellationPolicy(
     return {
       refundPercent: 50,
       label: "50% refund",
-      note: "Cancelling 24–72 hrs before — 50% refund in 5–7 business days.",
+      note: "Cancel 24 to 72 hrs before the session for a 50% refund in 5 to 7 business days.",
     };
   }
 
   return {
     refundPercent: 0,
     label: "No refund",
-    note: "Cancellation within 24 hrs of the session — no refund applies.",
+    note: "No refund applies within 24 hrs of the session.",
   };
 }
 
@@ -55,7 +48,7 @@ export function refundAmountNgn(totalPaidNgn: number, refundPercent: 0 | 50 | 10
   return Math.round(totalPaidNgn * refundPercent / 100);
 }
 
-// Legacy helpers — kept for UI components that use the binary check
+// Legacy helpers kept for UI components that use the binary check.
 export function canCancelForFullRefund(startsAt: string) {
   return cancellationPolicy(startsAt, "player").refundPercent === 100;
 }

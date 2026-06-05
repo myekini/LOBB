@@ -30,8 +30,8 @@ function formatSlotEndTime(iso: string) {
 }
 
 function countdownStyle(seconds: number) {
-  if (seconds <= 120) return "bg-red-50 text-[var(--lobb-error)]";
-  if (seconds <= 240) return "bg-[#fff7e0] text-[var(--lobb-warning)]";
+  if (seconds <= 120) return "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]";
+  if (seconds <= 240) return "bg-[var(--lobb-warning)]/10 text-[var(--lobb-warning)]";
   return "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]";
 }
 
@@ -84,7 +84,7 @@ function BookingStep2Content() {
   useEffect(() => {
     if (seconds <= 120 && seconds > 0 && !warnedRef.current) {
       warnedRef.current = true;
-      showLobbToast({ type: "warning", message: "2 minutes left — complete your details." });
+      showLobbToast({ type: "warning", message: "2 minutes left. Complete your details." });
     }
   }, [seconds]);
 
@@ -109,15 +109,14 @@ function BookingStep2Content() {
     <BookingShell step={2} backHref={`/book/${slug}/step-1`}>
       {/* Slot recap */}
       {slot && (
-        <div className="overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
-          <div className="h-2 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+        <div className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
           <div className="p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Held slot</p>
                 <p className="mt-1 text-base font-black text-[var(--lobb-text-primary)]">{formatSlotDate(slot)}</p>
                 <p className="mt-0.5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
-                  {formatSlotTime(slot)} – {formatSlotEndTime(slot)} · 60 min
+                  {formatSlotTime(slot)} to {formatSlotEndTime(slot)}, 60 min
                 </p>
               </div>
               <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-black ${countdownStyle(seconds)}`}>
@@ -130,9 +129,9 @@ function BookingStep2Content() {
       )}
 
       {/* Location input */}
-      <div className="mt-4 rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+      <div className="lobb-app-card mt-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
             <MapPin className="size-4" />
           </span>
           <div>
@@ -148,7 +147,7 @@ function BookingStep2Content() {
           onChange={(e) => setLocation(e.target.value)}
           placeholder="e.g. Lekki Tennis Club, Lekki Phase 1"
           rows={2}
-          className="mt-4 w-full resize-none rounded-[20px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none shadow-sm transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+          className="mt-4 w-full resize-none rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
         />
 
         {/* Coach court chips */}
@@ -178,7 +177,7 @@ function BookingStep2Content() {
       </div>
 
       {/* Note to coach */}
-      <label className="mt-4 block rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+      <label className="lobb-app-card mt-4 block border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
         <span className="text-sm font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">
           Note to coach{" "}
           <span className="text-[10px] font-bold tracking-normal text-[var(--lobb-text-secondary)] lowercase">(optional)</span>
@@ -188,7 +187,7 @@ function BookingStep2Content() {
           onChange={(e) => setNote(e.target.value)}
           placeholder="Focus area, injury note, or anything the coach should know"
           rows={3}
-          className="mt-3 h-24 w-full resize-none rounded-[20px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none shadow-sm transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+          className="mt-3 h-24 w-full resize-none rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
         />
       </label>
 

@@ -16,18 +16,13 @@ export function BookingShell({
 }) {
   return (
     <main
-      className="min-h-screen bg-[var(--lobb-bg-primary)] pb-28 text-[var(--lobb-text-primary)]"
-      style={{
-        backgroundImage:
-          "linear-gradient(90deg, rgba(196,98,45,0.055) 1px, transparent 1px), linear-gradient(0deg, rgba(13,13,13,0.035) 1px, transparent 1px)",
-        backgroundSize: "56px 56px",
-      }}
+      className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]"
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 px-4 backdrop-blur-xl sm:px-6">
+      <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] px-4 backdrop-blur-xl sm:px-6">
         <div className="mx-auto grid h-[72px] max-w-6xl grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
           <Link
             href={backHref}
-            className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] transition hover:border-[var(--lobb-clay)]/40 active:scale-[0.97]"
+            className="flex size-11 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40 active:scale-[0.97]"
             aria-label="Go back"
           >
             <ArrowLeft className="size-5" />
@@ -41,9 +36,9 @@ export function BookingShell({
       </header>
 
       <div className="mx-auto grid w-full max-w-6xl gap-5 px-4 pt-4 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:pt-7">
-        <aside className="hidden self-start rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/96 p-4 shadow-[var(--lobb-shadow-card)] lg:sticky lg:top-24 lg:block">
-          <div className="rounded-[22px] bg-[var(--lobb-bg-inverse)] p-4 text-[var(--lobb-text-inverse)]">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-white/10 text-[var(--lobb-clay)]">
+        <aside className="lobb-app-card hidden self-start border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 lg:sticky lg:top-24 lg:block">
+          <div className="rounded-[12px] bg-[var(--lobb-bg-inverse)] p-4 text-[var(--lobb-text-inverse)]">
+            <div className="flex size-11 items-center justify-center rounded-[12px] bg-white/10 text-[var(--lobb-clay)]">
               <ShieldCheck className="size-5" />
             </div>
             <p className="mt-4 text-[11px] font-black uppercase tracking-[0.18em] text-white/55">Secure checkout</p>
@@ -56,7 +51,7 @@ export function BookingShell({
               return (
                 <div
                   key={s}
-                  className={`grid grid-cols-[34px_1fr] items-center gap-3 rounded-[16px] border p-3 transition ${
+                    className={`grid grid-cols-[34px_1fr] items-center gap-3 rounded-[12px] border p-3 transition ${
                     active
                       ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]"
@@ -73,18 +68,18 @@ export function BookingShell({
               );
             })}
           </div>
-          <p className="mt-4 rounded-[16px] bg-[var(--lobb-bg-primary)] p-3 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+          <p className="mt-4 rounded-[12px] bg-[var(--lobb-bg-primary)] p-3 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
             Payment opens in Paystack after review. LOBB keeps the booking record and confirms once payment succeeds.
           </p>
         </aside>
 
         <div className="lg:hidden">
-          <div className="rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-2 shadow-[var(--lobb-shadow-card)]">
+          <div className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-2">
             <div className="grid grid-cols-3 gap-1">
               {([1, 2, 3] as const).map((s) => (
                 <div
                   key={s}
-                  className={`flex h-10 items-center justify-center rounded-[16px] text-[10px] font-black uppercase tracking-[0.08em] transition-colors duration-300 ${
+                  className={`flex h-10 items-center justify-center rounded-[12px] text-[10px] font-black uppercase tracking-[0.08em] transition-colors duration-300 ${
                     s === step
                       ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                       : s < step
@@ -121,7 +116,7 @@ export function BookingButton({
     <button
       disabled={disabled || loading}
       onClick={onClick}
-      className="sticky bottom-4 z-30 mt-6 flex h-14 w-full items-center justify-center rounded-[18px] border border-white/10 bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[0_18px_48px_rgba(13,13,13,0.24)] transition hover:translate-y-[-1px] active:scale-[0.98] disabled:translate-y-0 disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:shadow-none"
+      className="sticky bottom-4 z-30 mt-6 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:shadow-none"
     >
       {loading ? (
         <span className="inline-flex items-center gap-2">

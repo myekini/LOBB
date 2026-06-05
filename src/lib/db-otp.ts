@@ -100,5 +100,5 @@ export async function verifyOtp(identifier: string, code: string) {
 /** Deletes the OTP record after successful auth. Call once session is confirmed. */
 export async function consumeOtp(identifier: string) {
   const supabase = createAdminClient();
-  void supabase.from("otp_verifications").delete().eq("phone_number", identifier);
+  await supabase.from("otp_verifications").delete().eq("phone_number", identifier);
 }

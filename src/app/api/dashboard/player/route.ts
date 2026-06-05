@@ -1,17 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 import { canLeaveReview, loadPlayerBookings } from "@/lib/dashboard-queries";
 
-export async function GET() {
-  const auth = await requireRole("player");
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
+export const GET = withRole("player", async (_request, auth) => {
   const { data, error } = await loadPlayerBookings(auth.admin, auth.user.id);
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
+  if (error) return internalError(error);
 
   const now = Date.now();
   const visibleUpcomingStatuses = new Set(["confirmed", "pending", "pending_payment"]);
@@ -23,7 +17,7 @@ export async function GET() {
   }));
 
   return NextResponse.json({
-    upcoming: bookings.filter((booking) => booking.is_upcoming),
-    past: bookings.filter((booking) => !booking.is_upcoming),
+    upcoming: bookings.filter((b) => b.is_upcoming),
+    past: bookings.filter((b) => !b.is_upcoming),
   });
-}
+});

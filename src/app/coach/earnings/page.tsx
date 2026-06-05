@@ -48,7 +48,7 @@ function maskedAccount(account: string | null | undefined) {
 const statusMeta = {
   processed: { label: "Settled", icon: CheckCircle2, color: "var(--lobb-success)" },
   pending: { label: "Pending", icon: Clock3, color: "var(--lobb-clay)" },
-  failed: { label: "Failed", icon: XCircle, color: "#ba1a1a" },
+  failed: { label: "Failed", icon: XCircle, color: "var(--lobb-error)" },
 };
 
 export default function CoachEarningsPage() {
@@ -80,11 +80,11 @@ export default function CoachEarningsPage() {
   const hasBank = Boolean(bank?.bank_name && bank?.bank_account_number);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
+    <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Earnings" eyebrow="Coach wallet" active="earnings" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
-          <section className="rounded-[24px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+          <section className="overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
             <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Total coach earnings</p>
             {loading ? <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" /> : (
               <p className="mt-6 text-[38px] font-black leading-none sm:text-[48px]">{money(summary?.net_all_time_ngn ?? 0)}</p>
@@ -96,7 +96,7 @@ export default function CoachEarningsPage() {
             </div>
           </section>
 
-          <Link href="/coach/settings" className="rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-card)]">
+          <Link href="/coach/settings/bank" className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 transition-colors hover:border-[var(--lobb-clay)]/35">
             <div className="flex items-start justify-between gap-3">
               <div className="flex size-12 items-center justify-center rounded-[16px] bg-[var(--lobb-clay-light)]">
                 <Landmark className="size-5 text-[var(--lobb-clay)]" />
@@ -106,21 +106,23 @@ export default function CoachEarningsPage() {
             <p className="mt-5 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Bank account</p>
             <p className="mt-2 text-lg font-black">{hasBank ? bank?.bank_name : "No bank connected"}</p>
             <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">{maskedAccount(bank?.bank_account_number)}</p>
-            <p className="mt-5 text-xs font-black text-[var(--lobb-clay)]">{hasBank ? "Manage payout bank" : "Add payout bank"}</p>
+            <p className="mt-5 inline-flex h-10 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]">
+              {hasBank ? "Manage payout bank" : "Add payout bank"}
+            </p>
           </Link>
         </div>
 
         <div className="mt-7 flex items-center justify-between">
           <div>
             <h2 className="font-black">Recent payouts</h2>
-            <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">Settlements sent or queued for your bank.</p>
+            <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">Settlements sent or queued for your bank account.</p>
           </div>
         </div>
 
         <section className="mt-3 grid gap-3">
           {loading ? (
             Array.from({ length: 3 }).map((_, index) => (
-              <article key={index} className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+              <article key={index} className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <SkeletonBlock className="h-5 w-32" />
                 <SkeletonBlock className="mt-3 h-10 w-full" />
               </article>
@@ -130,7 +132,7 @@ export default function CoachEarningsPage() {
               const meta = statusMeta[payout.status] ?? statusMeta.pending;
               const Icon = meta.icon;
               return (
-                <article key={payout.id} className="grid gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
+                <article key={payout.id} className="lobb-app-card grid gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
                   <div className="flex min-w-0 gap-3">
                     <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-bg-secondary)]">
                       <WalletCards className="size-4 text-[var(--lobb-clay)]" />
@@ -151,8 +153,16 @@ export default function CoachEarningsPage() {
               );
             })
           ) : (
-            <CoachSurface className="p-5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
-              No payouts yet. Completed sessions ready for payout will appear here.
+            <CoachSurface className="p-5">
+              <p className="text-sm font-black text-[var(--lobb-text-primary)]">No payouts yet</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+                Completed sessions that are ready for payout will appear here.
+              </p>
+              {!hasBank && (
+                <Link href="/coach/settings/bank" className="mt-4 inline-flex h-10 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]">
+                  Add payout bank
+                </Link>
+              )}
             </CoachSurface>
           )}
         </section>

@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 
-export async function GET() {
-  const auth = await requireRole("admin");
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
+export const GET = withRole("admin", async (_request, auth) => {
   const [metrics, bookings] = await Promise.all([
     auth.admin.from("admin_core_metrics").select("*").maybeSingle(),
     auth.admin
@@ -19,14 +15,11 @@ export async function GET() {
       .limit(12),
   ]);
 
-  for (const result of [metrics, bookings]) {
-    if (result.error) {
-      return NextResponse.json({ error: result.error.message }, { status: 500 });
-    }
-  }
+  if (metrics.error) return internalError(metrics.error);
+  if (bookings.error) return internalError(bookings.error);
 
   return NextResponse.json({
     metrics: metrics.data,
     recent_revenue: bookings.data ?? [],
   });
-}
+});

@@ -4,10 +4,10 @@ import { CoachSurface } from "@/components/common/coach-surface";
 
 export default function CoachDashboardLoading() {
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
+    <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Dashboard" eyebrow="LOBB Coach" active="home" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <section className="mb-5 overflow-hidden rounded-[26px] bg-[var(--lobb-bg-inverse)] px-5 py-6 shadow-[var(--lobb-shadow-modal)] sm:px-7 sm:py-7">
+        <section className="mb-5 overflow-hidden bg-[var(--lobb-bg-inverse)] px-5 py-6 shadow-[var(--lobb-shadow-modal)] sm:px-7 sm:py-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
@@ -43,7 +43,7 @@ export default function CoachDashboardLoading() {
               ))}
             </div>
 
-            <section className="rounded-[18px] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+            <section className="lobb-app-card bg-[var(--lobb-bg-elevated)] p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <SkeletonBlock className="h-4 w-28" />

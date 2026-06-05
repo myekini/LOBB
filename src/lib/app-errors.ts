@@ -26,7 +26,8 @@ export type AppErrorCode =
   | "AVAILABILITY_SAVE_FAILED"
   | "AVAILABILITY_INVALID_HOURS"
   | "AVAILABILITY_OVERLAP"
-  | "PROFILE_SAVE_FAILED";
+  | "PROFILE_SAVE_FAILED"
+  | "RATE_LIMITED";
 
 export type AppErrorPayload = {
   ok: false;
@@ -140,7 +141,7 @@ export const ERROR_COPY: Record<AppErrorCode, ErrorCopy> = {
   },
   PAYMENT_VERIFY_FAILED: {
     title: "Could not confirm payment",
-    message: "We could not confirm this payment yet. Please try again or check My Bookings.",
+    message: "We could not confirm this payment yet. Please try again or check your bookings.",
     severity: "error",
   },
   RECEIPT_NOT_READY: {
@@ -172,6 +173,11 @@ export const ERROR_COPY: Record<AppErrorCode, ErrorCopy> = {
     title: "Could not save profile",
     message: "Your profile changes were not saved. Please try again.",
     severity: "error",
+  },
+  RATE_LIMITED: {
+    title: "Too many requests",
+    message: "You've made too many requests. Please wait a moment and try again.",
+    severity: "warning",
   },
 };
 

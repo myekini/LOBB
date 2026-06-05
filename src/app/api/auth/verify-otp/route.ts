@@ -5,6 +5,7 @@ import { consumeOtp, verifyOtp } from "@/lib/db-otp";
 import { formatNigerianPhoneNumber } from "@/lib/phone";
 import { normalizeEmail } from "@/lib/email";
 import { getSupabaseServerKey } from "@/lib/supabase/server";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 function getAuthClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -21,11 +22,10 @@ function getAdminClient() {
 }
 
 function getSyntheticCredentials(identifier: string) {
-  const secret =
-    process.env.AUTH_SESSION_SECRET ||
-    process.env.ADMIN_SECRET ||
-    process.env.TWILIO_AUTH_TOKEN ||
-    "lobb-local-dev-secret";
+  const secret = process.env.AUTH_SESSION_SECRET;
+  if (!secret) {
+    throw new Error("AUTH_SESSION_SECRET is not set. Cannot issue sessions.");
+  }
   const password = createHmac("sha256", secret).update(`lobb:${identifier}`).digest("base64url");
 
   // Email-based auth: use the real email directly as Supabase identity
@@ -40,6 +40,14 @@ function getSyntheticCredentials(identifier: string) {
 }
 
 export async function POST(request: Request) {
+  const rl = rateLimit(`verify-otp:${clientIp(request)}`, 5, 15 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: `Too many attempts. Try again in ${rl.retryAfterSecs} seconds.` },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSecs) } },
+    );
+  }
+
   try {
     const body = (await request.json()) as {
       email?: string;
@@ -126,11 +134,16 @@ export async function POST(request: Request) {
         if (profileRow?.id) {
           await adminClient.auth.admin.updateUserById(profileRow.id, { password });
         } else {
-          // Profile doesn't exist yet — scan auth users (small user-base path).
-          const { data: listData } = await adminClient.auth.admin.listUsers({ perPage: 1000 });
-          const existing = listData?.users.find((u) => u.email === authEmail);
-          if (existing) {
-            await adminClient.auth.admin.updateUserById(existing.id, { password });
+          // Profile row missing — look up the auth user directly by email.
+          // Uses .schema('auth') to avoid the listUsers({ perPage: 1000 }) full scan.
+          const { data: authUser } = await adminClient
+            .schema("auth")
+            .from("users")
+            .select("id")
+            .eq("email", authEmail)
+            .maybeSingle();
+          if (authUser?.id) {
+            await adminClient.auth.admin.updateUserById(authUser.id, { password });
           }
         }
       }
@@ -149,7 +162,7 @@ export async function POST(request: Request) {
 
     // Only consume (delete) the OTP record once we have a confirmed session —
     // if we deleted it before this point a failed signIn would lock the user out.
-    consumeOtp(identifier);
+    await consumeOtp(identifier);
 
     return NextResponse.json({
       session,

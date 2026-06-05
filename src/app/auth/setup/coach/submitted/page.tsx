@@ -12,7 +12,7 @@ export default function CoachSubmittedPage() {
     <OnboardingShell showBack={false}>
       <main className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
-          <div className="mb-6 flex size-[60px] items-center justify-center rounded-full bg-[#1A1A1A] border border-[#2A2A2A] text-[#1DB954] shadow-[0_0_32px_rgba(29,185,84,0.15)]">
+          <div className="mb-6 flex size-[60px] items-center justify-center border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] text-[var(--lobb-success)] shadow-[0_18px_36px_rgba(45,106,79,0.10)]">
             <CheckCircle2 className="size-8" />
           </div>
           <OnboardingKicker>Submitted for review</OnboardingKicker>
@@ -28,7 +28,7 @@ export default function CoachSubmittedPage() {
         </section>
 
         <section className="mt-10 space-y-4">
-          <div className="relative overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
+          <div className="relative overflow-hidden border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
             <div className="absolute top-0 right-0 p-6 opacity-[0.06] text-[var(--lobb-text-secondary)]">
               <Clock3 className="size-16" />
             </div>
@@ -44,7 +44,7 @@ export default function CoachSubmittedPage() {
             </p>
           </div>
           
-          <div className="relative overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
+          <div className="relative overflow-hidden border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
             <div className="absolute top-0 right-0 p-6 opacity-[0.06] text-[var(--lobb-text-secondary)]">
               <Settings className="size-16" />
             </div>
@@ -64,14 +64,14 @@ export default function CoachSubmittedPage() {
         <div className="mt-auto space-y-4 pb-8 pt-10 relative z-10">
           <Link
             href="/coach/profile/preview"
-            className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden rounded-[16px] bg-[var(--lobb-clay)] text-[15px] font-bold tracking-wide text-white transition-all hover:scale-[1.02] hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]"
+            className="group relative flex h-14 w-full items-center justify-center gap-2 overflow-hidden bg-[var(--lobb-clay)] text-[15px] font-bold tracking-wide text-white transition-all hover:-translate-y-0.5 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]"
           >
             <Eye className="size-5 transition-transform group-hover:scale-110" />
             Preview profile
           </Link>
           <Link
             href="/coach/dashboard"
-            className="flex h-14 w-full items-center justify-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-surface)] active:scale-[0.98]"
+            className="flex h-14 w-full items-center justify-center border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-surface)] active:scale-[0.98]"
           >
             Go to dashboard
           </Link>

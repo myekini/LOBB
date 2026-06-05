@@ -36,15 +36,15 @@ export function bookingConfirmedCoachMessage(info: NotificationBookingInfo) {
 
 export function bookingPaymentInitiatedCoachMessage(info: NotificationBookingInfo) {
   const note = info.playerNotes ? ` Note: ${info.playerNotes}.` : "";
-  return `LOBB: ${info.playerName} started payment for ${formatSmsDate(info.startsAt)} at ${info.location}.${note} We will confirm once payment clears.`;
+  return `LOBB: ${info.playerName} started payment for ${formatSmsDate(info.startsAt)} at ${info.location}.${note} We will confirm when payment clears.`;
 }
 
 export function reminderPlayerMessage(info: NotificationBookingInfo) {
-  return `LOBB: Tennis session with ${info.coachName} tomorrow at ${formatSmsDate(info.startsAt)}. ${info.location}`;
+  return `LOBB: Session with ${info.coachName} tomorrow at ${formatSmsDate(info.startsAt)}. Location: ${info.location}`;
 }
 
 export function reminderCoachMessage(info: NotificationBookingInfo) {
-  return `LOBB: Session with ${info.playerName} tomorrow at ${formatSmsDate(info.startsAt)}. Be ready.`;
+  return `LOBB: Session with ${info.playerName} tomorrow at ${formatSmsDate(info.startsAt)}. Check the booking before you arrive.`;
 }
 
 export function cancelledMessage(startsAt: string, refundNote: string) {
@@ -66,7 +66,7 @@ export function coachApprovedMessage() {
 export function coachRejectedMessage(reason: string, isThirdRejection: boolean) {
   const base = `LOBB: Your profile needs updates before it can go live. Reason: ${reason}. Edit and resubmit: ${appUrl("/coach/profile/edit")}`;
   if (isThirdRejection) {
-    return `${base} — This is your 3rd rejection. Please contact us directly to resolve this.`;
+    return `${base} This is your 3rd rejection. Please contact us directly to resolve this.`;
   }
   return base;
 }

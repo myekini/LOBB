@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Home, type LucideIcon } from "lucide-react";
+import { ArrowLeft, CalendarDays, Home, Pencil, type LucideIcon } from "lucide-react";
 import { CoachAccountMenu } from "@/components/common/coach-account-menu";
 import { CoachDesktopNav } from "@/components/layout/coach-nav";
 import { cn } from "@/lib/utils";
+
+type CoachHeaderActionIcon = "calendar" | "pencil";
 
 type CoachFlowHeaderProps = {
   title: string;
@@ -12,11 +14,16 @@ type CoachFlowHeaderProps = {
   active?: "home" | "bookings" | "earnings" | "profile";
   actionHref?: string;
   actionLabel?: string;
-  actionIcon?: LucideIcon;
+  actionIcon?: CoachHeaderActionIcon;
   showLogout?: boolean;
   confirmNavigation?: boolean;
   confirmMessage?: string;
   className?: string;
+};
+
+const actionIcons: Record<CoachHeaderActionIcon, LucideIcon> = {
+  calendar: CalendarDays,
+  pencil: Pencil,
 };
 
 export function CoachFlowHeader({
@@ -25,7 +32,7 @@ export function CoachFlowHeader({
   active,
   actionHref,
   actionLabel,
-  actionIcon: ActionIcon,
+  actionIcon,
   showLogout = true,
   confirmNavigation = false,
   confirmMessage = "Discard unsaved changes?",
@@ -33,11 +40,12 @@ export function CoachFlowHeader({
 }: CoachFlowHeaderProps) {
   const router = useRouter();
   const canNavigate = () => !confirmNavigation || window.confirm(confirmMessage);
+  const ActionIcon = actionIcon ? actionIcons[actionIcon] : null;
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 -mx-5 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/92 px-5 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6",
+        "lobb-app-header sticky top-0 z-40 -mx-5 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/92 px-5 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6",
         className
       )}
     >
@@ -62,7 +70,7 @@ export function CoachFlowHeader({
                 onClick={() => {
                   if (canNavigate()) router.push("/coach/dashboard");
                 }}
-                className="flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.97]"
+                className="flex size-10 items-center justify-center border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.97]"
                 aria-label="Coach home"
               >
                 <Home className="size-4" />
@@ -85,7 +93,7 @@ export function CoachFlowHeader({
               onClick={() => {
                 if (canNavigate()) router.push(actionHref);
               }}
-              className="flex h-10 items-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
+              className="flex h-10 items-center gap-1.5 bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
             >
               {ActionIcon && <ActionIcon className="size-3.5" />}
               <span className="hidden min-[380px]:inline">{actionLabel}</span>
@@ -103,7 +111,7 @@ function IconButton({ label, icon: Icon, onClick }: { label: string; icon: Lucid
     <button
       type="button"
       onClick={onClick}
-      className="flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.97]"
+      className="flex size-10 items-center justify-center border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.97]"
       aria-label={label}
     >
       <Icon className="size-4" />

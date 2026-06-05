@@ -31,7 +31,7 @@ export function CoachLogoutButton({ compact = false }: { compact?: boolean }) {
       }
       aria-label="Log out"
     >
-      {!compact && <span>{busy ? "Signing out..." : "Sign out"}</span>}
+      {!compact && <span>{busy ? "Signing out" : "Sign out"}</span>}
       {compact && <LogOut className="size-4" />}
     </button>
   );

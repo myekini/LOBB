@@ -98,12 +98,12 @@ export default function EditProfilePage() {
   const abbr = name ? initials(name) : null;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
+    <main className="lobb-app-page min-h-screen px-5 pb-10 pt-5 text-[var(--lobb-black)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
           <Link
             href="/profile"
-            className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
+            className="flex size-10 items-center justify-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
             aria-label="Go back"
           >
             <ArrowLeft className="size-5" />
@@ -113,7 +113,7 @@ export default function EditProfilePage() {
 
         {!loading && (
           <>
-            <div className="flex flex-col items-center rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-6">
+            <div className="lobb-app-card flex flex-col items-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-6">
               <div className="relative size-24 overflow-hidden rounded-full bg-[var(--lobb-black)]">
                 {displayPhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -145,7 +145,7 @@ export default function EditProfilePage() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none focus:border-[var(--lobb-black)]"
+                className="mt-2 h-14 w-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none transition focus:border-[var(--lobb-clay)]"
               />
             </label>
 
@@ -157,7 +157,7 @@ export default function EditProfilePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none focus:border-[var(--lobb-black)] placeholder:text-[#b4ad9e]"
+                className="mt-2 h-14 w-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none transition placeholder:text-[#b4ad9e] focus:border-[var(--lobb-clay)]"
               />
               <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-muted)] leading-relaxed">
                 Used for booking confirmations, 24-hour reminders, and session reviews.
@@ -168,7 +168,7 @@ export default function EditProfilePage() {
               <button
                 type="button"
                 onClick={() => setEmailNotifications((v) => !v)}
-                className={`mt-4 flex w-full items-center justify-between rounded-2xl border p-4 transition-colors ${
+                className={`mt-4 flex w-full items-center justify-between border p-4 transition-colors ${
                   emailNotifications
                     ? "border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay)]/[0.03]"
                     : "border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
@@ -204,7 +204,7 @@ export default function EditProfilePage() {
             <button
               onClick={save}
               disabled={saving || !name.trim()}
-              className="mt-8 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white disabled:opacity-60"
+              className="mt-8 flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] text-sm font-black text-white transition hover:bg-[var(--lobb-clay-dark)] disabled:opacity-60"
             >
               {saving ? <Loader2 className="size-4 animate-spin" /> : "Save Changes"}
             </button>

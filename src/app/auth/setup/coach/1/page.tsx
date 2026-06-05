@@ -105,7 +105,7 @@ export default function CoachSetupStepOnePage() {
           <OnboardingCopy>You&apos;ll complete your availability, rate, and verification before going live.</OnboardingCopy>
         </section>
 
-        <div className="mt-8 flex flex-col items-center rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
+        <div className="mt-8 flex flex-col items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
           <p className="mb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
             Public coach photo
           </p>
@@ -175,7 +175,7 @@ export default function CoachSetupStepOnePage() {
         </div>
 
         <div className="mt-auto pb-8 pt-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
+          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
           <OnboardingButton type="submit" disabled={saving} loading={saving}>
             <span className="inline-flex items-center gap-2">
               {saving ? "Saving" : "Next"} {!saving && <ArrowRight className="size-4" />}

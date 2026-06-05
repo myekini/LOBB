@@ -23,9 +23,9 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
   };
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-secondary)] p-3 text-[var(--lobb-text-primary)] md:p-5">
-      <div className="mx-auto min-h-[calc(100vh-24px)] max-w-[1380px] rounded-[20px] bg-[var(--lobb-bg-primary)] pb-20 shadow-[var(--lobb-shadow-card)] md:min-h-[calc(100vh-40px)] md:pb-0">
-      <header className="sticky top-3 z-50 rounded-t-[20px] bg-[var(--lobb-bg-primary)]/95 backdrop-blur-xl md:top-5">
+    <main className="lobb-app-page min-h-screen p-3 text-[var(--lobb-text-primary)] md:p-5">
+      <div className="mx-auto min-h-[calc(100vh-24px)] max-w-[1380px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] pb-20 md:min-h-[calc(100vh-40px)] md:pb-0">
+      <header className="lobb-app-header sticky top-3 z-50 border-b border-[var(--lobb-border-subtle)] backdrop-blur-xl md:top-5">
         <div className="flex h-20 items-center justify-between gap-4 px-5 sm:px-7">
           <Link href="/admin" className="flex items-center gap-2.5">
             <span className="flex size-9 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-black)]">
@@ -38,7 +38,7 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
             </span>
           </Link>
           <AdminDesktopNav active={active} />
-          <button onClick={signOut} className="inline-flex h-10 items-center gap-2 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-black">
+          <button onClick={signOut} className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-black transition-colors hover:border-[var(--lobb-clay)]/35">
             <LogOut className="size-4" />
             <span className="hidden sm:inline">Log out</span>
           </button>
@@ -53,7 +53,7 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
             const Icon = item.icon;
             const isActive = item.label === active || (active === "Coach Approvals" && item.label === "Coaches") || (active === "All Bookings" && item.label === "Bookings") || (active === "Platform Earnings" && item.label === "Earnings");
             return (
-              <Link key={item.href} href={item.href} className={cn("flex h-14 flex-col items-center justify-center gap-1 rounded-[14px] text-[10px] font-black text-[var(--lobb-text-tertiary)]", isActive && "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]")}>
+              <Link key={item.href} href={item.href} className={cn("flex h-14 flex-col items-center justify-center gap-1 rounded-[12px] text-[10px] font-black text-[var(--lobb-text-tertiary)]", isActive && "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]")}>
                 <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />
                 {item.label}
               </Link>
@@ -79,7 +79,7 @@ function AdminDesktopNav({ active }: { active: string }) {
             className={cn(
               "inline-flex h-10 items-center gap-2 rounded-[12px] px-4 text-sm font-bold transition",
               isActive
-                ? "bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)]"
+                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                 : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-elevated)] hover:text-[var(--lobb-text-primary)]"
             )}
           >

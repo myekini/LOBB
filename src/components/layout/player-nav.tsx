@@ -16,7 +16,7 @@ type ActiveTab = "home" | "coaches" | "bookings" | "profile";
 export function PlayerBottomNav({ active }: { active: ActiveTab }) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2 md:hidden">
-      <div className="mx-auto flex max-w-[390px] items-center justify-around rounded-[24px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/96 p-1.5 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-xl">
+      <div className="lobb-bottom-nav mx-auto flex max-w-[390px] items-center justify-around p-1.5">
         {items.map((item) => {
           const isActive = item.label.toLowerCase() === active;
           const Icon = item.icon;
@@ -26,7 +26,7 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "relative flex h-[52px] flex-1 flex-col items-center justify-center gap-[3px] rounded-[18px] transition-all duration-200 active:scale-[0.92]",
+                "relative flex h-[52px] flex-1 flex-col items-center justify-center gap-[3px] transition-all duration-200 active:scale-[0.94]",
                 isActive
                   ? "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                   : "text-[var(--lobb-text-tertiary)]"
@@ -56,7 +56,7 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
 export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
   const desktopItems = items.filter((item) => item.label !== "Profile");
   return (
-    <nav className="hidden items-center gap-1 md:flex" aria-label="Player navigation">
+    <nav className="lobb-desktop-nav hidden items-center gap-1 md:flex" aria-label="Player navigation">
       {desktopItems.map((item) => {
         const isActive = item.label.toLowerCase() === active;
         const Icon = item.icon;
@@ -66,7 +66,7 @@ export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-black transition",
+              "inline-flex h-10 items-center gap-2 px-4 text-sm font-black transition",
               isActive
                 ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
                 : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"

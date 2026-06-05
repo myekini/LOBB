@@ -66,7 +66,7 @@ export default function CoachBookingDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+      <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
         <CoachFlowHeader title="Booking" eyebrow="Loading" showLogout={false} />
         <section className="mx-auto max-w-5xl pt-5">
           <BookingCardSkeleton />
@@ -81,7 +81,7 @@ export default function CoachBookingDetailPage() {
 
   if (!booking) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+      <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
         <CoachFlowHeader title="Booking" eyebrow="Not found" showLogout={false} />
         <section className="mx-auto max-w-5xl pt-5">
           <h1 className="text-xl font-black">Booking not found</h1>
@@ -107,7 +107,7 @@ export default function CoachBookingDetailPage() {
   const sessionRef = payment?.paystack_reference ?? booking.paystack_reference ?? null;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+    <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Booking Detail" eyebrow="Coach schedule" actionHref="/coach/bookings" actionLabel="List" showLogout={false} />
       <section className="mx-auto max-w-5xl pt-5 lg:pt-7">
         <Link href="/coach/bookings" className="mb-4 inline-flex items-center gap-2 text-xs font-black text-[var(--lobb-text-secondary)]">
@@ -115,7 +115,7 @@ export default function CoachBookingDetailPage() {
           Back to bookings
         </Link>
 
-        <section className="rounded-[22px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+        <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/70"}`}>
@@ -212,7 +212,7 @@ export default function CoachBookingDetailPage() {
             </DetailSection>
 
             {canCancel && (
-              <section className="rounded-[18px] border border-[var(--lobb-error)]/30 bg-[var(--lobb-bg-elevated)] p-4">
+              <section className="lobb-app-panel border border-[var(--lobb-error)]/30 bg-[var(--lobb-bg-elevated)] p-4">
                 <p className="text-sm font-black">Need to cancel?</p>
                 <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
                   Cancelling refunds the player and removes the session from both schedules.
@@ -241,7 +241,7 @@ export default function CoachBookingDetailPage() {
           onClick={() => setShowCancel(false)}
         >
           <section
-            className="mx-auto w-full max-w-md rounded-[24px] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]"
+            className="lobb-app-card mx-auto w-full max-w-md bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -291,7 +291,7 @@ export default function CoachBookingDetailPage() {
 
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+    <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
       <p className="mb-4 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</p>
       {children}
     </section>

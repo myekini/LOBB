@@ -55,10 +55,10 @@ export default function CoachReviewsPage() {
   const averageCopy = summary.average_rating == null ? "No average yet" : `${summary.average_rating.toFixed(1)} average`;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
+    <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Reviews" eyebrow="Player feedback" active="profile" />
       <section className="mx-auto max-w-4xl pt-5 lg:pt-7">
-        <section className="mb-5 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+        <section className="lobb-app-card mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
           {loading ? (
             <>
               <SkeletonBlock className="h-6 w-32" />
@@ -80,7 +80,7 @@ export default function CoachReviewsPage() {
           {loading ? (
             <>
               {Array.from({ length: 4 }).map((_, index) => (
-                <article key={index} className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+                <article key={index} className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                   <SkeletonBlock className="h-4 w-32" />
                   <SkeletonBlock className="mt-3 h-16 w-full" />
                 </article>
@@ -88,7 +88,7 @@ export default function CoachReviewsPage() {
             </>
           ) : reviews.length ? (
             reviews.map((review) => (
-              <article key={review.id} className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)]">
+              <article key={review.id} className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <p className="flex items-center gap-2 text-sm font-black">
                   <Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
                   {review.rating}/5 from {review.player_first_name}
@@ -100,7 +100,7 @@ export default function CoachReviewsPage() {
               </article>
             ))
           ) : (
-            <p className="rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+            <p className="lobb-app-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-sm font-semibold text-[var(--lobb-text-secondary)]">
               No reviews yet.
             </p>
           )}

@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!data) return { title: "Coach | LOBB" };
 
   return {
-    title: `${data.full_name} — Tennis Coach in ${data.primary_location} | LOBB`,
+    title: `${data.full_name} | Tennis Coach in ${data.primary_location} | LOBB`,
     description: data.headline ?? `Book a session with ${data.full_name} on LOBB.`,
   };
 }

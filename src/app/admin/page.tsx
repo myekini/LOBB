@@ -27,11 +27,13 @@ type AdminDashboardPayload = {
     profile_photo_url: string | null;
     hourly_rate_ngn: number | null;
   }>;
+  stuck_payouts?: number;
 };
 
 export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminDashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -54,19 +56,20 @@ export default function AdminDashboardPage() {
   const metrics = data?.metrics;
   const recentBookings = data?.recent_bookings ?? [];
   const pendingCoaches = data?.pending_coach_approvals ?? [];
+  const stuckPayouts = data?.stuck_payouts ?? 0;
   const approvalCopy = (metrics?.pending_coach_approvals ?? 0) > 0 ? "Coach applications are waiting" : "Coach approvals are clear";
 
   return (
     <AdminShell active="Dashboard">
       <section className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
-          <div className="flex min-h-[132px] flex-col justify-between rounded-[16px] bg-[var(--lobb-black)] p-5 text-white shadow-[0_2px_12px_rgba(13,13,13,0.08)] sm:p-6">
+          <div className="flex min-h-[132px] flex-col justify-between border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-bold text-white/52">LOBB headquarters</p>
-                <h1 className="mt-2 text-[32px] font-black leading-none tracking-tight sm:text-[38px]">Operations Dashboard</h1>
+                <h1 className="mt-2 text-[32px] font-black leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
               </div>
-              <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[14px] bg-[var(--lobb-clay)] px-5 text-sm font-black text-white shadow-[0_8px_18px_rgba(196,98,45,0.2)]">
+              <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-clay)] px-5 text-sm font-black text-white">
                 <UserCheck className="size-4" />
                 Review applications
               </Link>
@@ -78,13 +81,13 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <section className="rounded-[16px] bg-[var(--lobb-surface)] p-5 shadow-[0_2px_12px_rgba(13,13,13,0.04)]">
+          <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
             <p className="text-xs font-bold text-[var(--lobb-muted)]">Priority</p>
             <h2 className="mt-2 text-xl font-black leading-tight">{approvalCopy}</h2>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">
               Review submitted coach profiles so players only see verified, ready-to-book coaches.
             </p>
-            <Link href="/admin/coaches" className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border)] px-4 text-sm font-black">
+            <Link href="/admin/coaches" className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border)] px-4 text-sm font-black transition-colors hover:border-[var(--lobb-clay)]/35">
               Open approvals
               <ArrowUpRight className="size-4" />
             </Link>
@@ -97,14 +100,14 @@ export default function AdminDashboardPage() {
               <MetricGridSkeleton />
             ) : (
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Stat icon={<Clock3 className="size-4" />} value={String(metrics?.pending_coach_approvals ?? 0)} label="Coach Queue" hint="Awaiting admin review" tone="clay" />
+                <Stat icon={<Clock3 className="size-4" />} value={String(metrics?.pending_coach_approvals ?? 0)} label="Coach queue" hint="Awaiting admin review" tone="clay" />
                 <Stat icon={<CalendarDays className="size-4" />} value={String(metrics?.total_bookings ?? 0)} label="Bookings" hint="Sessions created on LOBB" tone="neutral" />
-                <Stat icon={<WalletCards className="size-4" />} value={money(metrics?.lobb_earnings_ngn ?? 0)} label="Platform Fees" hint="Earned from completed sessions" tone="neutral" />
-                <Stat icon={<CheckCircle2 className="size-4" />} value={String(metrics?.active_coaches ?? 0)} label="Verified Coaches" hint="Live and bookable" tone="success" />
+                <Stat icon={<WalletCards className="size-4" />} value={money(metrics?.lobb_earnings_ngn ?? 0)} label="Platform fees" hint="Earned from completed sessions" tone="neutral" />
+                <Stat icon={<CheckCircle2 className="size-4" />} value={String(metrics?.active_coaches ?? 0)} label="Verified coaches" hint="Live and bookable" tone="success" />
               </div>
             )}
 
-            <section className="rounded-[14px] bg-[var(--lobb-surface)] p-4 shadow-[0_2px_12px_rgba(13,13,13,0.04)]">
+            <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
               <SectionTitle title="Recent bookings" href="/admin/bookings" />
               {loading ? (
                 <TableRowsSkeleton />
@@ -117,7 +120,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <aside className="space-y-4">
-            <section className="rounded-[14px] bg-[var(--lobb-surface)] p-4 shadow-[0_2px_12px_rgba(13,13,13,0.04)]">
+            <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
               <SectionTitle title="Applications" href="/admin/coaches" />
               {loading ? (
                 <TableRowsSkeleton rows={4} />
@@ -130,7 +133,44 @@ export default function AdminDashboardPage() {
               )}
             </section>
 
-            <section className="rounded-[14px] bg-[var(--lobb-surface)] p-4 shadow-[0_2px_12px_rgba(13,13,13,0.04)]">
+            {!loading && stuckPayouts > 0 && (
+              <section className="border border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10 p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[var(--lobb-warning)]" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-black text-[var(--lobb-text-primary)]">
+                      {stuckPayouts} stuck payout{stuckPayouts !== 1 ? "s" : ""}
+                    </p>
+                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                      Completed sessions with no Paystack transfer.
+                    </p>
+                    <button
+                      disabled={retrying}
+                      onClick={async () => {
+                        setRetrying(true);
+                        try {
+                          const res = await fetch("/api/admin/payouts/retry-stuck", { method: "POST" });
+                          const json = await res.json() as { succeeded?: number; failed?: number };
+                          showLobbToast({
+                            type: json.failed ? "error" : "success",
+                            message: `${json.succeeded ?? 0} transferred, ${json.failed ?? 0} failed`,
+                          });
+                        } catch {
+                          showLobbToast({ type: "error", message: "Retry failed. Check server logs." });
+                        } finally {
+                          setRetrying(false);
+                        }
+                      }}
+                      className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-60"
+                    >
+                      {retrying ? "Retrying" : "Retry stuck payouts"}
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-black">Revenue</h2>
                 <Link href="/admin/earnings" className="flex size-8 items-center justify-center rounded-[10px] bg-[var(--lobb-bg)] text-[var(--lobb-muted)]" aria-label="Open earnings">
@@ -166,12 +206,9 @@ function Stat({ icon, value, label, hint, tone }: { icon: React.ReactNode; value
   const toneClass = tone === "success" ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : tone === "clay" ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)]" : "bg-[var(--lobb-bg)] text-[var(--lobb-muted)]";
 
   return (
-    <div className="rounded-[14px] bg-[var(--lobb-surface)] p-4 shadow-[0_2px_12px_rgba(13,13,13,0.04)]">
+    <div className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
       <div className="flex items-start justify-between gap-3">
         <span className={`flex size-8 items-center justify-center rounded-[10px] ${toneClass}`}>{icon}</span>
-        <span className="flex size-8 items-center justify-center rounded-[10px] bg-[var(--lobb-bg)] text-[var(--lobb-muted)]">
-          <ArrowUpRight className="size-4" />
-        </span>
       </div>
       <p className="mt-5 text-2xl font-black leading-none">{value}</p>
       <p className="mt-3 text-sm font-black">{label}</p>

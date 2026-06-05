@@ -78,7 +78,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
           refund_percent: policy.refundPercent,
           refund_ngn: refundNgn,
           refund_label: policy.label,
-          refund_error: error instanceof Error ? error.message : "Refund could not be started — contact support",
+          refund_error: error instanceof Error ? error.message : "Refund could not be started. Contact support.",
         },
         { status: 207 } // booking cancelled but refund requires manual action
       );
@@ -94,7 +94,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   // Build a clear refund summary for SMS
   const refundSummary = policy.refundPercent === 0
     ? policy.note
-    : `${policy.label} of ₦${refundNgn.toLocaleString("en-NG")} will arrive in 5–7 business days. ${policy.note}`;
+    : `${policy.label} of ₦${refundNgn.toLocaleString("en-NG")} will arrive in 5 to 7 business days. ${policy.note}`;
 
   await sendBookingCancelledEmails(
     auth.admin,

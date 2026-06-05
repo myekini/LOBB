@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, Circle, Clock3, MapPin, User, WalletCards } from "lucide-react";
+import { ArrowRight, Circle, Clock3, MapPin, User, WalletCards } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
@@ -104,8 +104,8 @@ export default function CoachBookingsPage() {
   }, [tab, visibleBookings]);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
-      <CoachFlowHeader title="Bookings" eyebrow="Coach schedule" active="bookings" actionHref="/coach/availability" actionLabel="Availability" actionIcon={CalendarDays} />
+    <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
+      <CoachFlowHeader title="Bookings" eyebrow="Coach schedule" active="bookings" actionHref="/coach/availability" actionLabel="Availability" actionIcon="calendar" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-start">
           <CoachSurface className="grid grid-cols-3 overflow-hidden">
@@ -114,13 +114,13 @@ export default function CoachBookingsPage() {
             <BookingStat label="Earned" value={money(completedValue)} bordered />
           </CoachSurface>
 
-          <div className="grid grid-cols-3 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 shadow-[var(--lobb-shadow-card)]">
+          <div className="lobb-segmented grid grid-cols-3 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1">
             {tabs.map((item) => (
               <button
                 key={item.value}
                 type="button"
                 onClick={() => setTab(item.value)}
-                className={`h-11 rounded-[14px] text-sm font-black transition ${
+                className={`h-11 text-sm font-black transition ${
                   tab === item.value ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]" : "text-[var(--lobb-text-secondary)]"
                 }`}
               >
@@ -173,10 +173,10 @@ function CoachBookingCard({ booking }: { booking: DashboardBooking }) {
   const isPending = isPendingBooking(booking);
 
   return (
-    <article className="grid gap-4 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] md:grid-cols-[150px_minmax(0,1fr)_150px_112px] md:items-center">
+    <article className="lobb-app-card grid gap-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 md:grid-cols-[150px_minmax(0,1fr)_150px_112px] md:items-center">
       <div>
         <p className="text-sm font-black">{formatBookingDate(booking.starts_at)}</p>
-        <p className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black capitalize ${
+        <p className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-black capitalize ${
           isConfirmed ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : isPending ? "bg-[var(--lobb-warning)]/12 text-[var(--lobb-clay)]" : isCompleted ? "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"
         }`}>
           <Circle className="size-2 fill-current" />
@@ -207,7 +207,7 @@ function CoachBookingCard({ booking }: { booking: DashboardBooking }) {
         {isPending ? proximityLabel(booking.starts_at) : money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}
       </div>
 
-      <Link href={`/coach/bookings/${booking.id}`} className="flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)]">
+      <Link href={`/coach/bookings/${booking.id}`} className="flex h-10 items-center justify-center gap-1.5 bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)]">
         Details
         <ArrowRight className="size-3.5" />
       </Link>

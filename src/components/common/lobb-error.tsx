@@ -33,14 +33,14 @@ export function LobbErrorBanner({
     <div
       role="alert"
       className={cn(
-        "rounded-[18px] border border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10 px-4 py-3 text-[var(--lobb-text-primary)]",
+        "rounded-[14px] border border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10 px-4 py-3 text-[var(--lobb-text-primary)]",
         copy.severity === "warning" && "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10",
         copy.severity === "info" && "border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)]",
         className
       )}
     >
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--lobb-bg-elevated)] text-[var(--lobb-clay)]">
+        <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-clay)]">
           <AlertTriangle className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
@@ -50,7 +50,7 @@ export function LobbErrorBanner({
             <button
               type="button"
               onClick={onAction}
-              className="mt-3 inline-flex h-9 items-center gap-2 rounded-full bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]"
+              className="mt-3 inline-flex h-9 items-center gap-2 rounded-[10px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]"
             >
               <RefreshCw className="size-3.5" />
               {actionLabel}
@@ -81,8 +81,8 @@ export function LobbEmptyErrorState({
   onAction?: () => void;
 }) {
   return (
-    <div className="rounded-[26px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center shadow-[var(--lobb-shadow-card)]">
-      <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+    <div role="status" aria-live="polite" className="rounded-[14px] border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center">
+      <span className="mx-auto flex size-12 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
         <Icon className="size-5" />
       </span>
       <h2 className="mt-4 text-lg font-black text-[var(--lobb-text-primary)]">{title}</h2>
@@ -91,7 +91,7 @@ export function LobbEmptyErrorState({
         <button
           type="button"
           onClick={onAction}
-          className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[var(--lobb-bg-inverse)] px-6 text-sm font-black text-[var(--lobb-text-inverse)]"
+          className="mt-5 inline-flex h-11 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-6 text-sm font-black text-[var(--lobb-text-inverse)]"
         >
           {actionLabel}
         </button>

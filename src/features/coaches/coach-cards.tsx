@@ -15,55 +15,67 @@ function skillColor(skill: string): string {
   return "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]";
 }
 
-/* ── Small card — home page grid ── */
 export function SmallCoachCard({ coach }: { coach: CoachPublicProfile }) {
+  const primarySkill = coach.specializations[0] ?? coach.skill_levels[0] ?? "Tennis Coach";
+
   return (
     <Link
       href={`/coaches/${coach.slug}`}
-      className="group relative flex w-full flex-col overflow-hidden rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[var(--lobb-shadow-card)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--lobb-shadow-modal)]"
+      className="lobb-app-card group relative flex w-full flex-col overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition-colors duration-200 hover:border-[var(--lobb-clay)]/35"
     >
-      <div className="relative aspect-[16/11] w-full overflow-hidden bg-[var(--lobb-surface-2)]">
+      {/* Photo with overlaid rate + rating */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[var(--lobb-surface-2)]">
         {coach.profile_photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={coach.profile_photo_url}
             alt={coach.full_name}
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="size-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex size-full items-center justify-center bg-[var(--lobb-surface-2)] text-[var(--lobb-text-tertiary)]/30">
             <Sparkles className="size-8 stroke-[1.25]" />
           </div>
         )}
-      </div>
-      <div className="flex flex-1 flex-col justify-between p-3.5">
-        <div>
-          <div className="flex items-center gap-1 text-[11px] font-black text-[var(--lobb-black)]">
+        {/* Gradient for overlay legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+        {/* Bottom overlay: clay rate pill left, rating pill right */}
+        <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between gap-2">
+          <span className="rounded-full bg-[var(--lobb-clay)] px-2.5 py-1 text-[11px] font-black leading-none text-white">
+            {coach.hourly_rate_ngn == null ? "TBD" : `${money(coach.hourly_rate_ngn)}/hr`}
+          </span>
+          <div className="flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-[11px] font-black text-white backdrop-blur-sm">
             <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
-            {coach.avg_rating != null ? coach.avg_rating : "New"}
-            {coach.review_count > 0 && (
-              <span className="font-semibold text-[var(--lobb-muted)]">({coach.review_count})</span>
-            )}
+            <span>{coach.avg_rating != null ? coach.avg_rating : "New"}</span>
           </div>
-          <h3 className="mt-1 truncate text-sm font-black text-[var(--lobb-black)] tracking-tight">
-            {coach.full_name}
-          </h3>
-          <p className="mt-0.5 truncate text-[11px] font-semibold text-[var(--lobb-muted)]">
-            {(coach.specializations[0] ?? coach.skill_levels[0]) || "Tennis Coach"} · {coach.primary_location}
-          </p>
         </div>
-        <p className="mt-3 text-sm font-black text-[var(--lobb-clay)]">
-          {coach.hourly_rate_ngn == null ? money(null) : `${money(coach.hourly_rate_ngn)}/hr`}
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col gap-1 p-3.5 pt-3">
+        <h3 className="truncate text-sm font-black leading-tight tracking-tight text-[var(--lobb-black)]">
+          {coach.full_name}
+        </h3>
+        <p className="truncate text-[11px] font-semibold text-[var(--lobb-muted)]">
+          {primarySkill}
         </p>
+        {coach.primary_location && (
+          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+            <MapPin className="size-3 shrink-0 text-[var(--lobb-clay)]" />
+            <span className="truncate">{coach.primary_location}</span>
+          </div>
+        )}
+        {coach.review_count > 0 && (
+          <p className="mt-1.5 text-[10px] font-semibold text-[var(--lobb-text-tertiary)]">
+            {coach.review_count} {coach.review_count === 1 ? "review" : "reviews"}
+          </p>
+        )}
       </div>
     </Link>
   );
 }
 
-/* ── Full list card — coaches browse page ──
-   Mobile:  horizontal — image left, content right
-   Desktop: vertical — large image top, overlay badges, content below
-─────────────────────────────────────────────── */
 export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
   const profileHref = `/coaches/${coach.slug ?? coach.id}`;
   const bookingHref = coach.slug ? `/book/${coach.slug}/step-1` : "#";
@@ -75,12 +87,12 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
   const ratingLabel = coach.avg_rating != null ? String(coach.avg_rating) : "New";
 
   return (
-    <article className="group overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[var(--lobb-shadow-card)] transition duration-200 hover:shadow-[var(--lobb-shadow-modal)]">
+    <article className="lobb-app-card group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-200 hover:border-[var(--lobb-clay)]/35">
 
       {/* ── Mobile: horizontal layout ── */}
       <div className="flex md:hidden">
-        {/* Image */}
-        <Link href={profileHref} className="relative w-[120px] shrink-0 overflow-hidden rounded-l-[20px]">
+        {/* Image with rate overlay */}
+        <Link href={profileHref} className="relative w-[136px] shrink-0 overflow-hidden">
           {coach.profile_photo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -93,6 +105,12 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
               <Sparkles className="size-8 text-[var(--lobb-text-tertiary)]/30 stroke-[1.25]" />
             </div>
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
+          <div className="absolute bottom-2.5 left-0 right-0 flex justify-center px-2">
+            <span className="rounded-full bg-[var(--lobb-clay)] px-2.5 py-0.5 text-[10px] font-black text-white">
+              {money(coach.hourly_rate_ngn)}/hr
+            </span>
+          </div>
         </Link>
 
         {/* Content */}
@@ -124,22 +142,16 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
             <span className="truncate">{locations.join(" · ") || "Lagos"}</span>
           </div>
 
-          {/* Rate */}
-          <p className="text-[11px] font-black text-[var(--lobb-clay)]">
-            {money(coach.hourly_rate_ngn)}/hr
-          </p>
-
-          {/* Book button */}
           <Link
             href={bookingHref}
             aria-disabled={!coach.slug}
             className={`mt-auto flex h-10 items-center justify-center gap-1.5 rounded-[12px] text-xs font-black transition active:scale-[0.97] ${
               coach.slug
-                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
+                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-clay-dark)]"
                 : "pointer-events-none bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
             }`}
           >
-            Book <ArrowRight className="size-3.5" />
+            Book session <ArrowRight className="size-3.5" />
           </Link>
         </div>
       </div>
@@ -147,7 +159,7 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
       {/* ── Desktop: vertical image-top layout ── */}
       <div className="hidden md:block">
         {/* Image with overlaid badges */}
-        <Link href={profileHref} className="relative block overflow-hidden rounded-t-[20px]">
+        <Link href={profileHref} className="relative block overflow-hidden">
           <div className="relative aspect-[4/3] overflow-hidden bg-[var(--lobb-surface-2)]">
             {coach.profile_photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -161,7 +173,6 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
                 <Sparkles className="size-14 text-[var(--lobb-text-tertiary)]/30 stroke-[1]" />
               </div>
             )}
-            {/* Gradient for badge readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
             {/* Overlaid badges at bottom */}
@@ -193,7 +204,9 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
           {/* Availability + rate row */}
           <div className="mt-3 flex items-center justify-between gap-2">
             <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
-              coach.has_availability ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]" : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
+              coach.has_availability
+                ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]"
+                : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
             }`}>
               {coach.has_availability ? "● Open slots" : "○ No slots"}
             </span>
@@ -202,17 +215,16 @@ export function CoachListCard({ coach }: { coach: CoachPublicProfile }) {
             </span>
           </div>
 
-          {/* Book */}
           <Link
             href={bookingHref}
             aria-disabled={!coach.slug}
             className={`mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-black transition active:scale-[0.98] ${
               coach.slug
-                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[0_8px_22px_rgba(13,13,13,0.16)] hover:opacity-90"
+                ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-clay-dark)]"
                 : "pointer-events-none bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
             }`}
           >
-            Book <ArrowRight className="size-4" />
+            Book session <ArrowRight className="size-4" />
           </Link>
         </div>
       </div>

@@ -89,7 +89,7 @@ export default function CoachSetupStep2Page() {
             <span className="mt-2 block text-[12px] font-medium text-[var(--lobb-text-secondary)]/70 leading-relaxed">
               Minimum 50 characters. Aim for your coaching style, ideal player, and session structure.
             </span>
-            <div className="mt-3 relative flex overflow-hidden rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-1 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+            <div className="mt-3 relative flex overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-1 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -133,7 +133,7 @@ export default function CoachSetupStep2Page() {
         </div>
 
         <div className="mt-auto pb-8 pt-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
+          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

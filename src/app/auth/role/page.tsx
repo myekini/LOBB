@@ -121,7 +121,7 @@ export default function RolePage() {
                 >
                   {/* Netflix Profile Square */}
                   <div
-                    className={`relative flex aspect-square w-full max-w-[140px] items-center justify-center rounded-[28px] border-[3px] transition-all duration-300 active:scale-95 ${
+                    className={`relative flex aspect-square w-full max-w-[140px] items-center justify-center rounded-[16px] border-[3px] transition-all duration-300 active:scale-95 ${
                       isSelected
                         ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)]/[0.08] shadow-[0_16px_36px_rgba(196,98,45,0.12)] scale-105"
                         : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] group-hover:border-[var(--lobb-clay)]/40 group-hover:scale-102 group-hover:shadow-[0_8px_24px_rgba(196,98,45,0.04)]"

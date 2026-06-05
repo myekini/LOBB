@@ -60,7 +60,7 @@ export default function ProfilePage() {
   const abbr = initials(profile?.full_name ?? null);
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] pb-28 text-[var(--lobb-text-primary)]">
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
       <div className="mx-auto max-w-lg px-5 pt-8 sm:px-6">
 
         {/* Avatar + name */}
@@ -117,7 +117,7 @@ export default function ProfilePage() {
         <div className="mt-2">
           <button
             onClick={logout}
-            className="flex w-full items-center justify-between rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-5 py-4 text-sm font-black text-[var(--lobb-text-secondary)] transition hover:text-red-500"
+            className="lobb-app-panel flex w-full items-center justify-between border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-5 py-4 text-sm font-black text-[var(--lobb-text-secondary)] transition hover:text-red-500"
           >
             Sign out
           </button>
@@ -135,7 +135,7 @@ function SettingGroup({ label, children }: { label: string; children: React.Reac
       <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
         {label}
       </p>
-      <div className="overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <div className="lobb-settings-group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         {children}
       </div>
     </div>
@@ -162,7 +162,7 @@ function SettingRow({
         !last ? "border-b border-[var(--lobb-border-subtle)]" : ""
       }`}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
+      <span className="flex size-9 shrink-0 items-center justify-center bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-bold text-[var(--lobb-text-primary)]">{label}</p>
         {description && (

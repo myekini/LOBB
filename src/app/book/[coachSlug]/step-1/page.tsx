@@ -123,7 +123,7 @@ function BookingStep1Content() {
     const start = new Date(base.getTime() + weekStart * 24 * 60 * 60 * 1000);
     const end   = new Date(base.getTime() + (weekStart + 6) * 24 * 60 * 60 * 1000);
     const fmt   = (d: Date) => d.toLocaleDateString("en-NG", { day: "numeric", month: "short" });
-    return `${fmt(start)} — ${fmt(end)}`;
+    return `${fmt(start)} to ${fmt(end)}`;
   }, [weekStart]);
 
   const handleContinue = async () => {
@@ -183,11 +183,10 @@ function BookingStep1Content() {
     <BookingShell step={1} backHref={`/coaches/${slug}`}>
       {/* Coach card */}
       {coach && (
-        <section className="overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
-          <div className="h-2 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+        <section className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
           <div className="p-4 sm:p-5">
           <div className="flex items-center gap-4">
-            <div className="relative size-16 shrink-0 overflow-hidden rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-sm">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -222,7 +221,7 @@ function BookingStep1Content() {
       )}
 
       {/* Week navigation */}
-      <div className="mt-4 rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[var(--lobb-shadow-card)] sm:p-5">
+      <div className="lobb-app-card mt-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3 px-1">
           <div>
             <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
@@ -233,6 +232,7 @@ function BookingStep1Content() {
           </div>
           <div className="flex items-center gap-1.5">
             <button
+              type="button"
               disabled={weekStart === 0}
               onClick={() => { setWeekStart(Math.max(0, weekStart - 7)); setSelectedSlot(""); }}
               className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-sm transition-all hover:border-[var(--lobb-clay)] disabled:opacity-30 disabled:shadow-none"
@@ -241,6 +241,7 @@ function BookingStep1Content() {
               <ChevronLeft className="size-4 text-[var(--lobb-text-primary)]" />
             </button>
             <button
+              type="button"
               disabled={weekStart >= 21}
               onClick={() => { setWeekStart(weekStart + 7); setSelectedSlot(""); }}
               className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-sm transition-all hover:border-[var(--lobb-clay)] disabled:opacity-30 disabled:shadow-none"
@@ -259,12 +260,15 @@ function BookingStep1Content() {
             const isSelected  = item.dateStr === selectedDate && hasBookable;
             return (
               <button
+                type="button"
                 key={item.dateStr}
                 disabled={!hasBookable}
                 onClick={() => { setSelectedDate(item.dateStr); setSelectedSlot(""); }}
-                className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-[18px] text-xs font-semibold transition-all duration-300 active:scale-95 ${
+                aria-pressed={isSelected}
+                aria-label={`${isSelected ? "Selected" : "Select"} ${item.label}`}
+                className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-[12px] text-xs font-semibold transition-all duration-300 active:scale-95 ${
                   isSelected
-                    ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[0_16px_30px_rgba(13,13,13,0.2)] scale-[1.03]"
+                    ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                     : hasBookable
                     ? "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] hover:border-[var(--lobb-clay)]/50 hover:bg-[var(--lobb-bg-elevated)]"
                     : "cursor-not-allowed border border-transparent bg-[var(--lobb-bg-secondary)]/70 text-[var(--lobb-text-tertiary)] opacity-45"
@@ -299,15 +303,17 @@ function BookingStep1Content() {
               const isDisabled = slot.tooSoon;
               return (
                 <button
+                  type="button"
                   key={slot.iso}
                   disabled={isDisabled}
                   onClick={() => !isDisabled && setSelectedSlot(slot.iso)}
+                  aria-pressed={isActive}
                   title={isDisabled ? "Must be booked at least 24 hours in advance" : undefined}
-                  className={`flex h-16 flex-col items-center justify-center gap-0.5 rounded-[18px] border text-center transition-all duration-300 ${
+                  className={`flex h-16 flex-col items-center justify-center gap-0.5 rounded-[12px] border text-center transition-all duration-300 ${
                     isDisabled
                       ? "cursor-not-allowed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]/60 opacity-40"
                       : isActive
-                      ? "active:scale-95 border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white shadow-[0_14px_28px_rgba(196,98,45,0.22)] scale-[1.02]"
+                      ? "active:scale-95 border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
                       : "active:scale-95 border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/50"
                   }`}
                 >
@@ -321,7 +327,7 @@ function BookingStep1Content() {
           </div>
         </>
       ) : (
-        <div className="mt-6 rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center">
+        <div className="lobb-app-card mt-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center">
           {coachStatus && coachStatus !== "active" ? (
             <>
               <p className="text-sm font-black text-[var(--lobb-text-primary)]">
@@ -335,7 +341,7 @@ function BookingStep1Content() {
             <>
               <p className="text-sm font-black text-[var(--lobb-text-primary)]">No slots this week</p>
               <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
-                {weekStart === 0 ? "Try the next week →" : "No availability in the next 4 weeks"}
+                {weekStart === 0 ? "Try the next week" : "No availability in the next 4 weeks"}
               </p>
             </>
           )}
@@ -343,7 +349,7 @@ function BookingStep1Content() {
       )}
 
       {/* Info strip */}
-      <div className="mt-5 rounded-[22px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold text-[var(--lobb-text-secondary)] shadow-[var(--lobb-shadow-card)]">
+      <div className="lobb-app-card mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
         <p className="flex items-center gap-2">
           <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" /> Sessions are 60 minutes.
         </p>
@@ -358,7 +364,7 @@ function BookingStep1Content() {
       </div>
 
       <BookingButton disabled={!selectedSlot || locking} onClick={handleContinue}>
-        {locking ? "Locking slot..." : "Continue"}
+        {locking ? "Locking slot" : "Continue"}
       </BookingButton>
     </BookingShell>
   );

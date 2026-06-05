@@ -57,10 +57,10 @@ export function OnboardingShell({
     >
       {/* Desktop background */}
       <div className="absolute inset-0 z-0 pointer-events-none" aria-hidden="true">
-        <div className="hidden lg:block absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(196,98,45,0.07),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(196,98,45,0.10),transparent)]" />
-        <div className="hidden lg:block absolute inset-0 bg-[radial-gradient(ellipse_50%_50%_at_80%_80%,rgba(45,106,79,0.04),transparent)]" />
+        <div className="lobb-onboarding-wash absolute inset-0" />
+        <div className="lobb-onboarding-grid absolute inset-0" />
         <svg
-          className="hidden lg:block absolute bottom-0 left-1/2 -translate-x-1/2 w-[520px] opacity-[0.035] dark:opacity-[0.045]"
+          className="lobb-onboarding-court hidden lg:block absolute bottom-0 left-1/2 -translate-x-1/2 w-[520px]"
           viewBox="0 0 520 380" fill="none" xmlns="http://www.w3.org/2000/svg"
         >
           <rect x="1" y="1" width="518" height="378" rx="2" stroke="currentColor" strokeWidth="2" />
@@ -79,7 +79,7 @@ export function OnboardingShell({
         {/* Desktop wordmark — only shown when there is no back arrow to avoid duplication */}
         {!showBack && (
           <div className="hidden lg:flex items-center gap-2.5 mb-6">
-            <span className="flex size-8 items-center justify-center rounded-[10px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]">
+            <span className="flex size-8 items-center justify-center rounded-[10px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_8px_24px_rgba(58,43,20,0.04)]">
               <LobbMark size={16} />
             </span>
             <span className="text-[13px] font-black uppercase tracking-[0.18em] text-[var(--lobb-black)]">LOBB</span>
@@ -87,7 +87,7 @@ export function OnboardingShell({
         )}
 
         {/* Card */}
-        <div className="flex w-full flex-1 flex-col px-5 sm:px-7 lg:max-w-[560px] lg:flex-none lg:rounded-[28px] lg:border lg:border-[var(--lobb-border)] lg:bg-[var(--lobb-surface)] lg:shadow-[var(--lobb-shadow-modal)] lg:px-8 lg:pb-8 xl:max-w-[620px]">
+        <div className="lobb-onboarding-panel flex w-full flex-1 flex-col px-5 sm:px-7 lg:max-w-[560px] lg:flex-none lg:border lg:px-8 lg:pb-8 xl:max-w-[620px]">
 
           <header className="flex h-16 shrink-0 items-center justify-between lg:h-14">
             {showBack ? backButton : (
@@ -103,11 +103,11 @@ export function OnboardingShell({
 
           {stepTotal > 0 && (
             <div
-              className="mb-1 h-[3px] w-full overflow-hidden rounded-full bg-[var(--lobb-border)]"
+              className="lobb-onboarding-progress mb-1 h-[4px] w-full overflow-hidden"
               aria-label={`Step ${stepCurrent} of ${stepTotal}`}
             >
               <div
-                className="h-full rounded-full bg-[var(--lobb-clay)] transition-all duration-500 ease-out"
+                className="h-full bg-[var(--lobb-clay)] transition-all duration-500 ease-out"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -129,8 +129,8 @@ export function OnboardingShell({
 function LobbMark({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="32" cy="17" r="5.5" fill="#C4622D" />
+      <path d="M 8 56 C 8 4 56 4 56 56" stroke="var(--lobb-clay)" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="32" cy="17" r="5.5" fill="var(--lobb-clay)" />
     </svg>
   );
 }
@@ -154,7 +154,7 @@ export function OnboardingButton({
       disabled={disabled || loading}
       onClick={onClick}
       data-onboarding-primary
-      className="group relative flex h-14 w-full items-center justify-center overflow-hidden rounded-[14px] bg-[var(--lobb-clay)] text-[13px] font-black uppercase tracking-widest text-white shadow-[0_10px_24px_rgba(196,98,45,0.18)] transition-all duration-300 hover:bg-[var(--lobb-clay-dark)] hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-surface-2)] disabled:text-[var(--lobb-muted)] disabled:shadow-none disabled:transform-none"
+      className="group relative flex h-14 w-full items-center justify-center overflow-hidden bg-[var(--lobb-clay)] text-[13px] font-black uppercase tracking-widest text-white shadow-[0_14px_30px_rgba(150,74,35,0.22)] transition-all duration-300 hover:bg-[var(--lobb-clay-dark)] hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-surface-2)] disabled:text-[var(--lobb-muted)] disabled:shadow-none disabled:transform-none"
     >
       <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       {loading ? (
@@ -171,10 +171,10 @@ export function OnboardingButton({
 
 export function OnboardingKicker({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-3.5 py-1.5 self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+    <div className="mb-5 inline-flex items-center gap-2 border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-3.5 py-1.5 self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C4622D] opacity-50"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-[#C4622D]"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-50"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--lobb-clay)]"></span>
       </span>
       <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
         {children}
@@ -185,7 +185,7 @@ export function OnboardingKicker({ children }: { children: React.ReactNode }) {
 
 export function OnboardingTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="max-w-[12ch] text-[36px] sm:text-[42px] font-black leading-[1.06] text-[var(--lobb-black)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
+    <h1 className="max-w-[13ch] text-[34px] sm:text-[42px] font-black leading-[1.04] text-[var(--lobb-black)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
       {children}
     </h1>
   );

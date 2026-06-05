@@ -106,7 +106,7 @@ export function AvailabilityCalendar({ slug }: { slug: string }) {
     <div className="space-y-4">
       <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
         <CalendarDays className="size-4" />
-        Next 14 days — 60-min sessions
+        Next 14 days, 60-min sessions
       </div>
 
       {groups.map((group) => (

@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const auth = await requireRole("admin");
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const DELETE = withRole("admin", async (request, auth, context) => {
+  const { id } = context.params as { id: string };
 
   const body = (await request.json().catch(() => ({}))) as { reason?: string };
   const reason = body.reason?.trim();
@@ -18,17 +16,17 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
       removed_by: auth.user.id,
       removal_reason: reason,
     })
-    .eq("id", params.id);
+    .eq("id", id);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return internalError(error);
 
   await auth.admin.from("admin_audit_log").insert({
     admin_id: auth.user.id,
     action: "review_removed",
     target_table: "reviews",
-    target_id: params.id,
+    target_id: id,
     reason,
   });
 
   return NextResponse.json({ ok: true });
-}
+});

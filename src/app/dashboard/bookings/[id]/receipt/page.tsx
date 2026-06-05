@@ -141,7 +141,7 @@ export default function BookingReceiptPage() {
           </button>
         </header>
 
-        <article className="overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] print:rounded-none print:border-0 print:shadow-none">
+        <article className="overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] print:rounded-none print:border-0 print:shadow-none">
           <section className="border-b border-[var(--lobb-border-subtle)] p-6 sm:p-8">
             <div className="flex items-start justify-between gap-5">
               <div>
@@ -149,7 +149,7 @@ export default function BookingReceiptPage() {
                 <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Thanks for your payment</h1>
                 <p className="mt-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">Your Lagos tennis session is confirmed and recorded.</p>
               </div>
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-[18px] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-clay)]">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-clay)]">
                 <ReceiptText className="size-6" />
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function BookingReceiptPage() {
                 <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Total paid</p>
                 <p className="mt-2 text-5xl font-black tracking-tight">{money(booking.total_amount_ngn)}</p>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#cfe7d8] bg-[#eef8f2] px-3 py-2 text-xs font-black text-[var(--lobb-success)]">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] px-3 py-2 text-xs font-black text-[var(--lobb-success)]">
                 <CheckCircle2 className="size-4" />
                 {payment?.status ?? "paid"}
               </span>

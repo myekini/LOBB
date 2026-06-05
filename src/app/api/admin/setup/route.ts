@@ -18,6 +18,17 @@ import { normalizeEmail } from "@/lib/email";
  *   ADMIN_EMAILS        — comma-separated list: hello@lobb.ng,ops@lobb.ng
  */
 
+// This endpoint is DISABLED by default in production.
+// To provision admins without running the local script:
+//   1. Set ADMIN_PROVISIONING_ENABLED=true in your environment temporarily
+//   2. Call the endpoint with the ADMIN_SETUP_SECRET bearer token
+//   3. Remove ADMIN_PROVISIONING_ENABLED immediately after
+//
+// Preferred approach: run `npx tsx scripts/provision-admin.ts` locally instead.
+function isProvisioningEnabled(): boolean {
+  return process.env.ADMIN_PROVISIONING_ENABLED === "true";
+}
+
 function authorize(request: Request): boolean {
   const secret = process.env.ADMIN_SETUP_SECRET;
   if (!secret) return false;
@@ -35,6 +46,9 @@ function getAdminEmails(): string[] {
 
 // POST — provision all ADMIN_EMAILS
 export async function POST(request: Request) {
+  if (!isProvisioningEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   if (!authorize(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -48,12 +62,18 @@ export async function POST(request: Request) {
   }
 
   const supabase = createAdminClient();
-  const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-  const existingUsers = listData?.users ?? [];
 
   const results = await Promise.all(
     emails.map(async (email) => {
-      let userId = existingUsers.find((u) => u.email === email)?.id;
+      // Look up the auth user directly by email instead of fetching all users.
+      const { data: authUser } = await supabase
+        .schema("auth")
+        .from("users")
+        .select("id")
+        .eq("email", email)
+        .maybeSingle();
+
+      let userId = authUser?.id as string | undefined;
 
       if (!userId) {
         const { data: created, error } = await supabase.auth.admin.createUser({
@@ -88,6 +108,9 @@ export async function POST(request: Request) {
 
 // GET — list current admins
 export async function GET(request: Request) {
+  if (!isProvisioningEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   if (!authorize(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -108,6 +131,9 @@ export async function GET(request: Request) {
 
 // DELETE — revoke admin role (demote to player)
 export async function DELETE(request: Request) {
+  if (!isProvisioningEnabled()) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   if (!authorize(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

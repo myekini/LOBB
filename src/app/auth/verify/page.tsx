@@ -277,12 +277,12 @@ export default function VerifyPage() {
           <div className="flex items-center justify-between mb-2">
             <OnboardingKicker>Magic Code</OnboardingKicker>
             {pendingAuth?.role && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#D96B27]/10 px-3 py-1.5 border border-[#D96B27]/20 backdrop-blur-sm animate-in fade-in duration-300">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)]/10 px-3 py-1.5 border border-[var(--lobb-clay)]/20 backdrop-blur-sm animate-in fade-in duration-300">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#D96B27] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#D96B27]"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--lobb-clay)]"></span>
                 </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[#D96B27]">
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
                   {roleLabel}
                 </span>
               </div>

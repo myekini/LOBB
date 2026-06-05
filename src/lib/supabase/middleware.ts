@@ -1,6 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function matchesRoute(pathname: string, route: string) {
+  return pathname === route || pathname.startsWith(`${route}/`);
+}
+
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -66,7 +70,7 @@ export async function updateSession(request: NextRequest) {
   const setupRoutes = ["/auth/role", "/auth/setup"];
   const authRoutes = ["/auth/login", "/auth/verify", "/auth/signup"];
   const isProtected =
-    [...playerRoutes, ...coachRoutes, ...adminRoutes, ...setupRoutes].some((route) => pathname.startsWith(route));
+    [...playerRoutes, ...coachRoutes, ...adminRoutes, ...setupRoutes].some((route) => matchesRoute(pathname, route));
 
   if (!user && isProtected) {
     const redirectUrl = request.nextUrl.clone();
@@ -79,13 +83,18 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
+  // Role is embedded in JWT via custom_access_token_hook (see migration 20260605000001).
+  // Falls back to a DB query for sessions that predate the hook being enabled.
+  let role = user.app_metadata?.role as "player" | "coach" | "admin" | undefined;
 
-  const role = profile?.role as "player" | "coach" | "admin" | undefined;
+  if (!role) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    role = profile?.role as "player" | "coach" | "admin" | undefined;
+  }
 
   // Coaches always land on their dashboard, not the home/landing page
   if (pathname === "/" && role === "coach") {
@@ -96,29 +105,29 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Players cannot access coach setup; coaches cannot access player setup
-  if (pathname.startsWith("/auth/setup/coach") && role === "player") {
+  if (matchesRoute(pathname, "/auth/setup/coach") && role === "player") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
-  if (pathname.startsWith("/auth/setup/player") && role === "coach") {
+  if (matchesRoute(pathname, "/auth/setup/player") && role === "coach") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/coach/dashboard";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
-  const isCoachSetupRoute = pathname.startsWith("/auth/setup/coach");
-  const isCoachAppRoute = coachRoutes.some((r) => pathname.startsWith(r));
+  const isCoachSetupRoute = matchesRoute(pathname, "/auth/setup/coach");
+  const isCoachAppRoute = coachRoutes.some((r) => matchesRoute(pathname, r));
   const isCoachProfileRoute =
     pathname === "/coach/profile" ||
-    pathname.startsWith("/coach/profile/") ||
-    pathname.startsWith("/coach/settings");
+    matchesRoute(pathname, "/coach/profile") ||
+    matchesRoute(pathname, "/coach/settings");
 
   // Guard: coach accessing app routes but onboarding is incomplete
   if (
-    profile?.role === "coach" &&
+    role === "coach" &&
     isCoachAppRoute &&
     !isCoachSetupRoute &&
     !isCoachProfileRoute
@@ -163,37 +172,37 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const needsRole = !role && !setupRoutes.some((route) => pathname.startsWith(route));
+  const needsRole = !role && !setupRoutes.some((route) => matchesRoute(pathname, route));
 
-  if (needsRole && !authRoutes.some((route) => pathname.startsWith(route))) {
+  if (needsRole && !authRoutes.some((route) => matchesRoute(pathname, route))) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth/role";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (role && authRoutes.some((route) => pathname.startsWith(route))) {
+  if (role && authRoutes.some((route) => matchesRoute(pathname, route))) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : role === "admin" ? "/admin" : "/";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (adminRoutes.some((route) => pathname.startsWith(route)) && role !== "admin") {
+  if (adminRoutes.some((route) => matchesRoute(pathname, route)) && role !== "admin") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : "/";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (coachRoutes.some((route) => pathname.startsWith(route)) && role && role !== "coach" && role !== "admin") {
+  if (coachRoutes.some((route) => matchesRoute(pathname, route)) && role && role !== "coach" && role !== "admin") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (playerRoutes.some((route) => pathname.startsWith(route)) && role === "coach") {
+  if (playerRoutes.some((route) => matchesRoute(pathname, route)) && role === "coach") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/coach/dashboard";
     redirectUrl.search = "";

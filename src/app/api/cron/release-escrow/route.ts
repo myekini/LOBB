@@ -71,19 +71,29 @@ export async function GET(request: Request) {
 
     const transferResults = await Promise.allSettled(
       toTransfer
-        .filter((b) => recipientMap.get(b.coach_id) && b.coach_payout_ngn > 0)
+        .filter((b) => recipientMap.get(b.coach_id) && b.coach_payout_ngn != null && b.coach_payout_ngn > 0)
         .map(async (b) => {
           const recipientCode = recipientMap.get(b.coach_id)!;
-          const transfer = await createTransfer({
-            amount_kobo: Math.round(b.coach_payout_ngn * 100),
-            recipient_code: recipientCode,
-            reference: b.paystack_reference ? `${b.paystack_reference}-payout` : undefined,
-            reason: "LOBB session payout",
-          });
-          await admin
-            .from("bookings")
-            .update({ paystack_transfer_code: transfer.transfer_code })
-            .eq("id", b.id);
+          try {
+            const transfer = await createTransfer({
+              amount_kobo: Math.round(b.coach_payout_ngn * 100),
+              recipient_code: recipientCode,
+              reference: b.paystack_reference ? `${b.paystack_reference}-payout` : undefined,
+              reason: "LOBB session payout",
+            });
+            await admin
+              .from("bookings")
+              .update({ paystack_transfer_code: transfer.transfer_code, transfer_last_error: null })
+              .eq("id", b.id);
+          } catch (err) {
+            // Log the error so admins can see why the transfer is stuck
+            const message = err instanceof Error ? err.message : String(err);
+            await admin
+              .from("bookings")
+              .update({ transfer_last_error: message })
+              .eq("id", b.id);
+            throw err;
+          }
         })
     );
 

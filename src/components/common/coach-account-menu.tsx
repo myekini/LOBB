@@ -114,7 +114,7 @@ export function CoachAccountMenu() {
             className="mt-1 flex h-11 w-full items-center gap-3 rounded-[14px] px-3 text-left text-sm font-black text-[var(--lobb-error)] transition hover:bg-[var(--lobb-bg-secondary)] disabled:opacity-60"
           >
             <LogOut className="size-4" />
-            {busy ? "Signing out..." : "Sign out"}
+            {busy ? "Signing out" : "Sign out"}
           </button>
         </div>
       )}

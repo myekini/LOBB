@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 
-export async function GET() {
-  const auth = await requireRole(["coach", "admin"]);
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
-
+export const GET = withRole(["coach", "admin"], async (_request, auth) => {
   const coachId = auth.user.id;
 
   const [summaryResult, payoutsResult, coachResult] = await Promise.all([
@@ -24,9 +20,9 @@ export async function GET() {
       .maybeSingle(),
   ]);
 
-  if (summaryResult.error) return NextResponse.json({ error: summaryResult.error.message }, { status: 500 });
-  if (payoutsResult.error) return NextResponse.json({ error: payoutsResult.error.message }, { status: 500 });
-  if (coachResult.error) return NextResponse.json({ error: coachResult.error.message }, { status: 500 });
+  if (summaryResult.error) return internalError(summaryResult.error);
+  if (payoutsResult.error) return internalError(payoutsResult.error);
+  if (coachResult.error) return internalError(coachResult.error);
 
   return NextResponse.json({
     summary: summaryResult.data ?? {
@@ -41,4 +37,4 @@ export async function GET() {
     payouts: payoutsResult.data ?? [],
     bank: coachResult.data ?? null,
   });
-}
+});

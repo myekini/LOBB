@@ -6,12 +6,14 @@ import { CheckCircle2, Landmark } from "lucide-react";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { createClient } from "@/lib/supabase/client";
+import { InlineActionLoader } from "@/components/common/lobb-skeleton";
 
 type Bank = { name: string; code: string };
 
 export default function CoachBankSetupPage() {
   const router = useRouter();
   const [banks, setBanks] = useState<Bank[]>([]);
+  const [loadingBanks, setLoadingBanks] = useState(true);
   const [accountNumber, setAccountNumber] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [bankName, setBankName] = useState("");
@@ -24,7 +26,8 @@ export default function CoachBankSetupPage() {
     fetch("/api/paystack/banks")
       .then((r) => r.json() as Promise<{ banks?: Bank[]; error?: string }>)
       .then((data) => { if (data.banks) setBanks(data.banks); })
-      .catch(() => {});
+      .catch(() => setError("Unable to load Nigerian banks. Refresh and try again."))
+      .finally(() => setLoadingBanks(false));
   }, []);
 
   useEffect(() => {
@@ -87,7 +90,7 @@ export default function CoachBankSetupPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] pb-28 text-[var(--lobb-text-primary)]">
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
       <CoachFlowHeader
         title="Payout Account"
         eyebrow="Coach settings"
@@ -98,7 +101,7 @@ export default function CoachBankSetupPage() {
 
       <div className="mx-auto max-w-lg px-5 pt-6 sm:px-6">
         {existing && (
-          <div className="mb-6 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+          <div className="lobb-app-card mb-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
               Current payout account
             </p>
@@ -107,12 +110,14 @@ export default function CoachBankSetupPage() {
           </div>
         )}
 
-        <form onSubmit={save} className="space-y-5">
-          <p className="text-sm font-semibold text-[var(--lobb-text-secondary)]">
-            {existing ? "Update your payout bank account." : "Add your bank account to start accepting bookings."}
-          </p>
+        <form onSubmit={save} className="lobb-app-card space-y-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+          <div>
+            <h1 className="text-xl font-black tracking-tight">{existing ? "Update payout bank" : "Add payout bank"}</h1>
+            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+              {existing ? "Use the account where LOBB should send future payouts." : "Add the account where LOBB should send your session earnings."}
+            </p>
+          </div>
 
-          {/* Bank selector */}
           <div>
             <label className="mb-2 block text-sm font-black">Bank *</label>
             <div className="relative">
@@ -121,11 +126,12 @@ export default function CoachBankSetupPage() {
               </div>
               <select
                 value={bankCode}
+                disabled={loadingBanks}
                 onChange={(e) => handleBankChange(e.target.value)}
-                className="h-14 w-full appearance-none rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] pl-12 pr-5 text-[15px] font-bold text-[var(--lobb-text-primary)] outline-none transition focus:border-[var(--lobb-clay)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
+                className="h-14 w-full appearance-none rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] pl-12 pr-5 text-[15px] font-bold text-[var(--lobb-text-primary)] outline-none transition focus:border-[var(--lobb-clay)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)] disabled:opacity-60"
               >
                 <option value="">Select your bank</option>
-                {banks.length === 0
+                {loadingBanks
                   ? <option disabled>Loading banks...</option>
                   : banks.map((bank) => (
                     <option key={bank.code} value={bank.code}>{bank.name}</option>
@@ -137,13 +143,13 @@ export default function CoachBankSetupPage() {
             </div>
           </div>
 
-          {/* Account number */}
           <div>
             <label className="mb-2 block text-sm font-black">Account number *</label>
-            <div className="relative flex h-14 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 transition focus-within:border-[var(--lobb-clay)] focus-within:ring-2 focus-within:ring-[rgba(196,98,45,0.12)]">
+            <div className="relative flex h-14 items-center overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-4 transition focus-within:border-[var(--lobb-clay)] focus-within:ring-2 focus-within:ring-[rgba(196,98,45,0.12)]">
               <input
                 type="text"
                 inputMode="numeric"
+                autoComplete="off"
                 maxLength={10}
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
@@ -156,24 +162,31 @@ export default function CoachBankSetupPage() {
             </div>
           </div>
 
-          {/* Summary */}
           {selectedBank && /^\d{10}$/.test(accountNumber) && (
-            <div className="rounded-[16px] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
+            <div className="rounded-[12px] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
               <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Will receive payouts at</p>
               <p className="mt-2 text-[15px] font-black">{selectedBank.name}</p>
               <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">{accountNumber}</p>
             </div>
           )}
 
-          {error && <p className="text-sm font-semibold text-[var(--lobb-error)]">{error}</p>}
-          {success && <p className="text-sm font-semibold text-[var(--lobb-success)]">Bank account saved.</p>}
+          {error && (
+            <p role="alert" className="rounded-[12px] bg-[var(--lobb-error)]/10 px-3 py-2 text-sm font-semibold text-[var(--lobb-error)]">
+              {error}
+            </p>
+          )}
+          {success && (
+            <p className="rounded-[12px] bg-[var(--lobb-success-soft)] px-3 py-2 text-sm font-semibold text-[var(--lobb-success)]">
+              Bank account saved.
+            </p>
+          )}
 
           <button
             type="submit"
-            disabled={!canSave || saving}
-            className="mt-2 h-14 w-full rounded-[16px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
+            disabled={!canSave || saving || loadingBanks}
+            className="mt-2 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
           >
-            {saving ? "Saving..." : "Save bank account"}
+            {saving ? <InlineActionLoader label="Saving" /> : "Save bank account"}
           </button>
         </form>
       </div>

@@ -312,7 +312,7 @@ export default function CoachProfileEditPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-36 pt-7">
+      <main className="lobb-app-page min-h-screen px-5 pb-36 pt-7">
         <section className="mx-auto max-w-md space-y-5">
           <SkeletonBlock className="h-8 w-44" />
           <SkeletonBlock className="h-28 w-full rounded-[20px]" />
@@ -325,7 +325,7 @@ export default function CoachProfileEditPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-36 text-[var(--lobb-text-primary)] sm:px-6">
+    <main className="lobb-app-page min-h-screen px-5 pb-36 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader
         title="Edit Profile"
         eyebrow="Coach profile"
@@ -462,7 +462,7 @@ export default function CoachProfileEditPage() {
                   onClick={() => setHourlyRate(rate)}
                   className={`h-12 rounded-2xl border text-sm font-black transition ${
                     hourlyRate === rate
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
+                      ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
@@ -554,7 +554,7 @@ export default function CoachProfileEditPage() {
                   }}
                   className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-black transition ${
                     certifications.includes(cert)
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
+                      ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
@@ -591,7 +591,7 @@ export default function CoachProfileEditPage() {
                   onClick={() => setCourtAccess(opt.value)}
                   className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-sm font-black transition ${
                     courtAccess === opt.value
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay)]"
+                      ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
@@ -616,7 +616,7 @@ export default function CoachProfileEditPage() {
                   onClick={() => setCourtsWorkedWith(toggle(court.id, courtsWorkedWith))}
                   className={`flex w-full items-start justify-between rounded-2xl border px-4 py-3.5 text-left transition ${
                     courtsWorkedWith.includes(court.id)
-                      ? "border-2 border-[var(--lobb-clay)] bg-[#fff0e8]"
+                      ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >

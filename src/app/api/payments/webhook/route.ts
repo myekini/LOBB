@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyWebhookSignature } from "@/lib/paystack";
 import {
@@ -108,52 +109,59 @@ export async function POST(request: Request) {
     .update({ processed_at: new Date().toISOString() })
     .eq("reference", reference);
 
-  // ── Send SMS notifications (non-blocking; failures must not break the webhook) ──
+  // ── Dispatch notifications after returning 200 to Paystack ─────────────────
+  // waitUntil keeps the function alive until the work finishes without blocking
+  // the HTTP response — Paystack gets its 200 immediately.
   if (booking) {
-    const [coachProfile, playerProfile] = await Promise.all([
-      admin
-        .from("profiles")
-        .select("id, phone_number, email, email_notifications_enabled, full_name")
-        .eq("id", booking.coach_id)
-        .single(),
-      admin
-        .from("profiles")
-        .select("id, phone_number, email, email_notifications_enabled, full_name")
-        .eq("id", booking.player_id)
-        .single(),
-    ]);
+    const capturedBooking = booking;
+    const capturedReference = reference;
+    waitUntil(
+      (async () => {
+        const [coachProfile, playerProfile] = await Promise.all([
+          admin
+            .from("profiles")
+            .select("id, phone_number, email, email_notifications_enabled, full_name")
+            .eq("id", capturedBooking.coach_id)
+            .single(),
+          admin
+            .from("profiles")
+            .select("id, phone_number, email, email_notifications_enabled, full_name")
+            .eq("id", capturedBooking.player_id)
+            .single(),
+        ]);
 
-    const info = {
-      bookingId:     booking.id,
-      humanRef:      booking.human_ref ?? null,
-      coachName:    coachProfile.data?.full_name  ?? "Your coach",
-      playerName:   playerProfile.data?.full_name ?? "Your player",
-      startsAt:     booking.starts_at,
-      endsAt:       booking.ends_at,
-      location:     booking.location,
-      playerNotes:  booking.player_notes,
-      reference,
-      coachPhone:   coachProfile.data?.phone_number  ?? null,
-      playerPhone:  playerProfile.data?.phone_number ?? null,
-      paidAt:       new Date().toISOString(),
-      sessionFeeNgn: booking.hourly_rate_ngn,
-      convenienceFeeNgn: booking.convenience_fee_ngn,
-      totalAmountNgn: booking.total_amount_ngn,
-      paymentStatus: "paid",
-      paymentMethod: "Paystack",
-    };
+        const startMs = new Date(capturedBooking.starts_at).getTime();
+        const info = {
+          bookingId:         capturedBooking.id,
+          humanRef:          capturedBooking.human_ref ?? null,
+          coachName:         coachProfile.data?.full_name  ?? "Your coach",
+          playerName:        playerProfile.data?.full_name ?? "Your player",
+          startsAt:          capturedBooking.starts_at,
+          endsAt:            capturedBooking.ends_at,
+          location:          capturedBooking.location,
+          playerNotes:       capturedBooking.player_notes,
+          reference:         capturedReference,
+          coachPhone:        coachProfile.data?.phone_number  ?? null,
+          playerPhone:       playerProfile.data?.phone_number ?? null,
+          paidAt:            new Date().toISOString(),
+          sessionFeeNgn:     capturedBooking.hourly_rate_ngn,
+          convenienceFeeNgn: capturedBooking.convenience_fee_ngn,
+          totalAmountNgn:    capturedBooking.total_amount_ngn,
+          paymentStatus:     "paid",
+          paymentMethod:     "Paystack",
+        };
+        const notificationInfo: NotificationBookingInfo = info;
+        const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
+        const reviewAt   = new Date(startMs + 2  * 60 * 60 * 1000).toISOString();
 
-    const notificationInfo: NotificationBookingInfo = info;
-    const startMs = new Date(booking.starts_at).getTime();
-    const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
-    const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
-
-    await Promise.allSettled([
-      sendBookingConfirmedSms(admin, notificationInfo, playerProfile.data, coachProfile.data),
-      sendBookingConfirmedEmails(admin, notificationInfo, playerProfile.data, coachProfile.data),
-      sendPaymentReceiptEmail(admin, notificationInfo, playerProfile.data, coachProfile.data),
-      queueBookingReminderEmails(admin, notificationInfo, playerProfile.data, coachProfile.data, reminderAt, reviewAt),
-    ]);
+        await Promise.allSettled([
+          sendBookingConfirmedSms(admin, notificationInfo, playerProfile.data, coachProfile.data),
+          sendBookingConfirmedEmails(admin, notificationInfo, playerProfile.data, coachProfile.data),
+          sendPaymentReceiptEmail(admin, notificationInfo, playerProfile.data, coachProfile.data),
+          queueBookingReminderEmails(admin, notificationInfo, playerProfile.data, coachProfile.data, reminderAt, reviewAt),
+        ]);
+      })()
+    );
   }
 
   return NextResponse.json({ ok: true });

@@ -7,27 +7,15 @@ import { initializeTransaction, generateReference } from "@/lib/paystack";
 import { sendBookingPaymentInitiatedCoachSms } from "@/lib/sms-notifications";
 import type { NotificationBookingInfo } from "@/lib/notification-messages";
 import { apiError } from "@/lib/api-response";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const PLATFORM_COMMISSION_RATE = 0.15; // LOBB's cut from coach rate
 const CONVENIENCE_FEE_RATE = 0.05; // charged to player
 
-function callbackOrigin(request: Request) {
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const host = forwardedHost || request.headers.get("host");
-
-  if (host) {
-    const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-    const requestProto = new URL(request.url).protocol.replace(":", "");
-    const proto = process.env.NODE_ENV === "production"
-      ? "https"
-      : forwardedProto === "https" || requestProto === "https"
-        ? "https"
-        : "http";
-
-    return `${proto}://${host}`;
-  }
-
-  return (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, "");
+function callbackOrigin() {
+  // Always use the configured app URL — never trust request headers for
+  // security-sensitive redirect targets (x-forwarded-host can be spoofed).
+  return (process.env.NEXT_PUBLIC_APP_URL || "https://lobb.ng").replace(/\/$/, "");
 }
 
 export async function GET() {
@@ -59,6 +47,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const rl = rateLimit(`booking-create:${clientIp(request)}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) {
+    return apiError("RATE_LIMITED", 429);
+  }
+
   try {
     // ── Auth ──────────────────────────────────────────────────────────────────
     const supabase = createClient();
@@ -167,7 +160,7 @@ export async function POST(request: Request) {
 
     // ── Initialize Paystack ────────────────────────────────────────────────────
     const reference  = generateReference();
-    const appUrl     = callbackOrigin(request);
+    const appUrl     = callbackOrigin();
     const email      = user.email ?? `${user.id}@lobb.ng`; // Paystack requires email
 
     const paystackData = await initializeTransaction({
@@ -191,7 +184,7 @@ export async function POST(request: Request) {
         starts_at:        starts_at.toISOString(),
         ends_at:          ends_at.toISOString(),
         location:             location.trim(),
-        player_notes:         player_notes?.trim() || null,
+        player_notes:         player_notes?.trim().slice(0, 1000) || null,
         status:               "pending",
         hourly_rate_ngn:  session_fee,
         platform_fee_ngn: convenience_fee,

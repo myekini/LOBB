@@ -1,5 +1,7 @@
+// PUBLIC ROUTE — no authentication required
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { internalError } from "@/lib/api-response";
 import type { CoachPublicProfile } from "@/lib/types";
 
 export async function GET(
@@ -22,15 +24,12 @@ export async function GET(
       .eq("status", "active")
       .maybeSingle();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    if (error) return internalError(error);
+    if (!data) return NextResponse.json({ error: "Coach not found" }, { status: 404 });
 
-    if (!data) {
-      return NextResponse.json({ error: "Coach not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ coach: data as CoachPublicProfile });
+    return NextResponse.json({ coach: data as CoachPublicProfile }, {
+      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
+    });
   } catch {
     return NextResponse.json({ error: "Unable to load coach profile" }, { status: 500 });
   }

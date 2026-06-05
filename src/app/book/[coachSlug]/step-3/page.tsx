@@ -30,8 +30,8 @@ function formatSlotEnd(iso: string) {
 }
 
 function countdownStyle(seconds: number) {
-  if (seconds <= 120) return "bg-red-50 text-[var(--lobb-error)]";
-  if (seconds <= 240) return "bg-[#fff7e0] text-[var(--lobb-warning)]";
+  if (seconds <= 120) return "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]";
+  if (seconds <= 240) return "bg-[var(--lobb-warning)]/10 text-[var(--lobb-warning)]";
   return "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]";
 }
 
@@ -143,8 +143,7 @@ function BookingStep3Content() {
       backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}`}
     >
       {/* Countdown */}
-      <div className="mb-4 overflow-hidden rounded-[28px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
-        <div className="h-2 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
+      <div className="lobb-app-card mb-4 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -158,7 +157,7 @@ function BookingStep3Content() {
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-[30px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]">
+      <section className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         <div className="bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)]">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">Payment summary</p>
           <div className="mt-2 flex items-end justify-between gap-3">
@@ -173,7 +172,7 @@ function BookingStep3Content() {
         {/* Coach identity */}
         {coach && (
           <div className="mb-4 flex items-center gap-3.5 border-b border-[var(--lobb-border-subtle)] pb-4">
-            <div className="size-14 shrink-0 overflow-hidden rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+            <div className="size-14 shrink-0 overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -193,17 +192,17 @@ function BookingStep3Content() {
         {/* Session details */}
         <div className="grid gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
           {slot && (
-            <div className="flex items-center gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+            <div className="flex items-center gap-3 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <CalendarDays className="size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="text-[var(--lobb-text-primary)]">{formatSlotShort(slot)} - {formatSlotEnd(slot)}</span>
             </div>
           )}
-          <div className="flex items-center gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+          <div className="flex items-center gap-3 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
             <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" />
             <span className="text-[var(--lobb-text-primary)]">60 minutes</span>
           </div>
           {location && (
-            <div className="flex items-start gap-3 rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+            <div className="flex items-start gap-3 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="leading-relaxed text-[var(--lobb-text-primary)]">{location}</span>
             </div>
@@ -224,7 +223,7 @@ function BookingStep3Content() {
               <span className="font-black text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
             </div>
             <div className="pt-2">
-              <div className="flex items-center justify-between rounded-[20px] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
+              <div className="flex items-center justify-between rounded-[12px] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
                 <span className="text-xs font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">Total</span>
                 <span className="text-xl font-black text-[var(--lobb-clay)]">{money(total)}</span>
               </div>
@@ -241,20 +240,20 @@ function BookingStep3Content() {
       </section>
 
       {/* Escrow Shield Trust Banner */}
-      <div className="mt-4 flex items-start gap-3 rounded-[22px] border border-emerald-500/15 bg-emerald-500/[0.06] p-4 text-xs font-semibold leading-relaxed text-emerald-950 shadow-sm">
-        <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] p-4 text-xs font-semibold leading-relaxed text-[var(--lobb-text-primary)]">
+        <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-900">Protected payment</p>
-          <p className="mt-1 font-medium text-emerald-800">
+          <p className="text-[10px] font-black uppercase tracking-wider text-[var(--lobb-success)]">Protected payment</p>
+          <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">
             {coach
-              ? `Your ${money(total)} is held safely and only released to ${coach.full_name?.split(" ")[0]} after your session. Something goes wrong? We've got you.`
-              : "Your payment is held safely and only released to the coach after your session. Something goes wrong? We've got you."}
+              ? `Your ${money(total)} is held safely and released to ${coach.full_name?.split(" ")[0]} after your session.`
+              : "Your payment is held safely and released to the coach after your session."}
           </p>
         </div>
       </div>
 
       <BookingButton disabled={!coach} loading={paying} onClick={handlePay}>
-        {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} Securely` : "Loading Booking Summary..."}
+        {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}
       </BookingButton>
 
       <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-black uppercase tracking-wider text-[var(--lobb-text-secondary)]">

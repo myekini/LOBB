@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
 import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendPaymentFailedEmail, sendPaymentReceiptEmail } from "@/lib/email-notifications";
 import { sendBookingConfirmedSms } from "@/lib/sms-notifications";
 import type { BookingRow, BookingWithDetails } from "@/lib/types";
 import { apiError } from "@/lib/api-response";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
+  const rl = rateLimit(`payment-verify:${clientIp(request)}`, 30, 5 * 60 * 1000);
+  if (!rl.ok) {
+    return apiError("RATE_LIMITED", 429);
+  }
+
   const { searchParams } = new URL(request.url);
   const reference = searchParams.get("reference");
 
@@ -102,32 +109,34 @@ export async function GET(request: Request) {
           if (claimResult.data && claimResult.data.length > 0) {
             const startMs = new Date(updatedBooking.starts_at).getTime();
             const reminderAt = new Date(startMs - 24 * 60 * 60 * 1000).toISOString();
-            const reviewAt = new Date(startMs + 2 * 60 * 60 * 1000).toISOString();
+            const reviewAt   = new Date(startMs + 2  * 60 * 60 * 1000).toISOString();
             const info = {
-              bookingId:    updatedBooking.id,
-              humanRef:     updatedBooking.human_ref ?? null,
-              coachName:   cp.data?.full_name  ?? "Your coach",
-              playerName:  pp.data?.full_name  ?? "Your player",
-              startsAt:    updatedBooking.starts_at,
-              endsAt:      updatedBooking.ends_at,
-              location:    updatedBooking.location,
-              playerNotes: updatedBooking.player_notes,
+              bookingId:         updatedBooking.id,
+              humanRef:          updatedBooking.human_ref ?? null,
+              coachName:         cp.data?.full_name  ?? "Your coach",
+              playerName:        pp.data?.full_name  ?? "Your player",
+              startsAt:          updatedBooking.starts_at,
+              endsAt:            updatedBooking.ends_at,
+              location:          updatedBooking.location,
+              playerNotes:       updatedBooking.player_notes,
               reference,
-              coachPhone:  cp.data?.phone_number ?? null,
-              playerPhone: pp.data?.phone_number ?? null,
-              paidAt:      txn.paid_at ?? new Date().toISOString(),
-              sessionFeeNgn: updatedBooking.hourly_rate_ngn,
+              coachPhone:        cp.data?.phone_number ?? null,
+              playerPhone:       pp.data?.phone_number ?? null,
+              paidAt:            txn.paid_at ?? new Date().toISOString(),
+              sessionFeeNgn:     updatedBooking.hourly_rate_ngn,
               convenienceFeeNgn: updatedBooking.convenience_fee_ngn,
-              totalAmountNgn: updatedBooking.total_amount_ngn,
-              paymentStatus: "paid",
-              paymentMethod: "Paystack",
+              totalAmountNgn:    updatedBooking.total_amount_ngn,
+              paymentStatus:     "paid",
+              paymentMethod:     "Paystack",
             };
-            await Promise.allSettled([
+            // Run notifications after the response — player gets booking details
+            // immediately without waiting for SMS/email delivery.
+            waitUntil(Promise.allSettled([
               sendBookingConfirmedSms(admin, info, pp.data, cp.data),
               sendBookingConfirmedEmails(admin, info, pp.data, cp.data),
               sendPaymentReceiptEmail(admin, info, pp.data, cp.data),
               queueBookingReminderEmails(admin, info, pp.data, cp.data, reminderAt, reviewAt),
-            ]);
+            ]));
           }
         }
       } else if (txn?.status === "abandoned" || txn?.status === "failed") {
@@ -142,29 +151,35 @@ export async function GET(request: Request) {
           .maybeSingle();
         await admin.from("slot_locks").delete().eq("booking_id", payment.booking_id);
         if (failedBooking) {
-          const [cp, pp] = await Promise.all([
-            admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", failedBooking.coach_id).single(),
-            admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", failedBooking.player_id).single(),
-          ]);
-          await sendPaymentFailedEmail(
-            admin,
-            {
-              bookingId: failedBooking.id,
-              coachName: cp.data?.full_name ?? "Your coach",
-              playerName: pp.data?.full_name ?? "Player",
-              startsAt: failedBooking.starts_at,
-              endsAt: failedBooking.ends_at,
-              location: failedBooking.location,
-              playerNotes: failedBooking.player_notes,
-              reference,
-              coachPhone: cp.data?.phone_number ?? null,
-              playerPhone: pp.data?.phone_number ?? null,
-              paymentStatus: "failed",
-              paymentMethod: "Paystack",
-            },
-            pp.data,
-            cp.data
-          ).catch(() => null);
+          const capturedFailed = failedBooking;
+          const capturedRef = reference;
+          waitUntil(
+            (async () => {
+              const [cp, pp] = await Promise.all([
+                admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", capturedFailed.coach_id).single(),
+                admin.from("profiles").select("id, phone_number, email, email_notifications_enabled, full_name").eq("id", capturedFailed.player_id).single(),
+              ]);
+              await sendPaymentFailedEmail(
+                admin,
+                {
+                  bookingId:     capturedFailed.id,
+                  coachName:     cp.data?.full_name  ?? "Your coach",
+                  playerName:    pp.data?.full_name  ?? "Player",
+                  startsAt:      capturedFailed.starts_at,
+                  endsAt:        capturedFailed.ends_at,
+                  location:      capturedFailed.location,
+                  playerNotes:   capturedFailed.player_notes,
+                  reference:     capturedRef,
+                  coachPhone:    cp.data?.phone_number ?? null,
+                  playerPhone:   pp.data?.phone_number ?? null,
+                  paymentStatus: "failed",
+                  paymentMethod: "Paystack",
+                },
+                pp.data,
+                cp.data
+              ).catch(() => null);
+            })()
+          );
         }
         return apiError("PAYMENT_FAILED", 402);
       }

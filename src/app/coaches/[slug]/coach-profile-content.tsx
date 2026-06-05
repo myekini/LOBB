@@ -13,9 +13,12 @@ import {
   ChevronRight,
   CircleUserRound,
   Copy,
+  Eye,
+  ExternalLink,
   Pencil,
   MapPin,
   Play,
+  QrCode,
   ShieldCheck,
   Star,
   Trophy,
@@ -145,9 +148,11 @@ export function CoachProfileContent({
   const locations = [primaryLocation, ...serviceAreas.filter((area) => area && area !== primaryLocation)];
   const selectedSlotDay = slots[selectedDay];
   const bookingHref = coach.slug ? `/book/${coach.slug}/step-1` : "#";
+  const backHref = isPreview ? "/coach/profile" : "/coaches";
   const profilePath = coach.slug ? `/coaches/${coach.slug}` : "/coach/profile/preview";
   const profileUrl = origin ? `${origin}${profilePath}` : profilePath;
   const canSharePublicProfile = Boolean(coach.slug && origin);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(profileUrl)}`;
 
   const heroStyle = useMemo(
     () =>
@@ -221,36 +226,36 @@ export function CoachProfileContent({
   }, [coach.id, coach.slug, isPreview]);
 
   return (
-    <main className="min-h-screen bg-[#f9f9f9] pb-28 text-[#1a1c1c] md:pb-0">
-      <nav className="sticky top-0 z-40 hidden h-16 border-b border-[#c4c7c7] bg-[#f9f9f9] md:block">
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)] md:pb-0">
+      <nav className="lobb-app-header sticky top-0 z-40 hidden h-16 border-b border-[var(--lobb-border-subtle)] md:block">
         <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <Link
-              href="/coaches"
-              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2]"
-              aria-label="Go back"
+              href={backHref}
+              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)]"
+              aria-label={isPreview ? "Back to coach profile" : "Go back"}
             >
               <ArrowLeft className="size-5" />
             </Link>
-            <span className="text-2xl font-black tracking-tight">LOBB</span>
+            <span className="text-2xl font-black tracking-tight">{isPreview ? "Preview" : "LOBB"}</span>
           </div>
           <div className="flex items-center gap-3">
             <CoachShareSheet
               coachName={fullName}
               disabled={!canSharePublicProfile}
               profileUrl={profileUrl}
-              triggerClassName="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#d8d2c9] bg-white px-4 text-xs font-black text-[#1a1c1c] transition hover:border-[#9c440f]/35 disabled:opacity-45"
+              triggerClassName="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-xs font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 disabled:opacity-45"
             />
             <button
               type="button"
-              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2]"
+              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)]"
               aria-label="Notifications"
             >
               <Bell className="size-5" />
             </button>
             <button
               type="button"
-              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2]"
+              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)]"
               aria-label="Profile"
             >
               <CircleUserRound className="size-5" />
@@ -260,25 +265,64 @@ export function CoachProfileContent({
       </nav>
 
       {isPreview && (
-        <div className="border-b border-[#c4c7c7] bg-white px-4 py-3">
-          <div className="mx-auto flex max-w-[1280px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.08em] text-[#9c440f]">Preview mode</p>
-              <p className="mt-1 text-sm font-semibold text-[#6b6560]">
-                {coach.slug ? "This is the profile players can book and share." : "Add a public slug before sharing this profile."}
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-[#1a1c1c] px-4 text-xs font-black text-white">
-                <Pencil className="size-4 text-[#d96b27]" />
-                Edit profile
+        <div className="border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-inverse)] px-4 py-4 text-[var(--lobb-text-inverse)]">
+          <div className="mx-auto grid max-w-[1280px] gap-4 md:grid-cols-[minmax(0,1fr)_390px] md:items-center">
+            <div className="min-w-0">
+              <Link
+                href="/coach/profile"
+                className="mb-4 inline-flex h-10 items-center gap-2 rounded-[12px] border border-white/10 bg-white/5 px-3 text-xs font-black text-white transition hover:bg-white/10"
+              >
+                <ArrowLeft className="size-4 text-[var(--lobb-clay)]" />
+                Back to profile
               </Link>
-              <CoachShareSheet
-                coachName={fullName}
-                disabled={!canSharePublicProfile}
-                profileUrl={profileUrl}
-                triggerClassName="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[#d8d2c9] bg-white px-4 text-xs font-black text-[#1a1c1c] disabled:opacity-45"
-              />
+              <div className="flex items-start gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-white/8 text-[var(--lobb-clay)] ring-1 ring-white/10">
+                  <Eye className="size-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase tracking-[0.08em] text-[var(--lobb-clay)]">Player preview</p>
+                  <h1 className="mt-1 text-2xl font-black tracking-tight text-white">Check the profile before players see it</h1>
+                  <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-white/62">
+                    {coach.slug ? "Review the booking page, then share the QR or public link from here." : "Add a public slug before sharing this profile."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-[84px_minmax(0,1fr)] gap-3 rounded-[14px] border border-white/10 bg-white/[0.06] p-3">
+              <div className="rounded-[10px] bg-white p-1.5" data-keep-light>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrUrl} alt="QR code for public coach profile" className="size-[72px] rounded-[6px] bg-white" data-keep-light />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 text-xs font-black text-white">
+                  <QrCode className="size-3.5 text-[var(--lobb-clay)]" />
+                  Public link
+                </div>
+                <p className="mt-1 truncate text-xs font-semibold text-white/58">{profileUrl}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href="/coach/profile/edit" className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[12px] bg-white px-3 text-xs font-black text-[#0d0d0d]">
+                    <Pencil className="size-3.5 text-[var(--lobb-clay)]" />
+                    Edit profile
+                  </Link>
+                  <a
+                    href={profilePath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[12px] border border-white/10 bg-white/5 px-3 text-xs font-black text-white"
+                  >
+                    <ExternalLink className="size-3.5 text-[var(--lobb-clay)]" />
+                    Open live
+                  </a>
+                  <CoachShareSheet
+                    coachName={fullName}
+                    disabled={!canSharePublicProfile}
+                    profileUrl={profileUrl}
+                    triggerLabel="Share"
+                    triggerClassName="inline-flex h-9 items-center justify-center gap-1.5 rounded-[12px] border border-white/10 bg-white/5 px-3 text-xs font-black text-white disabled:opacity-45"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -286,23 +330,23 @@ export function CoachProfileContent({
 
       <section className="mx-auto grid max-w-[1280px] gap-6 md:grid-cols-12 md:px-6 md:py-8 lg:gap-8">
         <div className="md:col-span-7 lg:col-span-8">
-          <section className="relative aspect-[4/3] overflow-hidden bg-[#e2e2e2] sm:aspect-video md:rounded-2xl">
+          <section className="relative aspect-[4/3] overflow-hidden bg-[var(--lobb-bg-secondary)] sm:aspect-video md:rounded-[14px]">
             <div
               className="absolute inset-0 bg-cover bg-center"
               style={heroStyle}
               aria-hidden="true"
             />
             {!coach.profile_photo_url && (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#e8e8e8]">
+              <div className="absolute inset-0 flex items-center justify-center bg-[var(--lobb-bg-secondary)]">
                 <span className="text-6xl font-black text-[#858383]">{initials(fullName)}</span>
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-black/20" />
             <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-4 md:hidden">
               <Link
-                href="/coaches"
+                href={backHref}
                 className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur"
-                aria-label="Go back"
+                aria-label={isPreview ? "Back to coach profile" : "Go back"}
               >
                 <ArrowLeft className="size-5" />
               </Link>
@@ -327,21 +371,21 @@ export function CoachProfileContent({
             )}
           </section>
 
-          <section className="bg-[#f9f9f9] px-4 py-6 md:px-0">
+          <section className="px-4 py-6 md:px-0">
             {slotTimedOut && (
-              <div className="mb-5 flex items-start gap-2 rounded-lg border border-[#ffb693] bg-[#ffdbcc] p-3 text-sm font-bold text-[#6e2a00]">
+              <div className="mb-5 flex items-start gap-2 rounded-lg border border-[var(--lobb-warning)]/35 bg-[var(--lobb-warning)]/12 p-3 text-sm font-bold text-[var(--lobb-warning)]">
                 <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <span>Your previous slot timed out. Select a new time.</span>
               </div>
             )}
 
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="size-20 shrink-0 overflow-hidden rounded-[24px] border border-[#d8d2c9] bg-[#eeeeee] shadow-sm sm:size-16 sm:rounded-full">
+              <div className="size-20 shrink-0 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-[var(--lobb-shadow-card)] sm:size-16">
                 {coach.profile_photo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={coach.profile_photo_url} alt={fullName} className="size-full object-cover" />
                 ) : (
-                  <div className="flex size-full items-center justify-center text-lg font-black text-[#858383]">
+                  <div className="flex size-full items-center justify-center text-lg font-black text-[var(--lobb-text-secondary)]">
                     {initials(fullName)}
                   </div>
                 )}
@@ -349,26 +393,26 @@ export function CoachProfileContent({
 
               <div className="min-w-0 flex-1">
                 <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <h1 className="text-[24px] font-black leading-tight text-[#1a1c1c] sm:text-[18px]">{fullName}</h1>
+                  <h1 className="text-[24px] font-black leading-tight text-[var(--lobb-text-primary)] sm:text-[18px]">{fullName}</h1>
                   {coach.is_verified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#9c440f]/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-[#9c440f]">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--lobb-clay)]">
                       <ShieldCheck className="size-3" />
                       Verified
                     </span>
                   )}
                 </div>
-                <p className="mb-2 text-sm font-medium text-[#444748]">
+                <p className="mb-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   {headline}
                   {coach.experience_years ? ` • ${coach.experience_years} Years Exp` : ""}
                 </p>
                 <div className="mb-1 flex items-center gap-1 text-sm">
-                  <Star className="size-4 fill-[#9c440f] text-[#9c440f]" />
+                  <Star className="size-4 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
                   <span className="font-black">{ratingLabel}</span>
-                  <span className="text-[#444748]">({reviewCount} reviews)</span>
+                  <span className="text-[var(--lobb-text-secondary)]">({reviewCount} reviews)</span>
                 </div>
                 <div className="mt-2 md:hidden">
-                  <span className="font-mono text-2xl font-black text-[#9c440f]">{money(hourlyRate)}</span>
-                  <span className="text-sm font-medium text-[#444748]">/hr</span>
+                  <span className="font-mono text-2xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</span>
+                  <span className="text-sm font-medium text-[var(--lobb-text-secondary)]">/hr</span>
                 </div>
                 {coach.slug && (
                   <button
@@ -377,24 +421,24 @@ export function CoachProfileContent({
                       await navigator.clipboard.writeText(profileUrl);
                       showLobbToast({ type: "success", message: "Profile link copied" });
                     }}
-                    className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-full border border-[#d8d2c9] bg-white px-3 text-xs font-black text-[#1a1c1c] md:hidden"
+                    className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-xs font-black text-[var(--lobb-text-primary)] md:hidden"
                   >
-                    <Copy className="size-3.5 text-[#9c440f]" />
+                    <Copy className="size-3.5 text-[var(--lobb-clay)]" />
                     Copy profile link
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="mb-8 grid grid-cols-3 gap-2 rounded-2xl border border-[#ded9d1] bg-white p-2 shadow-sm sm:gap-4 sm:p-4">
+            <div className="lobb-app-card mb-8 grid grid-cols-3 gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-2 sm:gap-4 sm:p-4">
               <StatBlock value={sessionCount || "New"} label="Sessions" />
               <StatBlock value={coach.experience_years || "New"} label="Years Exp" bordered />
               <StatBlock value={ratingLabel} label="Rating" />
             </div>
 
             <div className="mb-8 space-y-4">
-              <div className="flex items-center gap-2 text-[#1a1c1c]">
-                <MapPin className="size-5 text-[#444748]" />
+              <div className="flex items-center gap-2 text-[var(--lobb-text-primary)]">
+                <MapPin className="size-5 text-[var(--lobb-text-secondary)]" />
                 <span className="text-sm font-semibold">{locations.length ? locations.join(" • ") : "Lagos"}</span>
               </div>
 
@@ -402,7 +446,7 @@ export function CoachProfileContent({
                 {(specializations.length ? specializations : skillLevels).slice(0, 5).map((item) => (
                   <span
                     key={item}
-                    className="inline-flex min-h-9 items-center rounded-full bg-[#e8e1d8] px-3.5 py-1.5 text-sm font-semibold leading-tight text-[#1a1c1c]"
+                    className="inline-flex min-h-9 items-center rounded-[12px] bg-[var(--lobb-bg-secondary)] px-3.5 py-1.5 text-sm font-semibold leading-tight text-[var(--lobb-text-primary)]"
                   >
                     {item}
                   </span>
@@ -410,8 +454,8 @@ export function CoachProfileContent({
               </div>
 
               {courtsWorkedWith.length > 0 ? (
-                <div className="rounded-xl border border-[#c4c7c7]/30 bg-[#f3f3f3] p-3">
-                  <div className="mb-2 flex items-center gap-2 text-[#9c440f]">
+                <div className="lobb-app-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-3">
+                  <div className="mb-2 flex items-center gap-2 text-[var(--lobb-clay)]">
                     <Building2 className="size-4 shrink-0" />
                     <span className="text-xs font-black uppercase tracking-[0.08em]">Courts I work with</span>
                   </div>
@@ -419,7 +463,7 @@ export function CoachProfileContent({
                     {courtsWorkedWith.map((court) => (
                       <span
                         key={court.id}
-                        className="inline-flex items-center rounded-full border border-[#c4c7c7] bg-white px-3 py-1 text-xs font-semibold text-[#1a1c1c]"
+                        className="inline-flex items-center rounded-[10px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 py-1 text-xs font-semibold text-[var(--lobb-text-primary)]"
                       >
                         {court.name}
                       </span>
@@ -427,18 +471,18 @@ export function CoachProfileContent({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 rounded-lg border border-[#c4c7c7]/30 bg-[#f3f3f3] p-3 text-[#1a1c1c]">
-                  <Building2 className="size-5 text-[#9c440f]" />
+                <div className="lobb-app-panel flex items-center gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-3 text-[var(--lobb-text-primary)]">
+                  <Building2 className="size-5 text-[var(--lobb-clay)]" />
                   <span className="text-sm font-semibold">{courtLabel}</span>
                 </div>
               )}
 
               {languages.length > 0 && (
-                <p className="text-sm font-medium text-[#444748]">Speaks: {languages.join(", ")}</p>
+                <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">Speaks: {languages.join(", ")}</p>
               )}
             </div>
 
-            <div className="sticky top-0 z-20 mb-6 flex border-b border-[#c4c7c7] bg-[#f9f9f9] md:top-16">
+            <div className="lobb-app-header sticky top-0 z-20 mb-6 flex border-b border-[var(--lobb-border-subtle)] md:top-16">
               {(["about", "availability", "reviews"] as const).map((item) => (
                 <button
                   key={item}
@@ -446,8 +490,8 @@ export function CoachProfileContent({
                   onClick={() => setTab(item)}
                   className={`min-h-11 flex-1 border-b-2 py-3 text-center text-sm font-semibold capitalize transition ${
                     tab === item
-                      ? "border-black text-[#1a1c1c]"
-                      : "border-transparent text-[#444748] hover:text-[#1a1c1c]"
+                      ? "border-[var(--lobb-text-primary)] text-[var(--lobb-text-primary)]"
+                      : "border-transparent text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)]"
                   }`}
                 >
                   {item}
@@ -458,40 +502,40 @@ export function CoachProfileContent({
             {tab === "about" && (
               <section className="space-y-6">
                 <div>
-                  <h2 className="mb-2 text-2xl font-semibold tracking-tight text-[#1a1c1c]">Biography</h2>
-                  <p className="text-base leading-7 text-[#444748]">{bio}</p>
+                  <h2 className="mb-2 text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">Biography</h2>
+                  <p className="text-base leading-7 text-[var(--lobb-text-secondary)]">{bio}</p>
                 </div>
 
                 <div>
-                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[#1a1c1c]">Credentials</h3>
+                  <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">Credentials</h3>
                   {certifications.length > 0 ? (
                     <ul className="grid gap-3 sm:grid-cols-2">
                       {certifications.map((cert) => (
-                        <li key={cert} className="group relative min-h-[86px] overflow-hidden rounded-[22px] border border-[#ded9d1] bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:border-[#9c440f]/35 hover:shadow-md">
-                          <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,#9c440f,#f4a228)]" />
+                        <li key={cert} className="lobb-app-card group relative min-h-[86px] overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-3 transition hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
+                          <div className="absolute inset-x-0 top-0 h-1 bg-[var(--lobb-clay)]" />
                           <div className="flex items-center gap-3">
-                          <span className="flex size-12 shrink-0 items-center justify-center rounded-[18px] bg-[#9c440f]/10 text-[#9c440f] ring-1 ring-[#9c440f]/10">
+                          <span className="flex size-12 shrink-0 items-center justify-center bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)] ring-1 ring-[var(--lobb-clay)]/10">
                             <ShieldCheck className="size-5" />
                           </span>
                           <span className="min-w-0">
-                            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[#9c440f]">Credential</span>
-                            <span className="mt-1 block text-sm font-black leading-snug text-[#1a1c1c]">{cert}</span>
+                            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Credential</span>
+                            <span className="mt-1 block text-sm font-black leading-snug text-[var(--lobb-text-primary)]">{cert}</span>
                           </span>
                           </div>
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm font-medium text-[#444748]">Certifications will appear here once added.</p>
+                    <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">Certifications will appear here once added.</p>
                   )}
                 </div>
 
                 {skillLevels.length > 0 && (
                   <div>
-                    <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[#1a1c1c]">Who I Coach</h3>
+                    <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">Who I Coach</h3>
                     <div className="flex flex-wrap gap-2">
                       {skillLevels.map((level) => (
-                        <span key={level} className="inline-flex min-h-9 items-center rounded-full border border-[#c4c7c7] px-3.5 py-1.5 text-sm font-semibold leading-tight">
+                        <span key={level} className="inline-flex min-h-9 items-center rounded-full border border-[var(--lobb-border-subtle)] px-3.5 py-1.5 text-sm font-semibold leading-tight">
                           {level}
                         </span>
                       ))}
@@ -499,7 +543,7 @@ export function CoachProfileContent({
                   </div>
                 )}
 
-                <p className="text-xs font-semibold text-[#747878]">
+                <p className="text-xs font-semibold text-[var(--lobb-text-tertiary)]">
                   Member since {formatDate(coach.created_at)}
                 </p>
               </section>
@@ -508,14 +552,14 @@ export function CoachProfileContent({
             {tab === "availability" && (
               <section>
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold tracking-tight text-[#1a1c1c]">
+                  <h2 className="text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">
                     {selectedSlotDay ? `${selectedSlotDay.month} ${selectedSlotDay.day}` : "Availability"}
                   </h2>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => setSelectedDay((value) => Math.max(value - 1, 0))}
-                      className="flex size-8 items-center justify-center rounded-full border border-[#c4c7c7]"
+                      className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)]"
                       aria-label="Previous day"
                     >
                       <ChevronLeft className="size-4" />
@@ -523,7 +567,7 @@ export function CoachProfileContent({
                     <button
                       type="button"
                       onClick={() => setSelectedDay((value) => Math.min(value + 1, Math.max(slots.length - 1, 0)))}
-                      className="flex size-8 items-center justify-center rounded-full border border-[#c4c7c7]"
+                      className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)]"
                       aria-label="Next day"
                     >
                       <ChevronRight className="size-4" />
@@ -552,10 +596,10 @@ export function CoachProfileContent({
                           key={day.dateKey}
                           type="button"
                           onClick={() => setSelectedDay(index)}
-                          className={`flex min-w-[60px] shrink-0 flex-col items-center rounded-xl p-3 transition ${
+                          className={`flex min-w-[60px] shrink-0 flex-col items-center rounded-[12px] p-3 transition ${
                             selectedDay === index
-                              ? "bg-black text-white"
-                              : "bg-[#e8e8e8] text-[#1a1c1c] hover:bg-[#e2e2e2]"
+                              ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
+                              : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)]"
                           }`}
                         >
                           <span className="text-xs font-bold uppercase opacity-70">{day.weekday}</span>
@@ -564,13 +608,13 @@ export function CoachProfileContent({
                       ))}
                     </div>
 
-                    <h3 className="mb-3 text-sm font-semibold text-[#444748]">Available Slots</h3>
+                    <h3 className="mb-3 text-sm font-semibold text-[var(--lobb-text-secondary)]">Available slots</h3>
                     <div className="grid grid-cols-2 gap-3">
                       {selectedSlotDay.slots.map((slot) => (
                         <a
                           key={slot}
                           href={isPreview ? undefined : bookingHref}
-                          className="min-h-11 rounded-lg border border-[#c4c7c7] px-4 py-3 text-center text-sm font-semibold text-[#1a1c1c] transition hover:border-black"
+                          className="min-h-11 rounded-[12px] border border-[var(--lobb-border-subtle)] px-4 py-3 text-center text-sm font-semibold text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]"
                         >
                           {slot}
                         </a>
@@ -589,9 +633,9 @@ export function CoachProfileContent({
             {tab === "reviews" && (
               <section>
                 <div className="mb-6 flex items-center gap-4">
-                  <div className="text-5xl font-black leading-none text-[#1a1c1c]">{ratingLabel}</div>
+                  <div className="text-5xl font-black leading-none text-[var(--lobb-text-primary)]">{ratingLabel}</div>
                   <div>
-                    <div className="mb-1 flex text-[#9c440f]">
+                    <div className="mb-1 flex text-[var(--lobb-clay)]">
                       {Array.from({ length: 5 }).map((_, index) => (
                         <Star
                           key={index}
@@ -599,7 +643,7 @@ export function CoachProfileContent({
                         />
                       ))}
                     </div>
-                    <div className="text-sm font-semibold text-[#444748]">
+                    <div className="text-sm font-semibold text-[var(--lobb-text-secondary)]">
                       Based on {reviewCount} reviews
                     </div>
                   </div>
@@ -614,20 +658,20 @@ export function CoachProfileContent({
                 ) : reviews.length > 0 ? (
                   <div className="space-y-6">
                     {reviews.slice(0, 6).map((review) => (
-                      <article key={review.id} className="border-b border-[#c4c7c7]/30 pb-6">
+                      <article key={review.id} className="border-b border-[var(--lobb-border-subtle)] pb-6">
                         <div className="mb-2 flex items-center justify-between gap-4">
                           <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#e8e8e8] text-sm font-black">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--lobb-bg-secondary)] text-sm font-black">
                               {initials(review.player_first_name ?? "Player")}
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-[#1a1c1c]">
+                              <p className="truncate text-sm font-semibold text-[var(--lobb-text-primary)]">
                                 {review.player_first_name ?? "Player"}
                               </p>
-                              <p className="text-xs font-semibold text-[#747878]">{formatDate(review.created_at)}</p>
+                              <p className="text-xs font-semibold text-[var(--lobb-text-tertiary)]">{formatDate(review.created_at)}</p>
                             </div>
                           </div>
-                          <div className="flex shrink-0 text-[#9c440f]">
+                          <div className="flex shrink-0 text-[var(--lobb-clay)]">
                             {Array.from({ length: 5 }).map((_, index) => (
                               <Star
                                 key={index}
@@ -636,7 +680,7 @@ export function CoachProfileContent({
                             ))}
                           </div>
                         </div>
-                        <p className="text-base leading-7 text-[#444748]">
+                        <p className="text-base leading-7 text-[var(--lobb-text-secondary)]">
                           {review.comment ?? "Great coaching session."}
                         </p>
                       </article>
@@ -654,41 +698,41 @@ export function CoachProfileContent({
         </div>
 
         <aside className="hidden md:col-span-5 md:block lg:col-span-4">
-          <div className="sticky top-24 rounded-2xl border border-[#d8d2c9] bg-white p-6 shadow-sm">
+          <div className="lobb-app-card sticky top-24 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 shadow-[var(--lobb-shadow-card)]">
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <div className="font-mono text-3xl font-black tracking-tight text-[#9c440f]">{money(hourlyRate)}</div>
-                <div className="text-sm font-medium text-[#444748]">per hour session</div>
+                <div className="font-mono text-3xl font-black tracking-tight text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
+                <div className="text-sm font-medium text-[var(--lobb-text-secondary)]">per hour session</div>
               </div>
               <CoachShareSheet
                 coachName={fullName}
                 disabled={!canSharePublicProfile}
                 profileUrl={profileUrl}
-                triggerClassName="flex size-10 items-center justify-center rounded-full transition hover:bg-[#e2e2e2] disabled:opacity-45"
+                triggerClassName="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)] disabled:opacity-45"
                 triggerLabel=""
               />
             </div>
 
             <div className="mb-6 space-y-4">
               <div className="flex items-center gap-3">
-                <Zap className="size-5 text-[#9c440f]" />
+                <Zap className="size-5 text-[var(--lobb-clay)]" />
                 <span className="text-sm font-semibold">Instant booking confirmation</span>
               </div>
               <div className="flex items-center gap-3">
-                <CalendarCheck className="size-5 text-[#9c440f]" />
+                <CalendarCheck className="size-5 text-[var(--lobb-clay)]" />
                 <span className="text-sm font-semibold">Free cancellation 24h prior</span>
               </div>
             </div>
 
             {certifications.length > 0 && (
-              <div className="mb-6 rounded-2xl border border-[#ead7c6] bg-[#fff8f2] p-4">
-                <div className="mb-3 flex items-center gap-2 text-[#9c440f]">
+              <div className="lobb-app-panel mb-6 border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay-light)] p-4">
+                <div className="mb-3 flex items-center gap-2 text-[var(--lobb-clay)]">
                   <Trophy className="size-4" />
                   <p className="text-xs font-black uppercase tracking-[0.12em]">Credentials</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {certifications.slice(0, 3).map((cert) => (
-                    <span key={cert} className="inline-flex min-h-8 items-center rounded-full bg-white px-3 py-1 text-xs font-black leading-tight text-[#6e2a00] shadow-sm ring-1 ring-[#ead7c6]">
+                    <span key={cert} className="inline-flex min-h-8 items-center rounded-full bg-[var(--lobb-bg-elevated)] px-3 py-1 text-xs font-black leading-tight text-[var(--lobb-clay)] shadow-sm ring-1 ring-[var(--lobb-clay)]/20">
                       {cert}
                     </span>
                   ))}
@@ -697,44 +741,42 @@ export function CoachProfileContent({
             )}
 
             {isPreview ? (
-              <button
-                type="button"
-                disabled
-                className="min-h-11 w-full rounded-[14px] bg-[#9c440f] py-4 text-sm font-black text-white opacity-70"
+              <Link
+                href="/coach/profile"
+                className="flex min-h-11 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] py-4 text-sm font-black text-[var(--lobb-text-inverse)]"
               >
-                Preview only
-              </button>
+                Back to profile
+              </Link>
             ) : (
               <a
                 href={bookingHref}
-                className="flex min-h-11 w-full items-center justify-center rounded-[14px] bg-[#9c440f] py-4 text-sm font-black text-white transition hover:bg-[#7a3000]"
+                className="flex min-h-11 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] py-4 text-sm font-black text-[var(--lobb-text-inverse)] transition hover:bg-[var(--lobb-clay-dark)]"
               >
-                Book Session
+                Book session
               </a>
             )}
           </div>
         </aside>
       </section>
 
-      <div className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-between border-t border-[#c4c7c7]/30 bg-white p-4 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] md:hidden">
+      <div className="lobb-app-header fixed bottom-0 left-0 z-50 flex w-full items-center justify-between border-t border-[var(--lobb-border-subtle)] p-4 shadow-[var(--lobb-shadow-sheet)] md:hidden">
         <div>
-          <div className="font-mono text-xl font-black text-[#9c440f]">{money(hourlyRate)}</div>
-          <div className="text-xs font-semibold text-[#444748]">per session</div>
+          <div className="font-mono text-xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
+          <div className="text-xs font-semibold text-[var(--lobb-text-secondary)]">per session</div>
         </div>
         {isPreview ? (
-          <button
-            type="button"
-            disabled
-            className="min-h-11 rounded-[14px] bg-[#9c440f] px-8 py-3 text-sm font-black text-white opacity-70"
+          <Link
+            href="/coach/profile"
+            className="flex min-h-11 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-8 py-3 text-sm font-black text-[var(--lobb-text-inverse)]"
           >
-            Preview
-          </button>
+            Back
+          </Link>
         ) : (
           <a
             href={bookingHref}
-            className="flex min-h-11 items-center rounded-[14px] bg-[#9c440f] px-8 py-3 text-sm font-black text-white"
+            className="flex min-h-11 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-8 py-3 text-sm font-black text-[var(--lobb-text-inverse)]"
           >
-            Book Session
+            Book session
           </a>
         )}
       </div>
@@ -752,9 +794,9 @@ function StatBlock({
   bordered?: boolean;
 }) {
   return (
-    <div className={`text-center ${bordered ? "border-x border-[#c4c7c7]/30" : ""}`}>
-      <div className="text-2xl font-semibold tracking-tight text-[#1a1c1c]">{value}</div>
-      <div className="text-xs font-bold uppercase tracking-[0.05em] text-[#444748]">{label}</div>
+    <div className={`text-center ${bordered ? "border-x border-[var(--lobb-border-subtle)]" : ""}`}>
+      <div className="text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">{value}</div>
+      <div className="text-xs font-bold uppercase tracking-[0.05em] text-[var(--lobb-text-secondary)]">{label}</div>
     </div>
   );
 }

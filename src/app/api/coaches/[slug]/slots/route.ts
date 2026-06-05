@@ -1,5 +1,7 @@
+// PUBLIC ROUTE — no authentication required
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { internalError } from "@/lib/api-response";
 import type { AvailableSlot } from "@/lib/types";
 
 export async function GET(
@@ -15,31 +17,19 @@ export async function GET(
   try {
     const admin = createAdminClient();
 
-    // Resolve slug/id → coach (include status so we can surface pending state)
     const { data: coach, error: coachErr } = await admin
       .from("coaches")
       .select("id, status")
       .eq("slug", slug)
       .maybeSingle();
 
-    if (coachErr) {
-      return NextResponse.json({ error: coachErr.message }, { status: 500 });
-    }
-    if (!coach) {
-      return NextResponse.json({ error: "Coach not found" }, { status: 404 });
-    }
-    if (coach.status !== "active") {
-      return NextResponse.json({ slots: [], status: coach.status });
-    }
+    if (coachErr) return internalError(coachErr);
+    if (!coach) return NextResponse.json({ error: "Coach not found" }, { status: 404 });
+    if (coach.status !== "active") return NextResponse.json({ slots: [], status: coach.status });
 
-    // Call the DB function — window is today → today+14 days
-    const { data, error } = await admin.rpc("get_coach_available_slots", {
-      p_coach_id: coach.id,
-    });
+    const { data, error } = await admin.rpc("get_coach_available_slots", { p_coach_id: coach.id });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    if (error) return internalError(error);
 
     return NextResponse.json({ slots: (data ?? []) as AvailableSlot[] });
   } catch {

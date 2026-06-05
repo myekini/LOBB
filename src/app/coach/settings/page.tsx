@@ -37,6 +37,7 @@ export default async function CoachSettingsPage() {
   const profile = profileResult.data;
   const coach = coachResult.data;
 
+  const accountStatus = coach.status.replace(/_/g, " ");
   const notificationsDetail = profile?.email
     ? profile.email_notifications_enabled !== false
       ? "Email alerts enabled"
@@ -44,12 +45,25 @@ export default async function CoachSettingsPage() {
     : "Add an email to enable alerts";
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] pb-28 text-[var(--lobb-text-primary)]">
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
       <CoachFlowHeader title="Settings" eyebrow="Coach account" active="profile" />
 
-      <div className="mx-auto max-w-lg px-5 pt-6 sm:px-6">
+      <div className="mx-auto max-w-2xl px-5 pt-6 sm:px-6">
+        <section className="mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+          <p className="text-xs font-black text-[var(--lobb-clay)]">Coach account</p>
+          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-black tracking-tight">Settings</h1>
+              <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                Manage login, payout, and notification details.
+              </p>
+            </div>
+            <span className="inline-flex w-fit items-center rounded-full bg-[var(--lobb-clay-light)] px-3 py-1.5 text-xs font-black capitalize text-[var(--lobb-clay)]">
+              {accountStatus}
+            </span>
+          </div>
+        </section>
 
-        {/* Account */}
         <SettingGroup label="Account">
           <SettingRow
             icon={<Smartphone className="size-[18px]" />}
@@ -65,12 +79,11 @@ export default async function CoachSettingsPage() {
           <SettingRow
             icon={<Shield className="size-[18px]" />}
             label="Account status"
-            value={coach.status.replace(/_/g, " ")}
+            value={accountStatus}
             last
           />
         </SettingGroup>
 
-        {/* Banking */}
         <SettingGroup label="Banking">
           <SettingRow
             icon={<Landmark className="size-[18px]" />}
@@ -81,7 +94,6 @@ export default async function CoachSettingsPage() {
           />
         </SettingGroup>
 
-        {/* Notifications */}
         <SettingGroup label="Notifications">
           <SettingRow
             icon={<Bell className="size-[18px]" />}
@@ -91,7 +103,6 @@ export default async function CoachSettingsPage() {
           />
         </SettingGroup>
 
-        {/* Session */}
         <div className="mt-2">
           <CoachLogoutButton />
         </div>
@@ -109,7 +120,7 @@ function SettingGroup({ label, children }: { label: string; children: React.Reac
       <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
         {label}
       </p>
-      <div className="overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <div className="lobb-settings-group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         {children}
       </div>
     </div>
@@ -135,7 +146,7 @@ function SettingRow({
         !last ? "border-b border-[var(--lobb-border-subtle)]" : ""
       }`}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-bold text-[var(--lobb-text-primary)]">{label}</p>
         <p className="mt-0.5 truncate text-[12px] capitalize text-[var(--lobb-text-tertiary)]">{value}</p>
@@ -144,5 +155,5 @@ function SettingRow({
     </div>
   );
 
-  return href ? <Link href={href}>{inner}</Link> : inner;
+  return href ? <Link href={href} className="block">{inner}</Link> : inner;
 }

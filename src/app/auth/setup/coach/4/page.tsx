@@ -219,7 +219,7 @@ export default function CoachSetupStep4Page() {
         </div>
 
         <div className="mt-10 pb-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-red-400">{error}</p>}
+          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
           <OnboardingButton type="submit" disabled={!canContinue || saving}>
             {saving ? "Submitting..." : "Submit for review"}
           </OnboardingButton>

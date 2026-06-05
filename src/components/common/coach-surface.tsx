@@ -11,7 +11,7 @@ export function CoachSurface({
   return (
     <section
       className={cn(
-        "rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-[var(--lobb-shadow-card)]",
+        "lobb-app-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-[var(--lobb-shadow-card)]",
         className
       )}
     >

@@ -1,16 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronLeft, ChevronRight, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, CalendarCheck2, CalendarX2, ChevronLeft, ChevronRight, Clock3, Plus, Trash2, X } from "lucide-react";
 import type { CoachAvailabilityRow, CoachAvailabilityBlock } from "@/lib/types";
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { LobbErrorBanner } from "@/components/common/lobb-error";
 import { appError, type AppErrorPayload } from "@/lib/app-errors";
 import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
-
-// ─── Constants ────────────────────────────────────────────────────────────────
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -23,11 +21,7 @@ const TIME_OPTIONS = Array.from(
   (_, i) => GRID_START + i * GRID_STEP,
 );
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type Window = { id: string; dow: number; start: string; end: string };
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function toDateStr(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -85,8 +79,6 @@ function windowsFromRows(rows: CoachAvailabilityRow[]): Window[] {
       end: r.ends_at.slice(0, 5),
     }));
 }
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CoachAvailabilityPage() {
   const router = useRouter();
@@ -236,13 +228,15 @@ export default function CoachAvailabilityPage() {
 
   const calendarCells   = useMemo(() => buildCalendar(month), [month]);
   const upcomingClosed  = blockedDates.filter((d) => d >= today);
+  const activeDays = new Set(windows.map((window) => window.dow)).size;
+  const weeklyWindowCount = windows.length;
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] pb-28 text-[var(--lobb-text-primary)]">
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
       <CoachFlowHeader title="Availability" eyebrow="Bookable slots" active="bookings" className="hidden md:block" />
 
       {/* Mobile header */}
-      <header className="sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/95 px-4 py-3 backdrop-blur-xl md:hidden">
+      <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] px-4 py-3 backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -263,11 +257,17 @@ export default function CoachAvailabilityPage() {
       <section className="mx-auto max-w-6xl px-4 pt-5 pb-6 sm:px-6">
         {loading ? (
           <div className="grid gap-5 lg:grid-cols-2">
-            <SkeletonBlock className="h-56 rounded-[26px]" />
-            <SkeletonBlock className="h-80 rounded-[26px]" />
+            <SkeletonBlock className="h-56" />
+            <SkeletonBlock className="h-80" />
           </div>
         ) : (
           <>
+            <section className="mb-5 grid gap-3 sm:grid-cols-3">
+              <AvailabilityMetric icon={CalendarCheck2} value={String(activeDays)} label="Active days" />
+              <AvailabilityMetric icon={Clock3} value={String(weeklyWindowCount)} label="Weekly windows" />
+              <AvailabilityMetric icon={CalendarX2} value={String(upcomingClosed.length)} label="Closed dates" />
+            </section>
+
             <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
               {/* ── Section 1: Weekly hours ───────────────────────────────── */}
               <WeeklyHoursSection
@@ -308,10 +308,13 @@ export default function CoachAvailabilityPage() {
       </section>
 
       {/* Save footer */}
-      <footer className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/96 p-3 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-xl">
+      <footer className="lobb-app-header fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--lobb-border-subtle)] p-3 shadow-[var(--lobb-shadow-sheet)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <span className={`hidden shrink-0 text-[11px] font-bold sm:block ${dirty ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-success)]"}`}>
             {dirty ? "● Unsaved changes" : saved ? "✓ Saved" : ""}
+          </span>
+          <span className="min-w-0 flex-1 truncate text-xs font-bold text-[var(--lobb-text-secondary)] sm:hidden">
+            {dirty ? "Unsaved changes" : saved ? "Saved" : "Availability"}
           </span>
           <button
             type="button"
@@ -327,7 +330,19 @@ export default function CoachAvailabilityPage() {
   );
 }
 
-// ─── Weekly hours section ─────────────────────────────────────────────────────
+function AvailabilityMetric({ icon: Icon, label, value }: { icon: ComponentType<{ className?: string }>; label: string; value: string }) {
+  return (
+    <div className="lobb-app-card flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+        <Icon className="size-4" />
+      </span>
+      <div>
+        <p className="text-xl font-black leading-none">{value}</p>
+        <p className="mt-1 text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
+      </div>
+    </div>
+  );
+}
 
 function WeeklyHoursSection({
   addWindow, applyQuick, quickEnd, quickStart, removeWindow,
@@ -360,7 +375,7 @@ function WeeklyHoursSection({
   ];
 
   return (
-    <section className="rounded-[26px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-card)]">
+    <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
       <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Weekly hours</p>
       <h2 className="mt-1 text-xl font-black">When do you coach?</h2>
       <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
@@ -368,8 +383,8 @@ function WeeklyHoursSection({
       </p>
 
       {/* Quick apply */}
-      <div className="mt-5 rounded-[20px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
-        <p className="mb-3 text-xs font-black uppercase tracking-wider text-[var(--lobb-text-secondary)]">
+      <div className="lobb-app-panel mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
+        <p className="mb-3 text-xs font-black text-[var(--lobb-text-secondary)]">
           Apply hours to selected days
         </p>
 
@@ -382,6 +397,8 @@ function WeeklyHoursSection({
                 key={dow}
                 type="button"
                 onClick={() => toggleDow(dow)}
+                aria-pressed={on}
+                aria-label={`${on ? "Remove" : "Add"} ${DAY_NAMES[dow]}`}
                 className={`flex flex-col items-center gap-1 rounded-[12px] border py-2.5 text-xs transition-all ${
                   on
                     ? "border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
@@ -401,6 +418,7 @@ function WeeklyHoursSection({
               key={label}
               type="button"
               onClick={() => setSelectedDows([...dows])}
+              aria-pressed={selectedDows.length === dows.length && dows.every((dow) => selectedDows.includes(dow))}
               className="rounded-full border border-[var(--lobb-border-subtle)] px-3 py-1 text-[11px] font-black text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-text-primary)]"
             >
               {label}
@@ -409,14 +427,14 @@ function WeeklyHoursSection({
         </div>
 
         {/* Time range + apply */}
-        <div className="mt-3 grid grid-cols-[1fr_1fr_auto] items-end gap-2">
+        <div className="mt-3 grid grid-cols-2 items-end gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <TimeSelect label="From" value={quickStart} onChange={setQuickStart} />
           <TimeSelect label="Until" value={quickEnd} onChange={setQuickEnd} />
           <button
             type="button"
             disabled={!selectedDows.length || quickStart >= quickEnd}
             onClick={applyQuick}
-            className="h-10 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-40"
+            className="col-span-2 h-10 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-40 sm:col-span-1"
           >
             Apply
           </button>
@@ -435,11 +453,11 @@ function WeeklyHoursSection({
               key={dow}
               className="rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]"
             >
-              <div className="flex items-center justify-between px-3 py-2.5">
+              <div className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-sm font-black">{DAY_NAMES[dow]}</span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2 sm:justify-end">
                   {isOpen ? (
-                    <span className="text-xs font-semibold text-[var(--lobb-success)]">
+                    <span className="min-w-0 truncate text-xs font-semibold text-[var(--lobb-success)]">
                       {dayWindows.map((w) => `${timeLabel(w.start)}–${timeLabel(w.end)}`).join(", ")}
                     </span>
                   ) : (
@@ -457,7 +475,7 @@ function WeeklyHoursSection({
               </div>
 
               {isOpen && (
-                <div className="border-t border-[var(--lobb-border-subtle)] px-3 py-2.5 space-y-2">
+                <div className="space-y-2 border-t border-[var(--lobb-border-subtle)] px-3 py-2.5">
                   {dayWindows.map((w) => (
                     <div key={w.id} className="grid grid-cols-[1fr_1fr_32px] items-end gap-2">
                       <TimeSelect
@@ -490,8 +508,6 @@ function WeeklyHoursSection({
   );
 }
 
-// ─── Days off section ─────────────────────────────────────────────────────────
-
 function DaysOffSection({
   blockedDates, calendarCells, month, setMonth, today, toggleDate, upcomingClosed, windows,
 }: {
@@ -505,11 +521,11 @@ function DaysOffSection({
   windows: Window[];
 }) {
   return (
-    <section className="rounded-[26px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-card)]">
+    <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
       <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Days off</p>
       <h2 className="mt-1 text-xl font-black">Close specific dates</h2>
       <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-        Tap any date to close it — your weekly hours still apply to every other date.
+        Tap any date to close it. Weekly hours still apply to every other date.
         A{" "}
         <span className="inline-block size-1.5 rounded-full bg-[var(--lobb-success)] align-middle" />
         {" "}green dot means you have hours set for that weekday.
@@ -561,6 +577,8 @@ function DaysOffSection({
               type="button"
               disabled={isPast}
               onClick={() => toggleDate(cell.value)}
+              aria-pressed={isClosed}
+              aria-label={`${isClosed ? "Reopen" : "Close"} ${cell.date.toLocaleDateString("en-NG", { weekday: "long", day: "numeric", month: "long" })}`}
               className={`relative flex h-10 w-full items-center justify-center rounded-[10px] text-sm font-black transition-all active:scale-95 ${
                 isPast
                   ? "cursor-not-allowed opacity-30 text-[var(--lobb-text-tertiary)]"
@@ -586,7 +604,7 @@ function DaysOffSection({
       {upcomingClosed.length > 0 ? (
         <div className="mt-5">
           <p className="mb-2.5 text-[11px] font-black uppercase tracking-wider text-[var(--lobb-text-secondary)]">
-            Closed dates — tap to reopen
+            Closed dates, tap to reopen
           </p>
           <div className="flex flex-wrap gap-2">
             {upcomingClosed.map((d) => (
@@ -594,6 +612,9 @@ function DaysOffSection({
                 key={d}
                 type="button"
                 onClick={() => toggleDate(d)}
+                aria-label={`Reopen ${new Date(`${d}T00:00:00`).toLocaleDateString("en-NG", {
+                  weekday: "long", day: "numeric", month: "long",
+                })}`}
                 className="inline-flex items-center gap-1.5 rounded-full border border-[var(--lobb-error)]/25 bg-[var(--lobb-error)]/8 px-3 py-1.5 text-xs font-black text-[var(--lobb-error)] transition-colors hover:bg-[var(--lobb-error)]/15"
               >
                 {new Date(`${d}T00:00:00`).toLocaleDateString("en-NG", {
@@ -612,8 +633,6 @@ function DaysOffSection({
     </section>
   );
 }
-
-// ─── Shared ───────────────────────────────────────────────────────────────────
 
 function TimeSelect({ label, onChange, value }: { label: string; onChange: (v: string) => void; value: string }) {
   return (

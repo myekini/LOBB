@@ -77,30 +77,30 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
   const reset = () => { setLocation("All"); setSpecs([]); setPriceLabel("Any price"); setAvailFilter("Any"); setQuery(""); };
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] pb-28 text-[var(--lobb-black)]">
-
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-40 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/95 backdrop-blur-xl">
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
+      <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4 sm:px-5">
           <Link
             href="/"
             aria-label="Back"
-            className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-black)] transition active:scale-[0.97]"
+            className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition active:scale-[0.97]"
           >
             <ArrowLeft className="size-4.5" />
           </Link>
-          <h1 className="text-[15px] font-black">Book a Coach</h1>
+          <h1 className="text-[15px] font-black">Book a coach</h1>
           <div className="flex items-center gap-2">
             <PlayerDesktopNav active="coaches" />
             <button
+              type="button"
               onClick={() => setShowSort(true)}
-              className="hidden h-10 items-center gap-1.5 rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3 text-xs font-black sm:flex"
+              className="hidden h-10 items-center gap-1.5 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-xs font-black sm:flex"
             >
               Sort <ChevronDown className="size-3.5" />
             </button>
             <button
+              type="button"
               onClick={() => setShowFilter(true)}
-              className="relative flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] transition active:scale-[0.97]"
+              className="relative flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition active:scale-[0.97]"
               aria-label="Filters"
             >
               <SlidersHorizontal className="size-4" />
@@ -116,34 +116,34 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
 
       <div className="mx-auto max-w-3xl px-4 sm:px-5">
 
-        {/* ── Search bar ── */}
         <div className="pt-4">
-          <label className="flex h-[52px] items-center gap-3 rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 shadow-[0_6px_20px_rgba(58,43,20,0.05)]">
+          <label className="lobb-app-card flex h-[52px] items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4">
             <Search className="size-5 shrink-0 text-[var(--lobb-muted)]" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search coach, area, skill"
-              className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[#b0a89e] focus:ring-0"
+              className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
             />
             {query && (
-              <button onClick={() => setQuery("")} aria-label="Clear" className="flex size-7 items-center justify-center rounded-full bg-[var(--lobb-surface-2)]">
-                <X className="size-3.5 text-[var(--lobb-muted)]" />
+              <button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="flex size-7 items-center justify-center rounded-[10px] bg-[var(--lobb-surface-2)]">
+                <X className="size-3.5 text-[var(--lobb-text-secondary)]" />
               </button>
             )}
           </label>
         </div>
 
-        {/* ── Location chips ── */}
         <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
           {LOCATION_FILTERS.map((item) => (
             <button
+              type="button"
               key={item}
               onClick={() => setLocation(item)}
+              aria-pressed={location === item}
               className={`h-9 shrink-0 rounded-full px-4 text-sm font-black transition ${
                 location === item
-                  ? "bg-[var(--lobb-black)] text-white"
-                  : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)] hover:border-[var(--lobb-black)]/30 hover:text-[var(--lobb-black)]"
+                  ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
+                  : "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-text-primary)]"
               }`}
             >
               {item}
@@ -151,14 +151,13 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
           ))}
         </div>
 
-        {/* ── Result meta ── */}
         <div className="mt-4 flex items-center justify-between gap-3">
           <p className="text-xs font-semibold text-[var(--lobb-muted)]">
             <span className="font-black text-[var(--lobb-black)]">{results.length}</span> coach{results.length !== 1 ? "es" : ""}
             {filterCount > 0 || query ? " · filtered" : ""}
           </p>
           {(filterCount > 0 || query) && (
-            <button onClick={reset} className="text-xs font-black text-[var(--lobb-clay)] hover:underline">
+              <button type="button" onClick={reset} className="text-xs font-black text-[var(--lobb-clay)] hover:underline">
               Clear all
             </button>
           )}
@@ -174,7 +173,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
                 title="No coaches match your search."
                 body="Try a different area or clear your filters."
                 action={
-                  <button className="rounded-full bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white" onClick={reset}>
+                  <button type="button" className="rounded-[12px] bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white" onClick={reset}>
                     Clear filters
                   </button>
                 }
@@ -184,12 +183,11 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
         </div>
       </div>
 
-      {/* ── Filter sheet ── */}
       {showFilter && (
-        <BottomSheet onClose={() => setShowFilter(false)}>
+        <BottomSheet title="Filter coaches" onClose={() => setShowFilter(false)}>
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-black">Filter Coaches</h2>
-            <button className="text-sm font-bold text-[var(--lobb-clay)]" onClick={() => { resetFiltersOnly(); }}>
+            <h2 className="text-lg font-black">Filter coaches</h2>
+            <button type="button" className="text-sm font-bold text-[var(--lobb-clay)]" onClick={() => { resetFiltersOnly(); }}>
               Reset
             </button>
           </div>
@@ -210,11 +208,13 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             <div className="flex flex-wrap gap-2">
               {PRICE_RANGES.map((r) => (
                 <button
+                  type="button"
                   key={r.label}
                   onClick={() => setPriceLabel(r.label)}
+                  aria-pressed={priceLabel === r.label}
                   className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
                     priceLabel === r.label
-                      ? "border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay-dark)]"
+                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]"
                       : "border-[var(--lobb-border)] text-[var(--lobb-muted)]"
                   }`}
                 >
@@ -228,11 +228,13 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             <div className="flex gap-2">
               {(["Any", "Has availability"] as AvailFilter[]).map((opt) => (
                 <button
+                  type="button"
                   key={opt}
                   onClick={() => setAvailFilter(opt)}
+                  aria-pressed={availFilter === opt}
                   className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
                     availFilter === opt
-                      ? "border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay-dark)]"
+                      ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]"
                       : "border-[var(--lobb-border)] text-[var(--lobb-muted)]"
                   }`}
                 >
@@ -242,21 +244,23 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             </div>
           </div>
           <button
+            type="button"
             onClick={() => setShowFilter(false)}
-            className="mt-6 h-14 w-full rounded-full bg-[var(--lobb-black)] font-black text-white"
+            className="mt-6 h-14 w-full rounded-[12px] bg-[var(--lobb-bg-inverse)] font-black text-[var(--lobb-text-inverse)]"
           >
-            Show {results.length} Coach{results.length !== 1 ? "es" : ""}
+            Show {results.length} coach{results.length !== 1 ? "es" : ""}
           </button>
         </BottomSheet>
       )}
 
-      {/* ── Sort sheet ── */}
       {showSort && (
-        <BottomSheet onClose={() => setShowSort(false)}>
+        <BottomSheet title="Sort coaches" onClose={() => setShowSort(false)}>
           <h2 className="mb-4 text-lg font-black">Sort</h2>
           {(["Best Match", "Highest Rated", "Most Reviewed", "Lowest Price", "Newest"] as SortOption[]).map((option) => (
             <button
+              type="button"
               key={option}
+              aria-pressed={sort === option}
               className="flex w-full items-center justify-between border-b border-[var(--lobb-border)] py-4 text-left font-semibold last:border-0"
               onClick={() => { setSort(option); setShowSort(false); }}
             >
@@ -294,11 +298,13 @@ function ChipBlock({
           const active = selected.includes(item);
           return (
             <button
+              type="button"
               key={item}
               onClick={() => onToggle(item)}
+              aria-pressed={active}
               className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition ${
                 active
-                  ? "border-[var(--lobb-clay)] bg-[#fff0e8] text-[var(--lobb-clay-dark)]"
+                  ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]"
                   : "border-[var(--lobb-border)] text-[var(--lobb-muted)]"
               }`}
             >
@@ -312,11 +318,14 @@ function ChipBlock({
   );
 }
 
-function BottomSheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+function BottomSheet({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
   return (
     <div className="fixed inset-0 z-[60] bg-black/35 backdrop-blur-[2px]" onClick={onClose}>
       <div
-        className="absolute bottom-0 left-0 right-0 max-h-[88vh] overflow-y-auto rounded-t-[28px] bg-[var(--lobb-surface)] p-5 pb-10 shadow-[0_-18px_40px_rgba(0,0,0,0.18)] sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        className="absolute bottom-0 left-0 right-0 max-h-[88vh] overflow-y-auto border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 pb-10 shadow-[var(--lobb-shadow-modal)] sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--lobb-border)]" />

@@ -1,16 +1,14 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/api-auth";
+import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 import { sendCoachDecisionEmail } from "@/lib/email-notifications";
 
 type DecisionAction = "approve" | "reject" | "suspend" | "unsuspend";
 
 const MAX_REJECTIONS = 3;
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const auth = await requireRole("admin");
-  if (auth.error) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
-  }
+export const POST = withRole("admin", async (request, auth, context) => {
+  const { id } = context.params as { id: string };
 
   const body = (await request.json().catch(() => ({}))) as {
     action?: DecisionAction;
@@ -26,7 +24,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
     return NextResponse.json({ error: "A written reason is required" }, { status: 400 });
   }
 
-  // For rejection, fetch current rejection count first
   let newRejectionCount = 0;
   let needsDirectContact = false;
 
@@ -34,7 +31,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     const { data: current } = await auth.admin
       .from("coaches")
       .select("rejection_count")
-      .eq("id", params.id)
+      .eq("id", id)
       .maybeSingle();
 
     newRejectionCount = (current?.rejection_count ?? 0) + 1;
@@ -59,30 +56,30 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const { data: coach, error } = await auth.admin
     .from("coaches")
     .update(update)
-    .eq("id", params.id)
+    .eq("id", id)
     .select("id, full_name")
     .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return internalError(error);
   if (!coach) return NextResponse.json({ error: "Coach not found" }, { status: 404 });
 
   await auth.admin.from("admin_audit_log").insert({
     admin_id: auth.user.id,
     action: `coach_${action}`,
     target_table: "coaches",
-    target_id: params.id,
+    target_id: id,
     reason,
   });
 
   const { data: profile } = await auth.admin
     .from("profiles")
     .select("email, email_notifications_enabled")
-    .eq("id", params.id)
+    .eq("id", id)
     .maybeSingle();
 
   if ((action === "approve" || action === "reject") && profile?.email && profile.email_notifications_enabled !== false) {
-    await sendCoachDecisionEmail(auth.admin, params.id, profile.email, action, reason, needsDirectContact);
+    await sendCoachDecisionEmail(auth.admin, id, profile.email, action, reason, needsDirectContact);
   }
 
   return NextResponse.json({ ok: true, coach, needs_direct_contact: needsDirectContact });
-}
+});

@@ -134,7 +134,7 @@ export default function PlayerSetupPage() {
           <p className="mt-3 text-[11px] font-medium text-[var(--lobb-text-secondary)]/70">Coaches can reach you on WhatsApp for session details</p>
         </label>
 
-        <div className="mt-8 flex flex-col items-center rounded-[24px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
+        <div className="mt-8 flex flex-col items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
           <label className="group flex cursor-pointer flex-col items-center relative z-10">
             <div className="relative flex size-[104px] items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-text-secondary)] transition-all duration-500 group-hover:border-[var(--lobb-clay)]/50 group-hover:shadow-[0_0_32px_rgba(196,98,45,0.12)] group-hover:scale-105 group-hover:bg-[var(--lobb-surface-2)]">
               {photoUrl ? (
@@ -185,7 +185,7 @@ export default function PlayerSetupPage() {
         </div>
 
         <div className="mt-auto space-y-3 pb-8 pt-10">
-          {error && <p className="text-[13px] font-semibold text-red-400">{error}</p>}
+          {error && <p className="text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
           <OnboardingButton type="submit" disabled={!fullName.trim()} loading={saving}>
             {saving ? "Saving" : "Finish Setup"}
           </OnboardingButton>

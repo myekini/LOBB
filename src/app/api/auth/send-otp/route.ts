@@ -11,7 +11,7 @@ function otpEmailHtml(code: string) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#faf9f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<body style="margin:0;padding:0;background:#faf9f7;font-family:Verdana,Tahoma,sans-serif">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf9f7;padding:40px 16px">
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:24px;border:1px solid #ece9e3;overflow:hidden">
@@ -27,7 +27,7 @@ function otpEmailHtml(code: string) {
         </td></tr>
         <tr><td style="padding:0 36px 36px">
           <p style="margin:0;font-size:13px;color:#9b958a;line-height:1.6">If you didn't request this code, you can safely ignore this email. Someone may have typed your address by mistake.</p>
-          <p style="margin:20px 0 0;font-size:12px;color:#c5bfb8">© LOBB — Lagos tennis coaching platform</p>
+          <p style="margin:20px 0 0;font-size:12px;color:#c5bfb8">© LOBB, Lagos tennis coaching platform</p>
         </td></tr>
       </table>
     </td></tr>
@@ -37,7 +37,7 @@ function otpEmailHtml(code: string) {
 }
 
 function otpEmailText(code: string) {
-  return `Your LOBB login code is: ${code}\n\nIt expires in 10 minutes.\n\nIf you didn't request this, ignore this email.\n\n— LOBB`;
+  return `Your LOBB login code is: ${code}\n\nIt expires in 10 minutes.\n\nIf you didn't request this, ignore this email.\n\nLOBB`;
 }
 
 export async function POST(request: Request) {

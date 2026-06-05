@@ -4,7 +4,7 @@ import { CoachSurface } from "@/components/common/coach-surface";
 
 export default function CoachBookingsLoading() {
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
+    <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Bookings" eyebrow="Coach schedule" active="bookings" actionHref="/coach/availability" actionLabel="Availability" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
         <CoachSurface className="grid grid-cols-3 overflow-hidden">

@@ -63,14 +63,14 @@ export default function LeaveReviewPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
+      <main className="lobb-app-page min-h-screen px-5 pb-10 pt-5 text-[var(--lobb-text-primary)]">
         <section className="mx-auto max-w-md">
           <SkeletonBlock className="h-10 w-40" />
           <div className="mt-8">
             <BookingCardSkeleton />
           </div>
           <SkeletonBlock className="mx-auto mt-8 h-12 w-64 rounded-full" />
-          <SkeletonBlock className="mt-8 h-28 w-full rounded-[18px]" />
+          <SkeletonBlock className="mt-8 h-28 w-full rounded-[16px]" />
         </section>
       </main>
     );
@@ -78,7 +78,7 @@ export default function LeaveReviewPage() {
 
   if (!booking) {
     return (
-      <main className="min-h-screen bg-[var(--lobb-bg)] px-5 py-10 text-[var(--lobb-black)]">
+      <main className="lobb-app-page min-h-screen px-5 py-10 text-[var(--lobb-text-primary)]">
         <section className="mx-auto max-w-md">
           <h1 className="text-xl font-black">Booking not found</h1>
           <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
@@ -88,19 +88,19 @@ export default function LeaveReviewPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 pb-10 pt-5 text-[var(--lobb-black)]">
+    <main className="lobb-app-page min-h-screen px-5 pb-10 pt-5 text-[var(--lobb-text-primary)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
-          <Link href="/dashboard" className="flex size-10 items-center justify-center rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
+          <Link href="/dashboard" className="flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
-          <h1 className="font-black">Leave a Review</h1>
+          <h1 className="font-black">Leave a review</h1>
         </header>
 
         <h2 className="text-[22px] font-black leading-tight">How was your session with {(coach?.full_name ?? "your coach").split(" ")[0]}?</h2>
         <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">{formatBookingDate(booking.starts_at)}</p>
 
-        <div className="mt-7 flex items-center gap-3 rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_12px_28px_rgba(13,13,13,0.05)]">
+        <div className="lobb-app-card mt-7 flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={coach?.profile_photo_url || "/favicon.svg"} alt="" className="size-14 rounded-full object-cover" />
           <div>
@@ -125,14 +125,14 @@ export default function LeaveReviewPage() {
             value={review}
             maxLength={200}
             onChange={(event) => setReview(event.target.value)}
-            placeholder="Tell others what you thought... (optional)"
-            className="h-28 w-full resize-none rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-medium outline-none placeholder:text-[#9b958a] focus:border-[var(--lobb-black)]"
+            placeholder="Tell others what you thought (optional)"
+            className="h-28 w-full resize-none rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]"
           />
           <span className="mt-2 block text-right text-xs font-bold text-[var(--lobb-muted)]">{review.length}/200</span>
         </label>
 
-        <button disabled={!rating || submitting} onClick={submit} className="mt-5 h-14 w-full rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)] disabled:bg-[#cfc6b8] disabled:shadow-none">
-          {submitting ? "Submitting..." : "Submit Review"}
+        <button disabled={!rating || submitting} onClick={submit} className="mt-5 h-14 w-full rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:shadow-none">
+          {submitting ? "Submitting" : "Submit review"}
         </button>
         <Link href="/dashboard" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
           Skip for now
