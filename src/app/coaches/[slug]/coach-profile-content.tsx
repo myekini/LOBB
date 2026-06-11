@@ -13,12 +13,10 @@ import {
   ChevronRight,
   CircleUserRound,
   Copy,
-  Eye,
   ExternalLink,
   Pencil,
   MapPin,
   Play,
-  QrCode,
   ShieldCheck,
   Star,
   Trophy,
@@ -152,7 +150,6 @@ export function CoachProfileContent({
   const profilePath = coach.slug ? `/coaches/${coach.slug}` : "/coach/profile/preview";
   const profileUrl = origin ? `${origin}${profilePath}` : profilePath;
   const canSharePublicProfile = Boolean(coach.slug && origin);
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(profileUrl)}`;
 
   const heroStyle = useMemo(
     () =>
@@ -227,7 +224,7 @@ export function CoachProfileContent({
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)] md:pb-0">
-      <nav className="lobb-app-header sticky top-0 z-40 hidden h-16 border-b border-[var(--lobb-border-subtle)] md:block">
+      {!isPreview && <nav className="lobb-app-header sticky top-0 z-40 hidden h-16 border-b border-[var(--lobb-border-subtle)] md:block">
         <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <Link
@@ -237,7 +234,7 @@ export function CoachProfileContent({
             >
               <ArrowLeft className="size-5" />
             </Link>
-            <span className="text-2xl font-black tracking-tight">{isPreview ? "Preview" : "LOBB"}</span>
+            <span className="text-2xl font-black tracking-tight">LOBB</span>
           </div>
           <div className="flex items-center gap-3">
             <CoachShareSheet
@@ -262,67 +259,48 @@ export function CoachProfileContent({
             </button>
           </div>
         </div>
-      </nav>
+      </nav>}
 
       {isPreview && (
-        <div className="border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-inverse)] px-4 py-4 text-[var(--lobb-text-inverse)]">
-          <div className="mx-auto grid max-w-[1280px] gap-4 md:grid-cols-[minmax(0,1fr)_390px] md:items-center">
-            <div className="min-w-0">
+        <div className="sticky top-0 z-50 border-b border-white/10 bg-[var(--lobb-bg-inverse)] px-4 py-3 text-[var(--lobb-text-inverse)] shadow-[0_6px_18px_rgba(0,0,0,0.16)]">
+          <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/coach/profile"
-                className="mb-4 inline-flex h-10 items-center gap-2 rounded-[12px] border border-white/10 bg-white/5 px-3 text-xs font-black text-white transition hover:bg-white/10"
+                className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+                aria-label="Back to coach profile"
               >
-                <ArrowLeft className="size-4 text-[var(--lobb-clay)]" />
-                Back to profile
+                <ArrowLeft className="size-4" />
               </Link>
-              <div className="flex items-start gap-3">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-white/8 text-[var(--lobb-clay)] ring-1 ring-white/10">
-                  <Eye className="size-5" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-xs font-black uppercase tracking-[0.08em] text-[var(--lobb-clay)]">Player preview</p>
-                  <h1 className="mt-1 text-2xl font-black tracking-tight text-white">Check the profile before players see it</h1>
-                  <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-white/62">
-                    {coach.slug ? "Review the booking page, then share the QR or public link from here." : "Add a public slug before sharing this profile."}
-                  </p>
-                </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-black text-white">Player preview</p>
+                <p className="truncate text-xs font-semibold text-white/58">This is the public booking page.</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-[84px_minmax(0,1fr)] gap-3 rounded-[14px] border border-white/10 bg-white/[0.06] p-3">
-              <div className="rounded-[10px] bg-white p-1.5" data-keep-light>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrUrl} alt="QR code for public coach profile" className="size-[72px] rounded-[6px] bg-white" data-keep-light />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 text-xs font-black text-white">
-                  <QrCode className="size-3.5 text-[var(--lobb-clay)]" />
-                  Public link
-                </div>
-                <p className="mt-1 truncate text-xs font-semibold text-white/58">{profileUrl}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link href="/coach/profile/edit" className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[12px] bg-white px-3 text-xs font-black text-[#0d0d0d]">
-                    <Pencil className="size-3.5 text-[var(--lobb-clay)]" />
-                    Edit profile
-                  </Link>
-                  <a
-                    href={profilePath}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[12px] border border-white/10 bg-white/5 px-3 text-xs font-black text-white"
-                  >
-                    <ExternalLink className="size-3.5 text-[var(--lobb-clay)]" />
-                    Open live
-                  </a>
-                  <CoachShareSheet
-                    coachName={fullName}
-                    disabled={!canSharePublicProfile}
-                    profileUrl={profileUrl}
-                    triggerLabel="Share"
-                    triggerClassName="inline-flex h-9 items-center justify-center gap-1.5 rounded-[12px] border border-white/10 bg-white/5 px-3 text-xs font-black text-white disabled:opacity-45"
-                  />
-                </div>
-              </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-white px-3 text-xs font-black text-[#0d0d0d]">
+                <Pencil className="size-3.5 text-[var(--lobb-clay)]" />
+                <span className="hidden sm:inline">Edit</span>
+              </Link>
+              {coach.slug && (
+                <a
+                  href={profilePath}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex size-10 items-center justify-center rounded-[12px] border border-white/10 bg-white/5 text-white"
+                  aria-label="Open live profile"
+                >
+                  <ExternalLink className="size-3.5" />
+                </a>
+              )}
+              <CoachShareSheet
+                coachName={fullName}
+                disabled={!canSharePublicProfile}
+                profileUrl={profileUrl}
+                triggerLabel=""
+                triggerClassName="inline-flex size-10 items-center justify-center rounded-[12px] border border-white/10 bg-white/5 text-white disabled:opacity-45"
+              />
             </div>
           </div>
         </div>
@@ -342,7 +320,7 @@ export function CoachProfileContent({
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-black/20" />
-            <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-4 md:hidden">
+            {!isPreview && <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-4 md:hidden">
               <Link
                 href={backHref}
                 className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur"
@@ -357,7 +335,7 @@ export function CoachProfileContent({
                 triggerClassName="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur disabled:opacity-45"
                 triggerLabel=""
               />
-            </div>
+            </div>}
             {coach.demo_video_url && (
               <a
                 href={coach.demo_video_url}
@@ -414,7 +392,7 @@ export function CoachProfileContent({
                   <span className="font-mono text-2xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</span>
                   <span className="text-sm font-medium text-[var(--lobb-text-secondary)]">/hr</span>
                 </div>
-                {coach.slug && (
+                {coach.slug && !isPreview && (
                   <button
                     type="button"
                     onClick={async () => {
@@ -704,13 +682,15 @@ export function CoachProfileContent({
                 <div className="font-mono text-3xl font-black tracking-tight text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
                 <div className="text-sm font-medium text-[var(--lobb-text-secondary)]">per hour session</div>
               </div>
-              <CoachShareSheet
-                coachName={fullName}
-                disabled={!canSharePublicProfile}
-                profileUrl={profileUrl}
-                triggerClassName="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)] disabled:opacity-45"
-                triggerLabel=""
-              />
+              {!isPreview && (
+                <CoachShareSheet
+                  coachName={fullName}
+                  disabled={!canSharePublicProfile}
+                  profileUrl={profileUrl}
+                  triggerClassName="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)] disabled:opacity-45"
+                  triggerLabel=""
+                />
+              )}
             </div>
 
             <div className="mb-6 space-y-4">

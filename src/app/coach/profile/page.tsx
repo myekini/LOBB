@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import type React from "react";
-import { AlertTriangle, Award, BadgeCheck, CheckCircle2, ChevronRight, Eye, Link2, Pencil, QrCode, Settings, User } from "lucide-react";
+import { AlertTriangle, Award, BadgeCheck, CheckCircle2, ChevronRight, Eye, Link2, QrCode, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import type { CoachRow } from "@/lib/types";
@@ -144,6 +143,7 @@ export default async function CoachProfilePage() {
   const doneCount = sections.filter((s) => s.done).length;
   const completionPct = Math.round((doneCount / sections.length) * 100);
   const allDone = doneCount === sections.length;
+  const nextIncomplete = sections.find((section) => !section.done);
   const statusInfo = STATUS_LABELS[coach.status] ?? STATUS_LABELS.draft;
   const certifications: string[] = Array.isArray(coach.certifications)
     ? (coach.certifications as unknown[]).filter((cert: unknown): cert is string => typeof cert === "string" && cert.length > 0)
@@ -152,7 +152,7 @@ export default async function CoachProfilePage() {
   const publicPath = coach.slug ? `/coaches/${coach.slug}` : "/coach/profile/preview";
   const publicUrl = `${appUrl}${publicPath}`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=12&data=${encodeURIComponent(publicUrl)}`;
-  const canShare = Boolean(coach.slug);
+  const canShare = Boolean(coach.slug && coach.status === "active");
 
   return (
     <main className="lobb-app-page min-h-screen px-5 pb-36 text-[var(--lobb-text-primary)] sm:px-6">
@@ -215,6 +215,7 @@ export default async function CoachProfilePage() {
           </div>
         </section>
 
+        {canShare ? (
         <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -263,6 +264,24 @@ export default async function CoachProfilePage() {
             </div>
           </div>
         </section>
+        ) : (
+          <section className="lobb-app-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                <QrCode className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-black">Sharing unlocks when your profile is live</p>
+                <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                  Complete the required details and submit for review first.
+                </p>
+                <Link href="/coach/profile/preview" className="mt-3 inline-flex text-xs font-black text-[var(--lobb-clay)]">
+                  Preview current profile
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
 
         {certifications.length > 0 ? (
           <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
@@ -313,30 +332,19 @@ export default async function CoachProfilePage() {
           </Link>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/coach/profile/edit"
-            className="flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]"
-          >
-            <Pencil className="size-4" />
-            Edit
-          </Link>
-          <Link
-            href="/coach/settings"
-            className="flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-xs font-black"
-          >
-            <Settings className="size-4 text-[var(--lobb-clay)]" />
-            Settings
-          </Link>
-        </div>
           </aside>
 
           <section className="min-w-0">
         {/* Sections checklist */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
-            Required details
-          </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+              Required details
+            </h2>
+            <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+              {allDone ? "Everything needed for review is complete." : `${sections.length - doneCount} items still need attention.`}
+            </p>
+          </div>
           <Link
             href="/coach/profile/preview"
             className="inline-flex items-center gap-1.5 text-xs font-black text-[var(--lobb-clay)]"
@@ -360,8 +368,12 @@ export default async function CoachProfilePage() {
                   <Link
                     key={section.label}
                     href={section.href}
-                    className={`flex min-h-[72px] items-center justify-between gap-4 p-4 transition hover:bg-[var(--lobb-bg-primary)] sm:px-5 ${
-                      index ? "border-t border-[var(--lobb-border-subtle)]" : ""
+                    className={`flex min-h-[72px] items-center justify-between gap-4 p-4 transition sm:px-5 ${
+                      index ? "border-t border-[var(--lobb-border-subtle)] " : ""
+                    }${
+                      section.done
+                        ? "hover:bg-[var(--lobb-bg-primary)]"
+                        : "bg-[var(--lobb-clay-light)]/45 hover:bg-[var(--lobb-clay-light)]"
                     }`}
                   >
                     <div className="flex min-w-0 items-center gap-3">
@@ -394,23 +406,26 @@ export default async function CoachProfilePage() {
           })}
         </div>
 
-        {!allDone && (
-          <section className="lobb-app-panel mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-            <p className="flex items-center gap-2 font-black">
-              <AlertTriangle className="size-4 text-[var(--lobb-clay)]" />
-              Complete missing items first
-            </p>
-            <p className="mt-2 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
-              Complete profiles receive more bookings and rank higher in search.
-            </p>
+        {!allDone && nextIncomplete && (
+          <section className="mt-5 flex flex-col gap-3 rounded-[14px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="flex items-center gap-2 font-black">
+                <AlertTriangle className="size-4 text-[var(--lobb-clay)]" />
+                Continue profile setup
+              </p>
+              <p className="mt-1 text-sm font-semibold text-white/60">
+                Next: {nextIncomplete.label}
+              </p>
+            </div>
+            <Link
+              href={nextIncomplete.href}
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-white px-5 text-sm font-black text-[#0d0d0d]"
+            >
+              Add {nextIncomplete.label.toLowerCase()}
+              <ChevronRight className="size-4" />
+            </Link>
           </section>
         )}
-
-        <section className="mt-5 grid gap-3 sm:grid-cols-3">
-          <CoachQuickAction href="/coach/profile/edit" icon={<Pencil className="size-4" />} label="Edit profile" />
-          <CoachQuickAction href="/coach/profile/preview" icon={<Eye className="size-4" />} label="Preview as player" />
-          <CoachQuickAction href="/coach/settings" icon={<Settings className="size-4" />} label="Profile settings" />
-        </section>
 
         {(coach.status === "draft" || coach.status === "rejected") && allDone && (
           <SubmitForReviewButton />
@@ -421,30 +436,5 @@ export default async function CoachProfilePage() {
 
       <CoachBottomNav active="profile" />
     </main>
-  );
-}
-
-function CoachQuickAction({
-  href,
-  icon,
-  label,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="lobb-app-panel flex min-h-[76px] items-center justify-between gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 transition hover:border-[var(--lobb-clay)]/35"
-    >
-      <span className="flex items-center gap-3">
-        <span className="flex size-9 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
-          {icon}
-        </span>
-        <span className="text-sm font-black">{label}</span>
-      </span>
-      <ChevronRight className="size-4 text-[var(--lobb-text-tertiary)]" />
-    </Link>
   );
 }
