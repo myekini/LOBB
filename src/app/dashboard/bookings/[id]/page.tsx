@@ -64,8 +64,13 @@ export default function BookingDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: "Cancelled by player from dashboard" }),
       });
-      if (!response.ok) throw await readApiError(response, "UNKNOWN_ERROR");
-      toastAppSuccess("Booking cancelled.");
+      const payload = await response.json() as { error?: string; refund_error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Unable to cancel booking");
+      if (payload.refund_error) {
+        toastAppError(new Error("Booking cancelled, but the refund needs manual review. LOBB support will follow up."), "UNKNOWN_ERROR");
+      } else {
+        toastAppSuccess("Booking cancelled.");
+      }
       router.push("/dashboard");
     } catch (error) {
       toastAppError(error, "UNKNOWN_ERROR");

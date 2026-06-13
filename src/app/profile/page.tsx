@@ -13,7 +13,7 @@ import {
   Pencil,
   User,
 } from "lucide-react";
-import { PlayerBottomNav } from "@/components/layout/player-nav";
+import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { createClient } from "@/lib/supabase/client";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
@@ -61,6 +61,7 @@ export default function ProfilePage() {
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
+      <PlayerHeader active="profile" title="Profile" />
       <div className="mx-auto max-w-lg px-5 pt-8 sm:px-6">
 
         {/* Avatar + name */}
@@ -80,8 +81,8 @@ export default function ProfilePage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={profile.avatar_url} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-lg font-black text-white">
-                    {abbr ?? <User className="size-6 text-white/60" />}
+                  <span className="flex size-full items-center justify-center text-lg font-black text-[var(--lobb-text-inverse)]">
+                    {abbr ?? <User className="size-6 opacity-60" />}
                   </span>
                 )}
               </div>

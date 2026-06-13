@@ -2,6 +2,7 @@
 
 import { ArrowLeft, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const STEP_LABELS = ["Choose slot", "Location", "Review & pay"] as const;
 
@@ -31,7 +32,7 @@ export function BookingShell({
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Step {step} of 3</p>
             <h1 className="truncate text-[15px] font-black">Book a session</h1>
           </div>
-          <div aria-hidden="true" />
+          <ThemeToggle className="size-11 rounded-[12px]" />
         </div>
       </header>
 

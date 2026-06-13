@@ -126,6 +126,8 @@ export type BookingRow = {
   cancelled_by: "player" | "coach" | "admin" | null;
   cancelled_at: string | null;
   cancellation_reason: string | null;
+  location_venue_id: string | null;
+  location_court_id: string | null;
   escrow_released_at: string | null;
   created_at: string;
   updated_at: string;

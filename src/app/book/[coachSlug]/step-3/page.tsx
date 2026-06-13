@@ -43,11 +43,13 @@ function BookingStep3Content() {
   const router = useRouter();
   const slug   = params.coachSlug;
 
-  const slot      = search.get("slot")     ?? "";
-  const lockId    = search.get("lock")     ?? "";
-  const expiresAt = search.get("expires")  ?? "";
-  const location  = search.get("location") ?? "";
-  const note      = search.get("note")     ?? "";
+  const slot      = search.get("slot")      ?? "";
+  const lockId    = search.get("lock")      ?? "";
+  const expiresAt = search.get("expires")   ?? "";
+  const location  = search.get("location")  ?? "";
+  const note      = search.get("note")      ?? "";
+  const courtId   = search.get("court_id")  ?? "";
+  const subCourt  = search.get("sub_court") ?? "";
   const [coach,   setCoach]   = useState<CoachPublicProfile | null>(null);
   const [paying,  setPaying]  = useState(false);
   const [seconds, setSeconds] = useState(() => {
@@ -103,11 +105,13 @@ function BookingStep3Content() {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({
-          coach_slug:    slug,
-          slot_starts_at: slot,
-          lock_id:       lockId,
+          coach_slug:         slug,
+          slot_starts_at:     slot,
+          lock_id:            lockId,
           location,
-          player_notes:  note || undefined,
+          player_notes:       note || undefined,
+          location_venue_id:  courtId  || undefined,
+          location_court_id:  subCourt || undefined,
         }),
       });
       if (!res.ok) {

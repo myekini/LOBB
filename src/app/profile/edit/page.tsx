@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Bell, BellOff, Camera, Loader2, User } from "lucide-react";
+import { Bell, BellOff, Camera, Loader2, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 import { showLobbToast } from "@/providers/lobb-global-state";
+import { PlayerHeader } from "@/components/layout/player-nav";
 
 function initials(name: string) {
   return name
@@ -98,29 +98,20 @@ export default function EditProfilePage() {
   const abbr = name ? initials(name) : null;
 
   return (
-    <main className="lobb-app-page min-h-screen px-5 pb-10 pt-5 text-[var(--lobb-black)]">
-      <section className="mx-auto max-w-md">
-        <header className="mb-8 flex items-center gap-3">
-          <Link
-            href="/profile"
-            className="flex size-10 items-center justify-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
-            aria-label="Go back"
-          >
-            <ArrowLeft className="size-5" />
-          </Link>
-          <h1 className="font-black">Edit Profile</h1>
-        </header>
+    <main className="lobb-app-page min-h-screen pb-10 text-[var(--lobb-text-primary)]">
+      <PlayerHeader active="profile" title="Edit profile" backHref="/profile" />
+      <section className="mx-auto max-w-md px-5 pt-8">
 
         {!loading && (
           <>
             <div className="lobb-app-card flex flex-col items-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-6">
-              <div className="relative size-24 overflow-hidden rounded-full bg-[var(--lobb-black)]">
+              <div className="relative size-24 overflow-hidden rounded-full bg-[var(--lobb-bg-inverse)]">
                 {displayPhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={displayPhoto} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-2xl font-black text-white">
-                    {abbr ?? <User className="size-8 text-white/60" />}
+                  <span className="flex size-full items-center justify-center text-2xl font-black text-[var(--lobb-text-inverse)]">
+                    {abbr ?? <User className="size-8 opacity-60" />}
                   </span>
                 )}
               </div>
@@ -157,7 +148,7 @@ export default function EditProfilePage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mt-2 h-14 w-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none transition placeholder:text-[#b4ad9e] focus:border-[var(--lobb-clay)]"
+                className="mt-2 h-14 w-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none transition placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]"
               />
               <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-muted)] leading-relaxed">
                 Used for booking confirmations, 24-hour reminders, and session reviews.
@@ -193,6 +184,7 @@ export default function EditProfilePage() {
                   }`}
                 >
                   <span
+                    data-keep-light
                     className={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform ${
                       emailNotifications ? "translate-x-5.5" : "translate-x-0.5"
                     }`}

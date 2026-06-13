@@ -602,11 +602,11 @@ export default function CoachProfileEditPage() {
             </div>
           </section>
 
-          {/* ── Courts I work with ───────────────────────────── */}
+          {/* ── My session courts ───────────────────────────── */}
           <section>
-            <SectionHead id="courts-worked-with" title="Courts I Work With" />
+            <SectionHead id="courts-worked-with" title="My Session Courts" />
             <p className="mb-3 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
-              Select courts you have access to or regularly use. Shown on your public profile so players know where to expect to train.
+              Select the courts where you hold sessions. Players will be shown these courts to pick from when booking with you. Leave empty to let players choose any Lagos court.
             </p>
             <div className="space-y-2">
               {LAGOS_COURTS.map((court) => (

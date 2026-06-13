@@ -49,12 +49,16 @@ export default function CoachBookingDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason: "Cancelled by coach" }),
       });
-      const payload = await response.json() as { ok?: boolean; error?: string; refund_label?: string; refund_ngn?: number };
+      const payload = await response.json() as { ok?: boolean; error?: string; refund_label?: string; refund_ngn?: number; refund_error?: string };
       if (!response.ok) throw new Error(payload.error ?? "Unable to cancel booking");
-      const refundMsg = payload.refund_ngn
-        ? ` ${payload.refund_label ?? "Refund"} of ₦${payload.refund_ngn.toLocaleString()} issued.`
-        : "";
-      showLobbToast({ type: "success", message: `Booking cancelled.${refundMsg}` });
+      if (payload.refund_error) {
+        showLobbToast({ type: "warning", message: "Booking cancelled. The refund needs manual review by LOBB support." });
+      } else {
+        const refundMsg = payload.refund_ngn
+          ? ` ${payload.refund_label ?? "Refund"} of ₦${payload.refund_ngn.toLocaleString()} started.`
+          : "";
+        showLobbToast({ type: "success", message: `Booking cancelled.${refundMsg}` });
+      }
       router.push("/coach/bookings");
     } catch (error) {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to cancel booking" });

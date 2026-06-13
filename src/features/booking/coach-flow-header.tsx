@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Home, Pencil, type LucideIcon } from "lucide-react";
 import { CoachAccountMenu } from "@/components/common/coach-account-menu";
@@ -53,10 +54,14 @@ export function CoachFlowHeader({
         <div className="flex min-w-0 items-center gap-2">
           {active ? (
             <div className="flex items-center gap-2">
-              <span className="flex size-10 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-bg-inverse)]">
+              <Link
+                href="/coach/dashboard"
+                aria-label="Coach home"
+                className="flex size-10 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-bg-inverse)]"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/favicon.svg" alt="" className="size-full" />
-              </span>
+              </Link>
               <div className="hidden min-[380px]:block">
                 {eyebrow && <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">{eyebrow}</p>}
                 <h1 className="truncate text-base font-black">{title}</h1>

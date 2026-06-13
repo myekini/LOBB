@@ -1,7 +1,11 @@
 "use client";
 
+"use client";
+
 import Link from "next/link";
-import { CalendarDays, Home, Search, User } from "lucide-react";
+import type React from "react";
+import { ArrowLeft, CalendarDays, Home, Search, User } from "lucide-react";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { cn } from "@/lib/utils";
 
 const items = [
@@ -12,6 +16,15 @@ const items = [
 ] as const;
 
 type ActiveTab = "home" | "coaches" | "bookings" | "profile";
+
+type PlayerHeaderProps = {
+  active: ActiveTab;
+  title: string;
+  backHref?: string;
+  eyebrow?: string;
+  actions?: React.ReactNode;
+  sticky?: boolean;
+};
 
 export function PlayerBottomNav({ active }: { active: ActiveTab }) {
   return (
@@ -54,10 +67,9 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
 }
 
 export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
-  const desktopItems = items.filter((item) => item.label !== "Profile");
   return (
     <nav className="lobb-desktop-nav hidden items-center gap-1 md:flex" aria-label="Player navigation">
-      {desktopItems.map((item) => {
+      {items.map((item) => {
         const isActive = item.label.toLowerCase() === active;
         const Icon = item.icon;
         return (
@@ -78,5 +90,69 @@ export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
         );
       })}
     </nav>
+  );
+}
+
+export function PlayerHeader({
+  active,
+  title,
+  backHref,
+  eyebrow,
+  actions,
+  sticky = true,
+}: PlayerHeaderProps) {
+  return (
+    <header
+      className={cn(
+        "lobb-app-header z-40 border-b border-[var(--lobb-border-subtle)] backdrop-blur-xl",
+        sticky && "sticky top-0"
+      )}
+    >
+      <div className="mx-auto grid h-16 max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 sm:px-6 md:flex md:justify-between">
+        <div className="flex min-w-0 items-center gap-2">
+          <Link
+            href="/"
+            aria-label="LOBB home"
+            className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-bg-inverse)]"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/favicon.svg" alt="" className="size-full" />
+          </Link>
+          {backHref && (
+            <Link
+              href={backHref}
+              aria-label="Go back"
+              className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40 active:scale-[0.97]"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+          )}
+          <div className="hidden min-w-0 md:block">
+            {eyebrow && (
+              <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                {eyebrow}
+              </p>
+            )}
+            <p className="truncate text-sm font-black text-[var(--lobb-text-primary)]">{title}</p>
+          </div>
+        </div>
+
+        <div className="min-w-0 text-center md:hidden">
+          {eyebrow && (
+            <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+              {eyebrow}
+            </p>
+          )}
+          <h1 className="truncate text-[15px] font-black text-[var(--lobb-text-primary)]">{title}</h1>
+        </div>
+
+        <PlayerDesktopNav active={active} />
+
+        <div className="flex items-center justify-end gap-2">
+          {actions}
+          <ThemeToggle className="size-10 rounded-[12px]" />
+        </div>
+      </div>
+    </header>
   );
 }

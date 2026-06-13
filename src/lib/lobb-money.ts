@@ -18,7 +18,14 @@ export function cancellationPolicy(
   startsAt: string,
   cancelledBy: "player" | "coach" | "admin" = "player"
 ): CancellationPolicy {
-  void cancelledBy;
+  if (cancelledBy === "coach" || cancelledBy === "admin") {
+    return {
+      refundPercent: 100,
+      label: "Full refund",
+      note: "Coach and admin cancellations always return the full payment to the player.",
+    };
+  }
+
   const hours = hoursUntilSession(startsAt);
 
   if (hours >= 72) {

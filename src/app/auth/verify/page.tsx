@@ -182,7 +182,7 @@ export default function VerifyPage() {
         return;
       }
       track("User Signed In", { role: "player" });
-      router.replace(profile.full_name ? "/" : "/auth/setup/player");
+      router.replace(profile.full_name ? "/dashboard" : "/auth/setup/player");
       return;
     }
 

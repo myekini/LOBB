@@ -37,12 +37,14 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const totalPaidNgn = booking.total_amount_ngn ?? 0;
   const refundNgn = refundAmountNgn(totalPaidNgn, policy.refundPercent);
   const payment = booking.payments?.[0] as { paystack_reference?: string | null; status?: string | null } | undefined;
+  let refundError: string | null = null;
+  let refundStarted = false;
 
   // ── Cancel booking in DB first (before touching Paystack) ────────────────────
   // If the DB update fails, no refund has been issued yet — consistent state.
   const now = new Date().toISOString();
 
-  const { error: updateError } = await auth.admin
+  const { data: cancelledBooking, error: updateError } = await auth.admin
     .from("bookings")
     .update({
       status: "cancelled",
@@ -50,9 +52,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
       cancelled_at: now,
       cancellation_reason: body.reason?.trim() || policy.note,
     })
-    .eq("id", params.id);
+    .eq("id", params.id)
+    .in("status", ["pending", "confirmed"])
+    .select("id")
+    .maybeSingle();
 
   if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  if (!cancelledBooking) {
+    return NextResponse.json({ error: "This booking has already been updated" }, { status: 409 });
+  }
 
   // ── Issue refund via Paystack (booking already cancelled) ────────────────────
   if (policy.refundPercent > 0 && payment?.status === "paid" && payment.paystack_reference) {
@@ -62,6 +70,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
         : Math.round(refundNgn * 100);           // partial — specify kobo amount
 
       await initiateRefund(payment.paystack_reference, refundKobo);
+      refundStarted = true;
 
       const newPaymentStatus = policy.refundPercent === 100 ? "refunded" : "partial_refund";
       await auth.admin
@@ -69,19 +78,8 @@ export async function POST(request: Request, { params }: { params: { id: string 
         .update({ status: newPaymentStatus })
         .eq("paystack_reference", payment.paystack_reference);
     } catch (error) {
-      // Booking is already cancelled. Refund failed — return error so the caller
-      // knows to surface a "contact support" message, but don't re-activate the booking.
-      return NextResponse.json(
-        {
-          ok: true,
-          cancelled_by: cancelledBy,
-          refund_percent: policy.refundPercent,
-          refund_ngn: refundNgn,
-          refund_label: policy.label,
-          refund_error: error instanceof Error ? error.message : "Refund could not be started. Contact support.",
-        },
-        { status: 207 } // booking cancelled but refund requires manual action
-      );
+      // Keep the booking cancelled, but continue notifying both participants.
+      refundError = error instanceof Error ? error.message : "Refund could not be started. Contact support.";
     }
   }
 
@@ -92,7 +90,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
   ]);
 
   // Build a clear refund summary for SMS
-  const refundSummary = policy.refundPercent === 0
+  const refundSummary = refundError
+    ? `The booking is cancelled, but the ${policy.label.toLowerCase()} needs manual review. LOBB support will follow up.`
+    : policy.refundPercent === 0
     ? policy.note
     : `${policy.label} of ₦${refundNgn.toLocaleString("en-NG")} will arrive in 5 to 7 business days. ${policy.note}`;
 
@@ -118,7 +118,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
     refundSummary
   ).catch(() => null);
 
-  if (refundNgn > 0 && payment?.status === "paid") {
+  if (refundStarted && refundNgn > 0 && payment?.status === "paid") {
     sendRefundIssuedEmail(
       auth.admin,
       {
@@ -143,11 +143,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
     ).catch(() => null);
   }
 
-  return NextResponse.json({
-    ok: true,
-    cancelled_by: cancelledBy,
-    refund_percent: policy.refundPercent,
-    refund_ngn: refundNgn,
-    refund_label: policy.label,
-  });
+  return NextResponse.json(
+    {
+      ok: true,
+      cancelled_by: cancelledBy,
+      refund_percent: policy.refundPercent,
+      refund_ngn: refundNgn,
+      refund_label: policy.label,
+      refund_error: refundError,
+    },
+    { status: refundError ? 207 : 200 }
+  );
 }

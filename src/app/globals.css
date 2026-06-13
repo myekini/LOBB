@@ -756,3 +756,191 @@
     display: none !important;
   }
 }
+
+/* ── Player dashboard micro-interactions ── */
+.lobb-segmented-thumb {
+  border-radius: 10px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lobbDotPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.lobb-dot-pulse {
+  animation: lobbDotPulse 2.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lobb-segmented-thumb {
+    transition: none;
+  }
+  .lobb-dot-pulse {
+    animation: none;
+  }
+}
+
+/* ── Landing motion & micro-interactions ── */
+.lobb-landing {
+  --lobb-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lobbWordRise {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+.lobb-word {
+  display: inline-block;
+  animation: lobbWordRise 0.85s var(--lobb-ease-out) both;
+  animation-delay: calc(120ms + var(--i) * 75ms);
+}
+
+/* Scroll reveals: .lobb-reveal-pending is added by JS only to below-fold
+   elements, so content never ships hidden without JS. */
+.lobb-reveal-pending {
+  opacity: 0;
+  transform: translateY(26px);
+  filter: blur(7px);
+}
+
+.lobb-reveal-pending.lobb-reveal-in {
+  opacity: 1;
+  transform: none;
+  filter: blur(0);
+  transition:
+    opacity 0.8s var(--lobb-ease-out),
+    transform 0.8s var(--lobb-ease-out),
+    filter 0.8s var(--lobb-ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.lobb-nav-link {
+  position: relative;
+}
+
+.lobb-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  height: 2px;
+  /* Trailing letter-spacing pads the text box; pull the underline back so it ends with the glyphs. */
+  width: calc(100% - 0.14em);
+  background: var(--lobb-clay);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s var(--lobb-ease-out);
+}
+
+.lobb-nav-link:hover::after,
+.lobb-nav-link:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.lobb-cta-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.lobb-cta-sheen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -45%;
+  width: 38%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+  transform: skewX(-18deg);
+  transition: transform 0.7s var(--lobb-ease-out);
+  pointer-events: none;
+}
+
+.lobb-cta-sheen:hover::before {
+  transform: skewX(-18deg) translateX(440%);
+}
+
+.lobb-landing .lobb-booking-widget {
+  transition: transform 0.6s var(--lobb-ease-out), box-shadow 0.6s var(--lobb-ease-out);
+}
+
+/* Horizontal coach rail: soft edge fade, hidden scrollbar */
+.lobb-rail {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 20px, #000 calc(100% - 44px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 20px, #000 calc(100% - 44px), transparent);
+}
+
+.lobb-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Lagos areas marquee: seamless loop over a duplicated track */
+.lobb-marquee {
+  overflow: hidden;
+}
+
+.lobb-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: lobbMarquee 56s linear infinite;
+}
+
+.lobb-marquee:hover .lobb-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes lobbMarquee {
+  to { transform: translateX(-50%); }
+}
+
+/* Header shadow condenses as the page scrolls (progressive enhancement). */
+@supports (animation-timeline: scroll()) {
+  header.lobb-landing-header {
+    animation: lobbHeaderCondense linear both;
+    animation-timeline: scroll();
+    animation-range: 0 160px;
+  }
+
+  @keyframes lobbHeaderCondense {
+    to {
+      box-shadow: 0 10px 32px rgba(26, 23, 20, 0.08);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lobb-word {
+    animation: none;
+    filter: none;
+  }
+  .lobb-reveal-pending {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+  .lobb-cta-sheen::before {
+    display: none;
+  }
+  .lobb-landing .lobb-booking-widget {
+    transition: none;
+  }
+  .lobb-marquee-track {
+    animation: none;
+  }
+  .lobb-marquee {
+    overflow-x: auto;
+  }
+  header.lobb-landing-header {
+    animation: none;
+  }
+}

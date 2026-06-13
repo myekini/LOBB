@@ -1,10 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { CoachListCard } from "@/features/coaches/coach-cards";
-import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
+import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
 import type { CoachPublicProfile } from "@/lib/types";
 
@@ -78,18 +77,11 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
-      <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4 sm:px-5">
-          <Link
-            href="/"
-            aria-label="Back"
-            className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition active:scale-[0.97]"
-          >
-            <ArrowLeft className="size-4.5" />
-          </Link>
-          <h1 className="text-[15px] font-black">Book a coach</h1>
-          <div className="flex items-center gap-2">
-            <PlayerDesktopNav active="coaches" />
+      <PlayerHeader
+        active="coaches"
+        title="Book a coach"
+        actions={
+          <>
             <button
               type="button"
               onClick={() => setShowSort(true)}
@@ -110,11 +102,11 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
                 </span>
               )}
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
-      <div className="mx-auto max-w-3xl px-4 sm:px-5">
+      <div className="mx-auto max-w-5xl px-4 sm:px-5">
 
         <div className="pt-4">
           <label className="lobb-app-card flex h-[52px] items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4">
@@ -173,7 +165,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
                 title="No coaches match your search."
                 body="Try a different area or clear your filters."
                 action={
-                  <button type="button" className="rounded-[12px] bg-[var(--lobb-black)] px-5 py-2 text-sm font-black text-white" onClick={reset}>
+                  <button type="button" className="rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 py-2 text-sm font-black text-[var(--lobb-text-inverse)]" onClick={reset}>
                     Clear filters
                   </button>
                 }

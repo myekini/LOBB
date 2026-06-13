@@ -87,9 +87,11 @@ export async function POST(request: Request) {
       lock_id?: string;
       location?: string;
       player_notes?: string;
+      location_venue_id?: string;
+      location_court_id?: string;
     };
 
-    const { coach_slug, slot_starts_at, lock_id, location, player_notes } = body;
+    const { coach_slug, slot_starts_at, lock_id, location, player_notes, location_venue_id, location_court_id } = body;
 
     if (!coach_slug || !slot_starts_at || !lock_id || !location?.trim()) {
       return apiError("VALIDATION_ERROR", 400, { message: "Choose a slot and court before continuing." });
@@ -184,6 +186,8 @@ export async function POST(request: Request) {
         starts_at:        starts_at.toISOString(),
         ends_at:          ends_at.toISOString(),
         location:             location.trim(),
+        location_venue_id:    location_venue_id?.trim() || null,
+        location_court_id:    location_court_id?.trim() || null,
         player_notes:         player_notes?.trim().slice(0, 1000) || null,
         status:               "pending",
         hourly_rate_ngn:  session_fee,

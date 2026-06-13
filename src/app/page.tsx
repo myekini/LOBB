@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, CalendarCheck, CalendarDays, Check, ChevronDown, CreditCard, LogOut, MapPin, Moon, Search, Sun, Sunrise, User } from "lucide-react";
+import { ArrowRight, CalendarDays, Check, MapPin, Moon, Search, Star, Sun, Sunrise } from "lucide-react";
 import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
-import { PlayerBottomNav, PlayerDesktopNav } from "@/components/layout/player-nav";
-import { CoachListCard } from "@/features/coaches/coach-cards";
+import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
+import { SmallCoachCard } from "@/features/coaches/coach-cards";
 import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/common/lobb-skeleton";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
@@ -73,8 +73,6 @@ export default function Home() {
   const [loadingCoaches, setLoadingCoaches] = useState(true);
   const [coachQuery, setCoachQuery]         = useState("");
   const [coachLocation, setCoachLocation]   = useState("All");
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const locationChips = useMemo(() => {
     const locs = liveCoaches
@@ -98,17 +96,6 @@ export default function Home() {
       ].join(" ").toLowerCase().includes(q);
     });
   }, [coachLocation, coachQuery, liveCoaches]);
-
-  useEffect(() => {
-    if (!profileMenuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setProfileMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [profileMenuOpen]);
 
   useEffect(() => {
     // Skip the auth skeleton immediately for unauthenticated visitors.
@@ -209,73 +196,9 @@ export default function Home() {
     const mood = getTimeMood();
     const MoodIcon = mood.Icon;
 
-    const signOut = async () => {
-      const supabase = createClient();
-      await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
-      await supabase.auth.signOut();
-      router.push("/auth/login");
-    };
-
     return (
       <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
-
-        <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border)] backdrop-blur-xl">
-          <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
-            <div className="flex items-center gap-2">
-              <LobbMark size={20} />
-              <span className="text-[13px] font-black tracking-tight text-[var(--lobb-black)]">LOBB</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <PlayerDesktopNav active="home" />
-              <div className="relative" ref={menuRef}>
-                <button
-                  type="button"
-                  onClick={() => setProfileMenuOpen((v) => !v)}
-                  aria-expanded={profileMenuOpen}
-                  aria-label="Profile menu"
-                  className="flex h-10 items-center gap-2 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] py-1 pl-1 pr-3 transition hover:border-[var(--lobb-clay)]/40"
-                >
-                  <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-surface-2)] text-[var(--lobb-muted)]">
-                    {profile.avatar_url
-                      // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={profile.avatar_url} alt="" className="size-full object-cover" />
-                      : <User className="size-4" />}
-                  </span>
-                  <span className="hidden max-w-[96px] truncate text-[12px] font-black md:block">{firstName}</span>
-                  <ChevronDown className="size-3 text-[var(--lobb-muted)]" />
-                </button>
-
-                {profileMenuOpen && (
-                  <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-2 shadow-[var(--lobb-shadow-modal)]">
-                    <div className="flex items-center gap-3 border-b border-[var(--lobb-border)] p-3 pb-3">
-                      <span className="flex size-10 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-surface-2)]">
-                        {profile.avatar_url
-                          // eslint-disable-next-line @next/next/no-img-element
-                          ? <img src={profile.avatar_url} alt="" className="size-full object-cover" />
-                          : <User className="size-4 text-[var(--lobb-muted)]" />}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-black">{profile.full_name}</p>
-                        <p className="text-[11px] text-[var(--lobb-muted)]">Player account</p>
-                      </div>
-                    </div>
-                    <ProfileMenuLink href="/dashboard" icon={<CalendarDays className="size-4" />} label="My bookings" />
-                    <ProfileMenuLink href="/coaches"   icon={<Search className="size-4" />}      label="Browse coaches" />
-                    <ProfileMenuLink href="/profile"   icon={<User className="size-4" />}        label="Profile settings" />
-                    <button
-                      type="button"
-                      onClick={signOut}
-                      className="mt-1 flex h-10 w-full items-center gap-3 rounded-[12px] px-3 text-left text-sm font-black text-red-600 transition hover:bg-red-50"
-                    >
-                      <LogOut className="size-4" />
-                      Sign out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
+        <PlayerHeader active="home" title="Home" eyebrow="Player" />
 
         <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
           <div className="relative overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] px-6 py-6 text-[var(--lobb-text-inverse)] sm:px-8 sm:py-7">
@@ -389,8 +312,8 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredCoaches.map((coach) => <CoachListCard key={coach.id} coach={coach} />)}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+              {filteredCoaches.map((coach) => <SmallCoachCard key={coach.id} coach={coach} />)}
             </div>
           )}
         </section>
@@ -401,6 +324,170 @@ export default function Home() {
   }
 
   /* ──────────────────────── Unauthenticated splash ──────────────────────── */
+  return <LandingSplash />;
+}
+
+// Plays the booking lifecycle in the hero widget's status line: slot hold
+// counting down, payment secured, then confirmed. Under reduced motion (or
+// before hydration) it stays on the confirmed state.
+function BookingLifecycle() {
+  const [phase, setPhase] = useState<"hold" | "paid" | "confirmed">("confirmed");
+  const [secondsLeft, setSecondsLeft] = useState(582);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let t = 6; // start mid-cycle so the confirmed state shows first
+    const id = window.setInterval(() => {
+      t = (t + 1) % 12;
+      if (t < 5) {
+        setPhase("hold");
+        setSecondsLeft(582 - t);
+      } else if (t < 7) {
+        setPhase("paid");
+      } else {
+        setPhase("confirmed");
+      }
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const label =
+    phase === "hold"
+      ? `Slot held · ${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}`
+      : phase === "paid"
+        ? "Payment secured"
+        : "Confirmed session";
+
+  const dot =
+    phase === "hold"
+      ? "bg-[var(--lobb-warning)]"
+      : phase === "paid"
+        ? "bg-[var(--lobb-clay)]"
+        : "lobb-dot-pulse bg-[var(--lobb-success)]";
+
+  return (
+    <p key={phase} className="lobb-booking-kicker flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.16em] animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
+      <span className={`size-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
+      <span className="tabular-nums">{label}</span>
+    </p>
+  );
+}
+
+function shortCoachName(fullName: string) {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return parts[0] ?? "Coach";
+  return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+}
+
+const LANDING_BASE_AREAS = [
+  "Lekki", "Ikoyi", "Victoria Island", "Ikeja", "Surulere", "Yaba",
+  "Lagos Island", "Ajah", "Gbagada", "Magodo", "Onikan", "National Stadium",
+];
+
+function LandingSplash() {
+  const visualRef = useRef<HTMLDivElement>(null);
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const [coaches, setCoaches] = useState<CoachPublicProfile[]>([]);
+  const [coachCount, setCoachCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const supabase = createClient();
+    supabase
+      .from("coach_profiles_public")
+      .select("*", { count: "exact" })
+      .eq("status", "active")
+      .order("session_count", { ascending: false })
+      .limit(8)
+      .then(({ data, count }) => {
+        if (!alive) return;
+        if (data) setCoaches(data as CoachPublicProfile[]);
+        if (count != null) setCoachCount(count);
+      });
+    return () => { alive = false; };
+  }, []);
+
+  const areas = useMemo(() => {
+    const fromCoaches = coaches
+      .flatMap((c) => [c.primary_location, ...c.service_areas])
+      .filter(Boolean) as string[];
+    return Array.from(new Set([...fromCoaches, ...LANDING_BASE_AREAS]));
+  }, [coaches]);
+
+  // Scroll reveals. Only elements still below the fold get hidden, so content
+  // stays visible when JS or IntersectionObserver never runs. Re-runs when the
+  // live coach sections render so their elements get bound too.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const els = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("lobb-reveal-in");
+            io.unobserve(entry.target);
+          }
+        }
+      },
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.15 },
+    );
+    for (const el of els) {
+      if (el.dataset.revealBound) {
+        // Still hidden from a previous run: hand it to the new observer,
+        // since the old one was disconnected by this effect's cleanup.
+        if (el.classList.contains("lobb-reveal-pending") && !el.classList.contains("lobb-reveal-in")) {
+          io.observe(el);
+        }
+        continue;
+      }
+      el.dataset.revealBound = "1";
+      if (el.getBoundingClientRect().top > window.innerHeight * 0.9) {
+        el.classList.add("lobb-reveal-pending");
+        io.observe(el);
+      }
+    }
+    return () => io.disconnect();
+  }, [coaches.length]);
+
+  // Pointer tilt on the booking preview card, desktop pointers only.
+  useEffect(() => {
+    const visual = visualRef.current;
+    const widget = widgetRef.current;
+    if (!visual || !widget) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let frame = 0;
+    const onMove = (e: MouseEvent) => {
+      const rect = visual.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        widget.style.transform = `perspective(900px) rotateX(${(-y * 4).toFixed(2)}deg) rotateY(${(x * 5).toFixed(2)}deg) translateY(-2px)`;
+      });
+    };
+    const onLeave = () => {
+      cancelAnimationFrame(frame);
+      widget.style.transform = "";
+    };
+    visual.addEventListener("mousemove", onMove);
+    visual.addEventListener("mouseleave", onLeave);
+    return () => {
+      cancelAnimationFrame(frame);
+      visual.removeEventListener("mousemove", onMove);
+      visual.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
+
+  const headlineWords = "Book the right court lesson.".split(" ");
+
+  // Hero booking widget mirrors the top live coach; static fallback until data lands.
+  const heroCoach = coaches[0] ?? null;
+  const heroCoachName = heroCoach ? shortCoachName(heroCoach.full_name) : "Tunde A.";
+  const heroCourt = heroCoach?.primary_location ?? "Lagos Lawn Tennis Club";
+  const heroTotal = heroCoach?.hourly_rate_ngn != null ? Math.round(heroCoach.hourly_rate_ngn * 1.05) : 22500;
+
   return (
     <main className="lobb-landing relative min-h-[100dvh] overflow-x-hidden bg-[var(--lobb-bg)] text-[var(--lobb-black)]">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -414,26 +501,26 @@ export default function Home() {
       </div>
 
       <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/78 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="group flex min-w-0 items-center gap-2.5">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr] lg:px-8">
+          <Link href="/" className="group flex min-w-0 items-center gap-2.5 md:justify-self-start">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">
               <LobbMark size={18} />
             </span>
             <span className="text-[13px] font-black uppercase tracking-[0.18em] text-[var(--lobb-black)]">LOBB</span>
           </Link>
 
-          <nav className="hidden items-center gap-7 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)] md:flex">
-            <Link href="/coaches" className="transition hover:text-[var(--lobb-black)]">Coaches</Link>
-            <Link href="/how-it-works" className="transition hover:text-[var(--lobb-black)]">How it works</Link>
-            <Link href="/about" className="transition hover:text-[var(--lobb-black)]">About</Link>
+          <nav className="hidden items-center gap-7 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)] md:flex md:justify-self-center">
+            <Link href="/coaches" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Coaches</Link>
+            <Link href="/how-it-works" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">How it works</Link>
+            <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">About</Link>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3 md:justify-self-end">
             <Link href="/auth/login" className="inline-flex h-10 items-center justify-center rounded-full px-3 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--lobb-muted)] transition hover:text-[var(--lobb-black)] sm:px-4">
               Log in
             </Link>
             <ThemeToggle />
-            <Link href="/auth/signup/player" className="inline-flex h-10 items-center justify-center rounded-[12px] bg-[var(--lobb-black)] px-4 text-[11px] font-black uppercase tracking-[0.12em] text-white transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98] sm:px-5">
+            <Link href="/auth/signup/player" className="lobb-cta-sheen inline-flex h-10 items-center justify-center rounded-[12px] bg-[var(--lobb-black)] px-4 text-[11px] font-black uppercase tracking-[0.12em] text-white transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98] sm:px-5">
               Sign up
             </Link>
           </div>
@@ -453,14 +540,19 @@ export default function Home() {
           </div>
 
           <h1 className="max-w-3xl text-[44px] font-black leading-[0.96] tracking-tight text-[var(--lobb-black)] sm:text-[68px] lg:text-[88px] text-balance">
-            Book the right court lesson.
+            {headlineWords.map((word, i) => (
+              <span key={i}>
+                <span className="lobb-word" style={{ "--i": i } as React.CSSProperties}>{word}</span>
+                {i < headlineWords.length - 1 ? " " : null}
+              </span>
+            ))}
           </h1>
           <p className="mt-6 max-w-xl text-[16px] leading-[1.7] text-[var(--lobb-muted)] sm:text-[18px] text-pretty">
             LOBB gives Lagos players a cleaner way to compare verified tennis coaches, reserve real session times, and pay before the first rally starts.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/coaches" className="group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
               Find a coach
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
@@ -471,12 +563,12 @@ export default function Home() {
 
           <div className="mt-9 grid max-w-xl grid-cols-3 border-y border-[var(--lobb-border)]">
             {([
-              ["36", "coach checks"],
-              ["12", "Lagos areas"],
-              ["3", "minute booking"],
+              [coachCount ?? 36, "verified coaches"],
+              [areas.length, "Lagos areas"],
+              [10, "minute slot hold"],
             ] as const).map(([value, label]) => (
               <div key={label} className="border-r border-[var(--lobb-border)] px-3 py-4 first:pl-0 last:border-r-0 last:pr-0 sm:px-5">
-                <p className="text-[28px] font-black tracking-tight text-[var(--lobb-black)] sm:text-[38px]">{value}</p>
+                <p className="text-[28px] font-black tabular-nums tracking-tight text-[var(--lobb-black)] sm:text-[38px]"><StatValue value={value} /></p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">{label}</p>
               </div>
             ))}
@@ -484,10 +576,7 @@ export default function Home() {
         </div>
 
         <div className="relative animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-150">
-          <div className="absolute -left-4 top-8 z-10 hidden border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)] lg:inline-flex">
-            Lekki / Ikoyi / VI
-          </div>
-          <div className="lobb-hero-visual group relative min-h-[500px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[540px]">
+          <div ref={visualRef} className="lobb-hero-visual group relative min-h-[500px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[540px]">
             <div
               className="absolute inset-0 scale-105 bg-cover bg-center opacity-[0.88] transition duration-700 group-hover:scale-110"
               style={{ backgroundImage: `url(${courtImage})` }}
@@ -496,10 +585,10 @@ export default function Home() {
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,13,13,0.05),rgba(13,13,13,0.9)),linear-gradient(90deg,rgba(13,13,13,0.72),rgba(13,13,13,0.08)_48%,rgba(13,13,13,0.76)),radial-gradient(circle_at_78%_18%,rgba(196,98,45,0.34),transparent_28%)]" aria-hidden="true" />
 
             <div className="relative grid min-h-[500px] content-between gap-8 p-4 sm:min-h-[540px] sm:p-7">
-              <div className="lobb-booking-widget ml-auto w-full max-w-[390px] p-4 sm:p-5">
+              <div ref={widgetRef} className="lobb-booking-widget ml-auto w-full max-w-[390px] p-4 sm:p-5">
                 <div className="lobb-booking-head flex items-center justify-between pb-4">
                   <div>
-                    <p className="lobb-booking-kicker text-[11px] font-black uppercase tracking-[0.16em]">Booking preview</p>
+                    <BookingLifecycle />
                     <p className="lobb-booking-title mt-1 text-lg font-black">Private lesson</p>
                   </div>
                   <span className="lobb-booking-icon flex size-10 items-center justify-center">
@@ -509,7 +598,7 @@ export default function Home() {
                 <div className="mt-4 grid grid-cols-2 gap-2.5">
                   <div className="lobb-booking-tile p-3">
                     <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Coach</p>
-                    <p className="lobb-booking-value mt-1 text-sm font-black">Tunde A.</p>
+                    <p className="lobb-booking-value mt-1 truncate text-sm font-black">{heroCoachName}</p>
                   </div>
                   <div className="lobb-booking-tile p-3">
                     <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Time</p>
@@ -518,12 +607,12 @@ export default function Home() {
                 </div>
                 <div className="lobb-booking-tile mt-2.5 flex items-center gap-2 p-3">
                   <MapPin className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-                  <span className="lobb-booking-location text-sm font-semibold">Lagos Lawn Tennis Club</span>
+                  <span className="lobb-booking-location truncate text-sm font-semibold">{heroCourt}</span>
                 </div>
                 <div className="lobb-booking-total mt-4 grid grid-cols-[1fr_auto] items-center gap-3 pt-4">
                   <div>
                     <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Session total</p>
-                    <p className="lobb-booking-price mt-1 text-2xl font-black">₦22,500</p>
+                    <p className="lobb-booking-price mt-1 text-2xl font-black">₦{heroTotal.toLocaleString("en-NG")}</p>
                   </div>
                   <span className="lobb-booking-paymark px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em]">
                     Paystack
@@ -532,8 +621,7 @@ export default function Home() {
               </div>
 
               <div className="max-w-[430px] text-white">
-                <p className="text-[12px] font-black uppercase tracking-[0.18em] text-white/46">No vague arrangements</p>
-                <h2 className="mt-3 text-[30px] font-black leading-[0.98] tracking-tight sm:text-[46px] text-balance">
+                <h2 className="text-[30px] font-black leading-[0.98] tracking-tight sm:text-[46px] text-balance">
                   Coach, court, time, payment in one clean flow.
                 </h2>
               </div>
@@ -542,61 +630,121 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="lobb-landing-band relative z-10 border-y border-[var(--lobb-border)] bg-[var(--lobb-surface)]/58 px-4 py-14 backdrop-blur sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">The booking loop</p>
-            <h2 className="mt-4 max-w-md text-[32px] font-black leading-[1.02] tracking-tight sm:text-[46px] text-balance">
-              Designed around how lessons actually happen.
-            </h2>
-            <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--lobb-muted)]">
-              One flow for the decision that matters: who teaches, where you play, when it happens, and how it gets confirmed.
-            </p>
+      {coaches.length > 0 && (
+        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-14 sm:px-6 lg:px-8">
+          <div data-reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <DotLabel>Coaches on LOBB</DotLabel>
+              <h2 className="mt-3 text-[28px] font-black leading-[1.04] tracking-tight sm:text-[38px] text-balance">
+                Real coaches, real rates.
+              </h2>
+            </div>
+            <Link href="/coaches" className="group inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.12em] text-[var(--lobb-black)] transition hover:text-[var(--lobb-clay)]">
+              See all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
           </div>
-          <div className="grid overflow-hidden border border-[var(--lobb-border)] md:grid-cols-3">
-            {([
-              [Search, "Compare", "Review profile, area, skill fit, and lesson focus before you message anyone."],
-              [CalendarCheck, "Reserve", "Pick an open slot so the session has a clear time and place from the start."],
-              [CreditCard, "Confirm", "Checkout keeps commitment clear for the player and the coach."],
-            ] as const).map(([Icon, title, body], i) => (
-              <div key={title} className="lobb-landing-panel border-b border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] p-5 last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0 lg:p-6">
-                <div className="flex items-center justify-between">
-                  <Icon className="size-5 text-[var(--lobb-clay)]" />
-                  <span className="text-[11px] font-black text-[var(--lobb-text-tertiary)]">0{i + 1}</span>
-                </div>
-                <p className="mt-8 text-xl font-black tracking-tight">{title}</p>
-                <p className="mt-3 text-sm leading-6 text-[var(--lobb-muted)]">{body}</p>
-              </div>
+          <div className="lobb-rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 [scrollbar-width:none]">
+            {coaches.map((coach, i) => (
+              <LandingCoachCard key={coach.id} coach={coach} index={i} />
             ))}
           </div>
+        </section>
+      )}
+
+      <div className="lobb-marquee relative z-10 mt-10 border-y border-[var(--lobb-border)] bg-[var(--lobb-surface)]/58 py-3.5" aria-hidden="true">
+        <div className="lobb-marquee-track">
+          {[...areas, ...areas].map((area, i) => (
+            <span key={`${area}-${i}`} className="flex shrink-0 items-center gap-5 pr-5 text-[12px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
+              {area}
+              <span className="size-1.5 rounded-full bg-[var(--lobb-clay)]" />
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
+        <div data-reveal className="lg:sticky lg:top-24 lg:self-start">
+          <DotLabel>How booking works</DotLabel>
+          <h2 className="mt-3 max-w-md text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
+            From open slot to paid session.
+          </h2>
+          <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--lobb-muted)]">
+            The whole flow is built so neither side has to trust a stranger: the calendar is real, the slot is held, and the money waits until the lesson happens.
+          </p>
+        </div>
+        <div>
+          {([
+            ["A real calendar", "Coaches publish actual availability. The slot you see is a slot that exists, not the start of a negotiation."],
+            ["A 10-minute hold", "Checkout locks your slot while you pay. Nobody can take it from under you mid-payment."],
+            ["Escrow, not transfers", "Paystack holds your money. You never pay into a stranger's account, and the coach never has to chase payment."],
+            ["Paid after play", "The coach is paid out after the session happens. Every incentive points at the court."],
+          ] as const).map(([title, body], i) => (
+            <div
+              key={title}
+              data-reveal
+              style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
+              className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 border-t border-[var(--lobb-border)] py-7 transition duration-300 last:border-b sm:grid-cols-[88px_minmax(0,1fr)]"
+            >
+              <span className="text-[30px] font-black leading-none tracking-tight text-[var(--lobb-text-tertiary)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)] sm:text-[40px]">
+                0{i + 1}
+              </span>
+              <div className="transition-transform duration-300 group-hover:translate-x-1">
+                <p className="text-xl font-black tracking-tight">{title}</p>
+                <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--lobb-muted)]">{body}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:px-8 lg:py-24">
-        <div className="lobb-dark-panel border border-[var(--lobb-border)] bg-[#0d0d0d] p-6 text-white sm:p-8 lg:p-10">
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/42">For players</p>
-          <h2 className="mt-4 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight sm:text-[46px] text-balance">
+      <section className="relative z-10 mx-auto grid max-w-7xl gap-8 px-4 pb-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:px-8 lg:pb-24">
+        <div data-reveal className="lobb-dark-panel border border-[var(--lobb-border)] bg-[#0d0d0d] p-6 text-white sm:p-8 lg:p-10">
+          <DotLabel light>For players</DotLabel>
+          <h2 className="mt-3 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
             Choose with enough context to feel confident.
           </h2>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            {["Area", "Skill level", "Lesson focus", "Open times"].map((item) => (
-              <div key={item} className="border border-white/[0.10] bg-white/[0.06] p-4">
-                <p className="text-sm font-black">{item}</p>
+          <div className="mt-8 border border-white/[0.10] bg-white/[0.05] p-4 sm:p-5">
+            <div className="flex h-11 items-center gap-3 border border-white/[0.12] bg-white/[0.07] px-4">
+              <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
+              <span className="truncate text-sm font-semibold text-white/55">Lekki, intermediate, backhand</span>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["Lekki", "Intermediate", "Morning slots"].map((chip) => (
+                <span key={chip} className="border border-[var(--lobb-clay)]/45 bg-[var(--lobb-clay)]/15 px-3 py-1.5 text-[11px] font-black text-[#e8a075]">
+                  {chip}
+                </span>
+              ))}
+            </div>
+            <div className="mt-4 flex items-center gap-3 border border-white/[0.10] bg-white/[0.06] p-3">
+              {coaches[0]?.profile_photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={coaches[0].profile_photo_url} alt="" className="size-10 shrink-0 rounded-full object-cover" />
+              ) : (
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-black text-[var(--lobb-clay)]">
+                  {(coaches[0]?.full_name ?? "Tunde A.").charAt(0)}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-black">{coaches[0]?.full_name ?? "Tunde A."}</p>
+                <p className="truncate text-xs font-semibold text-white/50">{coaches[0]?.primary_location ?? "Lagos Lawn Tennis Club"}</p>
               </div>
-            ))}
+              {(coaches[0]?.hourly_rate_ngn ?? 20000) > 0 && (
+                <span className="shrink-0 text-sm font-black text-white">₦{(coaches[0]?.hourly_rate_ngn ?? 20000).toLocaleString("en-NG")}<span className="text-[10px] font-bold text-white/45">/hr</span></span>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="lobb-landing-panel border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-8 lg:p-10">
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">For coaches</p>
-          <h2 className="mt-4 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight sm:text-[46px] text-balance">
+        <div data-reveal style={{ "--reveal-delay": "100ms" } as React.CSSProperties} className="lobb-landing-panel border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-8 lg:p-10">
+          <DotLabel>For coaches</DotLabel>
+          <h2 className="mt-3 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
             A cleaner front desk for independent tennis coaches.
           </h2>
           <div className="mt-8 grid gap-3">
             {[
               "A public profile players can evaluate quickly.",
               "Service areas, skill levels, and session expectations in one place.",
-              "Bookings that arrive with cleaner context and clearer commitment.",
+              "Bookings arrive paid into escrow, with payout after the session.",
             ].map((item) => (
               <div key={item} className="flex items-start gap-3 border-b border-[var(--lobb-border)] pb-3 last:border-b-0 last:pb-0">
                 <Check className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
@@ -604,10 +752,55 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <Link href="/auth/signup/coach" className="group mt-8 inline-flex h-12 items-center justify-center gap-2 bg-[var(--lobb-black)] px-5 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
+          <Link href="/auth/signup/coach" className="lobb-cta-sheen group mt-8 inline-flex h-12 items-center justify-center gap-2 bg-[var(--lobb-black)] px-5 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
             Apply as a coach
             <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
+        </div>
+      </section>
+
+      <section className="lobb-landing-band relative z-10 border-y border-[var(--lobb-border)] bg-[var(--lobb-surface)]/58 px-4 py-12 backdrop-blur sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl md:grid-cols-2">
+          {([
+            ["The price is the price", "The coach's hourly rate plus a 5% convenience fee, shown in full before you pay."],
+            ["Plans change, fine", "Cancel 72+ hours ahead for a full refund, or 24 to 72 hours ahead for half back."],
+          ] as const).map(([title, body], i) => (
+            <div
+              key={title}
+              data-reveal
+              style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
+              className="border-b border-[var(--lobb-border)] py-6 last:border-b-0 md:border-b-0 md:border-r md:px-8 md:py-2 md:first:pl-0 md:last:border-r-0"
+            >
+              <p className="text-lg font-black tracking-tight">{title}</p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-[var(--lobb-muted)]">{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="relative z-10 overflow-hidden bg-[#0d0d0d] px-4 py-20 text-white sm:px-6 lg:px-8 lg:py-28">
+        <div
+          className="absolute inset-0 opacity-[0.16] mix-blend-screen"
+          style={{ backgroundImage: `url(${courtImage})`, backgroundSize: "cover", backgroundPosition: "center" }}
+          aria-hidden="true"
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(196,98,45,0.28),transparent_60%),linear-gradient(180deg,rgba(13,13,13,0.65),rgba(13,13,13,0.35))]" aria-hidden="true" />
+        <div data-reveal className="relative mx-auto max-w-3xl text-center">
+          <h2 className="text-[40px] font-black leading-[0.98] tracking-tight sm:text-[60px] text-balance">
+            Your next lesson, on the calendar.
+          </h2>
+          <p className="mx-auto mt-5 max-w-md text-[15px] leading-[1.7] text-white/60">
+            Pick a coach, hold a slot, pay once. The rest happens on court.
+          </p>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
+              Find a coach
+              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+            <Link href="/auth/signup/coach" className="inline-flex h-14 w-full items-center justify-center border border-white/20 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:border-white/55 active:scale-[0.98] sm:w-auto">
+              Join as a coach
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -619,11 +812,11 @@ export default function Home() {
             <span className="text-[12px] font-semibold text-[var(--lobb-muted)]">&copy; {new Date().getFullYear()}</span>
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
-            <Link href="/about" className="transition hover:text-[var(--lobb-black)]">About</Link>
-            <Link href="/faq" className="transition hover:text-[var(--lobb-black)]">FAQ</Link>
-            <Link href="/terms" className="transition hover:text-[var(--lobb-black)]">Terms</Link>
-            <Link href="/privacy" className="transition hover:text-[var(--lobb-black)]">Privacy</Link>
-            <Link href="/contact" className="transition hover:text-[var(--lobb-black)]">Contact</Link>
+            <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">About</Link>
+            <Link href="/faq" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">FAQ</Link>
+            <Link href="/terms" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Terms</Link>
+            <Link href="/privacy" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Privacy</Link>
+            <Link href="/contact" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Contact</Link>
           </div>
         </div>
       </footer>
@@ -633,11 +826,94 @@ export default function Home() {
 
 /* ─────────────────────────────── Helpers ────────────────────────────────── */
 
-function ProfileMenuLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+function DotLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
-    <Link href={href} className="flex h-10 items-center gap-3 rounded-[12px] px-3 text-[13px] font-black text-[var(--lobb-black)] transition hover:bg-[var(--lobb-surface)]">
-      <span className="text-[var(--lobb-clay)]">{icon}</span>
-      {label}
+    <p className={`flex items-center gap-2.5 text-[13px] font-black ${light ? "text-white/60" : "text-[var(--lobb-muted)]"}`}>
+      <span className="size-1.5 shrink-0 bg-[var(--lobb-clay)]" aria-hidden="true" />
+      {children}
+    </p>
+  );
+}
+
+function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: number }) {
+  const href = `/coaches/${coach.slug ?? coach.id}`;
+  return (
+    <Link
+      href={href}
+      data-reveal
+      style={{ "--reveal-delay": `${Math.min(index, 6) * 70}ms` } as React.CSSProperties}
+      className="lobb-landing-panel group/coach w-[230px] shrink-0 snap-start border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-1 hover:border-[var(--lobb-clay)]/40"
+    >
+      <div className="relative h-[160px] overflow-hidden bg-[var(--lobb-bg-secondary)]">
+        {coach.profile_photo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coach.profile_photo_url}
+            alt={coach.full_name}
+            className="size-full object-cover transition-transform duration-500 group-hover/coach:scale-105"
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center text-[40px] font-black text-[var(--lobb-text-tertiary)]">
+            {coach.full_name.charAt(0)}
+          </div>
+        )}
+        {coach.hourly_rate_ngn != null && (
+          <span className="absolute bottom-2 left-2 bg-[#0d0d0d]/85 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
+            ₦{coach.hourly_rate_ngn.toLocaleString("en-NG")}<span className="font-bold text-white/55">/hr</span>
+          </span>
+        )}
+      </div>
+      <div className="p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="truncate text-[15px] font-black">{coach.full_name}</p>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-black">
+            <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
+            {coach.avg_rating ?? "New"}
+          </span>
+        </div>
+        <p className="mt-1 truncate text-xs font-semibold text-[var(--lobb-muted)]">{coach.headline ?? "Tennis coach"}</p>
+        {coach.primary_location && (
+          <p className="mt-2.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--lobb-text-secondary)]">
+            <MapPin className="size-3 shrink-0 text-[var(--lobb-clay)]" />
+            <span className="truncate">{coach.primary_location}</span>
+          </p>
+        )}
+      </div>
     </Link>
   );
+}
+
+function StatValue({ value }: { value: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState(value);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        const start = performance.now();
+        const duration = 1100;
+        const tick = (now: number) => {
+          const t = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - t, 4);
+          setDisplay(Math.round(value * eased));
+          if (t < 1) raf = requestAnimationFrame(tick);
+        };
+        setDisplay(0);
+        raf = requestAnimationFrame(tick);
+      },
+      { threshold: 0.6 },
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [value]);
+
+  return <span ref={ref}>{display}</span>;
 }

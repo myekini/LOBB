@@ -3,16 +3,20 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { CoachPublicProfile } from "@/lib/types";
 import { CoachProfileContent } from "./coach-profile-content";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const supabase = createAdminClient();
-  const { data } = await supabase
+  let query = supabase
     .from("coach_profiles_public")
     .select("full_name, headline, primary_location")
-    .or(`slug.eq.${params.slug},id.eq.${params.slug}`)
-    .eq("status", "active")
-    .maybeSingle();
+    .eq("status", "active");
+  query = isUuid(params.slug) ? query.eq("id", params.slug) : query.eq("slug", params.slug);
+  const { data } = await query.maybeSingle();
 
   if (!data) return { title: "Coach | LOBB" };
 
@@ -25,12 +29,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function CoachSlugPage({ params }: { params: { slug: string } }) {
   const supabase = createAdminClient();
 
-  const { data } = await supabase
+  let query = supabase
     .from("coach_profiles_public")
     .select("*")
-    .or(`slug.eq.${params.slug},id.eq.${params.slug}`)
-    .eq("status", "active")
-    .maybeSingle();
+    .eq("status", "active");
+  query = isUuid(params.slug) ? query.eq("id", params.slug) : query.eq("slug", params.slug);
+  const { data } = await query.maybeSingle();
 
   if (!data) notFound();
 

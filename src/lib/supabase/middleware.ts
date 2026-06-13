@@ -181,7 +181,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (role && authRoutes.some((route) => matchesRoute(pathname, route))) {
+  // /auth/verify handles its own post-login routing — don't intercept mid-flow
+  if (role && authRoutes.some((route) => matchesRoute(pathname, route)) && pathname !== "/auth/verify") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : role === "admin" ? "/admin" : "/";
     redirectUrl.search = "";

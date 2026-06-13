@@ -76,35 +76,42 @@ const BRAND = {
 };
 
 const SOCIAL_LINKS = [
-  { label: "Instagram", href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng" },
-  { label: "X / Twitter", href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng" },
-  { label: "lobb.ng", href: appUrl("/") },
+  {
+    label: "Instagram",
+    href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng",
+  },
+  {
+    label: "X / Twitter",
+    href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng",
+  },
+  {
+    label: "lobb.ng",
+    href: appUrl("/"),
+  },
 ];
 
 function shell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
   const ctaHtml = cta
-    ? `<div style="margin-top:28px;"><a href="${escapeHtml(cta.href)}" style="display:inline-block;border-radius:12px;background:${BRAND.ink};color:#ffffff;font:800 14px Verdana,Tahoma,sans-serif;text-decoration:none;padding:15px 22px;">${escapeHtml(cta.label)}</a></div>`
+    ? `<div style="margin-top:32px;"><a href="${escapeHtml(cta.href)}" style="display:inline-block;border-radius:10px;background:${BRAND.ink};color:#ffffff;font:800 13px Verdana,Tahoma,sans-serif;text-decoration:none;padding:14px 28px;letter-spacing:0.04em;">${escapeHtml(cta.label)}</a></div>`
     : "";
   const socialHtml = SOCIAL_LINKS.map(
     (item) => `
-      <td style="padding-right:8px;">
-        <a href="${escapeHtml(item.href)}" style="display:inline-block;border:1px solid rgba(245,230,220,0.20);border-radius:999px;background:rgba(255,255,255,0.06);color:#F5E6DC;text-decoration:none;font:700 11px Verdana,Tahoma,sans-serif;letter-spacing:0.03em;padding:8px 14px;white-space:nowrap;">
-          ${escapeHtml(item.label)}
+      <td style="padding-left:10px;">
+        <a href="${escapeHtml(item.href)}" style="display:inline-block;border:1px solid rgba(245,230,220,0.18);border-radius:8px;background:rgba(255,255,255,0.06);text-decoration:none;padding:7px 14px;">
+          <span style="color:#F0E8DF;font:800 11px Verdana,Tahoma,sans-serif;letter-spacing:0.06em;">${escapeHtml(item.label)}</span>
         </a>
       </td>`
   ).join("");
-  // Inline SVG logo mark as data URI (works in all major email clients)
-  const svgMark = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 64 64" fill="none"><path d="M 8 56 C 8 4 56 4 56 56" stroke="${BRAND.clay}" stroke-width="4" stroke-linecap="round"/><circle cx="32" cy="17" r="5.5" fill="${BRAND.clay}"/></svg>`;
-  const svgDataUri = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMark)}`;
+  const logoUrl = appUrl("/icons/icon-192.png");
   const logoMark = `
     <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
       <tr>
-        <td style="width:44px;height:44px;border-radius:12px;background:${BRAND.ink};text-align:center;vertical-align:middle;">
-          <img src="${svgDataUri}" width="24" height="24" alt="LOBB" style="display:block;margin:10px auto;" />
+        <td style="width:40px;height:40px;vertical-align:middle;">
+          <img src="${logoUrl}" width="40" height="40" alt="LOBB" style="display:block;width:40px;height:40px;border-radius:8px;border:0;" />
         </td>
-        <td style="padding-left:12px;">
-          <p style="margin:0;color:${BRAND.ink};font:900 15px Verdana,Tahoma,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">LOBB</p>
-          <p style="margin:3px 0 0;color:${BRAND.faint};font:700 11px Verdana,Tahoma,sans-serif;">Lagos tennis, booked cleanly</p>
+        <td style="padding-left:10px;vertical-align:middle;">
+          <p style="margin:0;color:${BRAND.ink};font:900 14px Verdana,Tahoma,sans-serif;letter-spacing:0.22em;text-transform:uppercase;">LOBB</p>
+          <p style="margin:2px 0 0;color:${BRAND.faint};font:700 10px Verdana,Tahoma,sans-serif;letter-spacing:0.06em;">Lagos tennis, booked cleanly</p>
         </td>
       </tr>
     </table>`;
@@ -122,10 +129,10 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
       <header style="padding:28px 30px 24px;border-bottom:1px solid ${BRAND.line};background:${BRAND.surface};">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
           <tr>
-            <td>
+            <td style="vertical-align:middle;">
               ${logoMark}
             </td>
-            <td align="right">
+            <td align="right" style="vertical-align:middle;">
               <span style="display:inline-block;border:1px solid ${BRAND.line};border-radius:999px;padding:7px 10px;color:${BRAND.clay};font:900 10px Verdana,Tahoma,sans-serif;letter-spacing:0.14em;text-transform:uppercase;">Court update</span>
             </td>
           </tr>
@@ -138,34 +145,34 @@ function shell(title: string, preview: string, body: string, cta?: { label: stri
         ${ctaHtml}
       </section>
       <footer style="background:${BRAND.ink};color:#F5E6DC;">
-        <div style="height:4px;background:${BRAND.clay};"></div>
-        <div style="padding:28px 30px 24px;">
+        <div style="height:3px;background:linear-gradient(90deg,${BRAND.clay} 0%,#E08048 100%);"></div>
+        <div style="padding:30px 32px 26px;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
             <tr>
-              <td style="vertical-align:top;">
+              <td style="vertical-align:middle;">
                 <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                   <tr>
-                    <td style="width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.08);border:1px solid rgba(245,230,220,0.16);text-align:center;vertical-align:middle;">
-                      <img src="${svgDataUri}" width="22" height="22" alt="LOBB" style="display:block;margin:10px auto;" />
+                    <td style="vertical-align:middle;">
+                      <img src="${logoUrl}" width="36" height="36" alt="LOBB" style="display:block;width:36px;height:36px;border-radius:7px;border:0;" />
                     </td>
-                    <td style="padding-left:12px;">
-                      <p style="margin:0;color:#ffffff;font:900 15px Verdana,Tahoma,sans-serif;letter-spacing:0.2em;text-transform:uppercase;">LOBB</p>
-                      <p style="margin:4px 0 0;font:700 11px Verdana,Tahoma,sans-serif;color:#D8D0C3;">Book. Pay. Play.</p>
+                    <td style="padding-left:10px;vertical-align:middle;">
+                      <p style="margin:0;color:#ffffff;font:900 13px Verdana,Tahoma,sans-serif;letter-spacing:0.22em;text-transform:uppercase;">LOBB</p>
+                      <p style="margin:3px 0 0;font:700 10px Verdana,Tahoma,sans-serif;color:#A09890;letter-spacing:0.05em;">Book. Pay. Play.</p>
                     </td>
                   </tr>
                 </table>
               </td>
-              <td align="right" style="vertical-align:top;">
+              <td align="right" style="vertical-align:middle;">
                 <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
                   <tr>${socialHtml}</tr>
                 </table>
               </td>
             </tr>
           </table>
-          <div style="margin-top:22px;border-top:1px solid rgba(245,230,220,0.16);padding-top:18px;">
-            <p style="margin:0;font:700 13px/1.7 Verdana,Tahoma,sans-serif;color:#D8D0C3;">Secure tennis booking, coach operations, payments, and session updates for Lagos courts.</p>
-            <p style="margin:14px 0 0;font:700 12px/1.7 Verdana,Tahoma,sans-serif;color:#A09890;">Need help? Reply to this email or contact <a href="mailto:support@lobb.ng" style="color:#F5E6DC;text-decoration:none;font-weight:900;">support@lobb.ng</a>.</p>
-            <p style="margin:12px 0 0;font:600 11px/1.6 Verdana,Tahoma,sans-serif;color:#7E776E;">You are receiving this because email notifications are enabled on your LOBB account.</p>
+          <div style="margin-top:24px;border-top:1px solid rgba(245,230,220,0.12);padding-top:20px;">
+            <p style="margin:0;font:700 12px/1.75 Verdana,Tahoma,sans-serif;color:#B8B0A8;">Secure tennis booking, coach operations, payments, and session updates for Lagos courts.</p>
+            <p style="margin:12px 0 0;font:700 11px/1.7 Verdana,Tahoma,sans-serif;color:#7E776E;">Questions? Reply to this email or reach us at <a href="mailto:support@lobb.ng" style="color:#F0E8DF;text-decoration:none;font-weight:900;">support@lobb.ng</a>.</p>
+            <p style="margin:10px 0 0;font:600 10px/1.6 Verdana,Tahoma,sans-serif;color:#5E5750;">You are receiving this because email notifications are enabled on your LOBB account.</p>
           </div>
         </div>
       </footer>

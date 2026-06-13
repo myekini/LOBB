@@ -8,7 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] [a]:hover:bg-[#2A2520]",
+        default: "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-clay-dark)]",
         outline:
           "border-[var(--lobb-border-subtle)] bg-transparent text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-secondary)] aria-expanded:bg-[var(--lobb-bg-secondary)]",
         secondary:

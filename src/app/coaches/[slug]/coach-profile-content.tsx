@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
   ArrowLeft,
-  Bell,
   Building2,
   CalendarCheck,
   ChevronLeft,
   ChevronRight,
-  CircleUserRound,
   Copy,
   ExternalLink,
   Pencil,
@@ -28,6 +26,7 @@ import { showLobbToast } from "@/providers/lobb-global-state";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
 import { LAGOS_COURTS } from "@/lib/types";
 import { CoachShareSheet } from "@/features/coaches/coach-share-sheet";
+import { PlayerHeader } from "@/components/layout/player-nav";
 
 type Tab = "about" | "availability" | "reviews";
 
@@ -151,14 +150,6 @@ export function CoachProfileContent({
   const profileUrl = origin ? `${origin}${profilePath}` : profilePath;
   const canSharePublicProfile = Boolean(coach.slug && origin);
 
-  const heroStyle = useMemo(
-    () =>
-      coach.profile_photo_url
-        ? { backgroundImage: `url(${coach.profile_photo_url})` }
-        : undefined,
-    [coach.profile_photo_url],
-  );
-
   useEffect(() => {
     if (slotTimedOut) {
       showLobbToast({ type: "warning", message: "Your slot timed out. Select a new time." });
@@ -224,42 +215,23 @@ export function CoachProfileContent({
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)] md:pb-0">
-      {!isPreview && <nav className="lobb-app-header sticky top-0 z-40 hidden h-16 border-b border-[var(--lobb-border-subtle)] md:block">
-        <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between px-6">
-          <div className="flex items-center gap-4">
-            <Link
-              href={backHref}
-              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)]"
-              aria-label={isPreview ? "Back to coach profile" : "Go back"}
-            >
-              <ArrowLeft className="size-5" />
-            </Link>
-            <span className="text-2xl font-black tracking-tight">LOBB</span>
-          </div>
-          <div className="flex items-center gap-3">
+      {!isPreview && (
+        <PlayerHeader
+          active="coaches"
+          title={fullName}
+          backHref={backHref}
+          eyebrow="Coach profile"
+          actions={
             <CoachShareSheet
               coachName={fullName}
               disabled={!canSharePublicProfile}
               profileUrl={profileUrl}
-              triggerClassName="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-xs font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 disabled:opacity-45"
+              triggerLabel=""
+              triggerClassName="inline-flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 disabled:opacity-45"
             />
-            <button
-              type="button"
-              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)]"
-              aria-label="Notifications"
-            >
-              <Bell className="size-5" />
-            </button>
-            <button
-              type="button"
-              className="flex size-10 items-center justify-center rounded-full transition hover:bg-[var(--lobb-bg-secondary)]"
-              aria-label="Profile"
-            >
-              <CircleUserRound className="size-5" />
-            </button>
-          </div>
-        </div>
-      </nav>}
+          }
+        />
+      )}
 
       {isPreview && (
         <div className="sticky top-0 z-50 border-b border-white/10 bg-[var(--lobb-bg-inverse)] px-4 py-3 text-[var(--lobb-text-inverse)] shadow-[0_6px_18px_rgba(0,0,0,0.16)]">
@@ -279,7 +251,7 @@ export function CoachProfileContent({
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-white px-3 text-xs font-black text-[#0d0d0d]">
+              <Link href="/coach/profile/edit" data-keep-light className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-white px-3 text-xs font-black text-[#0d0d0d]">
                 <Pencil className="size-3.5 text-[var(--lobb-clay)]" />
                 <span className="hidden sm:inline">Edit</span>
               </Link>
@@ -308,123 +280,128 @@ export function CoachProfileContent({
 
       <section className="mx-auto grid max-w-[1280px] gap-6 md:grid-cols-12 md:px-6 md:py-8 lg:gap-8">
         <div className="md:col-span-7 lg:col-span-8">
-          <section className="relative aspect-[4/3] overflow-hidden bg-[var(--lobb-bg-secondary)] sm:aspect-video md:rounded-[14px]">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={heroStyle}
-              aria-hidden="true"
-            />
-            {!coach.profile_photo_url && (
-              <div className="absolute inset-0 flex items-center justify-center bg-[var(--lobb-bg-secondary)]">
-                <span className="text-6xl font-black text-[#858383]">{initials(fullName)}</span>
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/5 to-black/20" />
-            {!isPreview && <div className="absolute left-0 top-0 z-10 flex w-full items-center justify-between p-4 md:hidden">
-              <Link
-                href={backHref}
-                className="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur"
-                aria-label={isPreview ? "Back to coach profile" : "Go back"}
-              >
-                <ArrowLeft className="size-5" />
-              </Link>
-              <CoachShareSheet
-                coachName={fullName}
-                disabled={!canSharePublicProfile}
-                profileUrl={profileUrl}
-                triggerClassName="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur disabled:opacity-45"
-                triggerLabel=""
+          {/* ── Editorial hero ── */}
+          <section className="relative h-[480px] overflow-hidden bg-[var(--lobb-bg-secondary)] sm:h-[540px] md:rounded-[18px]">
+            {/* Fallback initial */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-[120px] font-black leading-none text-[var(--lobb-text-tertiary)]/20 select-none">{initials(fullName)}</span>
+            </div>
+            {coach.profile_photo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={coach.profile_photo_url}
+                alt={fullName}
+                onError={(event) => { event.currentTarget.style.display = "none"; }}
+                className="absolute inset-0 size-full object-cover object-top"
               />
-            </div>}
+            )}
+            {/* Deep editorial gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/25" />
+
+            {/* Demo video button */}
             {coach.demo_video_url && (
               <a
                 href={coach.demo_video_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute left-1/2 top-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/40 bg-white/20 text-white backdrop-blur"
+                className="absolute left-1/2 top-1/2 flex size-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white/15 text-white backdrop-blur transition hover:bg-white/25"
                 aria-label="Watch demo video"
               >
                 <Play className="size-7 fill-current" />
               </a>
             )}
+
+            {/* Identity overlay — bottom of hero */}
+            <div className="absolute inset-x-0 bottom-0 px-5 pb-6 md:px-7">
+              {slotTimedOut && (
+                <div className="mb-4 flex items-center gap-2 rounded-lg border border-[var(--lobb-warning)]/40 bg-black/40 px-3 py-2 text-xs font-bold text-amber-300 backdrop-blur-sm">
+                  <AlertCircle className="size-3.5 shrink-0" />
+                  Your previous slot timed out. Select a new time.
+                </div>
+              )}
+
+              <div className="flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="mb-2 flex flex-wrap items-center gap-2">
+                    {coach.is_verified && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-white/90 backdrop-blur-sm">
+                        <ShieldCheck className="size-3" />
+                        Verified
+                      </span>
+                    )}
+                    {coach.avg_rating != null && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black text-white/90 backdrop-blur-sm">
+                        <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
+                        {ratingLabel}
+                        {reviewCount > 0 && <span className="ml-0.5 opacity-75">({reviewCount})</span>}
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="mb-1 text-[28px] font-black leading-tight tracking-tight text-white sm:text-[34px]">
+                    {fullName}
+                  </h1>
+                  <p className="text-[13px] font-semibold text-white/70">
+                    {headline}
+                    {coach.experience_years ? ` · ${coach.experience_years} yrs exp` : ""}
+                  </p>
+                </div>
+
+                {/* Rate — desktop shows in sidebar, mobile shows here */}
+                <div className="shrink-0 text-right md:hidden">
+                  <span className="block text-[26px] font-black leading-none text-white">{money(hourlyRate)}</span>
+                  <span className="text-[11px] font-semibold text-white/60">/hr</span>
+                </div>
+              </div>
+
+              {/* Quick stats row */}
+              <div className="mt-4 flex items-center gap-4 border-t border-white/15 pt-4 text-[11px] font-semibold text-white/65">
+                <span>{sessionCount > 0 ? `${sessionCount} sessions` : "New coach"}</span>
+                {locations.length > 0 && (
+                  <>
+                    <span className="text-white/30">·</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="size-3" />
+                      {locations[0]}
+                    </span>
+                  </>
+                )}
+                {coach.slug && !isPreview && (
+                  <>
+                    <span className="text-white/30">·</span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(profileUrl);
+                        showLobbToast({ type: "success", message: "Profile link copied" });
+                      }}
+                      className="inline-flex items-center gap-1 text-white/65 transition hover:text-white"
+                    >
+                      <Copy className="size-3" />
+                      Copy link
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </section>
 
           <section className="px-4 py-6 md:px-0">
-            {slotTimedOut && (
-              <div className="mb-5 flex items-start gap-2 rounded-lg border border-[var(--lobb-warning)]/35 bg-[var(--lobb-warning)]/12 p-3 text-sm font-bold text-[var(--lobb-warning)]">
-                <AlertCircle className="mt-0.5 size-4 shrink-0" />
-                <span>Your previous slot timed out. Select a new time.</span>
-              </div>
-            )}
 
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="size-20 shrink-0 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-[var(--lobb-shadow-card)] sm:size-16">
-                {coach.profile_photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={coach.profile_photo_url} alt={fullName} className="size-full object-cover" />
-                ) : (
-                  <div className="flex size-full items-center justify-center text-lg font-black text-[var(--lobb-text-secondary)]">
-                    {initials(fullName)}
-                  </div>
-                )}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="mb-1 flex flex-wrap items-center gap-2">
-                  <h1 className="text-[24px] font-black leading-tight text-[var(--lobb-text-primary)] sm:text-[18px]">{fullName}</h1>
-                  {coach.is_verified && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--lobb-clay)]">
-                      <ShieldCheck className="size-3" />
-                      Verified
-                    </span>
-                  )}
+            <div className="mb-6 space-y-4">
+              {/* All locations — full list */}
+              {locations.length > 1 && (
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                  <MapPin className="size-4 shrink-0 text-[var(--lobb-clay)]" />
+                  <span>{locations.join(" · ")}</span>
                 </div>
-                <p className="mb-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
-                  {headline}
-                  {coach.experience_years ? ` • ${coach.experience_years} Years Exp` : ""}
-                </p>
-                <div className="mb-1 flex items-center gap-1 text-sm">
-                  <Star className="size-4 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
-                  <span className="font-black">{ratingLabel}</span>
-                  <span className="text-[var(--lobb-text-secondary)]">({reviewCount} reviews)</span>
-                </div>
-                <div className="mt-2 md:hidden">
-                  <span className="font-mono text-2xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</span>
-                  <span className="text-sm font-medium text-[var(--lobb-text-secondary)]">/hr</span>
-                </div>
-                {coach.slug && !isPreview && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await navigator.clipboard.writeText(profileUrl);
-                      showLobbToast({ type: "success", message: "Profile link copied" });
-                    }}
-                    className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-xs font-black text-[var(--lobb-text-primary)] md:hidden"
-                  >
-                    <Copy className="size-3.5 text-[var(--lobb-clay)]" />
-                    Copy profile link
-                  </button>
-                )}
-              </div>
-            </div>
+              )}
 
-            <div className="lobb-app-card mb-8 grid grid-cols-3 gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-2 sm:gap-4 sm:p-4">
-              <StatBlock value={sessionCount || "New"} label="Sessions" />
-              <StatBlock value={coach.experience_years || "New"} label="Years Exp" bordered />
-              <StatBlock value={ratingLabel} label="Rating" />
-            </div>
-
-            <div className="mb-8 space-y-4">
-              <div className="flex items-center gap-2 text-[var(--lobb-text-primary)]">
-                <MapPin className="size-5 text-[var(--lobb-text-secondary)]" />
-                <span className="text-sm font-semibold">{locations.length ? locations.join(" • ") : "Lagos"}</span>
-              </div>
-
+              {/* Specialization tags */}
               <div className="flex flex-wrap gap-2">
                 {(specializations.length ? specializations : skillLevels).slice(0, 5).map((item) => (
                   <span
                     key={item}
-                    className="inline-flex min-h-9 items-center rounded-[12px] bg-[var(--lobb-bg-secondary)] px-3.5 py-1.5 text-sm font-semibold leading-tight text-[var(--lobb-text-primary)]"
+                    className="inline-flex min-h-8 items-center rounded-full border border-[var(--lobb-border-subtle)] px-3.5 py-1 text-[12px] font-semibold leading-tight text-[var(--lobb-text-primary)]"
                   >
                     {item}
                   </span>
@@ -487,16 +464,15 @@ export function CoachProfileContent({
                 <div>
                   <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">Credentials</h3>
                   {certifications.length > 0 ? (
-                    <ul className="grid gap-3 sm:grid-cols-2">
+                    <ul className="divide-y divide-[var(--lobb-border-subtle)] border-y border-[var(--lobb-border-subtle)]">
                       {certifications.map((cert) => (
-                        <li key={cert} className="lobb-app-card group relative min-h-[86px] overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-3 transition hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
-                          <div className="absolute inset-x-0 top-0 h-1 bg-[var(--lobb-clay)]" />
+                        <li key={cert} className="group min-h-[76px] py-3 transition">
                           <div className="flex items-center gap-3">
-                          <span className="flex size-12 shrink-0 items-center justify-center bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)] ring-1 ring-[var(--lobb-clay)]/10">
+                          <span className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                             <ShieldCheck className="size-5" />
                           </span>
                           <span className="min-w-0">
-                            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Credential</span>
+                            <span className="block text-xs font-bold text-[var(--lobb-text-tertiary)]">Verified credential</span>
                             <span className="mt-1 block text-sm font-black leading-snug text-[var(--lobb-text-primary)]">{cert}</span>
                           </span>
                           </div>
@@ -764,19 +740,3 @@ export function CoachProfileContent({
   );
 }
 
-function StatBlock({
-  value,
-  label,
-  bordered = false,
-}: {
-  value: string | number;
-  label: string;
-  bordered?: boolean;
-}) {
-  return (
-    <div className={`text-center ${bordered ? "border-x border-[var(--lobb-border-subtle)]" : ""}`}>
-      <div className="text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">{value}</div>
-      <div className="text-xs font-bold uppercase tracking-[0.05em] text-[var(--lobb-text-secondary)]">{label}</div>
-    </div>
-  );
-}

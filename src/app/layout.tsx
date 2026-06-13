@@ -125,7 +125,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                var theme = localStorage.getItem('lobb-theme') || 'light';
+                var storedTheme = localStorage.getItem('lobb-theme');
+                var theme = storedTheme === 'dark' || storedTheme === 'light'
+                  ? storedTheme
+                  : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
                 if (theme !== 'dark' && theme !== 'light') theme = 'light';
                 document.documentElement.dataset.theme = theme;
                 document.documentElement.style.colorScheme = theme;
