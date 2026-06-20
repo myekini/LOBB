@@ -541,7 +541,7 @@ function LandingSplash() {
             Book a coach. Not a favor.
           </h1>
           <p className="mt-6 max-w-xl text-[16px] leading-[1.7] text-[var(--lobb-muted)] sm:text-[18px] text-pretty">
-            Lagos's verified tennis coaches. Available now. No WhatsApp required.
+            Lagos&apos;s verified tennis coaches. Available now. No WhatsApp required.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

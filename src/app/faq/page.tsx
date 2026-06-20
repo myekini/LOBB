@@ -11,7 +11,7 @@ export default function FaqPage() {
         <strong>Are coaches verified?</strong> LOBB reviews coach profiles, credentials, and demo materials before they go live. Every profile is approved manually — not by an algorithm.
       </p>
       <p className="mt-4">
-        <strong>How do payments work?</strong> Payment is held by LOBB, not released to the coach until two hours after your session starts. If your coach doesn't show, you get a full refund before anything is released.
+        <strong>How do payments work?</strong> Payment is held by LOBB, not released to the coach until two hours after your session starts. If your coach doesn&apos;t show, you get a full refund before anything is released.
       </p>
       <p className="mt-6 border-t border-[var(--lobb-border)] pt-5">
         For the full picture —{" "}
