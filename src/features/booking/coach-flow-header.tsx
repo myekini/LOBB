@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Home, Pencil, type LucideIcon } from "lucide-react";
 import { CoachAccountMenu } from "@/components/common/coach-account-menu";
 import { CoachDesktopNav } from "@/components/layout/coach-nav";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { cn } from "@/lib/utils";
 
 type CoachHeaderActionIcon = "calendar" | "pencil";
@@ -57,7 +58,7 @@ export function CoachFlowHeader({
               <Link
                 href="/coach/dashboard"
                 aria-label="Coach home"
-                className="flex size-10 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-bg-inverse)]"
+                className="lobb-logo-shell flex size-10 items-center justify-center overflow-hidden rounded-[12px]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/favicon.svg" alt="" className="size-full" />
@@ -104,6 +105,7 @@ export function CoachFlowHeader({
               <span className="hidden min-[380px]:inline">{actionLabel}</span>
             </button>
           )}
+          <ThemeToggle className="size-10 rounded-[12px]" />
           {showLogout && <CoachAccountMenu />}
         </div>
       </div>

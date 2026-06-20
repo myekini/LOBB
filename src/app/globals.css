@@ -247,7 +247,7 @@
     background-image: linear-gradient(
       90deg,
       var(--lobb-surface-2) 0%,
-      #f7f4ee 42%,
+      color-mix(in srgb, var(--lobb-surface-2) 62%, var(--lobb-surface) 38%) 42%,
       var(--lobb-surface-2) 78%
     );
     background-size: 220% 100%;
@@ -370,6 +370,10 @@
   .lobb-app-header {
     background: color-mix(in srgb, var(--lobb-bg-primary) 88%, transparent);
     border-color: color-mix(in srgb, var(--lobb-border-subtle) 86%, transparent);
+  }
+
+  .lobb-logo-shell {
+    background: #0d0d0d;
   }
 
   .lobb-app-card,
@@ -889,6 +893,67 @@
 
 .lobb-rail::-webkit-scrollbar {
   display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+  }
+
+  .lobb-receipt-page {
+    min-height: auto !important;
+    color: #0d0d0d !important;
+    font-size: 11px;
+  }
+
+  .lobb-receipt-page section {
+    max-width: none !important;
+  }
+
+  .lobb-receipt-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .lobb-receipt-hero,
+  .lobb-receipt-summary {
+    padding: 16px 18px !important;
+  }
+
+  .lobb-receipt-title {
+    margin-top: 6px !important;
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+  }
+
+  .lobb-receipt-total {
+    font-size: 34px !important;
+    line-height: 1 !important;
+  }
+
+  .lobb-receipt-details {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .lobb-receipt-details > div {
+    border-bottom: 0 !important;
+    border-right: 1px solid var(--lobb-border-subtle) !important;
+    padding: 12px !important;
+  }
+
+  .lobb-receipt-details > div:last-child {
+    border-right: 0 !important;
+  }
+
+  .lobb-receipt-summary .mt-8 {
+    margin-top: 14px !important;
+  }
 }
 
 /* Lagos areas marquee: seamless loop over a duplicated track */

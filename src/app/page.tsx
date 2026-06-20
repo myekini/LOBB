@@ -207,12 +207,11 @@ export default function Home() {
             <div className="relative">
               <div className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.06] px-3 py-2">
                 <MoodIcon className="size-4 text-[var(--lobb-clay)]" />
-                <span className="text-[11px] font-black uppercase tracking-[0.18em]">{mood.period}</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.18em]">
+                  {getGreeting()}, {firstName}
+                </span>
               </div>
-              <p className="mt-4 text-[11px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
-                {getGreeting()}, {firstName}
-              </p>
-              <h1 className="mt-2 text-[28px] font-black leading-[1.08] tracking-tight sm:text-[38px] text-balance">
+              <h1 className="mt-4 text-[28px] font-black leading-[1.08] tracking-tight sm:text-[38px] text-balance">
                 {mood.prompt}
               </h1>
               <p className="mt-2 max-w-lg text-[14px] font-normal leading-[1.6] text-white/75">
@@ -224,12 +223,6 @@ export default function Home() {
                     {liveCoaches.length} coaches available
                   </span>
                 )}
-                <Link
-                  href="/coaches"
-                  className="inline-flex h-9 items-center gap-2 rounded-[12px] bg-[var(--lobb-clay)] px-4 text-[11px] font-black uppercase tracking-[0.12em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]"
-                >
-                  Browse coaches <ArrowRight className="size-3.5" />
-                </Link>
               </div>
             </div>
           </div>

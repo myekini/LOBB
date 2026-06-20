@@ -113,7 +113,7 @@ export function PlayerHeader({
           <Link
             href="/"
             aria-label="LOBB home"
-            className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-bg-inverse)]"
+            className="lobb-logo-shell flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[12px]"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/favicon.svg" alt="" className="size-full" />

@@ -1,6 +1,7 @@
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { CoachSurface } from "@/components/common/coach-surface";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
 
 export default function CoachBookingsLoading() {
   return (
@@ -22,6 +23,7 @@ export default function CoachBookingsLoading() {
           ))}
         </section>
       </section>
+      <CoachBottomNav active="bookings" />
     </main>
   );
 }
