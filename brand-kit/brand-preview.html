@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LOBB — Brand Kit 2026</title>
+  <!-- Production uses Geist Sans + Geist Mono (Next.js localFont).
+       This preview falls back to system-ui which closely approximates Geist. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap" rel="stylesheet">
   <style>
     :root {
       --lobb-black:   #0D0D0D;
@@ -22,7 +24,7 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--lobb-surface);
       color: var(--lobb-black);
       line-height: 1.5;
@@ -97,7 +99,7 @@
       margin-bottom: 4px;
     }
     .hero-meta-value {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 13px;
       color: var(--lobb-white);
     }
@@ -149,13 +151,13 @@
     .color-info { padding: 14px 16px; background: white; }
     .color-name { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
     .color-token {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 10px;
       color: var(--lobb-clay);
       margin-bottom: 2px;
     }
     .color-hex {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 10px;
       color: var(--lobb-muted);
     }
@@ -185,7 +187,7 @@
       margin-bottom: 8px;
     }
     .type-spec {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 10.5px;
       color: var(--lobb-muted);
       line-height: 1.9;
@@ -198,14 +200,14 @@
       color: var(--lobb-black);
     }
     .t-headline {
-      font-family: 'Manrope', sans-serif;
+      font-family: 'Geist', system-ui, sans-serif;
       font-size: 38px;
       font-weight: 800;
       line-height: 1.12;
       color: var(--lobb-black);
     }
     .t-body {
-      font-family: 'Manrope', sans-serif;
+      font-family: 'Geist', system-ui, sans-serif;
       font-size: 16px;
       font-weight: 400;
       line-height: 1.65;
@@ -213,7 +215,7 @@
       max-width: 560px;
     }
     .t-label {
-      font-family: 'Manrope', sans-serif;
+      font-family: 'Geist', system-ui, sans-serif;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.12em;
@@ -221,7 +223,7 @@
       color: var(--lobb-clay);
     }
     .t-mono {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 32px;
       font-weight: 500;
       color: var(--lobb-black);
@@ -389,7 +391,7 @@
       gap: 8px;
     }
     .price-main {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 19px;
       font-weight: 500;
     }
@@ -451,11 +453,11 @@
     table.token-tbl {
       width: 100%;
       border-collapse: collapse;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Geist Mono', 'Courier New', monospace;
       font-size: 11.5px;
     }
     .token-tbl th {
-      font-family: 'Manrope', sans-serif;
+      font-family: 'Geist', system-ui, sans-serif;
       font-size: 9.5px;
       font-weight: 700;
       letter-spacing: 0.18em;
@@ -646,7 +648,7 @@
   <div class="type-row">
     <div>
       <div class="type-meta-label">Headline</div>
-      <div class="type-spec">Manrope<br>800 ExtraBold<br>36–48px · lh 1.12</div>
+      <div class="type-spec">Geist Sans<br>800 ExtraBold<br>36–48px · lh 1.12</div>
     </div>
     <div class="t-headline">Book a coach.<br>Not a favor.</div>
   </div>
@@ -654,7 +656,7 @@
   <div class="type-row">
     <div>
       <div class="type-meta-label">Body</div>
-      <div class="type-spec">Manrope<br>400 Regular<br>15–16px · lh 1.65</div>
+      <div class="type-spec">Geist Sans<br>400 Regular<br>15–16px · lh 1.65</div>
     </div>
     <div class="t-body">Every coach on Lobb is video-reviewed before going live. You see their demo, their rating, and their live availability — before you spend a single naira. No surprises on court. No WhatsApp back-and-forth. Just a confirmed session in under 90 seconds.</div>
   </div>
@@ -662,7 +664,7 @@
   <div class="type-row">
     <div>
       <div class="type-meta-label">Label / Badge</div>
-      <div class="type-spec">Manrope<br>700 Bold<br>10–12px · uppercase<br>Tracking +0.12em</div>
+      <div class="type-spec">Geist Sans<br>700 Bold<br>10–12px · uppercase<br>Tracking +0.12em</div>
     </div>
     <div class="t-label">✓ &nbsp;LOBB VERIFIED COACH</div>
   </div>
@@ -670,7 +672,7 @@
   <div class="type-row">
     <div>
       <div class="type-meta-label">Mono / Currency</div>
-      <div class="type-spec">JetBrains Mono<br>500 Medium<br>Currency values only</div>
+      <div class="type-spec">Geist Mono<br>500 Medium<br>Currency values only</div>
     </div>
     <div class="t-mono">₦25,000 <span style="font-size:18px;color:var(--lobb-muted);font-weight:400;">/ session</span></div>
   </div>
@@ -840,7 +842,7 @@
                   stroke="#C4622D" stroke-width="2.75" stroke-linecap="round" fill="none"/>
             <circle cx="60" cy="50" r="5.5" fill="#C4622D"/>
             <text x="60" y="106" text-anchor="middle"
-                  font-family="'Manrope','Helvetica Neue',sans-serif"
+                  font-family="'Geist Sans','Helvetica Neue',sans-serif"
                   font-size="8.5" font-weight="700" letter-spacing="2.8" fill="#C4622D">VERIFIED</text>
           </svg>
           <div class="fav-label">Seal Badge — Large</div>
@@ -858,7 +860,7 @@
                   stroke="#C4622D" stroke-width="2.75" stroke-linecap="round" fill="none"/>
             <circle cx="60" cy="50" r="5.5" fill="#C4622D"/>
             <text x="60" y="106" text-anchor="middle"
-                  font-family="'Manrope','Helvetica Neue',sans-serif"
+                  font-family="'Geist Sans','Helvetica Neue',sans-serif"
                   font-size="8.5" font-weight="700" letter-spacing="2.8" fill="#C4622D">VERIFIED</text>
           </svg>
           <div class="fav-label">Seal Badge — Small</div>
@@ -948,7 +950,7 @@
       <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Lead with benefits — "Pay safely" before "how payment protection works"</div>
       <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Keep CTAs active and direct: "Book a coach." not "Sessions can be booked."</div>
       <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use clay (#C4622D) only for active states, verified elements, and key accents</div>
-      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use JetBrains Mono exclusively for all currency values (₦)</div>
+      <div class="rule-item"><span class="rule-icon" style="color:var(--lobb-success);">✓</span> Use Geist Mono exclusively for all currency values (₦)</div>
     </div>
     <div>
       <div class="rule-col-title rule-col-title-dont">Don't</div>

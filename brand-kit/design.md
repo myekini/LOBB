@@ -55,13 +55,15 @@ Avoid one-note palettes. Black, clay, warm off-white, and muted grey should shar
 Primary font:
 
 ```txt
-Hanken Grotesk
+Geist Sans — loaded via Next.js localFont (src/app/fonts/GeistVF.woff)
+CSS variable: --font-sans
 ```
 
 Currency/data font:
 
 ```txt
-JetBrains Mono
+Geist Mono — loaded via Next.js localFont (src/app/fonts/GeistMonoVF.woff)
+CSS variable: --font-mono
 ```
 
 | Style | Size | Weight | Line height | Use |
