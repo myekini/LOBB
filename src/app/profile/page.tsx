@@ -41,7 +41,7 @@ export default function ProfilePage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.push("/auth/login"); return; }
+      if (!user) return;
       const { data } = await supabase
         .from("profiles")
         .select("full_name, email, phone_number, avatar_url")

@@ -1,6 +1,14 @@
 {
   "crons": [
     {
+      "path": "/api/cron/expire-pending-bookings",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/ops-alerts",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/release-escrow",
       "schedule": "0 2 * * *"
     },

@@ -154,10 +154,7 @@ export default function CoachProfileEditPage() {
     const supabase = createClient();
 
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        router.push("/auth/login");
-        return;
-      }
+      if (!user) return;
 
       Promise.all([
         supabase.from("coaches").select("*").eq("id", user.id).single(),

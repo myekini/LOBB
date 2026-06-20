@@ -33,7 +33,7 @@ export default function CoachBankSetupPage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.push("/auth/login"); return; }
+      if (!user) return;
       supabase.from("coaches")
         .select("bank_name, bank_account_number, paystack_subaccount_code")
         .eq("id", user.id)

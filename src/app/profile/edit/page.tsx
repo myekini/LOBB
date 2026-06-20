@@ -33,7 +33,7 @@ export default function EditProfilePage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.push("/auth/login"); return; }
+      if (!user) return;
       setUserId(user.id);
       const { data } = await supabase
         .from("profiles")
