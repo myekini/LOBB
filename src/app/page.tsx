@@ -215,12 +215,12 @@ export default function Home() {
               <h1 className="mt-2 text-[28px] font-black leading-[1.08] tracking-tight sm:text-[38px] text-balance">
                 {mood.prompt}
               </h1>
-              <p className="mt-2 max-w-lg text-[14px] font-normal leading-[1.6] text-white/52">
+              <p className="mt-2 max-w-lg text-[14px] font-normal leading-[1.6] text-white/75">
                 {mood.detail}
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {liveCoaches.length > 0 && (
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/40">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">
                     {liveCoaches.length} coaches available
                   </span>
                 )}
@@ -480,8 +480,6 @@ function LandingSplash() {
     };
   }, []);
 
-  const headlineWords = "Book the right court lesson.".split(" ");
-
   // Hero booking widget mirrors the top live coach; static fallback until data lands.
   const heroCoach = coaches[0] ?? null;
   const heroCoachName = heroCoach ? shortCoachName(heroCoach.full_name) : "Tunde A.";
@@ -540,15 +538,10 @@ function LandingSplash() {
           </div>
 
           <h1 className="max-w-3xl text-[44px] font-black leading-[0.96] tracking-tight text-[var(--lobb-black)] sm:text-[68px] lg:text-[88px] text-balance">
-            {headlineWords.map((word, i) => (
-              <span key={i}>
-                <span className="lobb-word" style={{ "--i": i } as React.CSSProperties}>{word}</span>
-                {i < headlineWords.length - 1 ? " " : null}
-              </span>
-            ))}
+            Book a coach. Not a favor.
           </h1>
           <p className="mt-6 max-w-xl text-[16px] leading-[1.7] text-[var(--lobb-muted)] sm:text-[18px] text-pretty">
-            LOBB gives Lagos players a cleaner way to compare verified tennis coaches, reserve real session times, and pay before the first rally starts.
+            Lagos's verified tennis coaches. Available now. No WhatsApp required.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -561,12 +554,12 @@ function LandingSplash() {
             </Link>
           </div>
 
-          <div className="mt-9 grid max-w-xl grid-cols-3 border-y border-[var(--lobb-border)]">
+          <div className={`mt-9 grid max-w-xl border-y border-[var(--lobb-border)] ${coachCount != null ? "grid-cols-3" : "grid-cols-2"}`}>
             {([
-              [coachCount ?? 36, "verified coaches"],
+              ...(coachCount != null ? [[coachCount, "verified Lagos coaches"]] : []),
               [areas.length, "Lagos areas"],
               [10, "minute slot hold"],
-            ] as const).map(([value, label]) => (
+            ] as [number, string][]).map(([value, label]) => (
               <div key={label} className="border-r border-[var(--lobb-border)] px-3 py-4 first:pl-0 last:border-r-0 last:pr-0 sm:px-5">
                 <p className="text-[28px] font-black tabular-nums tracking-tight text-[var(--lobb-black)] sm:text-[38px]"><StatValue value={value} /></p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">{label}</p>
@@ -676,7 +669,7 @@ function LandingSplash() {
           {([
             ["A real calendar", "Coaches publish actual availability. The slot you see is a slot that exists, not the start of a negotiation."],
             ["A 10-minute hold", "Checkout locks your slot while you pay. Nobody can take it from under you mid-payment."],
-            ["Escrow, not transfers", "Paystack holds your money. You never pay into a stranger's account, and the coach never has to chase payment."],
+            ["LOBB holds, then pays", "You never pay into a stranger's account. LOBB holds the coach's payout until after your session, then releases it automatically."],
             ["Paid after play", "The coach is paid out after the session happens. Every incentive points at the court."],
           ] as const).map(([title, body], i) => (
             <div
@@ -706,7 +699,7 @@ function LandingSplash() {
           <div className="mt-8 border border-white/[0.10] bg-white/[0.05] p-4 sm:p-5">
             <div className="flex h-11 items-center gap-3 border border-white/[0.12] bg-white/[0.07] px-4">
               <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-              <span className="truncate text-sm font-semibold text-white/55">Lekki, intermediate, backhand</span>
+              <span className="truncate text-sm font-semibold text-white/75">Lekki, intermediate, backhand</span>
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {["Lekki", "Intermediate", "Morning slots"].map((chip) => (
@@ -726,10 +719,10 @@ function LandingSplash() {
               )}
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-black">{coaches[0]?.full_name ?? "Tunde A."}</p>
-                <p className="truncate text-xs font-semibold text-white/50">{coaches[0]?.primary_location ?? "Lagos Lawn Tennis Club"}</p>
+                <p className="truncate text-xs font-semibold text-white/75">{coaches[0]?.primary_location ?? "Lagos Lawn Tennis Club"}</p>
               </div>
               {(coaches[0]?.hourly_rate_ngn ?? 20000) > 0 && (
-                <span className="shrink-0 text-sm font-black text-white">₦{(coaches[0]?.hourly_rate_ngn ?? 20000).toLocaleString("en-NG")}<span className="text-[10px] font-bold text-white/45">/hr</span></span>
+                <span className="shrink-0 text-sm font-black text-white">₦{(coaches[0]?.hourly_rate_ngn ?? 20000).toLocaleString("en-NG")}<span className="text-[10px] font-bold text-white/75">/hr</span></span>
               )}
             </div>
           </div>
@@ -744,7 +737,7 @@ function LandingSplash() {
             {[
               "A public profile players can evaluate quickly.",
               "Service areas, skill levels, and session expectations in one place.",
-              "Bookings arrive paid into escrow, with payout after the session.",
+              "Bookings arrive pre-paid, with your payout released automatically after the session.",
             ].map((item) => (
               <div key={item} className="flex items-start gap-3 border-b border-[var(--lobb-border)] pb-3 last:border-b-0 last:pb-0">
                 <Check className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
@@ -763,7 +756,7 @@ function LandingSplash() {
         <div className="mx-auto grid max-w-7xl md:grid-cols-2">
           {([
             ["The price is the price", "The coach's hourly rate plus a 5% convenience fee, shown in full before you pay."],
-            ["Plans change, fine", "Cancel 72+ hours ahead for a full refund, or 24 to 72 hours ahead for half back."],
+            ["Plans change, fine", "Cancel at least 24 hours ahead for a full refund. Cancel within 24 hours and you get 50% back."],
           ] as const).map(([title, body], i) => (
             <div
               key={title}
@@ -789,7 +782,7 @@ function LandingSplash() {
           <h2 className="text-[40px] font-black leading-[0.98] tracking-tight sm:text-[60px] text-balance">
             Your next lesson, on the calendar.
           </h2>
-          <p className="mx-auto mt-5 max-w-md text-[15px] leading-[1.7] text-white/60">
+          <p className="mx-auto mt-5 max-w-md text-[15px] leading-[1.7] text-white/75">
             Pick a coach, hold a slot, pay once. The rest happens on court.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -828,7 +821,7 @@ function LandingSplash() {
 
 function DotLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
-    <p className={`flex items-center gap-2.5 text-[13px] font-black ${light ? "text-white/60" : "text-[var(--lobb-muted)]"}`}>
+    <p className={`flex items-center gap-2.5 text-[13px] font-black ${light ? "text-white/75" : "text-[var(--lobb-muted)]"}`}>
       <span className="size-1.5 shrink-0 bg-[var(--lobb-clay)]" aria-hidden="true" />
       {children}
     </p>
@@ -859,7 +852,7 @@ function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: 
         )}
         {coach.hourly_rate_ngn != null && (
           <span className="absolute bottom-2 left-2 bg-[#0d0d0d]/85 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
-            ₦{coach.hourly_rate_ngn.toLocaleString("en-NG")}<span className="font-bold text-white/55">/hr</span>
+            ₦{coach.hourly_rate_ngn.toLocaleString("en-NG")}<span className="font-bold text-white/75">/hr</span>
           </span>
         )}
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
+import { Dialog } from "@base-ui/react/dialog";
 import {
   durationMinutes,
   firstJoin,
@@ -111,6 +112,10 @@ export default function BookingDetailPage() {
   const policy = cancellationPolicy(booking.starts_at, "player");
   const fullRefund = policy.refundPercent === 100;
   const policyNote = policy.note;
+  const refundNgn = Math.round((booking.total_amount_ngn ?? 0) * policy.refundPercent / 100);
+  const cancelDeadline = new Date(new Date(booking.starts_at).getTime() - 24 * 60 * 60 * 1000).toLocaleString("en-NG", {
+    weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos",
+  });
 
   return (
     <main className="lobb-app-page min-h-screen px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
@@ -202,10 +207,10 @@ export default function BookingDetailPage() {
         </DetailSection>
 
         <DetailSection title="Cancellation policy">
-          <div className={`rounded-[16px] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : policy.refundPercent === 50 ? "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10"}`}>
+          <div className={`rounded-[16px] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10"}`}>
             <p className="flex items-start gap-2 text-sm font-black">
               <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
-              {policy.label}
+              {fullRefund ? `Free cancellation until ${cancelDeadline}` : policy.label}
             </p>
             <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">{policyNote}</p>
           </div>
@@ -228,33 +233,37 @@ export default function BookingDetailPage() {
         </div>
       </section>
 
-      {showCancel && (
-        <div className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4" onClick={() => setShowCancel(false)}>
-          <section
-            role="dialog"
-            aria-modal="true"
+      <Dialog.Root open={showCancel} onOpenChange={setShowCancel}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
+          <Dialog.Popup
             aria-labelledby="cancel-booking-title"
-            className="mx-auto w-full max-w-md border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]"
-            onClick={(event) => event.stopPropagation()}
+            className="fixed inset-x-0 bottom-0 z-[70] p-4"
           >
-            <div className="flex items-start justify-between gap-4">
-              <h2 id="cancel-booking-title" className="text-lg font-black">Cancel this booking?</h2>
-              <button type="button" onClick={() => setShowCancel(false)} aria-label="Close"><X className="size-5" /></button>
+            <div className="mx-auto w-full max-w-md border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
+              <div className="flex items-start justify-between gap-4">
+                <h2 id="cancel-booking-title" className="text-lg font-black">Cancel this booking?</h2>
+                <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
+              </div>
+              <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+                {fullRefund ? (
+                  <>You will receive a <strong>full refund of {money(refundNgn)}</strong> within 2 to 5 business days.</>
+                ) : (
+                  <>You will receive <strong>50% back — {money(refundNgn)}</strong> — within 2 to 5 business days. The coach keeps the rest for holding the slot.</>
+                )}
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Dialog.Close className="h-12 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
+                  Keep booking
+                </Dialog.Close>
+                <button type="button" disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-[12px] border border-[var(--lobb-error)]/35 text-sm font-black text-[var(--lobb-error)] disabled:opacity-60">
+                  {cancelling ? "Cancelling" : "Cancel booking"}
+                </button>
+              </div>
             </div>
-            <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-              <strong>{policy.label}.</strong> {policyNote}
-            </p>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setShowCancel(false)} className="h-12 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
-                Keep booking
-              </button>
-              <button type="button" disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-[12px] border border-[var(--lobb-error)]/35 text-sm font-black text-[var(--lobb-error)] disabled:opacity-60">
-                {cancelling ? "Cancelling" : "Cancel booking"}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </main>
   );
 }

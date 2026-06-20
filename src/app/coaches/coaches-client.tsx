@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { Dialog } from "@base-ui/react/dialog";
 import { CoachListCard } from "@/features/coaches/coach-cards";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { LobbEmptyState } from "@/components/common/lobb-empty-state";
@@ -175,8 +176,7 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
         </div>
       </div>
 
-      {showFilter && (
-        <BottomSheet title="Filter coaches" onClose={() => setShowFilter(false)}>
+      <BottomSheet title="Filter coaches" open={showFilter} onClose={() => setShowFilter(false)}>
           <div className="mb-5 flex items-center justify-between">
             <h2 className="text-lg font-black">Filter coaches</h2>
             <button type="button" className="text-sm font-bold text-[var(--lobb-clay)]" onClick={() => { resetFiltersOnly(); }}>
@@ -243,10 +243,8 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             Show {results.length} coach{results.length !== 1 ? "es" : ""}
           </button>
         </BottomSheet>
-      )}
 
-      {showSort && (
-        <BottomSheet title="Sort coaches" onClose={() => setShowSort(false)}>
+      <BottomSheet title="Sort coaches" open={showSort} onClose={() => setShowSort(false)}>
           <h2 className="mb-4 text-lg font-black">Sort</h2>
           {(["Best Match", "Highest Rated", "Most Reviewed", "Lowest Price", "Newest"] as SortOption[]).map((option) => (
             <button
@@ -265,7 +263,6 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             </button>
           ))}
         </BottomSheet>
-      )}
 
       <PlayerBottomNav active="coaches" />
     </main>
@@ -310,19 +307,19 @@ function ChipBlock({
   );
 }
 
-function BottomSheet({ children, onClose, title }: { children: React.ReactNode; onClose: () => void; title: string }) {
+function BottomSheet({ children, onClose, title, open }: { children: React.ReactNode; onClose: () => void; title: string; open: boolean }) {
   return (
-    <div className="fixed inset-0 z-[60] bg-black/35 backdrop-blur-[2px]" onClick={onClose}>
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="absolute bottom-0 left-0 right-0 max-h-[88vh] overflow-y-auto border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 pb-10 shadow-[var(--lobb-shadow-modal)] sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--lobb-border)]" />
-        {children}
-      </div>
-    </div>
+    <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-[60] bg-black/35 backdrop-blur-[2px]" />
+        <Dialog.Popup
+          aria-label={title}
+          className="fixed bottom-0 left-0 right-0 z-[60] max-h-[88vh] overflow-y-auto border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 pb-10 shadow-[var(--lobb-shadow-modal)] sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2"
+        >
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--lobb-border)]" />
+          {children}
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

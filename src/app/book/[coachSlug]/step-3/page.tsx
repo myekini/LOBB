@@ -163,11 +163,11 @@ function BookingStep3Content() {
 
       <section className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         <div className="bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)]">
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/55">Payment summary</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/75">Payment summary</p>
           <div className="mt-2 flex items-end justify-between gap-3">
             <div>
               <h2 className="text-2xl font-black">{coach ? money(total) : "Loading"}</h2>
-              <p className="mt-1 text-xs font-semibold text-white/60">60-minute private coaching session</p>
+              <p className="mt-1 text-xs font-semibold text-white/75">60-minute private coaching session</p>
             </div>
             <ShieldCheck className="size-7 text-[var(--lobb-clay)]" />
           </div>
@@ -243,7 +243,15 @@ function BookingStep3Content() {
         </div>
       </section>
 
-      {/* Escrow Shield Trust Banner */}
+      {/* Cancellation policy */}
+      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold leading-relaxed text-[var(--lobb-text-primary)]">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-wider text-[var(--lobb-text-tertiary)]">Cancellation policy</p>
+          <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">Free cancellation up to 24 hours before the session. Cancel within 24 hours and 50% is refunded.</p>
+        </div>
+      </div>
+
+      {/* Payment protection banner */}
       <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] p-4 text-xs font-semibold leading-relaxed text-[var(--lobb-text-primary)]">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
         <div>

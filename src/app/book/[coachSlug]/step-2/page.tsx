@@ -281,7 +281,7 @@ function BookingStep2Content() {
                         <span className="block text-xs font-black leading-tight">{sub.label}</span>
                         {sub.isMemberCourt && (
                           <span className={`mt-0.5 block text-[9px] font-semibold ${
-                            selectedSubCourtId === sub.id ? "text-white/70" : "text-[var(--lobb-text-tertiary)]"
+                            selectedSubCourtId === sub.id ? "text-white/75" : "text-[var(--lobb-text-tertiary)]"
                           }`}>
                             Members
                           </span>

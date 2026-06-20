@@ -8,9 +8,7 @@ import { sendBookingPaymentInitiatedCoachSms } from "@/lib/sms-notifications";
 import type { NotificationBookingInfo } from "@/lib/notification-messages";
 import { apiError } from "@/lib/api-response";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
-
-const PLATFORM_COMMISSION_RATE = 0.15; // LOBB's cut from coach rate
-const CONVENIENCE_FEE_RATE = 0.05; // charged to player
+import { calcBookingFees } from "@/lib/lobb-money";
 
 function callbackOrigin() {
   // Always use the configured app URL — never trust request headers for
@@ -138,7 +136,7 @@ export async function POST(request: Request) {
     }
 
     // ── Guard: coach must have connected their bank at some point ─────────────
-    // With the Transfer API escrow model, money lands in LOBB's account first;
+    // With the Transfer API payout model, money lands in LOBB's account first;
     // paystack_recipient_code is only required when the cron pays out (post-session).
     // Coaches who onboarded under the old subaccount model are still bookable —
     // they'll need to re-onboard for automated payouts, but bookings should not block.
@@ -148,13 +146,7 @@ export async function POST(request: Request) {
 
     // ── Calculate fees ────────────────────────────────────────────────────────
     const session_fee = coach.hourly_rate_ngn;
-    const platform_commission = Math.round(session_fee * PLATFORM_COMMISSION_RATE);
-    const convenience_fee = Math.round(session_fee * CONVENIENCE_FEE_RATE);
-    const total_amount = session_fee + convenience_fee;
-    // coach_payout must equal exactly what Paystack routes to the coach's subaccount:
-    // 85% of the gross total (not 85% of session_fee alone, which would understate by the
-    // convenience fee share). This keeps the DB figure authoritative for earnings views.
-    const coach_payout = Math.round(total_amount * (1 - PLATFORM_COMMISSION_RATE));
+    const { convenienceFee: convenience_fee, grossCharge: total_amount, platformCommission: platform_commission, coachPayout: coach_payout } = calcBookingFees(session_fee);
 
     // ── Compute session times ─────────────────────────────────────────────────
     const starts_at = new Date(slot_starts_at);

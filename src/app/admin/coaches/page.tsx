@@ -13,15 +13,39 @@ type CoachApproval = {
   id: string;
   full_name: string;
   headline: string | null;
+  bio: string | null;
   hourly_rate_ngn: number;
   primary_location: string;
   service_areas: string[];
   certifications: string[];
   demo_video_url: string | null;
   profile_photo_url: string | null;
+  paystack_recipient_code: string | null;
+  bank_account_number: string | null;
   slug: string | null;
   created_at: string;
 };
+
+function wordCount(text: string | null) {
+  return text?.trim().split(/\s+/).filter(Boolean).length ?? 0;
+}
+
+function isProperCase(name: string) {
+  return name.trim().split(/\s+/).every((part) => part.length > 0 && part[0] === part[0].toUpperCase() && /[a-zA-Z]/.test(part[0]));
+}
+
+function qualityChecks(coach: CoachApproval) {
+  return [
+    { label: "Name capitalised", pass: isProperCase(coach.full_name) },
+    { label: "Photo uploaded", pass: Boolean(coach.profile_photo_url) },
+    { label: "Headline 20+ chars", pass: (coach.headline?.length ?? 0) >= 20 },
+    { label: "Bio 80+ words", pass: wordCount(coach.bio) >= 80 },
+    { label: "Rate ₦5k–₦80k", pass: coach.hourly_rate_ngn >= 5_000 && coach.hourly_rate_ngn <= 80_000 },
+    { label: "Certification listed", pass: coach.certifications.some((c) => c.trim().length > 3) },
+    { label: "Demo video", pass: Boolean(coach.demo_video_url) },
+    { label: "Bank connected", pass: Boolean(coach.paystack_recipient_code ?? coach.bank_account_number) },
+  ];
+}
 
 export default function AdminCoachApprovalsPage() {
   const [coaches, setCoaches] = useState<CoachApproval[]>([]);
@@ -77,7 +101,7 @@ export default function AdminCoachApprovalsPage() {
             <h1 className="mt-1 text-2xl font-black tracking-tight">{coaches.length} pending</h1>
           </div>
           <p className="max-w-md text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
-            Approve only complete profiles with clear locations, rate, and demo proof.
+            Every profile must pass all 8 launch standard checks before approval. Green = pass, red = fail.
           </p>
         </div>
       </div>
@@ -107,6 +131,18 @@ export default function AdminCoachApprovalsPage() {
               <Info label="Certifications" value={coach.certifications.join(", ") || "None"} />
               <Info label="Profile" value={coach.slug ? "Public preview ready" : "Draft link only"} />
             </dl>
+
+            <div className="mt-5">
+              <p className="mb-2 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Launch standard</p>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                {qualityChecks(coach).map(({ label, pass }) => (
+                  <div key={label} className={`flex items-center gap-1.5 rounded-[8px] px-2 py-1.5 text-[11px] font-black ${pass ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"}`}>
+                    {pass ? <Check className="size-3 shrink-0" /> : <X className="size-3 shrink-0" />}
+                    {label}
+                  </div>
+                ))}
+              </div>
+            </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
               <a href={coach.demo_video_url || "#"} target="_blank" className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[var(--lobb-border)] px-4 text-xs font-black transition-colors hover:border-[var(--lobb-clay)]/35">

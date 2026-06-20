@@ -159,7 +159,7 @@ export function OnboardingButton({
       <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       {loading ? (
         <span className="inline-flex items-center gap-2">
-          <Loader2 className="size-4 animate-spin text-white/70" />
+          <Loader2 className="size-4 animate-spin text-white/75" />
           {children}
         </span>
       ) : (

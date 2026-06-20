@@ -42,7 +42,7 @@ export function BookingShell({
             <div className="flex size-11 items-center justify-center rounded-[12px] bg-white/10 text-[var(--lobb-clay)]">
               <ShieldCheck className="size-5" />
             </div>
-            <p className="mt-4 text-[11px] font-black uppercase tracking-[0.18em] text-white/55">Secure checkout</p>
+            <p className="mt-4 text-[11px] font-black uppercase tracking-[0.18em] text-white/75">Secure checkout</p>
             <h2 className="mt-1 text-xl font-black leading-tight">Your court time is protected.</h2>
           </div>
           <div className="mt-4 space-y-2">

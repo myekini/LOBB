@@ -2,6 +2,7 @@
 
 import { Copy, Download, MessageCircle, Share2, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import { showLobbToast } from "@/providers/lobb-global-state";
 
 export function CoachShareSheet({
@@ -62,14 +63,15 @@ export function CoachShareSheet({
         {triggerLabel && <span>{triggerLabel}</span>}
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-[80] flex items-end bg-black/45 p-4 backdrop-blur-sm sm:items-center" onClick={() => setOpen(false)}>
-          <section
-            role="dialog"
-            aria-modal="true"
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-[80] bg-black/45 backdrop-blur-sm" />
+          <Dialog.Popup
             aria-labelledby="coach-share-title"
+            className="fixed inset-x-0 bottom-0 z-[80] p-4 sm:flex sm:inset-0 sm:items-center sm:justify-center"
+          >
+          <section
             className="mx-auto w-full max-w-[420px] overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-modal)]"
-            onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--lobb-border-subtle)] p-5">
               <div>
@@ -77,9 +79,9 @@ export function CoachShareSheet({
                 <h2 id="coach-share-title" className="mt-1 text-xl font-black leading-tight text-[var(--lobb-text-primary)]">{coachName}</h2>
                 <p className="mt-1 truncate text-sm font-semibold text-[var(--lobb-text-secondary)]">{profileUrl}</p>
               </div>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)]">
+              <Dialog.Close aria-label="Close" className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)]">
                 <X className="size-5" />
-              </button>
+              </Dialog.Close>
             </div>
 
             <div className="grid gap-4 p-5">
@@ -108,8 +110,9 @@ export function CoachShareSheet({
               </div>
             </div>
           </section>
-        </div>
-      )}
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }

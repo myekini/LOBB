@@ -10,6 +10,12 @@
   }
 }
 
+/* Accessibility: keyboard focus rings — overrides outline-none utilities for keyboard users */
+*:focus-visible {
+  outline: 2px solid var(--lobb-clay) !important;
+  outline-offset: 2px !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lobb-cta-pulse {
     animation: none;

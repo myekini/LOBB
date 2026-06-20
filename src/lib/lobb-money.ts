@@ -1,7 +1,22 @@
-export const LOBB_COMMISSION_RATE = 0.05;
+// Canonical fee model — all booking money math derives from these three constants.
+// SESSION_RATE = coach's listed rate (e.g. ₦20,000)
+// CONVENIENCE_FEE  = SESSION_RATE × 0.05                    → ₦1,000  (charged to player)
+// GROSS_CHARGE     = SESSION_RATE + CONVENIENCE_FEE          → ₦21,000 (player pays)
+// PLATFORM_COMMISSION = SESSION_RATE × 0.15                  → ₦3,000  (LOBB commission)
+// COACH_PAYOUT     = SESSION_RATE × 0.85                    → ₦17,000 (paid to coach)
+// LOBB_RETAINED    = GROSS_CHARGE − COACH_PAYOUT             → ₦4,000  (₦3,000 + ₦1,000)
+// Check: COACH_PAYOUT + LOBB_RETAINED = GROSS_CHARGE ✓
+export const CONVENIENCE_FEE_RATE = 0.05;
+export const LOBB_COMMISSION_RATE = 0.15;
+export const COACH_SHARE_PCT = 0.85;
 
-export function coachNetAmount(grossNgn: number) {
-  return Math.max(0, grossNgn - Math.round(grossNgn * LOBB_COMMISSION_RATE));
+export function calcBookingFees(sessionRateNgn: number) {
+  const convenienceFee = Math.round(sessionRateNgn * CONVENIENCE_FEE_RATE);
+  const grossCharge = sessionRateNgn + convenienceFee;
+  const platformCommission = Math.round(sessionRateNgn * LOBB_COMMISSION_RATE);
+  const coachPayout = Math.round(sessionRateNgn * COACH_SHARE_PCT);
+  const lobbRetained = grossCharge - coachPayout;
+  return { convenienceFee, grossCharge, platformCommission, coachPayout, lobbRetained };
 }
 
 export function hoursUntilSession(startsAt: string) {
@@ -28,26 +43,18 @@ export function cancellationPolicy(
 
   const hours = hoursUntilSession(startsAt);
 
-  if (hours >= 72) {
+  if (hours >= 24) {
     return {
       refundPercent: 100,
       label: "Full refund",
-      note: "Cancel more than 72 hrs before the session for a full refund in 5 to 7 business days.",
-    };
-  }
-
-  if (hours >= 24) {
-    return {
-      refundPercent: 50,
-      label: "50% refund",
-      note: "Cancel 24 to 72 hrs before the session for a 50% refund in 5 to 7 business days.",
+      note: "Cancel at least 24 hours before the session for a full refund within 2 to 5 business days.",
     };
   }
 
   return {
-    refundPercent: 0,
-    label: "No refund",
-    note: "No refund applies within 24 hrs of the session.",
+    refundPercent: 50,
+    label: "50% refund",
+    note: "Cancelling within 24 hours of the session returns 50% to you. The coach receives a partial payment for holding the slot.",
   };
 }
 

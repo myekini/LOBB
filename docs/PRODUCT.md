@@ -10,7 +10,7 @@ product
 - **Admins**: LOBB operators who audit coach applications, monitor bookings/earnings, and manage payout triggers.
 
 ## Product Purpose
-LOBB is a premium Lagos-based tennis coaching marketplace. It replaces manual scheduling with verified real-time calendars, a 10-minute checkout slot lock, and secure split-escrow payments via Paystack.
+LOBB is a premium Lagos-based tennis coaching marketplace. It replaces manual scheduling with verified real-time calendars, a 10-minute checkout slot lock, and protected payments via Paystack — held by LOBB and released to the coach after the session.
 
 ## Brand Personality
 - **Active / Athletic**: Bold and structured, referencing the energy of the sport.

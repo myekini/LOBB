@@ -1,6 +1,6 @@
 # LOBB — Product Features Reference
 
-Lagos tennis coach booking platform. Verified coaches, real availability, secure payment, escrow payout.
+Lagos tennis coach booking platform. Verified coaches, real availability, secure payment, protected payout.
 
 ---
 
@@ -9,7 +9,7 @@ Lagos tennis coach booking platform. Verified coaches, real availability, secure
 1. [Authentication](#1-authentication)
 2. [Roles](#2-roles)
 3. [Booking Flow (Player)](#3-booking-flow-player)
-4. [Payment & Escrow](#4-payment--escrow)
+4. [Payment and Payout Hold](#4-payment-and-payout-hold)
 5. [Cancellation & Refund Policy](#5-cancellation--refund-policy)
 6. [SMS Notifications](#6-sms-notifications)
 7. [Coach Payout](#7-coach-payout)
@@ -135,7 +135,7 @@ Three-step wizard at `/book/[coachSlug]/step-1` → `step-2` → `step-3`.
 
 ---
 
-## 4. Payment & Escrow
+## 4. Payment and Payout Hold
 
 **Provider:** Paystack
 
@@ -163,15 +163,15 @@ Cron: /api/cron/release-escrow (runs hourly, authenticated with ADMIN_SECRET)
   → Pass 1: finds confirmed bookings where ends_at + 2 hours ≤ now()
     → calls release_escrow(booking_id) Supabase RPC
     → booking status: confirmed → completed
-    → escrow_released_at timestamp set
-  → Pass 2: finds completed bookings with escrow_released_at set but no paystack_transfer_code
+    → payout_released_at (escrow_released_at) timestamp set
+  → Pass 2: finds completed bookings with payout released but no paystack_transfer_code
     → calls POST /transfer on Paystack for each
     → amount: coach_payout_ngn × 100 kobo
     → recipient: coach's paystack_recipient_code (RCPT_xxx)
     → stores paystack_transfer_code on booking row
         ↓
-₦17,850 (85%) transferred to coach's bank account via Paystack Transfer API
-₦3,150  (15%) stays in LOBB's Paystack account as platform revenue
+₦17,000 (85% of session rate) transferred to coach's bank account via Paystack Transfer API
+₦4,000  (₦3,000 commission + ₦1,000 convenience fee) stays in LOBB's Paystack account
 ```
 
 ### Fee breakdown
@@ -183,16 +183,16 @@ For a ₦20,000/hr coach:
 | Session fee | `coach.hourly_rate_ngn` | ₦20,000 |
 | Convenience fee (player pays) | `session_fee × 0.05` | ₦1,000 |
 | **Total charged to player** | `session_fee + convenience_fee` | **₦21,000** |
-| Coach payout (transfer) | `total × 0.85` | ₦17,850 |
-| LOBB revenue | `total × 0.15` | ₦3,150 |
+| Coach payout (transfer) | `session_fee × 0.85` | ₦17,000 |
+| LOBB retained | `gross − coach_payout` | ₦4,000 |
 
-The `platform_commission_ngn` column (`session_fee × 0.15 = ₦3,000`) is stored for internal accounting reference but **LOBB's actual Paystack receipt is ₦3,150** (15% of gross total including convenience fee).
+`platform_commission_ngn = session_fee × 0.15 = ₦3,000`. `convenience_fee_ngn = ₦1,000`. Together they equal `lobb_retained = ₦4,000`. Check: `₦17,000 + ₦4,000 = ₦21,000` ✓
 
-### Escrow — true financial hold
+### Payment hold
 
-**How it works:** All money lands in LOBB's Paystack account at payment time. The coach's 85% stays in LOBB's balance for the full 2-hour window after the session ends. The `release_escrow` cron both marks the booking `completed` and programmatically transfers the coach's share via Paystack's Transfer API. LOBB controls the timing end-to-end.
+**How it works:** When you pay on LOBB, your money is held by LOBB — not sent to the coach immediately. We release the coach's payout two hours after your session starts. If your coach doesn't show, you get a full refund before we release anything. All money lands in LOBB's Paystack account at payment time. The `release_escrow` cron marks the booking `completed` and programmatically transfers the coach's share via Paystack's Transfer API. LOBB controls the timing end-to-end.
 
-**Dispute window:** Before `release_escrow` runs (i.e. within the 2-hour post-session window), admin can call the Paystack refund API (`POST /refund`) to reverse the full transaction. Once `escrow_released_at` is set and the transfer has fired, refunds require Paystack support.
+**Dispute window:** Before the payout is released (i.e. within the 2-hour post-session window), admin can call the Paystack refund API (`POST /refund`) to reverse the full transaction. Once `escrow_released_at` is set and the transfer has fired, refunds require Paystack support.
 
 **Transfer retry:** If the Paystack transfer fails (network error, OTP required), the cron retries on its next run by querying `completed` bookings with `escrow_released_at IS NOT NULL AND paystack_transfer_code IS NULL`. The admin payout trigger can also manually retry these.
 
@@ -224,19 +224,19 @@ The `platform_commission_ngn` column (`session_fee × 0.15 = ₦3,000`) is store
 
 ### Refund tiers
 
-| Who cancels | Timing | Refund to player |
-|-------------|--------|-----------------|
-| Coach or admin | Any time | **100%** — always full refund (their fault) |
-| Player | > 24 hrs before session | **100%** full refund |
-| Player | 2 – 24 hrs before session | **50%** refund |
-| Player | < 2 hrs before / no-show | **0%** — no refund |
+| Who cancels | Timing | Refund to player | Coach receives |
+| ----------- | ------ | ---------------- | -------------- |
+| Coach or admin | Any time | **100%** full refund | nothing |
+| Player | ≥ 24 hrs before session | **100%** full refund | nothing |
+| Player | < 24 hrs before session | **50%** refund | 30% of session rate |
+| Player no-show | — | **0%** no refund | 50% of session rate |
 
 ### How refunds work
 - Refund is issued via Paystack API (`POST /api/paystack/refund`)
 - Full refund: Paystack refund called without amount (full transaction reversed)
 - Partial (50%): Paystack refund called with `amount` in kobo (`total_paid_ngn × 0.5 × 100`)
 - Payment record status updated: `paid` → `refunded` (full) or `partial_refund` (50%)
-- **Timeline:** 5–7 business days back to player's debit card
+- **Timeline:** 2–5 business days back to player's debit card
 
 ### What happens on cancellation
 1. Booking status → `cancelled`
@@ -283,7 +283,7 @@ SMS jobs are queued in the `sms_jobs` table and processed by `/api/notifications
 
 ### How coach payment actually reaches the bank
 
-LOBB holds all payments in its Paystack balance. After the 2-hour escrow window closes, the `release_escrow` cron automatically transfers `coach_payout_ngn` to the coach's registered bank account:
+LOBB holds all payments in its Paystack balance. After the 2-hour payout hold window closes, the `release_escrow` cron automatically transfers `coach_payout_ngn` to the coach's registered bank account:
 
 1. Cron marks the booking `completed` via `release_escrow()` RPC
 2. Cron calls Paystack `POST /transfer` with `source: "balance"`, `amount`, and the coach's `paystack_recipient_code`
@@ -294,7 +294,7 @@ LOBB holds all payments in its Paystack balance. After the 2-hour escrow window 
 
 `POST /api/admin/payouts/trigger` is a **recovery and manual override tool**. It handles:
 
-- Bookings that are `completed` with `escrow_released_at` set but `paystack_transfer_code IS NULL` (auto-transfer failed)
+- Bookings that are `completed` with `escrow_released_at` set (payout hold released) but `paystack_transfer_code IS NULL` (auto-transfer failed)
 - Admin-initiated manual payouts for a specific coach or set of bookings
 
 **What the trigger does:**
@@ -635,8 +635,8 @@ session_fee         = coach.hourly_rate_ngn
 platform_commission = round(session_fee × 0.15)     // stored for internal accounting
 convenience_fee     = round(session_fee × 0.05)     // charged on top to player
 total_amount        = session_fee + convenience_fee  // gross charged to player
-coach_payout        = round(total_amount × 0.85)    // transferred to coach after escrow window
-// LOBB receives: total_amount × 0.15 (= platform_commission + 85% of convenience_fee)
+coach_payout        = round(session_fee × 0.85)     // transferred to coach after payout hold window
+// LOBB retains: gross − coach_payout = platform_commission + convenience_fee = ₦4,000
 ```
 
 Sequence:

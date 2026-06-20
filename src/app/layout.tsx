@@ -6,6 +6,7 @@ import { LobbToaster, OfflineState } from "@/providers/lobb-global-state";
 import { LobbPostHogProvider } from "@/providers/posthog-provider";
 import { LobbMixpanelProvider } from "@/providers/mixpanel-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const siteUrl = "https://lobb.ng";
 const siteDescription =
@@ -105,7 +106,6 @@ const structuredData = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FAF8F5" },
@@ -179,6 +179,9 @@ export default function RootLayout({
             {children}
           </LobbPostHogProvider>
         </ThemeProvider>
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
       </body>
     </html>
   );

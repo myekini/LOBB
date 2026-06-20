@@ -413,7 +413,7 @@ export default async function CoachProfilePage() {
                 <AlertTriangle className="size-4 text-[var(--lobb-clay)]" />
                 Continue profile setup
               </p>
-              <p className="mt-1 text-sm font-semibold text-white/60">
+              <p className="mt-1 text-sm font-semibold text-white/75">
                 Next: {nextIncomplete.label}
               </p>
             </div>

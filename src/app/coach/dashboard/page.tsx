@@ -289,7 +289,7 @@ function Stat({ value, label, detail, featured, icon: Icon }: { value: string; l
       </div>
       <p className="mt-5 truncate text-3xl font-black leading-none">{value}</p>
       <p className="mt-3 text-sm font-black">{label}</p>
-      <p className={`mt-1 text-xs font-semibold ${featured ? "text-white/58" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
+      <p className={`mt-1 text-xs font-semibold ${featured ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
     </div>
   );
 }

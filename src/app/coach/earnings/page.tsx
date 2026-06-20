@@ -85,11 +85,11 @@ export default function CoachEarningsPage() {
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
           <section className="overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/45">Total coach earnings</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">Total coach earnings</p>
             {loading ? <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" /> : (
               <p className="mt-6 text-[38px] font-black leading-none sm:text-[48px]">{money(summary?.net_all_time_ngn ?? 0)}</p>
             )}
-            <p className="mt-3 text-sm font-semibold text-white/55">Paid and pending earnings from completed sessions.</p>
+            <p className="mt-3 text-sm font-semibold text-white/75">Paid and pending earnings from completed sessions.</p>
             <div className="mt-6 grid grid-cols-2 overflow-hidden rounded-[18px] border border-white/10">
               <WalletStat value={loading ? null : money(summary?.net_this_week_ngn ?? 0)} label="This week" />
               <WalletStat value={loading ? null : money(summary?.pending_payout_ngn ?? 0)} label="Pending" bordered />
@@ -177,7 +177,7 @@ function WalletStat({ value, label, bordered }: { value: string | null; label: s
   return (
     <div className={`p-4 ${bordered ? "border-l border-white/10" : ""}`}>
       {value ? <p className="truncate text-lg font-black text-white">{value}</p> : <SkeletonBlock className="h-6 w-24 bg-white/15" />}
-      <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-white/45">{label}</p>
+      <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-white/75">{label}</p>
     </div>
   );
 }

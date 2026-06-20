@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards, X } from "lucide-react";
+import { Dialog } from "@base-ui/react/dialog";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
@@ -122,19 +123,19 @@ export default function CoachBookingDetailPage() {
         <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/70"}`}>
+              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/75"}`}>
                 <Circle className="size-2 fill-current text-[var(--lobb-success)]" />
                 {booking.status}
               </span>
               <h2 className="mt-5 text-[28px] font-black leading-tight text-white sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
-              <p className="mt-2 text-sm font-semibold text-white/58">
+              <p className="mt-2 text-sm font-semibold text-white/75">
                 {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} session
               </p>
             </div>
             <div className="rounded-[18px] border border-white/10 bg-white/[0.06] p-4 sm:min-w-[220px]">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/42">Coach payout</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/75">Coach payout</p>
               <p className="mt-2 text-2xl font-black text-white">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
-              <p className="mt-1 text-xs font-semibold text-white/50">From this session</p>
+              <p className="mt-1 text-xs font-semibold text-white/75">From this session</p>
             </div>
           </div>
         </section>
@@ -239,56 +240,53 @@ export default function CoachBookingDetailPage() {
         )}
       </section>
 
-      {showCancel && (
-        <div
-          className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4"
-          onClick={() => setShowCancel(false)}
-        >
-          <section
-            className="lobb-app-card mx-auto w-full max-w-md bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]"
-            onClick={(e) => e.stopPropagation()}
+      <Dialog.Root open={showCancel} onOpenChange={setShowCancel}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
+          <Dialog.Popup
+            aria-labelledby="coach-cancel-title"
+            className="fixed inset-x-0 bottom-0 z-[70] p-4"
           >
-            <div className="flex items-start justify-between gap-4">
-              <h2 className="text-lg font-black">Cancel this session?</h2>
-              <button onClick={() => setShowCancel(false)} aria-label="Close">
-                <X className="size-5" />
-              </button>
-            </div>
-            <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-              {cancelPolicy.refundPercent > 0 ? (
-                <>
-                  The player will receive <strong>{cancelPolicy.label.toLowerCase()}</strong> of <strong>{money(cancelRefundNgn)}</strong>. This booking will be removed from both schedules and the player will be notified by email.
-                </>
-              ) : (
-                <>
-                  The player will receive <strong>no automatic refund</strong> under the current cancellation window. This booking will be removed from both schedules and the player will be notified by email.
-                </>
-              )}
-            </p>
-            <p className="mt-3 rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold leading-5 text-[var(--lobb-text-secondary)]">
-              {cancelPolicy.note}
-            </p>
-            <p className="mt-3 text-sm font-semibold text-[var(--lobb-error)]">
-              Repeated cancellations may affect your coach standing on LOBB.
-            </p>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                onClick={() => setShowCancel(false)}
-                className="h-12 rounded-[14px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
-              >
-                Keep Session
-              </button>
-              <button
-                disabled={cancelling}
-                onClick={cancelBooking}
-                className="h-12 rounded-[14px] border border-[var(--lobb-error)] text-sm font-black text-[var(--lobb-error)] disabled:opacity-60"
-              >
-                {cancelling ? "Cancelling..." : "Yes, Cancel"}
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
+            <section className="lobb-app-card mx-auto w-full max-w-md bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
+              <div className="flex items-start justify-between gap-4">
+                <h2 id="coach-cancel-title" className="text-lg font-black">Cancel this session?</h2>
+                <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center">
+                  <X className="size-5" />
+                </Dialog.Close>
+              </div>
+              <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+                {cancelPolicy.refundPercent > 0 ? (
+                  <>
+                    The player will receive <strong>{cancelPolicy.label.toLowerCase()}</strong> of <strong>{money(cancelRefundNgn)}</strong>. This booking will be removed from both schedules and the player will be notified by email.
+                  </>
+                ) : (
+                  <>
+                    The player will receive <strong>no automatic refund</strong> under the current cancellation window. This booking will be removed from both schedules and the player will be notified by email.
+                  </>
+                )}
+              </p>
+              <p className="mt-3 rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold leading-5 text-[var(--lobb-text-secondary)]">
+                {cancelPolicy.note}
+              </p>
+              <p className="mt-3 text-sm font-semibold text-[var(--lobb-error)]">
+                Repeated cancellations may affect your coach standing on LOBB.
+              </p>
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <Dialog.Close className="h-12 rounded-[14px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
+                  Keep Session
+                </Dialog.Close>
+                <button
+                  disabled={cancelling}
+                  onClick={cancelBooking}
+                  className="h-12 rounded-[14px] border border-[var(--lobb-error)] text-sm font-black text-[var(--lobb-error)] disabled:opacity-60"
+                >
+                  {cancelling ? "Cancelling..." : "Yes, Cancel"}
+                </button>
+              </div>
+            </section>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </main>
   );
 }

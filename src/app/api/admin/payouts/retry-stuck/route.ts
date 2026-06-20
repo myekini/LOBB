@@ -4,7 +4,7 @@ import { internalError } from "@/lib/api-response";
 import { createTransfer } from "@/lib/paystack";
 
 // Retries Paystack transfers for all completed bookings where the automated
-// cron transfer failed (paystack_transfer_code IS NULL after escrow release).
+// cron transfer failed (paystack_transfer_code IS NULL after payout hold release).
 export const POST = withRole("admin", async (_request, auth) => {
   const { data: stuck, error: fetchErr } = await auth.admin
     .from("bookings")

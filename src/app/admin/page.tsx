@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
           <div className="flex min-h-[132px] flex-col justify-between border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-xs font-bold text-white/52">LOBB headquarters</p>
+                <p className="text-xs font-bold text-white/75">LOBB headquarters</p>
                 <h1 className="mt-2 text-[32px] font-black leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
               </div>
               <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-clay)] px-5 text-sm font-black text-white">
@@ -196,7 +196,7 @@ export default function AdminDashboardPage() {
 function Pill({ label, value }: { label: string; value: string }) {
   return (
     <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-black text-white/84">
-      <span className="text-white/52">{label}</span>
+      <span className="text-white/75">{label}</span>
       {value}
     </span>
   );

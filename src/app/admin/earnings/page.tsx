@@ -90,13 +90,13 @@ export default function AdminEarningsPage() {
       </div>
 
       <section className="mt-6 border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-6 text-[var(--lobb-text-inverse)] sm:p-8">
-        <p className="text-xs font-black uppercase tracking-[0.16em] text-white/45">LOBB earnings</p>
+        <p className="text-xs font-black uppercase tracking-[0.16em] text-white/75">LOBB earnings</p>
         {loading ? (
           <SkeletonBlock className="mt-5 h-12 w-52 bg-white/15" />
         ) : (
           <p className="mt-5 text-[38px] font-black leading-none sm:text-[54px]">{money(metrics?.lobb_earnings_ngn ?? 0)}</p>
         )}
-        <p className="mt-3 text-sm font-semibold text-white/55">Completed booking commission and convenience fees.</p>
+        <p className="mt-3 text-sm font-semibold text-white/75">Completed booking commission and convenience fees.</p>
       </section>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -120,7 +120,7 @@ export default function AdminEarningsPage() {
             <div className="min-w-0">
               <h2 className="text-sm font-black">Payout operations</h2>
               <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
-                Retry completed sessions that have escrow released but no Paystack transfer code.
+                Retry completed sessions where the payout transfer to the coach has not been sent yet.
               </p>
             </div>
           </div>

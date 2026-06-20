@@ -246,7 +246,7 @@ export function CoachProfileContent({
               </Link>
               <div className="min-w-0">
                 <p className="truncate text-sm font-black text-white">Player preview</p>
-                <p className="truncate text-xs font-semibold text-white/58">This is the public booking page.</p>
+                <p className="truncate text-xs font-semibold text-white/75">This is the public booking page.</p>
               </div>
             </div>
 
@@ -340,7 +340,7 @@ export function CoachProfileContent({
                   <h1 className="mb-1 text-[28px] font-black leading-tight tracking-tight text-white sm:text-[34px]">
                     {fullName}
                   </h1>
-                  <p className="text-[13px] font-semibold text-white/70">
+                  <p className="text-[13px] font-semibold text-white/75">
                     {headline}
                     {coach.experience_years ? ` · ${coach.experience_years} yrs exp` : ""}
                   </p>
@@ -349,12 +349,12 @@ export function CoachProfileContent({
                 {/* Rate — desktop shows in sidebar, mobile shows here */}
                 <div className="shrink-0 text-right md:hidden">
                   <span className="block text-[26px] font-black leading-none text-white">{money(hourlyRate)}</span>
-                  <span className="text-[11px] font-semibold text-white/60">/hr</span>
+                  <span className="text-[11px] font-semibold text-white/75">/hr</span>
                 </div>
               </div>
 
               {/* Quick stats row */}
-              <div className="mt-4 flex items-center gap-4 border-t border-white/15 pt-4 text-[11px] font-semibold text-white/65">
+              <div className="mt-4 flex items-center gap-4 border-t border-white/15 pt-4 text-[11px] font-semibold text-white/75">
                 <span>{sessionCount > 0 ? `${sessionCount} sessions` : "New coach"}</span>
                 {locations.length > 0 && (
                   <>
@@ -374,7 +374,7 @@ export function CoachProfileContent({
                         await navigator.clipboard.writeText(profileUrl);
                         showLobbToast({ type: "success", message: "Profile link copied" });
                       }}
-                      className="inline-flex items-center gap-1 text-white/65 transition hover:text-white"
+                      className="inline-flex items-center gap-1 text-white/75 transition hover:text-white"
                     >
                       <Copy className="size-3" />
                       Copy link
