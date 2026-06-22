@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards, X } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
-import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import {
@@ -105,10 +104,6 @@ export default function CoachBookingDetailPage() {
   const cancelPolicy = cancellationPolicy(booking.starts_at, "coach");
   const cancelRefundNgn = refundAmountNgn(booking.total_amount_ngn, cancelPolicy.refundPercent);
 
-  const courtLabel = booking.location_venue_id === "national_stadium" && booking.location_court_id
-    ? NATIONAL_STADIUM_COURTS.find((c) => c.id === booking.location_court_id)?.label ?? null
-    : null;
-
   const sessionRef = payment?.paystack_reference ?? booking.paystack_reference ?? null;
 
   return (
@@ -191,11 +186,6 @@ export default function CoachBookingDetailPage() {
                 <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
                 {booking.location || "Location not specified"}
               </p>
-              {courtLabel && (
-                <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay-light)] px-3 py-1 text-xs font-black text-[var(--lobb-clay)]">
-                  Court: {courtLabel}
-                </p>
-              )}
             </DetailSection>
           </section>
 

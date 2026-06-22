@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Share2, User, WalletCards, XCircle } from "lucide-react";
-import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -305,10 +304,6 @@ function Stat({ value, label, detail, featured, icon: Icon }: { value: string; l
 }
 
 function NextSession({ booking }: { booking: DashboardBooking }) {
-  const courtLabel = booking.location_venue_id === "national_stadium" && booking.location_court_id
-    ? NATIONAL_STADIUM_COURTS.find((c) => c.id === booking.location_court_id)?.label ?? null
-    : null;
-
   return (
     <Link href={`/coach/bookings/${booking.id}`} className="mt-4 block">
       <div className="flex items-center gap-3">
@@ -323,7 +318,7 @@ function NextSession({ booking }: { booking: DashboardBooking }) {
       <div className="mt-4 space-y-2 border-t border-[var(--lobb-border-subtle)] pt-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
         <p className="flex items-start gap-2">
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-[var(--lobb-clay)]" />
-          <span>{booking.location}{courtLabel ? ` · ${courtLabel}` : ""}</span>
+          <span>{booking.location}</span>
         </p>
         <p className="flex items-center gap-2">
           <Mail className="size-3.5 text-[var(--lobb-clay)]" />

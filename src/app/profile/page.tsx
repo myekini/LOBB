@@ -76,13 +76,13 @@ export default function ProfilePage() {
             </>
           ) : (
             <>
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-[var(--lobb-bg-inverse)]">
+              <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-[var(--lobb-clay)]">
                 {profile?.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={profile.avatar_url} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-lg font-black text-[var(--lobb-text-inverse)]">
-                    {abbr ?? <User className="size-6 opacity-60" />}
+                  <span className="flex size-full items-center justify-center text-lg font-black text-white">
+                    {abbr ?? <User className="size-6 opacity-75" />}
                   </span>
                 )}
               </div>

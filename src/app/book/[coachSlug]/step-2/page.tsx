@@ -6,7 +6,7 @@ import { CheckCircle2, MapPin, PenLine, Timer } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { CoachPublicProfile } from "@/lib/types";
-import { LAGOS_COURTS, NATIONAL_STADIUM_COURTS } from "@/lib/types";
+import { LAGOS_COURTS } from "@/lib/types";
 
 function formatCountdown(seconds: number) {
   const mins = Math.floor(seconds / 60);
@@ -75,7 +75,6 @@ function BookingStep2Content() {
   const warnedRef = useRef(false);
 
   const [selectedCourtId,    setSelectedCourtId]    = useState<string | null>(null);
-  const [selectedSubCourtId, setSelectedSubCourtId] = useState<string | null>(null);
   const [showCustom,         setShowCustom]         = useState(false);
   const [customLocation,     setCustomLocation]     = useState("");
   const [note,               setNote]               = useState("");
@@ -125,15 +124,13 @@ function BookingStep2Content() {
   }, [coach]);
 
   const hasCoachCourts = Boolean(coach?.courts_worked_with?.length);
-  const isNatStadium   = selectedCourtId === "national_stadium";
 
   const canContinue = showCustom
     ? customLocation.trim().length > 0
-    : selectedCourtId !== null && (!isNatStadium || selectedSubCourtId !== null);
+    : selectedCourtId !== null;
 
   const handleSelectCourt = (courtId: string) => {
     setSelectedCourtId(courtId);
-    setSelectedSubCourtId(null);
     setShowCustom(false);
     setCustomLocation("");
   };
@@ -141,38 +138,27 @@ function BookingStep2Content() {
   const handleShowCustom = () => {
     setShowCustom(true);
     setSelectedCourtId(null);
-    setSelectedSubCourtId(null);
   };
 
   const handleContinue = () => {
     let locationText = "";
     let courtId      = "";
-    let subCourtId   = "";
 
     if (showCustom) {
       locationText = customLocation.trim();
     } else {
       const court = courtOptions.find((c) => c.id === selectedCourtId);
       if (court) {
-        if (isNatStadium && selectedSubCourtId) {
-          const sub = NATIONAL_STADIUM_COURTS.find((c) => c.id === selectedSubCourtId);
-          locationText = sub
-            ? `${sub.label}, National Stadium, Surulere`
-            : `${court.name}, ${court.area}`;
-        } else {
-          locationText = `${court.name}, ${court.area}`;
-        }
-        courtId    = court.id;
-        subCourtId = selectedSubCourtId ?? "";
+        locationText = `${court.name}, ${court.area}`;
+        courtId      = court.id;
       }
     }
 
     const urlParams = new URLSearchParams({
       slot, lock: lockId, expires: expiresAt,
       location: locationText,
-      ...(courtId    ? { court_id:  courtId    } : {}),
-      ...(subCourtId ? { sub_court: subCourtId } : {}),
-      ...(note.trim() ? { note: note.trim() }    : {}),
+      ...(courtId    ? { court_id: courtId } : {}),
+      ...(note.trim() ? { note: note.trim() } : {}),
     });
     router.push(`/book/${slug}/step-3?${urlParams.toString()}`);
   };
@@ -260,37 +246,6 @@ function BookingStep2Content() {
                 </div>
               </button>
 
-              {/* National Stadium sub-court picker — appears inline after the card */}
-              {court.isNationalStadium && selectedCourtId === court.id && !showCustom && (
-                <div className="mt-2 rounded-[12px] border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay-light)]/40 p-3">
-                  <p className="mb-2.5 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
-                    Pick a specific court
-                  </p>
-                  <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4">
-                    {NATIONAL_STADIUM_COURTS.map((sub) => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => setSelectedSubCourtId(sub.id)}
-                        className={`rounded-[10px] border px-2 py-2.5 text-center transition-all duration-150 active:scale-95 ${
-                          selectedSubCourtId === sub.id
-                            ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
-                            : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/50"
-                        }`}
-                      >
-                        <span className="block text-xs font-black leading-tight">{sub.label}</span>
-                        {sub.isMemberCourt && (
-                          <span className={`mt-0.5 block text-[9px] font-semibold ${
-                            selectedSubCourtId === sub.id ? "text-white/75" : "text-[var(--lobb-text-tertiary)]"
-                          }`}>
-                            Members
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           ))}
 
