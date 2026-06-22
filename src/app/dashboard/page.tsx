@@ -6,7 +6,9 @@ import {
   AlertCircle,
   CalendarPlus,
   CheckCircle2,
+  Copy,
   Circle,
+  Download,
   Clock3,
   MapPin,
   Navigation,
@@ -81,6 +83,50 @@ function calendarUrl(booking: DashboardBooking, coachName: string) {
     details: "Booked on LOBB.",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function escapeIcsText(value: string) {
+  return value.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+}
+
+function sessionDetailsText(booking: DashboardBooking, coachName: string) {
+  return [
+    `Tennis lesson with ${coachName}`,
+    `${formatDay(booking.starts_at)}, ${formatTimeRange(booking.starts_at, booking.ends_at)}`,
+    booking.location ? `Location: ${booking.location}` : "Location pending",
+    "Booked on LOBB.",
+  ].join("\n");
+}
+
+function calendarIcsUrl(booking: DashboardBooking, coachName: string) {
+  const title = `Tennis lesson with ${coachName}`;
+  const details = sessionDetailsText(booking, coachName);
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//LOBB//Booking Calendar//EN",
+    "BEGIN:VEVENT",
+    `UID:${booking.id}@lobb.ng`,
+    `DTSTAMP:${gcalStamp(new Date().toISOString())}`,
+    `DTSTART:${gcalStamp(booking.starts_at)}`,
+    `DTEND:${gcalStamp(booking.ends_at)}`,
+    `SUMMARY:${escapeIcsText(title)}`,
+    `DESCRIPTION:${escapeIcsText(details)}`,
+    `LOCATION:${escapeIcsText(booking.location || "Location pending")}`,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].join("\r\n");
+
+  return `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
+}
+
+async function copyText(value: string, successMessage: string) {
+  try {
+    await navigator.clipboard.writeText(value);
+    showLobbToast({ type: "success", message: successMessage });
+  } catch {
+    showLobbToast({ type: "error", message: "Could not copy. Please try again." });
+  }
 }
 
 /* ───────────────────────────── Status helpers ───────────────────────────── */
@@ -306,9 +352,13 @@ function NextSessionCard({
   const pendingPay = needsPayment(booking);
   const isConfirming = !pendingPay && booking.status !== "confirmed";
   const minutes = durationMinutes(booking.starts_at, booking.ends_at);
+  const hasLocation = Boolean(booking.location?.trim());
+  const detailsText = sessionDetailsText(booking, coachName);
+  const googleCalendarUrl = calendarUrl(booking, coachName);
+  const icsUrl = calendarIcsUrl(booking, coachName);
 
   return (
-    <article className="lobb-hero-card relative overflow-hidden border p-5 sm:p-7">
+    <article className="lobb-hero-card relative overflow-visible border p-5 sm:p-7">
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-55">Next session</p>
@@ -329,10 +379,25 @@ function NextSessionCard({
           </div>
         </div>
 
-        <p className="mt-4 flex items-start gap-2 text-sm font-semibold opacity-75">
-          <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-          {booking.location}
-        </p>
+        <div className="mt-4 rounded-[14px] border border-white/10 bg-white/[0.06] p-3">
+          <div className="flex items-start gap-2">
+            <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/45">Location</p>
+              <p className="mt-1 text-sm font-semibold leading-5 text-white/78">{hasLocation ? booking.location : "Location pending"}</p>
+            </div>
+          </div>
+          {hasLocation && (
+            <button
+              type="button"
+              onClick={() => copyText(booking.location, "Location copied")}
+              className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-white/10 px-3 text-[11px] font-black text-white/78 transition hover:border-white/30 hover:text-white active:scale-[0.98]"
+            >
+              <Copy className="size-3.5 text-[var(--lobb-clay)]" />
+              Copy location
+            </button>
+          )}
+        </div>
 
         {pendingPay && (
           <p className="mt-5 flex items-start gap-2 border border-[var(--lobb-warning)]/40 bg-[var(--lobb-warning)]/12 p-3 text-xs font-semibold leading-5">
@@ -363,24 +428,55 @@ function NextSessionCard({
             </>
           ) : (
             <>
-              <a
-                href={mapsUrl(booking.location)}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-keep-light
-                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[12px] bg-white text-xs font-black text-[#0d0d0d] transition duration-300 hover:bg-white/85 active:scale-[0.98]"
-              >
-                <Navigation className="size-4 text-[var(--lobb-clay)]" /> Directions
-              </a>
-              <a
-                href={calendarUrl(booking, coachName)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[12px] border border-white/15 text-xs font-black transition hover:border-white/40 active:scale-[0.98]"
-              >
-                <CalendarPlus className="size-4 text-[var(--lobb-clay)]" /> Calendar
-              </a>
-              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 items-center justify-center rounded-[12px] border border-white/15 px-4 text-xs font-black transition hover:border-white/40 active:scale-[0.98]">
+              {hasLocation ? (
+                <a
+                  href={mapsUrl(booking.location)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-keep-light
+                  className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-white text-xs font-black text-[#0d0d0d] transition duration-300 hover:bg-white/85 active:scale-[0.98]"
+                >
+                  <Navigation className="size-4 text-[var(--lobb-clay)]" /> Directions
+                </a>
+              ) : (
+                <span className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-white/8 text-xs font-black text-white/45">
+                  <Navigation className="size-4" /> Location pending
+                </span>
+              )}
+              <details className="group relative min-w-[150px] flex-1">
+                <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-[12px] border border-white/15 px-3 text-xs font-black transition hover:border-white/40 active:scale-[0.98] [&::-webkit-details-marker]:hidden">
+                  <CalendarPlus className="size-4 text-[var(--lobb-clay)]" />
+                  Add calendar
+                </summary>
+                <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 overflow-hidden rounded-[14px] border border-white/12 bg-[#14110f] p-1.5 shadow-[0_18px_44px_rgba(0,0,0,0.38)]">
+                  <a
+                    href={googleCalendarUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 items-center gap-2 rounded-[10px] px-3 text-xs font-black text-white/86 transition hover:bg-white/[0.07]"
+                  >
+                    <CalendarPlus className="size-3.5 text-[var(--lobb-clay)]" />
+                    Google Calendar
+                  </a>
+                  <a
+                    href={icsUrl}
+                    download={`lobb-${booking.id}.ics`}
+                    className="flex h-10 items-center gap-2 rounded-[10px] px-3 text-xs font-black text-white/86 transition hover:bg-white/[0.07]"
+                  >
+                    <Download className="size-3.5 text-[var(--lobb-clay)]" />
+                    Apple / Outlook
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => copyText(detailsText, "Session details copied")}
+                    className="flex h-10 w-full items-center gap-2 rounded-[10px] px-3 text-left text-xs font-black text-white/86 transition hover:bg-white/[0.07]"
+                  >
+                    <Copy className="size-3.5 text-[var(--lobb-clay)]" />
+                    Copy details
+                  </button>
+                </div>
+              </details>
+              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 min-w-[92px] flex-1 items-center justify-center rounded-[12px] border border-white/15 px-4 text-xs font-black transition hover:border-white/40 active:scale-[0.98]">
                 Details
               </Link>
             </>
