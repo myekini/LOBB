@@ -195,6 +195,8 @@ export default function Home() {
     const firstName = profile.full_name.split(" ")[0] || "there";
     const mood = getTimeMood();
     const MoodIcon = mood.Icon;
+    const featuredCoaches = filteredCoaches.slice(0, 2);
+    const remainingCoaches = filteredCoaches.slice(2);
 
     return (
       <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
@@ -228,59 +230,65 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="lobb-app-header sticky top-16 z-30 border-b border-[var(--lobb-border)] py-3 backdrop-blur-xl">
+        <section className="sticky top-16 z-30 mt-4 border-y border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 py-3 backdrop-blur-xl">
           <div className="mx-auto max-w-6xl px-5">
-            <label className="lobb-app-card flex h-[50px] items-center gap-3 border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4">
-              <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-              <input
-                value={coachQuery}
-                onChange={(e) => setCoachQuery(e.target.value)}
-                placeholder="Search coach, area, skill"
-                className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
-              />
-            </label>
-            {locationChips.length > 1 && (
-              <div className="-mx-5 mt-2.5 flex gap-2 overflow-x-auto px-5 pb-0.5 [scrollbar-width:none]">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+              <label className="flex h-12 items-center gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 shadow-[var(--lobb-shadow-card)] transition focus-within:border-[var(--lobb-clay)]/45">
+                <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
+                <input
+                  value={coachQuery}
+                  onChange={(e) => setCoachQuery(e.target.value)}
+                  placeholder="Search by coach, area, skill"
+                  className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
+                />
+              </label>
+              <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] lg:max-w-[440px]">
                 {locationChips.map((loc) => (
                   <button
                     key={loc}
                     onClick={() => setCoachLocation(loc)}
-                    className={`h-9 shrink-0 rounded-[12px] px-4 text-[13px] font-black transition ${
+                    className={`h-10 shrink-0 rounded-[12px] px-4 text-[12px] font-black transition duration-200 active:scale-[0.97] ${
                       coachLocation === loc
-                        ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
-                        : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"
+                        ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
+                        : "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-text-primary)]"
                     }`}
                   >
                     {loc}
                   </button>
                 ))}
               </div>
-            )}
+            </div>
           </div>
         </section>
 
-        <section className="mx-auto mt-8 max-w-6xl px-5 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
+        <section className="mx-auto mt-7 max-w-6xl px-5 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-[18px] font-black tracking-tight">Book a verified coach</h2>
-              <p className="mt-1 flex items-center gap-1.5 text-[12px] font-semibold text-[var(--lobb-muted)]">
-                <MapPin className="size-3 text-[var(--lobb-clay)]" />
-                {coachLocation === "All" ? "Lagos areas" : coachLocation}
-                {!loadingCoaches && filteredCoaches.length > 0 && (
-                  <span className="ml-0.5 rounded-full bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[10px] font-black text-[var(--lobb-clay)]">
-                    {filteredCoaches.length}
-                  </span>
-                )}
+              <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                <MapPin className="size-3.5" />
+                {coachLocation === "All" ? "Lagos" : coachLocation}
+              </p>
+              <h2 className="mt-1 text-[22px] font-black leading-tight tracking-tight">Recommended coaches</h2>
+              <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                {!loadingCoaches && filteredCoaches.length > 0
+                  ? `${filteredCoaches.length} ${filteredCoaches.length === 1 ? "coach" : "coaches"} ready to review`
+                  : "Verified coaches, clear rates, real availability."}
               </p>
             </div>
-            <Link href="/coaches" className="shrink-0 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-3.5 py-1.5 text-[12px] font-black text-[var(--lobb-black)] transition hover:border-[var(--lobb-clay)]/30 hover:text-[var(--lobb-clay)]">
+            <Link href="/coaches" className="group hidden h-11 shrink-0 items-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-[12px] font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:inline-flex">
               See all
+              <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
             </Link>
           </div>
 
           {loadingCoaches ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 4 }).map((_, i) => <SmallCoachCardSkeleton key={i} />)}
+            <div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {Array.from({ length: 2 }).map((_, i) => <SkeletonBlock key={i} className="h-[220px] rounded-[16px]" />)}
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => <SmallCoachCardSkeleton key={i} />)}
+              </div>
             </div>
           ) : liveCoaches.length === 0 ? (
             <div className="lobb-app-card border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center">
@@ -305,8 +313,18 @@ export default function Home() {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
-              {filteredCoaches.map((coach) => <SmallCoachCard key={coach.id} coach={coach} />)}
+            <div>
+              <div className="grid gap-4 md:grid-cols-2">
+                {featuredCoaches.map((coach) => <FeaturedCoachCard key={coach.id} coach={coach} />)}
+              </div>
+              {remainingCoaches.length > 0 && (
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+                  {remainingCoaches.map((coach) => <SmallCoachCard key={coach.id} coach={coach} />)}
+                </div>
+              )}
+              <Link href="/coaches" className="mt-6 flex h-12 items-center justify-center rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-sm font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:hidden">
+                See all coaches
+              </Link>
             </div>
           )}
         </section>
@@ -376,6 +394,88 @@ const LANDING_BASE_AREAS = [
   "Lekki", "Ikoyi", "Victoria Island", "Ikeja", "Surulere", "Yaba",
   "Lagos Island", "Ajah", "Gbagada", "Magodo", "Onikan", "National Stadium",
 ];
+
+function coachRate(value: number | null) {
+  return value == null ? "Rate TBD" : `₦${value.toLocaleString("en-NG")}/hr`;
+}
+
+function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
+  const profileHref = `/coaches/${coach.slug ?? coach.id}`;
+  const bookingHref = coach.slug ? `/book/${coach.slug}/step-1` : "#";
+  const primarySkill = coach.specializations[0] ?? coach.skill_levels[0] ?? "Tennis coach";
+  const headline = coach.headline ?? `${primarySkill} near ${coach.primary_location ?? "Lagos"}`;
+  const ratingLabel = coach.avg_rating != null ? Number(coach.avg_rating).toFixed(1) : "New";
+  const locations = [coach.primary_location, ...coach.service_areas.filter((area) => area !== coach.primary_location)]
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(" · ");
+
+  return (
+    <article className="group overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
+      <div className="grid min-h-[214px] grid-cols-[38%_minmax(0,1fr)]">
+        <Link href={profileHref} className="relative block overflow-hidden bg-[var(--lobb-bg-secondary)]">
+          <div className="absolute inset-0 flex items-center justify-center text-5xl font-black text-[var(--lobb-text-tertiary)]/35">
+            {coach.full_name.charAt(0)}
+          </div>
+          {coach.profile_photo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coach.profile_photo_url}
+              alt={coach.full_name}
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+              className="absolute inset-0 size-full object-cover object-top transition duration-500 group-hover:scale-[1.04]"
+            />
+          )}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/58 to-transparent" />
+          <span className="absolute bottom-3 left-3 rounded-[10px] bg-[#0d0d0d]/78 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
+            {coachRate(coach.hourly_rate_ngn)}
+          </span>
+        </Link>
+
+        <div className="flex min-w-0 flex-col justify-between p-4 sm:p-5">
+          <div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                {primarySkill}
+              </span>
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-[10px] bg-[var(--lobb-bg-secondary)] px-2 py-1 text-[11px] font-black text-[var(--lobb-text-primary)]">
+                <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
+                {ratingLabel}
+              </span>
+            </div>
+            <Link href={profileHref} className="mt-3 block truncate text-xl font-black leading-tight tracking-tight transition hover:text-[var(--lobb-clay)]">
+              {coach.full_name}
+            </Link>
+            <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+              {headline}
+            </p>
+            <p className="mt-3 flex items-center gap-1.5 text-xs font-bold text-[var(--lobb-text-tertiary)]">
+              <MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
+              <span className="truncate">{locations || "Lagos"}</span>
+            </p>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2">
+            <Link
+              href={bookingHref}
+              aria-disabled={!coach.slug}
+              className={`flex h-10 flex-1 items-center justify-center rounded-[12px] text-xs font-black transition active:scale-[0.97] ${
+                coach.slug
+                  ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-clay-dark)]"
+                  : "pointer-events-none bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
+              }`}
+            >
+              Book
+            </Link>
+            <Link href={profileHref} className="flex h-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] px-3 text-xs font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)]">
+              Profile
+            </Link>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 function LandingSplash() {
   const visualRef = useRef<HTMLDivElement>(null);
