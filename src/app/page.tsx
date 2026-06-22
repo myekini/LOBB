@@ -8,7 +8,6 @@ import { ArrowRight, CalendarDays, Check, MapPin, Moon, Search, Star, Sun, Sunri
 import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
-import { SmallCoachCard } from "@/features/coaches/coach-cards";
 import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/common/lobb-skeleton";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
@@ -195,9 +194,6 @@ export default function Home() {
     const firstName = profile.full_name.split(" ")[0] || "there";
     const mood = getTimeMood();
     const MoodIcon = mood.Icon;
-    const featuredCoaches = filteredCoaches.slice(0, 2);
-    const remainingCoaches = filteredCoaches.slice(2);
-
     return (
       <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
         <PlayerHeader active="home" title="Home" eyebrow="Player" />
@@ -315,13 +311,8 @@ export default function Home() {
           ) : (
             <div>
               <div className="grid gap-4 md:grid-cols-2">
-                {featuredCoaches.map((coach) => <FeaturedCoachCard key={coach.id} coach={coach} />)}
+                {filteredCoaches.map((coach) => <FeaturedCoachCard key={coach.id} coach={coach} />)}
               </div>
-              {remainingCoaches.length > 0 && (
-                <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
-                  {remainingCoaches.map((coach) => <SmallCoachCard key={coach.id} coach={coach} />)}
-                </div>
-              )}
               <Link href="/coaches" className="mt-6 flex h-12 items-center justify-center rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-sm font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:hidden">
                 See all coaches
               </Link>
