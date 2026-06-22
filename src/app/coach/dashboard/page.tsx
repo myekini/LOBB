@@ -139,19 +139,20 @@ export default function CoachDashboardPage() {
       <CoachFlowHeader title="Dashboard" eyebrow="LOBB Coach" active="home" />
 
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <section className="mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <section className="relative mb-5 overflow-hidden bg-[#0D0D0D] p-5 sm:p-6">
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(196,98,45,0.16),transparent_45%),radial-gradient(circle_at_85%_10%,rgba(255,255,255,0.08),transparent_45%)]" aria-hidden="true" />
+          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-black text-[var(--lobb-clay)]">Coach console</p>
-              <h1 className="mt-2 max-w-2xl text-[30px] font-black leading-[1.08] tracking-tight sm:text-[40px]">
+              <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
+                <CalendarDays className="size-3.5 text-[var(--lobb-clay)]" />
+                Coach console
+              </p>
+              <h1 className="mt-2 text-[28px] font-black leading-none tracking-tight text-white sm:text-[36px]">
                 {getGreeting()}, {firstName}
               </h1>
-              <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
-                Keep bookings, availability, and payouts ready for the next player.
-              </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 sm:w-[360px]">
+            <div className="grid grid-cols-3 gap-2 sm:w-[340px]">
               <HeroChip value={String(upcoming.length)} label="Sessions" />
               <HeroChip value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending" />
               <HeroChip value={coachStatus.replace(/_/g, " ")} label="Status" />
@@ -282,23 +283,23 @@ export default function CoachDashboardPage() {
 
 function HeroChip({ value, label }: { value: string; label: string }) {
   return (
-    <div className="min-w-0 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-3 py-2.5">
-      <p className="truncate text-sm font-black capitalize">{value}</p>
-      <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">{label}</p>
+    <div className="min-w-0 rounded-[12px] border border-white/15 bg-white/[0.08] px-3 py-2.5">
+      <p className="truncate text-sm font-black capitalize text-white">{value}</p>
+      <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-white/50">{label}</p>
     </div>
   );
 }
 
 function Stat({ value, label, detail, featured, icon: Icon }: { value: string; label: string; detail: string; featured?: boolean; icon: typeof CalendarDays }) {
   return (
-    <div className={`lobb-app-card p-5 ${featured ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]" : "bg-[var(--lobb-bg-elevated)]"}`}>
+    <div className={`lobb-app-card p-5 ${featured ? "bg-[#0D0D0D] text-white" : "bg-[var(--lobb-bg-elevated)]"}`}>
       <div className="flex items-start justify-between">
-        <Icon className={`size-5 ${featured ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-clay)]"}`} />
+        <Icon className="size-5 text-[var(--lobb-clay)]" />
         <span className={`size-2 rounded-full ${featured ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-bg-secondary)]"}`} />
       </div>
       <p className="mt-5 truncate text-3xl font-black leading-none">{value}</p>
       <p className="mt-3 text-sm font-black">{label}</p>
-      <p className={`mt-1 text-xs font-semibold ${featured ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
+      <p className={`mt-1 text-xs font-semibold ${featured ? "text-white/65" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
     </div>
   );
 }

@@ -115,7 +115,7 @@ export default function CoachBookingDetailPage() {
           Back to bookings
         </Link>
 
-        <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+        <section className="overflow-hidden bg-[#0D0D0D] p-5 text-white shadow-[var(--lobb-shadow-modal)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/75"}`}>

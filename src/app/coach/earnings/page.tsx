@@ -121,7 +121,7 @@ export default function CoachEarningsPage() {
 
         {/* ── Top summary card ────────────────────────────────────────────── */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
-          <section className="overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
+          <section className="overflow-hidden bg-[#0D0D0D] p-5 text-white sm:p-6">
             <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">Total earnings</p>
             {loading ? (
               <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" />
