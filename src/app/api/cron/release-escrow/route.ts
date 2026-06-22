@@ -36,12 +36,67 @@ export async function GET(request: Request) {
 
   let released = 0;
   let dbFailed = 0;
+  const successfulIds: string[] = [];
+
   if (ids.length > 0) {
     const results = await Promise.allSettled(
-      ids.map((id) => admin.rpc("release_escrow", { p_booking_id: id }))
+      ids.map((id) =>
+        admin.rpc("release_escrow", { p_booking_id: id }).then(() => id)
+      )
     );
-    released = results.filter((r) => r.status === "fulfilled").length;
-    dbFailed = results.filter((r) => r.status === "rejected").length;
+    for (const r of results) {
+      if (r.status === "fulfilled") {
+        released++;
+        successfulIds.push(r.value as string);
+      } else {
+        dbFailed++;
+      }
+    }
+  }
+
+  // ── Pass 1b: create referral credits for first-ever bookings ─────────────────
+  if (successfulIds.length > 0) {
+    const { data: completedBookings } = await admin
+      .from("bookings")
+      .select("id, player_id")
+      .in("id", successfulIds);
+
+    for (const booking of completedBookings ?? []) {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("referred_by_coach_id")
+        .eq("id", booking.player_id)
+        .maybeSingle();
+
+      if (!profile?.referred_by_coach_id) continue;
+
+      // Only credit the first ever completed booking for this player
+      const { count } = await admin
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("player_id", booking.player_id)
+        .eq("status", "completed");
+
+      if (count !== 1) continue;
+
+      // Idempotency guard: skip if credit already exists for this user
+      const { data: existing } = await admin
+        .from("referral_credits")
+        .select("id")
+        .eq("referred_user_id", booking.player_id)
+        .maybeSingle();
+
+      if (existing) continue;
+
+      await admin.from("referral_credits").insert({
+        referring_coach_id: profile.referred_by_coach_id,
+        referred_user_id: booking.player_id,
+        triggering_booking_id: booking.id,
+        amount: 1500,
+        status: "released",
+        released_at: new Date().toISOString(),
+      });
+    }
   }
 
   // ── Pass 2: transfer to coaches for all completed bookings missing a transfer ─

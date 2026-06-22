@@ -1,9 +1,38 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { withRole } from "@/lib/api-auth";
 import { internalError } from "@/lib/api-response";
 import { sendCoachDecisionEmail } from "@/lib/email-notifications";
 
 type DecisionAction = "approve" | "reject" | "suspend" | "unsuspend";
+
+async function generateReferralCode(admin: SupabaseClient, fullName: string, excludeId: string): Promise<string> {
+  const base = fullName.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 10) || "coach";
+
+  // Try the plain name first
+  const { data: taken } = await admin
+    .from("coaches")
+    .select("id")
+    .eq("referral_code", base)
+    .neq("id", excludeId)
+    .maybeSingle();
+
+  if (!taken) return base;
+
+  // Collision: append a 3-digit suffix, retry up to 10 times
+  for (let i = 0; i < 10; i++) {
+    const suffix = Math.floor(Math.random() * 900 + 100);
+    const code = `${base}${suffix}`;
+    const { data: takenWithSuffix } = await admin
+      .from("coaches")
+      .select("id")
+      .eq("referral_code", code)
+      .maybeSingle();
+    if (!takenWithSuffix) return code;
+  }
+
+  return `${base}${Date.now().toString(36).slice(-4)}`;
+}
 
 const MAX_REJECTIONS = 3;
 
@@ -38,9 +67,23 @@ export const POST = withRole("admin", async (request, auth, context) => {
     needsDirectContact = newRejectionCount >= MAX_REJECTIONS;
   }
 
+  // Build referral_code for approvals (only if the coach doesn't already have one)
+  let referralCodeUpdate: { referral_code?: string } = {};
+  if (action === "approve") {
+    const { data: current } = await auth.admin
+      .from("coaches")
+      .select("full_name, referral_code")
+      .eq("id", id)
+      .maybeSingle();
+    if (current && !current.referral_code && current.full_name) {
+      const code = await generateReferralCode(auth.admin, current.full_name, id);
+      referralCodeUpdate = { referral_code: code };
+    }
+  }
+
   const update =
     action === "approve"
-      ? { status: "active", is_verified: true, approved_at: new Date().toISOString(), rejection_reason: null }
+      ? { status: "active", is_verified: true, approved_at: new Date().toISOString(), rejection_reason: null, ...referralCodeUpdate }
       : action === "reject"
         ? {
             status: "rejected",

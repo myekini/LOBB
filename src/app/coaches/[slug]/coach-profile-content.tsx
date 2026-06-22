@@ -10,7 +10,6 @@ import {
   CalendarCheck,
   ChevronLeft,
   ChevronRight,
-  Copy,
   ExternalLink,
   Pencil,
   MapPin,
@@ -363,22 +362,6 @@ export function CoachProfileContent({
                       <MapPin className="size-3" />
                       {locations[0]}
                     </span>
-                  </>
-                )}
-                {coach.slug && !isPreview && (
-                  <>
-                    <span className="text-white/30">·</span>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await navigator.clipboard.writeText(profileUrl);
-                        showLobbToast({ type: "success", message: "Profile link copied" });
-                      }}
-                      className="inline-flex items-center gap-1 text-white/75 transition hover:text-white"
-                    >
-                      <Copy className="size-3" />
-                      Copy link
-                    </button>
                   </>
                 )}
               </div>

@@ -120,6 +120,25 @@ export async function POST(request: Request) {
               { onConflict: "id" }
             );
         }
+
+        // Referral attribution: read first-touch cookie and store on the new profile
+        const cookieHeader = request.headers.get("cookie") ?? "";
+        const refMatch = cookieHeader.split(";").find((c) => c.trim().startsWith("lobb_ref="));
+        const refCode = refMatch ? refMatch.split("=")[1]?.trim() : null;
+        if (refCode) {
+          const { data: referringCoach } = await adminClient
+            .from("coaches")
+            .select("id")
+            .eq("referral_code", refCode)
+            .eq("status", "active")
+            .maybeSingle();
+          if (referringCoach) {
+            await adminClient
+              .from("profiles")
+              .update({ referred_by_coach_id: referringCoach.id, referred_at: new Date().toISOString() })
+              .eq("id", created.user.id);
+          }
+        }
       } else {
         // User already exists in Supabase Auth (e.g. signed up before, or HMAC secret
         // changed between deployments). Reset their password to the current HMAC value

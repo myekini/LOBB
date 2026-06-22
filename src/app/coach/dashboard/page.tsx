@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Landmark, Mail, MapPin, User, WalletCards, XCircle } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Share2, User, WalletCards, XCircle } from "lucide-react";
 import { NATIONAL_STADIUM_COURTS } from "@/lib/types";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
@@ -34,6 +34,12 @@ type CoachDashboardPayload = {
   } | null;
   availability_slots_count?: number;
   reviews: Array<{ id: string; rating: number; comment: string | null; player_first_name: string; created_at: string }>;
+  referral: {
+    referral_code: string | null;
+    signups_count: number;
+    booked_count: number;
+    total_earned_ngn: number;
+  } | null;
 };
 
 function getGreeting() {
@@ -202,6 +208,10 @@ export default function CoachDashboardPage() {
               </Link>
             )}
 
+            {coachStatus === "active" && data?.referral?.referral_code && (
+              <ReferralCard referral={data.referral} />
+            )}
+
             <CoachSurface className="p-4">
               <div className="flex items-center justify-between">
                 <p className="font-black">Next session</p>
@@ -321,6 +331,60 @@ function NextSession({ booking }: { booking: DashboardBooking }) {
         </p>
       </div>
     </Link>
+  );
+}
+
+function ReferralCard({ referral }: { referral: NonNullable<CoachDashboardPayload["referral"]> }) {
+  const link = `lobb.ng/r/${referral.referral_code}`;
+  const fullLink = `https://lobb.ng/r/${referral.referral_code}`;
+  const whatsappText = encodeURIComponent(
+    `Hey! I've joined LOBB — makes it easy to book tennis sessions with me directly, no back and forth. Book here: ${fullLink} 🎾`
+  );
+
+  function copyLink() {
+    navigator.clipboard.writeText(fullLink).then(() => {
+      showLobbToast({ type: "success", message: "Referral link copied!" });
+    });
+  }
+
+  return (
+    <CoachSurface className="p-4">
+      <div className="flex items-center gap-2">
+        <Gift className="size-4 text-[var(--lobb-clay)]" />
+        <p className="font-black">My Referral Link</p>
+      </div>
+      <p className="mt-3 truncate rounded-[10px] bg-[var(--lobb-bg-secondary)] px-3 py-2.5 font-mono text-sm font-black text-[var(--lobb-text-primary)]">
+        {link}
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <button
+          onClick={copyLink}
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]"
+        >
+          Copy Link
+        </button>
+        <a
+          href={`https://wa.me/?text=${whatsappText}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-xs font-black text-[var(--lobb-text-primary)]"
+        >
+          <Share2 className="size-3.5" />
+          WhatsApp
+        </a>
+      </div>
+      <div className="mt-4 flex items-center gap-3 border-t border-[var(--lobb-border-subtle)] pt-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+        <span>{referral.signups_count} sign-up{referral.signups_count !== 1 ? "s" : ""}</span>
+        <span className="text-[var(--lobb-border-subtle)]">·</span>
+        <span>{referral.booked_count} booked</span>
+        {referral.total_earned_ngn > 0 && (
+          <>
+            <span className="text-[var(--lobb-border-subtle)]">·</span>
+            <span className="font-black text-[var(--lobb-clay)]">{money(referral.total_earned_ngn)} earned</span>
+          </>
+        )}
+      </div>
+    </CoachSurface>
   );
 }
 

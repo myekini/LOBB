@@ -24,7 +24,7 @@ function profileChecklistProgress(coach: Record<string, unknown> | null) {
 export const GET = withRole(["coach", "admin"], async (_request, auth) => {
   const coachId = auth.user.id;
 
-  const [coachResult, bookingsResult, earningsResult, reviewsResult, availabilityResult] = await Promise.all([
+  const [coachResult, bookingsResult, earningsResult, reviewsResult, availabilityResult, referralResult, referralSignupsResult] = await Promise.all([
     auth.admin.from("coaches").select("*").eq("id", coachId).maybeSingle(),
     loadCoachBookings(auth.admin, coachId),
     auth.admin.from("coach_earnings_summary").select("*").eq("coach_id", coachId).maybeSingle(),
@@ -35,6 +35,14 @@ export const GET = withRole(["coach", "admin"], async (_request, auth) => {
       .order("created_at", { ascending: false })
       .limit(10),
     auth.admin.from("coach_availability").select("id").eq("coach_id", coachId),
+    auth.admin
+      .from("referral_credits")
+      .select("amount")
+      .eq("referring_coach_id", coachId),
+    auth.admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("referred_by_coach_id", coachId),
   ]);
 
   if (coachResult.error) return internalError(coachResult.error);
@@ -45,6 +53,10 @@ export const GET = withRole(["coach", "admin"], async (_request, auth) => {
 
   const bookings = bookingsResult.data ?? [];
   const now = Date.now();
+  const referralCredits = referralResult.data ?? [];
+  const referralEarnedNgn = referralCredits.reduce((s, c) => s + c.amount, 0);
+  const referralSignupsCount = referralSignupsResult.count ?? 0;
+  const referralBookedCount = referralCredits.length;
 
   return NextResponse.json({
     coach: coachResult.data,
@@ -57,5 +69,11 @@ export const GET = withRole(["coach", "admin"], async (_request, auth) => {
     availability_slots_count: availabilityResult.data?.length ?? 0,
     profile_completion: profileChecklistProgress(coachResult.data),
     reviews: reviewsResult.data ?? [],
+    referral: {
+      referral_code: coachResult.data?.referral_code ?? null,
+      signups_count: referralSignupsCount,
+      booked_count: referralBookedCount,
+      total_earned_ngn: referralEarnedNgn,
+    },
   });
 });
