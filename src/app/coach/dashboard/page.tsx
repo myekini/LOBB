@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Share2, User, WalletCards, XCircle } from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Moon, Share2, Sun, Sunrise, User, WalletCards, XCircle } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -46,6 +46,29 @@ function getGreeting() {
   if (hour < 12) return "Good morning";
   if (hour < 17) return "Good afternoon";
   return "Good evening";
+}
+
+function getCoachMood() {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    return {
+      Icon: Sunrise,
+      prompt: "Set the tone for today's lessons.",
+      detail: "Review bookings, availability, and payout status before players arrive.",
+    };
+  }
+  if (hour < 17) {
+    return {
+      Icon: Sun,
+      prompt: "Keep today's bookings moving.",
+      detail: "Track upcoming sessions, earnings, and profile readiness from one place.",
+    };
+  }
+  return {
+    Icon: Moon,
+    prompt: "Wrap up today and line up tomorrow.",
+    detail: "Check recent sessions, share your link, and keep your calendar ready.",
+  };
 }
 
 export default function CoachDashboardPage() {
@@ -133,26 +156,32 @@ export default function CoachDashboardPage() {
   const CompletionIcon = completionCard.icon;
   const recentBookings = data?.recent_bookings ?? [];
   const firstName = data?.coach?.full_name?.split(" ")[0] || "Coach";
+  const mood = getCoachMood();
+  const MoodIcon = mood.Icon;
 
   return (
     <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Dashboard" eyebrow="LOBB Coach" active="home" />
 
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <section className="relative mb-5 overflow-hidden bg-[#0D0D0D] p-5 sm:p-6">
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(196,98,45,0.16),transparent_45%),radial-gradient(circle_at_85%_10%,rgba(255,255,255,0.08),transparent_45%)]" aria-hidden="true" />
-          <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <section className="lobb-hero-card relative mb-5 overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.18em] text-white/55">
-                <CalendarDays className="size-3.5 text-[var(--lobb-clay)]" />
-                Coach console
-              </p>
-              <h1 className="mt-2 text-[28px] font-black leading-none tracking-tight text-white sm:text-[36px]">
-                {getGreeting()}, {firstName}
+              <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[12px] border px-3 py-2">
+                <MoodIcon className="size-4 text-[var(--lobb-clay)]" />
+                <span className="truncate text-[11px] font-black uppercase tracking-[0.18em]">
+                  {getGreeting()}, {firstName}
+                </span>
+              </div>
+              <h1 className="mt-4 max-w-2xl text-[28px] font-black leading-[1.08] tracking-tight text-balance sm:text-[38px]">
+                {mood.prompt}
               </h1>
+              <p className="lobb-hero-muted mt-2 max-w-xl text-[14px] font-normal leading-[1.6]">
+                {mood.detail}
+              </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 sm:w-[340px]">
+            <div className="grid grid-cols-3 gap-2 sm:w-[360px] lg:shrink-0">
               <HeroChip value={String(upcoming.length)} label="Sessions" />
               <HeroChip value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending" />
               <HeroChip value={coachStatus.replace(/_/g, " ")} label="Status" />

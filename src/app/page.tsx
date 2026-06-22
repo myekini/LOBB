@@ -201,25 +201,25 @@ export default function Home() {
         <PlayerHeader active="home" title="Home" eyebrow="Player" />
 
         <section className="mx-auto max-w-6xl px-5 pt-4 animate-in fade-in-0 slide-in-from-bottom-4 duration-700 fill-mode-both">
-          <div className="relative overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] px-6 py-6 text-[var(--lobb-text-inverse)] sm:px-8 sm:py-7">
+          <div className="lobb-hero-card relative overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
             <div className={`absolute inset-0 bg-gradient-to-br ${mood.accent} via-transparent to-[var(--lobb-clay)]/8`} aria-hidden="true" />
             <div className="absolute right-0 top-0 h-full w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" aria-hidden="true" />
             <div className="relative">
-              <div className="inline-flex items-center gap-2 rounded-[12px] border border-white/10 bg-white/[0.06] px-3 py-2">
+              <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[12px] border px-3 py-2">
                 <MoodIcon className="size-4 text-[var(--lobb-clay)]" />
-                <span className="text-[11px] font-black uppercase tracking-[0.18em]">
+                <span className="truncate text-[11px] font-black uppercase tracking-[0.18em]">
                   {getGreeting()}, {firstName}
                 </span>
               </div>
               <h1 className="mt-4 text-[28px] font-black leading-[1.08] tracking-tight sm:text-[38px] text-balance">
                 {mood.prompt}
               </h1>
-              <p className="mt-2 max-w-lg text-[14px] font-normal leading-[1.6] text-white/75">
+              <p className="lobb-hero-muted mt-2 max-w-lg text-[14px] font-normal leading-[1.6]">
                 {mood.detail}
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {liveCoaches.length > 0 && (
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/75">
+                  <span className="lobb-hero-muted text-[11px] font-semibold uppercase tracking-[0.14em]">
                     {liveCoaches.length} coaches available
                   </span>
                 )}

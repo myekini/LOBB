@@ -308,8 +308,7 @@ function NextSessionCard({
   const minutes = durationMinutes(booking.starts_at, booking.ends_at);
 
   return (
-    <article className="relative overflow-hidden bg-[#0D0D0D] p-5 text-white sm:p-7">
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(196,98,45,0.16),transparent_45%),radial-gradient(circle_at_85%_10%,rgba(255,255,255,0.08),transparent_45%)]" aria-hidden="true" />
+    <article className="lobb-hero-card relative overflow-hidden border p-5 sm:p-7">
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-55">Next session</p>

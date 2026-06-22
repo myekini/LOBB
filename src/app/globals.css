@@ -391,6 +391,25 @@
     border-radius: 12px;
   }
 
+  .lobb-hero-card {
+    color: white;
+    background:
+      linear-gradient(135deg, rgba(196, 98, 45, 0.16), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.08), transparent 45%),
+      #0d0d0d;
+    border-color: rgba(255, 255, 255, 0.10);
+  }
+
+  .lobb-hero-eyebrow {
+    color: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.10);
+  }
+
+  .lobb-hero-muted {
+    color: rgba(255, 255, 255, 0.74);
+  }
+
   .lobb-segmented {
     border-radius: 14px;
     box-shadow: 0 10px 26px rgba(58, 43, 20, 0.045);
@@ -594,6 +613,15 @@
       linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.012)),
       var(--lobb-bg-elevated);
     box-shadow: 0 18px 46px rgba(0, 0, 0, 0.22);
+  }
+
+  [data-theme="dark"] .lobb-hero-card {
+    color: white;
+    background:
+      linear-gradient(135deg, rgba(196, 98, 45, 0.18), transparent 45%),
+      radial-gradient(circle at 85% 10%, rgba(255, 255, 255, 0.09), transparent 45%),
+      #0d0d0d;
+    border-color: rgba(255, 255, 255, 0.10);
   }
 
   [data-theme="dark"] .lobb-bottom-nav {
