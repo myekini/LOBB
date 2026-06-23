@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   AlertCircle,
   CalendarPlus,
@@ -167,6 +168,8 @@ function CoachAvatar({ coach, size = "size-12" }: { coach: JoinedCoach | null; s
 /* ────────────────────────────────── Page ────────────────────────────────── */
 
 export default function DashboardPage() {
+  const pathname = usePathname();
+  const router = useRouter();
   const [tab, setTab] = useState<BookingTab>("upcoming");
   const [upcoming, setUpcoming] = useState<DashboardBooking[]>([]);
   const [past, setPast] = useState<DashboardBooking[]>([]);
@@ -180,6 +183,12 @@ export default function DashboardPage() {
   );
   const nextSession = sortedUpcoming[0] ?? null;
   const laterSessions = sortedUpcoming.slice(1);
+
+  useEffect(() => {
+    if (pathname === "/dashboard") {
+      router.replace("/dashboard/bookings");
+    }
+  }, [pathname, router]);
 
   useEffect(() => {
     let alive = true;
@@ -220,7 +229,7 @@ export default function DashboardPage() {
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
-      <PlayerHeader active="bookings" title="My bookings" eyebrow="Player dashboard" />
+      <PlayerHeader active="bookings" title="Bookings" eyebrow="Player" />
       <section className="mx-auto max-w-5xl px-4 pt-7 sm:px-6 lg:pt-10">
         <div className="lobb-segmented relative grid grid-cols-2 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 sm:max-w-md">
           <span

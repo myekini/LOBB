@@ -72,7 +72,7 @@ export default function BookingDetailPage() {
       } else {
         toastAppSuccess("Booking cancelled.");
       }
-      router.push("/dashboard");
+      router.push("/dashboard/bookings");
     } catch (error) {
       toastAppError(error, "UNKNOWN_ERROR");
     } finally {
@@ -100,7 +100,7 @@ export default function BookingDetailPage() {
       <main className="lobb-app-page min-h-screen px-4 py-10 text-[var(--lobb-text-primary)] sm:px-6">
         <section className="mx-auto max-w-3xl">
           <h1 className="text-xl font-black">Booking not found</h1>
-          <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );
@@ -226,7 +226,7 @@ export default function BookingDetailPage() {
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
           View receipt
         </Link>
-        <Link href="/dashboard" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
+        <Link href="/dashboard/bookings" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
           Back to bookings
         </Link>
           </aside>

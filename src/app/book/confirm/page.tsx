@@ -133,12 +133,12 @@ function BookingConfirmContent() {
           </p>
           <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_FAILED" className="mt-5 text-left" />
           <Link
-            href="/"
+            href="/coaches"
             className="mt-8 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
           >
             Browse coaches
           </Link>
-          <Link href="/dashboard" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
+          <Link href="/dashboard/bookings" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
             My bookings
           </Link>
         </div>
@@ -162,12 +162,12 @@ function BookingConfirmContent() {
             </p>
           )}
           <Link
-            href="/dashboard"
+            href="/dashboard/bookings"
             className="mt-8 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]"
           >
             Go to my bookings
           </Link>
-          <Link href="/" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
+          <Link href="/home" className="mt-4 block text-sm font-bold text-[var(--lobb-muted)]">
             Back to home
           </Link>
         </div>
@@ -279,7 +279,7 @@ function BookingConfirmContent() {
 
         {/* CTAs */}
         <Link
-          href="/dashboard"
+          href="/dashboard/bookings"
           className="mt-7 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] transition-all active:scale-98"
         >
           View my bookings
@@ -291,7 +291,7 @@ function BookingConfirmContent() {
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
           View receipt
         </Link>
-        <Link href="/" className="mt-4 block text-center text-xs font-black text-[var(--lobb-muted)] transition-all hover:text-[var(--lobb-clay)]">
+        <Link href="/home" className="mt-4 block text-center text-xs font-black text-[var(--lobb-muted)] transition-all hover:text-[var(--lobb-clay)]">
           Back to home
         </Link>
       </section>

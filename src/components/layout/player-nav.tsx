@@ -10,10 +10,10 @@ import { showLobbToast } from "@/providers/lobb-global-state";
 import { cn } from "@/lib/utils";
 
 const items = [
-  { href: "/",          label: "Home",     icon: Home },
-  { href: "/coaches",   label: "Coaches",  icon: Search },
-  { href: "/dashboard", label: "Bookings", icon: CalendarDays },
-  { href: "/profile",   label: "Profile",  icon: User },
+  { href: "/home",               label: "Home",     icon: Home },
+  { href: "/coaches",            label: "Coaches",  icon: Search },
+  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarDays },
+  { href: "/profile",            label: "Profile",  icon: User },
 ] as const;
 
 type ActiveTab = "home" | "coaches" | "bookings" | "profile";
@@ -246,7 +246,7 @@ export function PlayerHeader({
       <div className="mx-auto grid h-16 max-w-6xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 sm:px-6 md:flex md:justify-between">
         <div className="flex min-w-0 items-center gap-2">
           <Link
-            href="/"
+            href="/home"
             aria-label="LOBB home"
             className="lobb-logo-shell flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[12px]"
           >

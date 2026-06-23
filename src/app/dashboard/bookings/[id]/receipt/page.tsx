@@ -122,7 +122,7 @@ export default function BookingReceiptPage() {
       <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 py-10 text-[var(--lobb-text-primary)]">
         <section className="mx-auto max-w-2xl">
           <h1 className="text-xl font-black">Receipt not found</h1>
-          <Link href="/dashboard" className="mt-5 inline-flex text-sm font-black text-[var(--lobb-clay)]">Back to dashboard</Link>
+          <Link href="/dashboard/bookings" className="mt-5 inline-flex text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );

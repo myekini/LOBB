@@ -64,7 +64,7 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
-  const playerRoutes = ["/dashboard", "/profile", "/book"];
+  const playerRoutes = ["/home", "/dashboard", "/profile", "/book"];
   const coachRoutes = ["/coach"];
   const adminRoutes = ["/admin"];
   const setupRoutes = ["/auth/role", "/auth/setup"];
@@ -96,10 +96,10 @@ export async function updateSession(request: NextRequest) {
     role = profile?.role as "player" | "coach" | "admin" | undefined;
   }
 
-  // Coaches always land on their dashboard, not the home/landing page
-  if (pathname === "/" && role === "coach") {
+  // Signed-in users should land in their app, while / stays the public site.
+  if (pathname === "/" && (role === "player" || role === "coach" || role === "admin")) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/coach/dashboard";
+    redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : role === "admin" ? "/admin" : "/home";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
@@ -107,7 +107,7 @@ export async function updateSession(request: NextRequest) {
   // Players cannot access coach setup; coaches cannot access player setup
   if (matchesRoute(pathname, "/auth/setup/coach") && role === "player") {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/";
+    redirectUrl.pathname = "/home";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
@@ -184,21 +184,21 @@ export async function updateSession(request: NextRequest) {
   // /auth/verify handles its own post-login routing — don't intercept mid-flow
   if (role && authRoutes.some((route) => matchesRoute(pathname, route)) && pathname !== "/auth/verify") {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : role === "admin" ? "/admin" : "/";
+    redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : role === "admin" ? "/admin" : "/home";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
   if (adminRoutes.some((route) => matchesRoute(pathname, route)) && role !== "admin") {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : "/";
+    redirectUrl.pathname = role === "coach" ? "/coach/dashboard" : "/home";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }
 
   if (coachRoutes.some((route) => matchesRoute(pathname, route)) && role && role !== "coach" && role !== "admin") {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/";
+    redirectUrl.pathname = "/home";
     redirectUrl.search = "";
     return NextResponse.redirect(redirectUrl);
   }

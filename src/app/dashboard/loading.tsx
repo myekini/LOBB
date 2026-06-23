@@ -4,7 +4,7 @@ import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 export default function DashboardLoading() {
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
-      <PlayerHeader active="bookings" title="My bookings" eyebrow="Player dashboard" />
+      <PlayerHeader active="bookings" title="Bookings" eyebrow="Player" />
       <section className="mx-auto max-w-5xl px-4 pt-7 sm:px-6 lg:pt-10">
         <div className="h-7 w-36 rounded-full lobb-skeleton" />
         <div className="mt-6 h-14 rounded-[16px] lobb-skeleton" />

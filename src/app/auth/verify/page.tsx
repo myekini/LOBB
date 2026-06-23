@@ -33,7 +33,7 @@ function getSafeNextPath(nextPath: string | undefined, role: string | undefined)
     return null;
   }
 
-  if ((nextPath.startsWith("/dashboard") || nextPath.startsWith("/profile") || nextPath.startsWith("/book")) && role === "coach") {
+  if ((nextPath.startsWith("/home") || nextPath.startsWith("/dashboard") || nextPath.startsWith("/profile") || nextPath.startsWith("/book")) && role === "coach") {
     return null;
   }
 
@@ -182,7 +182,7 @@ export default function VerifyPage() {
         return;
       }
       track("User Signed In", { role: "player" });
-      router.replace(profile.full_name ? "/dashboard" : "/auth/setup/player");
+      router.replace(profile.full_name ? "/home" : "/auth/setup/player");
       return;
     }
 

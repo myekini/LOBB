@@ -53,7 +53,7 @@ export default function LeaveReviewPage() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Unable to submit review");
       showLobbToast({ type: "success", message: "Review submitted. Thank you." });
-      window.setTimeout(() => router.push("/dashboard"), 800);
+      window.setTimeout(() => router.push("/dashboard/bookings"), 800);
     } catch (error) {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to submit review" });
     } finally {
@@ -81,7 +81,7 @@ export default function LeaveReviewPage() {
       <main className="lobb-app-page min-h-screen px-5 py-10 text-[var(--lobb-text-primary)]">
         <section className="mx-auto max-w-md">
           <h1 className="text-xl font-black">Booking not found</h1>
-          <Link href="/dashboard" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );
@@ -91,7 +91,7 @@ export default function LeaveReviewPage() {
     <main className="lobb-app-page min-h-screen px-5 pb-10 pt-5 text-[var(--lobb-text-primary)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
-          <Link href="/dashboard" className="flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
+          <Link href="/dashboard/bookings" className="flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
           <h1 className="font-black">Leave a review</h1>
@@ -134,7 +134,7 @@ export default function LeaveReviewPage() {
         <button disabled={!rating || submitting} onClick={submit} className="mt-5 h-14 w-full rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:shadow-none">
           {submitting ? "Submitting" : "Submit review"}
         </button>
-        <Link href="/dashboard" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
+        <Link href="/dashboard/bookings" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
           Skip for now
         </Link>
       </section>

@@ -81,7 +81,7 @@ export default function PlayerSetupPage() {
       }
 
       track("Player Profile Created");
-      router.replace("/");
+      router.replace("/home");
       router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not finish setup.");
