@@ -111,7 +111,8 @@ export default function ProfilePage() {
         {/* Legal */}
         <SettingGroup label="Legal">
           <SettingRow href="/terms" icon={<FileText className="size-[18px]" />} label="Terms of Service" />
-          <SettingRow href="/privacy" icon={<Lock className="size-[18px]" />} label="Privacy Policy" last />
+          <SettingRow href="/privacy" icon={<Lock className="size-[18px]" />} label="Privacy Policy" />
+          <SettingRow href="/cancellation-policy" icon={<FileText className="size-[18px]" />} label="Cancellation Policy" last />
         </SettingGroup>
 
         {/* Sign out */}

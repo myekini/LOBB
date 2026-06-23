@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
@@ -13,47 +13,50 @@ import {
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
-import {
-  CERTIFICATION_OPTIONS,
-  COURT_ACCESS_OPTIONS,
-  LANGUAGE_OPTIONS,
-  SPECIALIZATION_OPTIONS,
-  type CourtAccess,
-} from "@/lib/types";
 
-function toggle(value: string, list: string[]) {
-  return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+const LAGOS_LOCATIONS = [
+  "Lekki",
+  "Victoria Island",
+  "Ikoyi",
+  "Ajah",
+  "Magodo",
+  "Gbagada",
+  "Yaba",
+  "Surulere",
+  "Ikeja",
+  "Maryland",
+  "Oniru",
+  "Banana Island",
+  "Chevron",
+  "Sangotedo",
+];
+
+const SKILL_LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced", "All levels"];
+
+// Common rate tiers in Lagos tennis market (NGN per hour)
+const RATE_OPTIONS = [5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000];
+
+function formatRate(rate: number) {
+  return rate >= 1000 ? `₦${(rate / 1000).toFixed(rate % 1000 === 0 ? 0 : 1)}k` : `₦${rate}`;
+}
+
+function toggle(value: string, list: string[], setList: (v: string[]) => void) {
+  setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
 }
 
 export default function CoachSetupStep4Page() {
   const router = useRouter();
-  const [certifications, setCertifications] = useState<string[]>([]);
-  const [specializations, setSpecializations] = useState<string[]>([]);
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [courtAccess, setCourtAccess] = useState<CourtAccess | "">("");
-  const [demoVideoUrl, setDemoVideoUrl] = useState("");
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
+  const [customRate, setCustomRate] = useState("");
+  const [primaryLocation, setPrimaryLocation] = useState("");
+  const [serviceAreas, setServiceAreas] = useState<string[]>([]);
+  const [skillLevels, setSkillLevels] = useState<string[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const canContinue =
-    certifications.length > 0 &&
-    specializations.length > 0 &&
-    languages.length > 0 &&
-    Boolean(courtAccess);
+  const canContinue = hourlyRate !== null && hourlyRate >= 1000 && Boolean(primaryLocation) && skillLevels.length > 0;
 
-  const toggleCert = (cert: string) => {
-    if (cert === "No formal certification") {
-      setCertifications((prev) => (prev.includes(cert) ? [] : ["No formal certification"]));
-      return;
-    }
-    // Selecting any real cert deselects "No formal certification"
-    setCertifications((prev) => {
-      const without = prev.filter((c) => c !== "No formal certification");
-      return without.includes(cert) ? without.filter((c) => c !== cert) : [...without, cert];
-    });
-  };
-
-  const submit = async (event: React.FormEvent) => {
+  const next = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!canContinue) return;
 
@@ -72,15 +75,18 @@ export default function CoachSetupStep4Page() {
       return;
     }
 
+    // Always include primary location in service areas
+    const allAreas = serviceAreas.includes(primaryLocation)
+      ? serviceAreas
+      : [primaryLocation, ...serviceAreas];
+
     const { data: coach, error: coachError } = await supabase
       .from("coaches")
       .update({
-        certifications,
-        specializations,
-        languages,
-        court_access: courtAccess,
-        demo_video_url: demoVideoUrl.trim() || null,
-        status: "pending_review",
+        hourly_rate_ngn: hourlyRate,
+        primary_location: primaryLocation,
+        service_areas: allAreas,
+        skill_levels: skillLevels,
       })
       .eq("id", user.id)
       .select("id")
@@ -99,129 +105,139 @@ export default function CoachSetupStep4Page() {
       return;
     }
 
-    track("Coach Profile Submitted");
-    router.push("/auth/setup/coach/bank");
-    router.refresh();
+    track("Coach Onboarding Step Completed", { step: 4 });
+    router.push("/auth/setup/coach/5");
   };
 
   return (
-    <OnboardingShell step="4 of 5">
-      <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
+    <OnboardingShell step="4 of 6">
+      <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
           <OnboardingTitle>
-            Final details
-            <br />&amp; submit
+            Rate, location
+            <br />&amp; who you coach
           </OnboardingTitle>
           <OnboardingCopy>
-            Add the details players use to decide if you&apos;re the right fit. Then we&apos;ll review your
-            profile before it goes live.
+            Set your hourly rate, where you coach, and which player levels you take. You can update
+            these anytime from your dashboard.
           </OnboardingCopy>
         </section>
 
         <div className="mt-8 space-y-6">
+          {/* Hourly rate */}
           <div className="group">
-            <OnboardingFieldLabel required>Specializations</OnboardingFieldLabel>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {SPECIALIZATION_OPTIONS.map((spec) => (
+            <OnboardingFieldLabel required>Hourly rate</OnboardingFieldLabel>
+            <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+              {RATE_OPTIONS.map((rate) => (
                 <button
-                  key={spec}
+                  key={rate}
                   type="button"
-                  onClick={() => setSpecializations((current) => toggle(spec, current))}
+                  onClick={() => {
+                    setHourlyRate(rate);
+                    setCustomRate("");
+                  }}
+                  className={`min-h-14 rounded-[16px] border px-3 py-3 text-[14px] font-black leading-tight transition-all active:scale-[0.97] ${
+                    hourlyRate === rate
+                      ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)] shadow-[0_4px_16px_rgba(196,98,45,0.08)] border-[var(--lobb-clay)]/50"
+                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
+                  }`}
+                >
+                  {formatRate(rate)}
+                </button>
+              ))}
+            </div>
+            <label className="mt-4 block group/custom">
+              <OnboardingFieldLabel>Custom hourly rate</OnboardingFieldLabel>
+              <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+                <span className="relative z-10 mr-2 font-black text-[var(--lobb-text-secondary)]/50">₦</span>
+                <input
+                  inputMode="numeric"
+                  value={customRate}
+                  onChange={(event) => {
+                    const digits = event.target.value.replace(/\D/g, "").slice(0, 6);
+                    setCustomRate(digits);
+                    setHourlyRate(digits ? Number(digits) : null);
+                  }}
+                  placeholder="12000"
+                  className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
+                />
+              </div>
+              {hourlyRate !== null && hourlyRate < 1000 && (
+                <p className="mt-2 text-[12px] font-bold text-[var(--lobb-error)]">Minimum rate is ₦1,000.</p>
+              )}
+            </label>
+          </div>
+
+          {/* Primary location */}
+          <div className="group">
+            <OnboardingFieldLabel required>Primary location</OnboardingFieldLabel>
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-4 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <select
+                value={primaryLocation}
+                onChange={(event) => setPrimaryLocation(event.target.value)}
+                className="relative z-10 h-full w-full appearance-none border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none focus:ring-0 [&>option]:bg-[var(--lobb-surface)] [&>option]:text-[var(--lobb-text-primary)]"
+              >
+                <option value="" className="text-[var(--lobb-text-tertiary)] bg-[var(--lobb-surface)]">Choose primary area</option>
+                {LAGOS_LOCATIONS.map((loc) => (
+                  <option key={loc} value={loc} className="bg-[var(--lobb-surface)] text-[var(--lobb-text-primary)]">
+                    {loc}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-[var(--lobb-text-secondary)]/50">
+                <svg className="size-4 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+              </div>
+            </div>
+          </div>
+
+          {/* Other service areas */}
+          <div className="group">
+            <OnboardingFieldLabel hint="optional">Other areas you cover</OnboardingFieldLabel>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {LAGOS_LOCATIONS.filter((l) => l !== primaryLocation).map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => toggle(loc, serviceAreas, setServiceAreas)}
                   className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
-                    specializations.includes(spec)
+                    serviceAreas.includes(loc)
                       ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
-                  {spec}
+                  {loc}
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Skill levels */}
           <div className="group">
-            <OnboardingFieldLabel required>Languages spoken</OnboardingFieldLabel>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {LANGUAGE_OPTIONS.map((language) => (
+            <OnboardingFieldLabel required>Player levels you coach</OnboardingFieldLabel>
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {SKILL_LEVEL_OPTIONS.map((level) => (
                 <button
-                  key={language}
+                  key={level}
                   type="button"
-                  onClick={() => setLanguages((current) => toggle(language, current))}
-                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
-                    languages.includes(language)
-                      ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
+                  onClick={() => toggle(level, skillLevels, setSkillLevels)}
+                  className={`min-h-14 rounded-[16px] border px-4 py-3 text-[14px] font-black leading-tight transition-all active:scale-[0.97] ${
+                    skillLevels.includes(level)
+                      ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)] shadow-[0_4px_16px_rgba(196,98,45,0.08)] border-[var(--lobb-clay)]/50"
                       : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
-                  {language}
+                  {level}
                 </button>
               ))}
             </div>
           </div>
-
-          <div className="group">
-            <OnboardingFieldLabel required>Court access</OnboardingFieldLabel>
-            <div className="mt-3 space-y-2.5">
-              {COURT_ACCESS_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setCourtAccess(option.value)}
-                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[16px] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
-                    courtAccess === option.value
-                      ? "bg-[var(--lobb-clay)]/[0.08] text-[var(--lobb-text-primary)] border-[var(--lobb-clay)]/50 shadow-[0_0_24px_rgba(196,98,45,0.08)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
-                  }`}
-                >
-                  {option.label}
-                  {courtAccess === option.value && <CheckCircle2 className="size-5 shrink-0 text-[var(--lobb-clay)]" />}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="group">
-            <OnboardingFieldLabel required>Certifications</OnboardingFieldLabel>
-            <div className="mt-3 space-y-2.5">
-              {CERTIFICATION_OPTIONS.map((cert) => (
-                <button
-                  key={cert}
-                  type="button"
-                  onClick={() => toggleCert(cert)}
-                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[16px] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
-                    certifications.includes(cert)
-                      ? "bg-[var(--lobb-clay)]/[0.08] text-[var(--lobb-text-primary)] border-[var(--lobb-clay)]/50 shadow-[0_0_24px_rgba(196,98,45,0.08)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
-                  }`}
-                >
-                  {cert}
-                  {certifications.includes(cert) && (
-                    <CheckCircle2 className="size-5 shrink-0 text-[var(--lobb-clay)]" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <label className="block group">
-            <OnboardingFieldLabel hint="optional">Demo video URL</OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
-                type="url"
-                value={demoVideoUrl}
-                onChange={(e) => setDemoVideoUrl(e.target.value)}
-                placeholder="YouTube or Instagram link showing your coaching"
-                className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
-              />
-            </div>
-          </label>
         </div>
 
         <div className="mt-10 pb-10">
           {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
-          <OnboardingButton type="submit" disabled={!canContinue || saving}>
-            {saving ? "Submitting..." : "Submit for review"}
+          <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
+            {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>
         </div>
       </form>

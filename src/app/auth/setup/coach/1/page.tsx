@@ -93,7 +93,7 @@ export default function CoachSetupStepOnePage() {
   };
 
   return (
-    <OnboardingShell step="1 of 5">
+    <OnboardingShell step="1 of 6">
       <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>

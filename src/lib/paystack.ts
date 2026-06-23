@@ -238,6 +238,117 @@ export function verifyWebhookSignature(rawBody: string, signature: string): bool
   return expected.length === received.length && crypto.timingSafeEqual(expected, received);
 }
 
+// ─── Resolve bank account ──────────────────────────────────────────────────────
+
+export type ResolveAccountResult = {
+  account_name: string;
+  account_number: string;
+};
+
+export async function resolveAccount(
+  accountNumber: string,
+  bankCode: string
+): Promise<ResolveAccountResult> {
+  const url = `${PAYSTACK_BASE}/bank/resolve?account_number=${encodeURIComponent(accountNumber)}&bank_code=${encodeURIComponent(bankCode)}`;
+  const res = await fetch(url, { headers: authHeaders() });
+  const json = (await res.json()) as { status: boolean; message: string; data: ResolveAccountResult };
+  if (!json.status) throw new Error(json.message || "Could not resolve account name");
+  return json.data;
+}
+
+// ─── DVA: Customer ─────────────────────────────────────────────────────────────
+
+export type CreateCustomerInput = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+};
+
+export async function createPaystackCustomer(
+  input: CreateCustomerInput
+): Promise<{ customer_code: string }> {
+  const res = await fetch(`${PAYSTACK_BASE}/customer`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify(input),
+  });
+  const json = (await res.json()) as {
+    status: boolean;
+    message: string;
+    data: { customer_code: string };
+  };
+  if (!json.status) throw new Error(json.message || "Failed to create Paystack customer");
+  return { customer_code: json.data.customer_code };
+}
+
+// ─── DVA: Customer validation (BVN) ───────────────────────────────────────────
+
+export type ValidateCustomerInput = {
+  customer_code: string;
+  bvn: string;
+  account_number: string;
+  bank_code: string;
+  first_name: string;
+  last_name: string;
+};
+
+export async function validatePaystackCustomer(input: ValidateCustomerInput): Promise<void> {
+  const res = await fetch(
+    `${PAYSTACK_BASE}/customer/${encodeURIComponent(input.customer_code)}/identification`,
+    {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        country: "NG",
+        type: "bank_account",
+        bvn: input.bvn,
+        account_number: input.account_number,
+        bank_code: input.bank_code,
+        first_name: input.first_name,
+        last_name: input.last_name,
+      }),
+    }
+  );
+  const json = (await res.json()) as { status: boolean; message: string };
+  if (!json.status) throw new Error(json.message || "BVN validation failed");
+}
+
+// ─── DVA: Create dedicated virtual account ─────────────────────────────────────
+
+export type DVAPreferredBank = "wema-bank" | "titan-paystack" | "access-bank" | "zenith-bank";
+
+export type CreateDVAResult = {
+  account_number: string;
+  bank_name: string;
+  bank_code: string;
+};
+
+export async function createDedicatedVirtualAccount(
+  customerCode: string,
+  preferredBank: DVAPreferredBank = "wema-bank"
+): Promise<CreateDVAResult> {
+  const res = await fetch(`${PAYSTACK_BASE}/dedicated_account`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: JSON.stringify({ customer: customerCode, preferred_bank: preferredBank }),
+  });
+  const json = (await res.json()) as {
+    status: boolean;
+    message: string;
+    data: {
+      account_number: string;
+      bank: { name: string; slug: string; code?: string };
+    };
+  };
+  if (!json.status) throw new Error(json.message || "DVA creation failed");
+  return {
+    account_number: json.data.account_number,
+    bank_name: json.data.bank.name,
+    bank_code: json.data.bank.code ?? preferredBank,
+  };
+}
+
 // ─── Reference generator ───────────────────────────────────────────────────────
 
 // Unambiguous uppercase chars — no 0/O, 1/I confusion

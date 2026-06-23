@@ -1,60 +1,54 @@
-# LOBB local-only and generated files.
+# LOBB — gitignore
 
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
-/coverage
-
-# next.js generated output
+# Next.js build output
 /.next/
 /out/
 /.vercel/output/
-
-# production
 /build
 
-# misc
+# Testing
+/coverage
+
+# Misc
 .DS_Store
 Thumbs.db
 *.pem
 
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# local env files
-.env*.local
+# Environment files (all variants — never commit secrets)
 .env
+.env.local
+.env.*.local
 .env.prod
 .env.production
 
-# deployment
+# Vercel deployment
 .vercel
 
-# local Codex/agent tooling
+# Local agent/tooling files
 .agents/
 .codex-logs/
 skills-lock.json
 .impeccable/
 
-# server process logs
+# Server process logs
 *.out.log
 *.err.log
 
-# supabase local/link metadata
+# Supabase local metadata
 supabase/.temp/
 
-# typescript
+# TypeScript build cache
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel
-.env.local
-
-.vercel

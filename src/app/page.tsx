@@ -893,6 +893,7 @@ function LandingSplash() {
             <Link href="/faq" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">FAQ</Link>
             <Link href="/terms" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Terms</Link>
             <Link href="/privacy" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Privacy</Link>
+            <Link href="/cancellation-policy" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Cancellation</Link>
             <Link href="/contact" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Contact</Link>
           </div>
         </div>

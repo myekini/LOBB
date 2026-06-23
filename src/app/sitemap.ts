@@ -7,9 +7,11 @@ const routes = [
   "/about",
   "/coaches",
   "/coaches/join",
+  "/coach-agreement",
   "/contact",
   "/faq",
   "/how-it-works",
+  "/cancellation-policy",
   "/privacy",
   "/terms",
 ];

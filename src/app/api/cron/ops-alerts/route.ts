@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
+import { emailAppUrl, emailEscapeHtml, emailShell } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +23,9 @@ type Alert = {
 function buildAlertEmail(alerts: Alert[]): { subject: string; html: string; text: string } {
   const critical = alerts.filter((a) => a.severity === "critical");
   const warning = alerts.filter((a) => a.severity === "warning");
-  const subject = `[LOBB OPS] ${critical.length > 0 ? `${critical.length} critical` : ""}${critical.length > 0 && warning.length > 0 ? " · " : ""}${warning.length > 0 ? `${warning.length} warning` : ""} alert${alerts.length === 1 ? "" : "s"}`;
+  const subject = `[LOBB OPS] ${critical.length > 0 ? `${critical.length} critical` : ""}${critical.length > 0 && warning.length > 0 ? " / " : ""}${warning.length > 0 ? `${warning.length} warning` : ""} alert${alerts.length === 1 ? "" : "s"}`;
 
-  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://lobb.ng";
+  const appBase = emailAppUrl("");
 
   const renderRows = (items: Alert[], color: string) =>
     items
@@ -32,44 +33,31 @@ function buildAlertEmail(alerts: Alert[]): { subject: string; html: string; text
         (a) => `
       <tr>
         <td style="padding:12px 16px;border-bottom:1px solid #e5e3df;vertical-align:top;">
-          <p style="margin:0;font:700 14px/1.4 Arial,sans-serif;color:#0d0d0d;">${a.title}</p>
-          <p style="margin:4px 0 0;font:400 13px/1.5 Arial,sans-serif;color:#6b6b6b;">${a.detail}</p>
-          ${a.link ? `<a href="${a.link}" style="display:inline-block;margin-top:6px;font:700 12px/1 Arial,sans-serif;color:${color};">View →</a>` : ""}
+          <p style="margin:0;font:900 14px/1.4 Arial,Helvetica,sans-serif;color:#0d0d0d;">${emailEscapeHtml(a.title)}</p>
+          <p style="margin:5px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#6b6560;">${emailEscapeHtml(a.detail)}</p>
+          ${a.link ? `<a href="${emailEscapeHtml(a.link)}" style="display:inline-block;margin-top:8px;font:900 12px/1 Arial,Helvetica,sans-serif;color:${color};text-decoration:none;">View</a>` : ""}
         </td>
         <td style="padding:12px 16px;border-bottom:1px solid #e5e3df;width:90px;vertical-align:top;">
-          <span style="display:inline-block;padding:3px 8px;border-radius:4px;font:700 11px/1.4 Arial,sans-serif;background:${color}1a;color:${color};">${a.severity.toUpperCase()}</span>
+          <span style="display:inline-block;padding:4px 8px;border-radius:999px;font:900 10px/1.4 Arial,Helvetica,sans-serif;background:${color}1a;color:${color};">${a.severity.toUpperCase()}</span>
         </td>
       </tr>`
       )
       .join("");
 
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#f2f1ef;font-family:Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f2f1ef;padding:32px 16px;">
-<tr><td align="center">
-<table width="100%" style="max-width:560px;background:#fafafa;border:1px solid #e5e3df;border-radius:8px;overflow:hidden;">
-  <tr><td style="padding:24px 24px 16px;border-bottom:1px solid #e5e3df;">
-    <p style="margin:0;font:700 18px/1.2 Arial,sans-serif;color:#0d0d0d;">LOBB Ops Alert</p>
-    <p style="margin:4px 0 0;font:400 13px/1.5 Arial,sans-serif;color:#8a8a8a;">${new Date().toLocaleString("en-NG", { timeZone: "Africa/Lagos" })} · Lagos</p>
-  </td></tr>
+  const html = emailShell(
+    "LOBB ops alert",
+    `${new Date().toLocaleString("en-NG", { timeZone: "Africa/Lagos" })} - Lagos`,
+    `
   ${critical.length > 0 ? `
-  <tr><td style="padding:16px 24px 8px;">
-    <p style="margin:0;font:700 11px/1 Arial,sans-serif;color:#ba1a1a;text-transform:uppercase;letter-spacing:0.1em;">Critical (${critical.length})</p>
-  </td></tr>
-  <tr><td><table width="100%" cellpadding="0" cellspacing="0">${renderRows(critical, "#ba1a1a")}</table></td></tr>` : ""}
+    <p style="margin:0 0 8px;font:900 11px/1 Arial,Helvetica,sans-serif;color:#ba1a1a;text-transform:uppercase;letter-spacing:0.1em;">Critical (${critical.length})</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #e5e3df;border-radius:10px;overflow:hidden;">${renderRows(critical, "#ba1a1a")}</table>` : ""}
   ${warning.length > 0 ? `
-  <tr><td style="padding:16px 24px 8px;">
-    <p style="margin:0;font:700 11px/1 Arial,sans-serif;color:#c4622d;text-transform:uppercase;letter-spacing:0.1em;">Warning (${warning.length})</p>
-  </td></tr>
-  <tr><td><table width="100%" cellpadding="0" cellspacing="0">${renderRows(warning, "#c4622d")}</table></td></tr>` : ""}
-  <tr><td style="padding:20px 24px;text-align:center;">
-    <a href="${appBase}/admin" style="display:inline-block;padding:12px 28px;background:#0d0d0d;color:#ffffff;font:700 13px/1 Arial,sans-serif;text-decoration:none;border-radius:8px;">Open admin dashboard</a>
-  </td></tr>
-</table>
-</td></tr>
-</table>
-</body></html>`;
+    <p style="margin:${critical.length > 0 ? "20px" : "0"} 0 8px;font:900 11px/1 Arial,Helvetica,sans-serif;color:#c4622d;text-transform:uppercase;letter-spacing:0.1em;">Warning (${warning.length})</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #e5e3df;border-radius:10px;overflow:hidden;">${renderRows(warning, "#c4622d")}</table>` : ""}`,
+    { label: "Open admin dashboard", href: `${appBase}/admin` }
+  );
 
-  const text = [subject, "", ...alerts.map((a) => `[${a.severity.toUpperCase()}] ${a.title}: ${a.detail}${a.link ? ` — ${a.link}` : ""}`)].join("\n");
+  const text = [subject, "", ...alerts.map((a) => `[${a.severity.toUpperCase()}] ${a.title}: ${a.detail}${a.link ? ` - ${a.link}` : ""}`)].join("\n");
 
   return { subject, html, text };
 }
@@ -81,7 +69,7 @@ export async function GET(request: Request) {
 
   const admin = createAdminClient();
   const alerts: Alert[] = [];
-  const appBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://lobb.ng";
+  const appBase = emailAppUrl("");
 
   // ── Check 1: Failed coach transfers ──────────────────────────────────────────
   // Completed bookings where escrow was released but Paystack transfer failed.

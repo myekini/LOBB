@@ -131,6 +131,17 @@ export default function VerifyPage() {
       return;
     }
 
+    if (pendingAuth.mode === "signup" && pendingAuth.acceptedLegalDocuments?.length) {
+      await fetch("/api/legal/consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documents: pendingAuth.acceptedLegalDocuments,
+          metadata: { source: "signup" },
+        }),
+      }).catch(() => null);
+    }
+
     clearPendingAuth();
 
     const userId = payload.user.id;

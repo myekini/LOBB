@@ -20,6 +20,13 @@ export default function FaqPage() {
           className="font-black text-[var(--lobb-black)] underline underline-offset-2 hover:text-[var(--lobb-clay)]"
         >
           How LOBB works
+        </Link>{" "}
+        and the{" "}
+        <Link
+          href="/cancellation-policy"
+          className="font-black text-[var(--lobb-black)] underline underline-offset-2 hover:text-[var(--lobb-clay)]"
+        >
+          Cancellation Policy
         </Link>
         .
       </p>

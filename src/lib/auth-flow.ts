@@ -6,6 +6,7 @@ export type PendingAuth = {
   sentAt: number;
   nextPath?: string;
   role?: "player" | "coach" | "admin";
+  acceptedLegalDocuments?: string[];
 };
 
 const pendingAuthKey = "lobb.pending-auth";

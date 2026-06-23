@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Agreement — LOBB</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--black:#0D0D0D;--clay:#C4622D;--white:#FAFAFA;--surface:#F2F1EF;--muted:#8A8A8A;--border:#E5E3DF}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--white);color:var(--black);font-family:'Manrope',sans-serif;font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+  header{background:var(--black);padding:32px 40px 28px;display:flex;align-items:center;gap:20px}
+  .lobb-mark svg{width:44px;height:44px}
+  .header-wordmark{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:4px;color:var(--white);line-height:1}
+  .header-tagline{font-family:'Manrope',sans-serif;font-size:11px;color:var(--muted);letter-spacing:0.5px;margin-top:3px}
+  .doc-banner{background:var(--surface);border-bottom:1px solid var(--border);padding:24px 40px}
+  .doc-type{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--clay);margin-bottom:6px}
+  .doc-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;color:var(--black);line-height:1}
+  .doc-meta{font-size:12px;color:var(--muted);margin-top:8px}
+  .container{max-width:760px;margin:0 auto;padding:48px 40px 80px}
+  .section{margin-bottom:44px;padding-bottom:44px;border-bottom:1px solid var(--border)}
+  .section:last-child{border-bottom:none}
+  .section-number{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--clay);margin-bottom:6px}
+  h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1.5px;color:var(--black);margin-bottom:16px;line-height:1.1}
+  h3{font-size:14px;font-weight:700;color:var(--black);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.5px}
+  p{margin-bottom:12px;color:#1a1a1a}
+  p:last-child{margin-bottom:0}
+  ul{padding-left:20px;margin-bottom:12px}
+  li{margin-bottom:6px;color:#1a1a1a}
+  .callout{background:var(--surface);border-left:3px solid var(--clay);border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;font-size:14px}
+  .callout strong{color:var(--clay)}
+  .fee-box{background:var(--black);border-radius:12px;padding:24px 28px;margin:20px 0;color:var(--white)}
+  .fee-box .fee-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--clay);margin-bottom:12px}
+  .fee-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-size:14px}
+  .fee-row:last-child{border-bottom:none;padding-top:12px;margin-top:4px}
+  .fee-row .label{color:rgba(255,255,255,0.7)}
+  .fee-row .value{font-weight:700;color:var(--white)}
+  .fee-row.total .value{color:var(--clay);font-size:16px}
+  .strike-box{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:16px 0}
+  .strike-row{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+  .strike-row:last-child{margin-bottom:0}
+  .strike-num{background:var(--clay);color:var(--white);font-weight:700;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+  .acceptance-box{background:var(--black);border-radius:12px;padding:28px 32px;margin-top:40px}
+  .acceptance-box .label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--clay);margin-bottom:12px}
+  .acceptance-box p{color:var(--white);font-size:14px;margin-bottom:16px}
+  .checkbox-row{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(196,98,45,0.3);border-radius:8px;padding:14px 16px;margin-bottom:10px}
+  .checkbox-box{width:18px;height:18px;border:1.5px solid var(--clay);border-radius:4px;flex-shrink:0;margin-top:1px}
+  .checkbox-label{color:var(--white);font-size:13px;line-height:1.5}
+  .checkbox-label a{color:var(--clay);text-decoration:underline}
+  footer{background:var(--black);padding:24px 40px;text-align:center;font-size:12px;color:var(--muted)}
+  footer span{color:var(--clay)}
+  @media(max-width:600px){header,.doc-banner,.container{padding-left:20px;padding-right:20px}.doc-title{font-size:30px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="lobb-mark">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 8 56 C 8 4 56 4 56 56" stroke="#C4622D" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <circle cx="32" cy="17" r="5.5" fill="#C4622D"/>
+    </svg>
+  </div>
+  <div>
+    <div class="header-wordmark">LOBB</div>
+    <div class="header-tagline">Book a coach. Not a favor.</div>
+  </div>
+</header>
+
+<div class="doc-banner">
+  <div class="doc-type">Legal Document — Coach Onboarding</div>
+  <div class="doc-title">Coach Agreement</div>
+  <div class="doc-meta">This agreement is between you (the Coach) and LOBB Sports Technologies Limited. You must accept this agreement to go live on the LOBB platform. &nbsp;·&nbsp; Effective: June 2026</div>
+</div>
+
+<div class="container">
+
+  <div class="callout">
+    <strong>Read before you go live.</strong> This agreement sets out how LOBB and coaches work together — including payment, conduct, and what happens if things go wrong. It is a binding contract.
+  </div>
+
+  <div class="section">
+    <div class="section-number">01</div>
+    <h2>Your Relationship With LOBB</h2>
+    <p>You are an <strong>independent contractor</strong>, not an employee of LOBB. LOBB does not control how you coach, what methods you use, or the specific content of your sessions. You are fully responsible for the quality and safety of your coaching services.</p>
+    <p>LOBB's role is to connect you with players, handle the booking and payment process, and maintain your public profile on the platform.</p>
+    <p>This agreement does not create a partnership, joint venture, or employment relationship between you and LOBB.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">02</div>
+    <h2>Coach Responsibilities</h2>
+    <ul>
+      <li>Provide accurate, honest information on your LOBB profile at all times. If your credentials, rate, or availability change, update your profile promptly.</li>
+      <li>Show up on time for every confirmed session.</li>
+      <li>Contact your player at least 2 hours before a session if there is any issue with the location or court access.</li>
+      <li>Conduct every session professionally and safely.</li>
+      <li>Maintain appropriate professional boundaries with all players, especially minors.</li>
+      <li>Not book or accept sessions outside the LOBB platform with players who found you through LOBB, for a period of 12 months after your last LOBB session with that player.</li>
+      <li>Inform LOBB promptly of any injury, incident, or complaint arising from a session.</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <div class="section-number">03</div>
+    <h2>Payment and Commission</h2>
+    <p>Here is exactly how money works for every session you complete through LOBB.</p>
+
+    <div class="fee-box">
+      <div class="fee-label">Example: ₦20,000 session rate</div>
+      <div class="fee-row"><span class="label">Player pays (your rate + 5% LOBB fee)</span><span class="value">₦21,000</span></div>
+      <div class="fee-row"><span class="label">LOBB commission (15% of your rate)</span><span class="value">₦3,000</span></div>
+      <div class="fee-row"><span class="label">LOBB service fee (collected from player)</span><span class="value">₦1,000</span></div>
+      <div class="fee-row total"><span class="label">You receive</span><span class="value">₦17,000</span></div>
+    </div>
+
+    <h3>When You Get Paid</h3>
+    <p>LOBB releases your payout <strong>two hours after the session's scheduled start time</strong>. The funds are transferred to your registered bank account. Depending on your bank, this typically arrives within 1 business day (Paystack T+1 settlement).</p>
+    <p>You will receive an SMS notification when your payout is initiated.</p>
+
+    <h3>Your Bank Account</h3>
+    <p>You must connect a valid Nigerian bank account during onboarding. Your account name must match your NIN/BVN name exactly. If they do not match, your account cannot be approved and payouts cannot be processed.</p>
+    <p>If you need to change your bank account at any time, contact coaches@lobb.ng. Your payout will be paused until the new account is verified — this typically takes 1–2 business days.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">04</div>
+    <h2>Cancellations and No-Shows</h2>
+    <p>If you cancel a session at any time, the player receives a full refund automatically. You receive one strike on your account.</p>
+    <p>If you do not show up for a confirmed session (no-show), the player receives a full refund and you receive one strike.</p>
+
+    <div class="strike-box">
+      <div class="strike-row">
+        <div class="strike-num">1</div>
+        <div>First strike — formal warning. Account remains active.</div>
+      </div>
+      <div class="strike-row">
+        <div class="strike-num">2</div>
+        <div>Second strike — warning. LOBB may temporarily reduce your profile visibility.</div>
+      </div>
+      <div class="strike-row">
+        <div class="strike-num">3</div>
+        <div>Third strike — account review. LOBB may suspend your account pending investigation.</div>
+      </div>
+    </div>
+
+    <p>Strikes can be disputed by contacting coaches@lobb.ng within 7 days of the strike being issued. LOBB will investigate and respond within 5 business days.</p>
+
+    <h3>If a Player Does Not Show</h3>
+    <p>If a player does not show up for a confirmed session, you receive 50% of your session rate automatically via payout release. No action required on your part.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">05</div>
+    <h2>Code of Conduct</h2>
+    <p>As a LOBB coach, you agree to:</p>
+    <ul>
+      <li>Treat every player with respect, regardless of age, gender, ability, or background.</li>
+      <li>Not discriminate against any player on any grounds.</li>
+      <li>Not engage in any romantic, sexual, or inappropriate personal relationship with a player, and especially not with any minor under 18.</li>
+      <li>Not consume alcohol or any intoxicating substance before or during a session.</li>
+      <li>Not request additional payments outside the LOBB platform for sessions booked through LOBB.</li>
+      <li>Report any safeguarding concern (especially involving minors) to LOBB and, where required, to the relevant authorities.</li>
+    </ul>
+    <p>LOBB may immediately suspend a coach account where a code of conduct violation is reported, pending investigation. Serious violations will be reported to relevant authorities.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">06</div>
+    <h2>Confidentiality and Player Data</h2>
+    <p>Through your coaching activities on LOBB, you will have access to players' names, phone numbers, and personal session notes. This information is shared with you for the sole purpose of delivering the booked coaching session.</p>
+    <p>You agree to:</p>
+    <ul>
+      <li>Not share a player's contact details or personal information with any third party.</li>
+      <li>Not contact a player outside the context of their LOBB booking except as necessary to coordinate the session.</li>
+      <li>Delete any player data you hold personally if the player requests it and there is no longer a legitimate reason to hold it.</li>
+    </ul>
+    <p>This confidentiality obligation continues after your LOBB account is closed or terminated.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">07</div>
+    <h2>Intellectual Property</h2>
+    <p>Your coaching methods, session plans, and professional techniques remain yours — LOBB does not claim any right over how you coach.</p>
+    <p>However, by uploading a profile photo, demo video, or any other content to LOBB, you grant LOBB a non-exclusive, royalty-free licence to display and use that content on the LOBB platform and in LOBB's marketing materials, for as long as your account is active. You can withdraw this permission by removing content from your profile or closing your account.</p>
+    <p>You confirm that you own or have the right to use all content you upload — including any music, footage, or images in your demo video.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">08</div>
+    <h2>Identity Verification and Data</h2>
+    <p>LOBB is required to verify your identity before you go live. This includes verifying your NIN and BVN against government records. This process is conducted by a third-party verification provider (currently Smile Identity or equivalent).</p>
+    <p>By submitting your NIN and BVN during onboarding, you give explicit, informed consent for LOBB and its verification provider to process this sensitive identity data for the purpose of verifying your identity. Your verification data is stored securely and retained for a minimum of 5 years after account closure in compliance with anti-money laundering law.</p>
+    <p>Full details of how LOBB handles your personal data are in the <a href="/privacy">LOBB Privacy Policy</a>.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">09</div>
+    <h2>Account Suspension and Termination</h2>
+    <p>You may close your LOBB coach account at any time by contacting coaches@lobb.ng. Any confirmed upcoming bookings must be honoured or cancelled (with players refunded) before your account can be closed.</p>
+    <p>LOBB may suspend or terminate your account if you:</p>
+    <ul>
+      <li>Violate any term of this agreement or the LOBB Terms of Service</li>
+      <li>Accumulate three or more strikes</li>
+      <li>Provide false information on your profile or during verification</li>
+      <li>Engage in conduct harmful to players or to LOBB's reputation</li>
+      <li>Bypass the LOBB platform to take bookings directly from LOBB-sourced players</li>
+    </ul>
+    <p>On termination for cause, outstanding payouts for already-completed sessions will still be processed. Payouts for disputed sessions may be withheld pending resolution.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">10</div>
+    <h2>Liability</h2>
+    <p>You are an independent contractor. You are solely responsible for your own professional conduct, the safety of your sessions, and compliance with any professional standards or certifications relevant to your coaching.</p>
+    <p>LOBB is not liable for any injury, loss, or damage arising from a coaching session. You are strongly encouraged to hold appropriate personal liability insurance for your coaching activities.</p>
+    <p>LOBB's maximum liability to you for any matter arising under this agreement is limited to the amount of commission earned by LOBB in the 3 months preceding the claim.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-number">11</div>
+    <h2>Governing Law</h2>
+    <p>This agreement is governed by the laws of the Federal Republic of Nigeria. Any dispute that cannot be resolved informally will be referred to mediation, and failing that, to the courts of Lagos State, Nigeria.</p>
+    <p>For any question about this agreement, contact: <strong>coaches@lobb.ng</strong></p>
+  </div>
+
+  <!-- ACCEPTANCE BOX -->
+  <div class="acceptance-box">
+    <div class="label">Coach Onboarding Checkbox Text</div>
+    <p>Use these checkboxes on the final step of coach onboarding. All three must be ticked before the profile can be submitted for review.</p>
+    <div class="checkbox-row">
+      <div class="checkbox-box"></div>
+      <div class="checkbox-label">I have read and agree to the <a href="/coach-agreement">LOBB Coach Agreement</a>, including the commission structure (15% of session rate) and payout terms.</div>
+    </div>
+    <div class="checkbox-row">
+      <div class="checkbox-box"></div>
+      <div class="checkbox-label">I consent to LOBB and its identity verification provider processing my NIN and BVN to verify my identity before my profile goes live. I understand this data will be stored securely for compliance purposes.</div>
+    </div>
+    <div class="checkbox-row">
+      <div class="checkbox-box"></div>
+      <div class="checkbox-label">I confirm that all information in my profile — including credentials, experience, and demo video — is accurate. I understand that false information may result in immediate account suspension.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 <span>LOBB</span> Sports Technologies Limited &nbsp;·&nbsp; lobb.ng &nbsp;·&nbsp; All rights reserved
+</footer>
+</body>
+</html>

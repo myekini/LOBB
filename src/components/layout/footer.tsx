@@ -8,6 +8,7 @@ export function Footer() {
         <Link href="/faq">FAQ</Link>
         <Link href="/terms">Terms</Link>
         <Link href="/privacy">Privacy</Link>
+        <Link href="/cancellation-policy">Cancellation Policy</Link>
         <Link href="/contact">Contact</Link>
       </div>
     </footer>

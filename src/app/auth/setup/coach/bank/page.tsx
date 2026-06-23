@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Landmark } from "lucide-react";
+import { CheckCircle2, Landmark, Loader2 } from "lucide-react";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -20,8 +20,11 @@ export default function CoachSetupBankPage() {
   const [accountNumber, setAccountNumber] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [bankName, setBankName] = useState("");
+  const [resolvedName, setResolvedName] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const resolveAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     fetch("/api/paystack/banks")
@@ -30,12 +33,34 @@ export default function CoachSetupBankPage() {
       .catch(() => {});
   }, []);
 
+  // Auto-resolve account name once 10 digits + bank are selected
+  useEffect(() => {
+    setResolvedName(null);
+    if (!/^\d{10}$/.test(accountNumber) || !bankCode) return;
+
+    resolveAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    resolveAbortRef.current = ctrl;
+    setResolving(true);
+
+    fetch(`/api/paystack/resolve?account_number=${accountNumber}&bank_code=${bankCode}`, {
+      signal: ctrl.signal,
+    })
+      .then((r) => r.json() as Promise<{ account_name?: string; error?: string }>)
+      .then((data) => {
+        if (data.account_name) setResolvedName(data.account_name);
+      })
+      .catch(() => {})
+      .finally(() => setResolving(false));
+  }, [accountNumber, bankCode]);
+
   const selectedBank = banks.find((b) => b.code === bankCode);
-  const canContinue = /^\d{10}$/.test(accountNumber) && Boolean(bankCode);
+  const canContinue = /^\d{10}$/.test(accountNumber) && Boolean(bankCode) && !resolving;
 
   const handleBankChange = (code: string) => {
     setBankCode(code);
     setBankName(banks.find((b) => b.code === code)?.name ?? "");
+    setResolvedName(null);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -54,7 +79,12 @@ export default function CoachSetupBankPage() {
           bank_name: bankName,
         }),
       });
-      const json = await res.json() as { bank?: unknown; error?: string };
+      const json = (await res.json()) as {
+        bank?: unknown;
+        account_name?: string;
+        dva?: { account_number: string; bank_name: string } | null;
+        error?: string;
+      };
       if (!res.ok) throw new Error(json.error ?? "Could not save bank details");
       router.push("/auth/setup/coach/submitted");
     } catch (err) {
@@ -65,7 +95,7 @@ export default function CoachSetupBankPage() {
   };
 
   return (
-    <OnboardingShell step="5 of 5">
+    <OnboardingShell step="6 of 6">
       <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -74,7 +104,8 @@ export default function CoachSetupBankPage() {
             <br />payouts
           </OnboardingTitle>
           <OnboardingCopy>
-            Add your bank account so LOBB can send your earnings directly after each session. This is required to accept bookings.
+            Add your personal bank account. LOBB will create a dedicated earnings account in your name
+            — your session payouts accumulate there, and you withdraw whenever you want.
           </OnboardingCopy>
         </section>
 
@@ -117,7 +148,8 @@ export default function CoachSetupBankPage() {
                 placeholder="10-digit account number"
                 className="h-full w-full border-0 bg-transparent text-[15px] font-bold tracking-[0.06em] text-[var(--lobb-text-primary)] outline-none placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
               />
-              {/^\d{10}$/.test(accountNumber) && (
+              {resolving && <Loader2 className="ml-3 size-4 shrink-0 animate-spin text-[var(--lobb-clay)]" />}
+              {!resolving && /^\d{10}$/.test(accountNumber) && resolvedName && (
                 <CheckCircle2 className="ml-3 size-5 shrink-0 text-[var(--lobb-clay)]" />
               )}
             </div>
@@ -126,12 +158,32 @@ export default function CoachSetupBankPage() {
             </p>
           </div>
 
+          {/* Account name confirmation */}
+          {resolvedName && (
+            <div className="rounded-[16px] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Account name</p>
+              <p className="mt-1.5 text-[15px] font-black text-[var(--lobb-text-primary)]">{resolvedName}</p>
+              <p className="mt-1 text-[12px] font-medium text-[var(--lobb-text-secondary)]/70">
+                Confirm this matches your name on LOBB exactly. Mismatches will block your payout setup.
+              </p>
+            </div>
+          )}
+
           {/* Summary card */}
           {selectedBank && /^\d{10}$/.test(accountNumber) && (
-            <div className="rounded-[16px] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Payout account</p>
-              <p className="mt-2 text-[15px] font-black text-[var(--lobb-text-primary)]">{selectedBank.name}</p>
-              <p className="mt-0.5 font-mono text-sm font-bold text-[var(--lobb-text-secondary)]">{accountNumber}</p>
+            <div className="rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 space-y-3">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Personal bank account</p>
+                <p className="mt-1.5 text-[15px] font-black text-[var(--lobb-text-primary)]">{selectedBank.name}</p>
+                <p className="mt-0.5 font-mono text-sm font-bold text-[var(--lobb-text-secondary)]">{accountNumber}</p>
+              </div>
+              <div className="border-t border-[var(--lobb-border)] pt-3">
+                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">LOBB earnings account</p>
+                <p className="mt-1.5 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                  A dedicated account in your name will be created when your profile is approved.
+                  Session payouts go there — withdraw anytime.
+                </p>
+              </div>
             </div>
           )}
         </div>

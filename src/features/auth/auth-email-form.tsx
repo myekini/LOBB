@@ -58,10 +58,14 @@ export function AuthEmailForm({
   const authMode = forcedMode ?? (searchParams.get("mode") === "signup" ? "signup" : "login");
   const [selectedRole, setSelectedRole] = useState<PublicLoginRole>(forcedRole ?? (intentRole === "coach" ? "coach" : "player"));
   const [email, setEmail] = useState("");
+  const [acceptedCoreTerms, setAcceptedCoreTerms] = useState(false);
+  const [acceptedCancellation, setAcceptedCancellation] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const isReady = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const hasAcceptedSignupLegal = authMode !== "signup" || (acceptedCoreTerms && acceptedCancellation);
+  const isReady = hasValidEmail && hasAcceptedSignupLegal;
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -90,6 +94,9 @@ export function AuthEmailForm({
       mode: authMode,
       sentAt: Date.now(),
       nextPath,
+      ...(authMode === "signup"
+        ? { acceptedLegalDocuments: ["terms_of_service", "privacy_policy", "cancellation_policy"] }
+        : {}),
       ...(roleToSend ? { role: roleToSend } : {}),
     });
     router.push("/auth/verify");
@@ -183,18 +190,50 @@ export function AuthEmailForm({
           {error && <p className="text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
         </div>
 
+        {authMode === "signup" && (
+          <div className="mt-6 space-y-3">
+            <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 transition hover:border-[var(--lobb-clay)]/40">
+              <input
+                type="checkbox"
+                checked={acceptedCoreTerms}
+                onChange={(event) => setAcceptedCoreTerms(event.target.checked)}
+                className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
+              />
+              <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                I have read and agree to LOBB&apos;s{" "}
+                <Link href="/terms" className="font-black text-[var(--lobb-clay)]">Terms of Service</Link>{" "}
+                and{" "}
+                <Link href="/privacy" className="font-black text-[var(--lobb-clay)]">Privacy Policy</Link>.
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 transition hover:border-[var(--lobb-clay)]/40">
+              <input
+                type="checkbox"
+                checked={acceptedCancellation}
+                onChange={(event) => setAcceptedCancellation(event.target.checked)}
+                className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
+              />
+              <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                I understand that LOBB holds coach payments until sessions are completed, and I agree to the{" "}
+                <Link href="/cancellation-policy" className="font-black text-[var(--lobb-clay)]">Cancellation and Refund Policy</Link>.
+              </span>
+            </label>
+          </div>
+        )}
+
         {/* CTA */}
         <div className="mt-8">
           <OnboardingButton type="submit" disabled={!isReady} loading={loading}>
             {loading ? "Sending code..." : submitLabel}
           </OnboardingButton>
 
-          {/* Terms — below CTA */}
-          <p className="mt-4 px-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--lobb-text-tertiary)]">
-            By continuing you agree to our{" "}
-            <Link href="/terms" className="text-[var(--lobb-clay)]">Terms</Link> &amp;{" "}
-            <Link href="/privacy" className="text-[var(--lobb-clay)]">Privacy Policy</Link>
-          </p>
+          {authMode === "login" && (
+            <p className="mt-4 px-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--lobb-text-tertiary)]">
+              By continuing you agree to our{" "}
+              <Link href="/terms" className="text-[var(--lobb-clay)]">Terms</Link> &amp;{" "}
+              <Link href="/privacy" className="text-[var(--lobb-clay)]">Privacy Policy</Link>
+            </p>
+          )}
 
           {/* Signup links — login only, below CTA */}
           {authMode === "login" && (

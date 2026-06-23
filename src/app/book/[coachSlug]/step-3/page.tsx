@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
@@ -52,6 +53,7 @@ function BookingStep3Content() {
   const subCourt  = search.get("sub_court") ?? "";
   const [coach,   setCoach]   = useState<CoachPublicProfile | null>(null);
   const [paying,  setPaying]  = useState(false);
+  const [acceptedCancellationPolicy, setAcceptedCancellationPolicy] = useState(false);
   const [seconds, setSeconds] = useState(() => {
     if (!expiresAt) return 10 * 60;
     return Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
@@ -96,9 +98,10 @@ function BookingStep3Content() {
   const sessionFee = coach?.hourly_rate_ngn ?? 0;
   const lobbFee    = Math.round(sessionFee * LOBB_FEE_RATE);
   const total      = sessionFee + lobbFee;
+  const canPay = Boolean(coach) && acceptedCancellationPolicy;
 
   const handlePay = async () => {
-    if (paying || !coach) return;
+    if (paying || !canPay) return;
     setPaying(true);
     try {
       const res = await fetch("/api/bookings", {
@@ -112,6 +115,7 @@ function BookingStep3Content() {
           player_notes:       note || undefined,
           location_venue_id:  courtId  || undefined,
           location_court_id:  subCourt || undefined,
+          cancellation_policy_accepted: acceptedCancellationPolicy,
         }),
       });
       if (!res.ok) {
@@ -247,7 +251,10 @@ function BookingStep3Content() {
       <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold leading-relaxed text-[var(--lobb-text-primary)]">
         <div>
           <p className="text-[10px] font-black uppercase tracking-wider text-[var(--lobb-text-tertiary)]">Cancellation policy</p>
-          <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">Free cancellation up to 24 hours before the session. Cancel within 24 hours and 50% is refunded.</p>
+          <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">
+            Free cancellation up to 24 hours before the session. Cancel within 24 hours and 50% is refunded.
+            <Link href="/cancellation-policy" className="ml-1 font-black text-[var(--lobb-clay)]">Read policy</Link>
+          </p>
         </div>
       </div>
 
@@ -264,7 +271,21 @@ function BookingStep3Content() {
         </div>
       </div>
 
-      <BookingButton disabled={!coach} loading={paying} onClick={handlePay}>
+      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-left transition hover:border-[var(--lobb-clay)]/35">
+        <input
+          type="checkbox"
+          checked={acceptedCancellationPolicy}
+          onChange={(event) => setAcceptedCancellationPolicy(event.target.checked)}
+          className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
+        />
+        <span className="text-xs font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+          I understand this booking is subject to LOBB&apos;s{" "}
+          <Link href="/cancellation-policy" className="font-black text-[var(--lobb-clay)]">Cancellation Policy</Link>.
+          Free cancellation until 24 hours before the session. After that, a 50% cancellation fee applies.
+        </span>
+      </label>
+
+      <BookingButton disabled={!canPay} loading={paying} onClick={handlePay}>
         {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}
       </BookingButton>
 

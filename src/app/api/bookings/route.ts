@@ -9,11 +9,22 @@ import type { NotificationBookingInfo } from "@/lib/notification-messages";
 import { apiError } from "@/lib/api-response";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { calcBookingFees } from "@/lib/lobb-money";
+import { logLegalConsent } from "@/lib/legal-consent";
 
 function callbackOrigin() {
   // Always use the configured app URL — never trust request headers for
   // security-sensitive redirect targets (x-forwarded-host can be spoofed).
   return (process.env.NEXT_PUBLIC_APP_URL || "https://lobb.ng").replace(/\/$/, "");
+}
+
+function requestAudit(request: Request) {
+  return {
+    ipAddress:
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      null,
+    userAgent: request.headers.get("user-agent"),
+  };
 }
 
 export async function GET() {
@@ -87,12 +98,16 @@ export async function POST(request: Request) {
       player_notes?: string;
       location_venue_id?: string;
       location_court_id?: string;
+      cancellation_policy_accepted?: boolean;
     };
 
-    const { coach_slug, slot_starts_at, lock_id, location, player_notes, location_venue_id, location_court_id } = body;
+    const { coach_slug, slot_starts_at, lock_id, location, player_notes, location_venue_id, location_court_id, cancellation_policy_accepted } = body;
 
     if (!coach_slug || !slot_starts_at || !lock_id || !location?.trim()) {
       return apiError("VALIDATION_ERROR", 400, { message: "Choose a slot and court before continuing." });
+    }
+    if (!cancellation_policy_accepted) {
+      return apiError("VALIDATION_ERROR", 400, { message: "Accept the Cancellation Policy before payment." });
     }
 
     const admin = createAdminClient();
@@ -243,6 +258,14 @@ export async function POST(request: Request) {
     };
 
     await sendBookingPaymentInitiatedCoachSms(admin, notificationInfo, coachProfile).catch(() => null);
+
+    await logLegalConsent({
+      admin,
+      userId: user.id,
+      documentName: "cancellation_policy",
+      ...requestAudit(request),
+      metadata: { source: "booking_payment", booking_id: booking.id, reference },
+    }).catch(() => null);
 
     return NextResponse.json({
       booking_id:   booking.id,
