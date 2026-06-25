@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type React from "react";
-import { Bell, ChevronRight, Landmark, Mail, Shield, Smartphone } from "lucide-react";
+import { Bell, ChevronRight, Landmark, Mail, Shield, ShieldCheck, ShieldX, Smartphone, WalletCards } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { CoachLogoutButton } from "@/components/common/coach-logout-button";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -26,7 +26,7 @@ export default async function CoachSettingsPage() {
     admin.from("profiles").select("phone_number, email, email_notifications_enabled, role").eq("id", user.id).maybeSingle(),
     admin
       .from("coaches")
-      .select("bank_name, bank_account_number, bank_code, paystack_recipient_code, dva_account_number, status")
+      .select("bank_name, bank_account_number, bank_code, paystack_recipient_code, dva_account_number, dva_bank_name, status, kyc_status, kyc_nin_verified, kyc_bvn_verified")
       .eq("id", user.id)
       .maybeSingle(),
   ]);
@@ -43,6 +43,30 @@ export default async function CoachSettingsPage() {
       ? "Email alerts enabled"
       : "Email alerts off"
     : "Add an email to enable alerts";
+
+  const kycStatus = coach.kyc_status as string ?? "pending";
+  const kycVerified = coach.kyc_nin_verified || coach.kyc_bvn_verified;
+  const kycLabel =
+    kycStatus === "identity_verified" || kycStatus === "bvn_verified"
+      ? "Verified"
+      : kycStatus === "identity_submitted" || kycStatus === "bvn_pending"
+        ? "Under review"
+        : kycStatus === "identity_failed" || kycStatus === "bvn_failed"
+          ? "Failed — resubmit"
+          : "Not started";
+  const KycIcon = kycVerified ? ShieldCheck : kycStatus.includes("failed") ? ShieldX : Shield;
+  const kycColor = kycVerified
+    ? "text-[var(--lobb-success)]"
+    : kycStatus.includes("failed")
+      ? "text-[var(--lobb-error)]"
+      : kycStatus.includes("submitted") || kycStatus.includes("pending")
+        ? "text-[var(--lobb-clay)]"
+        : "text-[var(--lobb-text-tertiary)]";
+
+  const hasDva = Boolean(coach.dva_account_number);
+  const dvaLabel = hasDva
+    ? `${coach.dva_bank_name ?? "LOBB earnings account"} · **** ${(coach.dva_account_number ?? "").slice(-4)}`
+    : "Not yet assigned";
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
@@ -84,12 +108,27 @@ export default async function CoachSettingsPage() {
           />
         </SettingGroup>
 
+        <SettingGroup label="Verification">
+          <SettingRow
+            icon={<KycIcon className={`size-[18px] ${kycColor}`} />}
+            label="Identity (NIN + BVN)"
+            value={kycLabel}
+            href="/coach/settings/kyc"
+            last
+          />
+        </SettingGroup>
+
         <SettingGroup label="Banking">
           <SettingRow
             icon={<Landmark className="size-[18px]" />}
-            label={coach.bank_name ?? "Bank account"}
+            label={coach.bank_name ?? "Payout bank"}
             value={maskedAccount(coach.bank_account_number)}
             href="/coach/settings/bank"
+          />
+          <SettingRow
+            icon={<WalletCards className="size-[18px]" />}
+            label="LOBB earnings account (DVA)"
+            value={dvaLabel}
             last
           />
         </SettingGroup>

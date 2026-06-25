@@ -2,22 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Landmark } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Landmark, WalletCards } from "lucide-react";
+import Link from "next/link";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { createClient } from "@/lib/supabase/client";
-import { InlineActionLoader } from "@/components/common/lobb-skeleton";
+import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 type Bank = { name: string; code: string };
+
+type CoachBankData = {
+  bank_name: string | null;
+  bank_account_number: string | null;
+  bvn: string | null;
+  dva_account_number: string | null;
+  dva_bank_name: string | null;
+};
 
 export default function CoachBankSetupPage() {
   const router = useRouter();
   const [banks, setBanks] = useState<Bank[]>([]);
   const [loadingBanks, setLoadingBanks] = useState(true);
+  const [loadingCoach, setLoadingCoach] = useState(true);
+  const [coachData, setCoachData] = useState<CoachBankData | null>(null);
   const [accountNumber, setAccountNumber] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [bankName, setBankName] = useState("");
-  const [existing, setExisting] = useState<{ bankName: string | null; lastFour: string | null } | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
@@ -35,19 +45,21 @@ export default function CoachBankSetupPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       supabase.from("coaches")
-        .select("bank_name, bank_account_number, paystack_recipient_code, dva_account_number")
+        .select("bank_name, bank_account_number, bvn, dva_account_number, dva_bank_name")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data }) => {
-          if (data?.bank_account_number) {
-            setExisting({
-              bankName: data.bank_name,
-              lastFour: data.bank_account_number.slice(-4),
-            });
-          }
+          setCoachData(data as CoachBankData | null);
+          setLoadingCoach(false);
         });
     });
   }, [router]);
+
+  const hasKyc = Boolean(coachData?.bvn);
+  const existing = coachData?.bank_account_number
+    ? { bankName: coachData.bank_name, lastFour: coachData.bank_account_number.slice(-4) }
+    : null;
+  const hasDva = Boolean(coachData?.dva_account_number);
 
   const selectedBank = banks.find((b) => b.code === bankCode);
   const canSave = /^\d{10}$/.test(accountNumber) && Boolean(bankCode);
@@ -74,14 +86,20 @@ export default function CoachBankSetupPage() {
           bank_name: bankName,
         }),
       });
-      const json = await res.json() as { bank?: unknown; error?: string };
+      const json = await res.json() as { bank?: { dva_account_number?: string; dva_bank_name?: string }; dva?: { account_number: string; bank_name: string } | null; error?: string };
       if (!res.ok) throw new Error(json.error ?? "Could not save bank details");
       setSuccess(true);
-      setExisting({ bankName: bankName, lastFour: accountNumber.slice(-4) });
+      setCoachData((prev) => ({
+        ...prev!,
+        bank_name: bankName,
+        bank_account_number: accountNumber,
+        dva_account_number: json.bank?.dva_account_number ?? json.dva?.account_number ?? prev?.dva_account_number ?? null,
+        dva_bank_name: json.bank?.dva_bank_name ?? json.dva?.bank_name ?? prev?.dva_bank_name ?? null,
+      }));
       setAccountNumber("");
       setBankCode("");
       setBankName("");
-      setTimeout(() => router.push("/coach/settings"), 1500);
+      setTimeout(() => router.push("/coach/settings"), 1800);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
@@ -100,6 +118,48 @@ export default function CoachBankSetupPage() {
       />
 
       <div className="mx-auto max-w-lg px-5 pt-6 sm:px-6">
+
+        {/* KYC gate — shown until BVN is submitted */}
+        {!loadingCoach && !hasKyc && (
+          <div className="mb-6 flex items-start gap-3 rounded-[14px] border border-[var(--lobb-warning)]/35 bg-[var(--lobb-warning)]/8 p-4">
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[var(--lobb-warning)]" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black text-[var(--lobb-text-primary)]">Identity verification required</p>
+              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                You must submit your NIN and BVN before adding a payout bank. This protects you and your earnings.
+              </p>
+              <Link
+                href="/coach/settings/kyc"
+                className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]"
+              >
+                Verify identity first
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* DVA card — shown once created */}
+        {!loadingCoach && hasDva && (
+          <div className="mb-6 flex items-start gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)]">
+              <WalletCards className="size-4 text-[var(--lobb-clay)]" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
+                LOBB earnings account (DVA)
+              </p>
+              <p className="mt-1 text-[15px] font-black">{coachData?.dva_bank_name ?? "Virtual account"}</p>
+              <p className="font-mono text-sm text-[var(--lobb-text-secondary)]">{coachData?.dva_account_number}</p>
+              <p className="mt-1 text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+                Players' payments arrive here. LOBB auto-transfers your net earnings to your payout bank below.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {loadingCoach && <SkeletonBlock className="mb-6 h-20 w-full rounded-[14px]" />}
+
+        {/* Current payout bank */}
         {existing && (
           <div className="lobb-app-card mb-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
@@ -183,11 +243,16 @@ export default function CoachBankSetupPage() {
 
           <button
             type="submit"
-            disabled={!canSave || saving || loadingBanks}
+            disabled={!canSave || saving || loadingBanks || !hasKyc}
             className="mt-2 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
           >
             {saving ? <InlineActionLoader label="Saving" /> : "Save bank account"}
           </button>
+          {!hasKyc && !loadingCoach && (
+            <p className="mt-2 text-center text-xs font-semibold text-[var(--lobb-text-tertiary)]">
+              Complete identity verification above to enable this.
+            </p>
+          )}
         </form>
       </div>
 

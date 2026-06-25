@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createOtp } from "@/lib/db-otp";
 import { sendEmail, normalizeEmail } from "@/lib/email";
 import { emailShell } from "@/lib/email-templates";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 function getRequestedRole(role: string | undefined) {
   if (role === "coach") return "coach";
@@ -34,6 +35,23 @@ export async function POST(request: Request) {
       const email = normalizeEmail(body.email);
       if (!email) {
         return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+      }
+
+      // Login mode (no role in request) — verify account exists first.
+      // Signup mode always has a role, so skip the check there.
+      if (!body.role) {
+        const admin = createAdminClient();
+        const { data: existing } = await admin
+          .from("profiles")
+          .select("id")
+          .eq("email", email)
+          .maybeSingle();
+        if (!existing) {
+          return NextResponse.json(
+            { error: "No account found with this email. Sign up first." },
+            { status: 404 }
+          );
+        }
       }
 
       const otp = await createOtp(email, role);
