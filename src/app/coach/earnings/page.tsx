@@ -48,7 +48,9 @@ type EarningsPayload = {
     bank_name: string | null;
     bank_account_number: string | null;
     bank_code: string | null;
-    paystack_subaccount_code: string | null;
+    paystack_recipient_code: string | null;
+    dva_account_number: string | null;
+    dva_bank_name: string | null;
   } | null;
 };
 

@@ -16,7 +16,7 @@ export const GET = withRole(["coach", "admin"], async (_request, auth) => {
         .limit(12),
       auth.admin
         .from("coaches")
-        .select("bank_name, bank_account_number, bank_code, paystack_subaccount_code, referral_code")
+        .select("bank_name, bank_account_number, bank_code, paystack_recipient_code, dva_account_number, dva_bank_name, referral_code")
         .eq("id", coachId)
         .maybeSingle(),
       auth.admin

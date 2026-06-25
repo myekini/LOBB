@@ -90,19 +90,22 @@ const SOCIAL_LINKS = [
   {
     label: "Instagram",
     href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng",
+    iconPath: "/email/social-instagram.png",
   },
   {
     label: "X / Twitter",
     href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng",
+    iconPath: "/email/social-x.png",
   },
   {
     label: "lobb.ng",
     href: emailAppUrl("/"),
+    iconPath: "/email/social-web.png",
   },
 ];
 
 export function emailShell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
-  const logoUrl = emailAssetUrl("/email/lobb-logo.png");
+  const logoUrl = emailAssetUrl("/email/lobb-lockup.png");
   const ctaHtml = cta
     ? `<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:28px;border-collapse:collapse;">
         <tr>
@@ -113,8 +116,13 @@ export function emailShell(title: string, preview: string, body: string, cta?: {
       </table>`
     : "";
   const socialHtml = SOCIAL_LINKS.map(
-    (item) => `<a href="${emailEscapeHtml(item.href)}" style="color:${BRAND.muted};font:700 12px Arial,Helvetica,sans-serif;text-decoration:none;">${emailEscapeHtml(item.label)}</a>`
-  ).join(`<span style="color:${BRAND.faint};font:700 12px Arial,Helvetica,sans-serif;"> &nbsp;/&nbsp; </span>`);
+    (item) => `
+      <td style="padding-right:8px;">
+        <a href="${emailEscapeHtml(item.href)}" style="display:inline-block;border:1px solid ${BRAND.line};border-radius:999px;background:${BRAND.bg};padding:8px;text-decoration:none;">
+          <img src="${emailAssetUrl(item.iconPath)}" width="18" height="18" alt="${emailEscapeHtml(item.label)}" style="display:block;width:18px;height:18px;border:0;" />
+        </a>
+      </td>`
+  ).join("");
 
   return `<!doctype html>
 <html>
@@ -130,10 +138,9 @@ export function emailShell(title: string, preview: string, body: string, cta?: {
         <td align="center" style="padding:28px 14px;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;border-collapse:collapse;">
             <tr>
-              <td style="background:${BRAND.ink};padding:30px 30px 28px;border-radius:14px 14px 0 0;">
-                <img src="${logoUrl}" width="190" height="55" alt="LOBB - Book a coach. Not a favor." style="display:block;width:190px;max-width:100%;height:auto;border:0;" />
-                <h1 style="margin:28px 0 0;color:#ffffff;font:900 28px/1.16 Arial,Helvetica,sans-serif;">${emailEscapeHtml(title)}</h1>
-                <p style="margin:10px 0 0;color:#D6D0C8;font:700 14px/1.6 Arial,Helvetica,sans-serif;">${emailEscapeHtml(preview)}</p>
+              <td style="background:${BRAND.ink};padding:24px 30px 24px;border-radius:14px 14px 0 0;">
+                <img src="${logoUrl}" width="132" height="32" alt="LOBB" style="display:block;width:132px;max-width:100%;height:auto;border:0;" />
+                <h1 style="margin:24px 0 0;color:#ffffff;font:900 26px/1.16 Arial,Helvetica,sans-serif;">${emailEscapeHtml(title)}</h1>
               </td>
             </tr>
             <tr>
@@ -143,11 +150,19 @@ export function emailShell(title: string, preview: string, body: string, cta?: {
               </td>
             </tr>
             <tr>
-              <td style="background:${BRAND.surface};border:1px solid ${BRAND.line};border-top:0;border-radius:0 0 14px 14px;padding:22px 30px 26px;">
-                <p style="margin:0;color:${BRAND.muted};font:700 12px/1.7 Arial,Helvetica,sans-serif;">Book a coach. Not a favor.</p>
-                <p style="margin:8px 0 0;color:${BRAND.muted};font:700 12px/1.7 Arial,Helvetica,sans-serif;">Questions? Reply to this email or reach us at <a href="mailto:support@lobb.ng" style="color:${BRAND.ink};text-decoration:none;font-weight:900;">support@lobb.ng</a>.</p>
-                <p style="margin:14px 0 0;">${socialHtml}</p>
-                <p style="margin:14px 0 0;color:${BRAND.faint};font:600 11px/1.6 Arial,Helvetica,sans-serif;">You are receiving this because email notifications are enabled on your LOBB account.</p>
+              <td style="background:${BRAND.surface};border:1px solid ${BRAND.line};border-top:0;border-radius:0 0 14px 14px;padding:20px 30px 24px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                  <tr>
+                    <td style="vertical-align:middle;">
+                      <p style="margin:0;color:${BRAND.muted};font:700 12px/1.7 Arial,Helvetica,sans-serif;">Need help? <a href="mailto:support@lobb.ng" style="color:${BRAND.ink};text-decoration:none;font-weight:900;">support@lobb.ng</a></p>
+                    </td>
+                    <td align="right" style="vertical-align:middle;">
+                      <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+                        <tr>${socialHtml}</tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
               </td>
             </tr>
           </table>

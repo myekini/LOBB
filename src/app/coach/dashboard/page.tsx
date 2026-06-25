@@ -29,7 +29,8 @@ type CoachDashboardPayload = {
     status?: string | null;
     rejection_reason?: string | null;
     needs_direct_contact?: boolean | null;
-    paystack_subaccount_code?: string | null;
+    paystack_recipient_code?: string | null;
+    dva_account_number?: string | null;
   } | null;
   availability_slots_count?: number;
   reviews: Array<{ id: string; rating: number; comment: string | null; player_first_name: string; created_at: string }>;
@@ -100,7 +101,7 @@ export default function CoachDashboardPage() {
   const rejectionReason = data?.coach?.rejection_reason ?? null;
   const needsDirectContact = data?.coach?.needs_direct_contact ?? false;
   const needsAvailability = coachStatus === "active" && !loading && (data?.availability_slots_count ?? 0) === 0;
-  const needsPayoutSetup = coachStatus === "active" && !loading && !data?.coach?.paystack_subaccount_code;
+  const needsPayoutSetup = coachStatus === "active" && !loading && !data?.coach?.paystack_recipient_code && !data?.coach?.dva_account_number;
   const completionCard =
     coachStatus === "pending_review"
       ? {

@@ -35,7 +35,7 @@ export default function CoachBankSetupPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
       supabase.from("coaches")
-        .select("bank_name, bank_account_number, paystack_subaccount_code")
+        .select("bank_name, bank_account_number, paystack_recipient_code, dva_account_number")
         .eq("id", user.id)
         .maybeSingle()
         .then(({ data }) => {

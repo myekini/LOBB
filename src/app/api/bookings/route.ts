@@ -136,7 +136,7 @@ export async function POST(request: Request) {
     // ── Fetch coach details ────────────────────────────────────────────────────
     const { data: coach, error: coachErr } = await admin
       .from("coaches")
-      .select("id, hourly_rate_ngn, paystack_recipient_code, paystack_subaccount_code, full_name")
+      .select("id, hourly_rate_ngn, paystack_recipient_code, dva_account_number, full_name")
       .eq("slug", coach_slug)
       .eq("status", "active")
       .maybeSingle();
@@ -155,7 +155,7 @@ export async function POST(request: Request) {
     // paystack_recipient_code is only required when the cron pays out (post-session).
     // Coaches who onboarded under the old subaccount model are still bookable —
     // they'll need to re-onboard for automated payouts, but bookings should not block.
-    if (!coach.paystack_recipient_code && !coach.paystack_subaccount_code) {
+    if (!coach.paystack_recipient_code && !coach.dva_account_number) {
       return apiError("BOOKING_PAYMENT_ACCOUNT_MISSING", 403);
     }
 

@@ -26,7 +26,7 @@ export default async function CoachSettingsPage() {
     admin.from("profiles").select("phone_number, email, email_notifications_enabled, role").eq("id", user.id).maybeSingle(),
     admin
       .from("coaches")
-      .select("bank_name, bank_account_number, bank_code, paystack_subaccount_code, status")
+      .select("bank_name, bank_account_number, bank_code, paystack_recipient_code, dva_account_number, status")
       .eq("id", user.id)
       .maybeSingle(),
   ]);
