@@ -4,12 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  OnboardingCopy,
-  OnboardingKicker,
-  OnboardingShell,
-  OnboardingTitle,
-} from "@/features/auth/onboarding-shell";
+import { OnboardingShell } from "@/features/auth/onboarding-shell";
 import { clearPendingAuth, getPendingAuth, setPendingAuth } from "@/lib/auth-flow";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { track } from "@/lib/analytics";
@@ -283,53 +278,52 @@ export default function VerifyPage() {
 
   return (
     <OnboardingShell>
-      <section className="flex flex-1 flex-col pt-4 relative z-10">
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <OnboardingKicker>Magic Code</OnboardingKicker>
-            {pendingAuth?.role && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--lobb-clay)]/10 px-3 py-1.5 border border-[var(--lobb-clay)]/20 backdrop-blur-sm animate-in fade-in duration-300">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--lobb-clay)]"></span>
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
-                  {roleLabel}
-                </span>
-              </div>
-            )}
+      <section className="flex flex-1 flex-col pb-10">
+
+        {/* ── Wordmark hero strip ───────────────────────────────────────── */}
+        <div className="pt-1 pb-5">
+          <div className="flex items-end gap-3">
+            <span className="text-[58px] font-black leading-none tracking-[-0.03em] text-[var(--lobb-black)] sm:text-[68px]">
+              LOBB
+            </span>
+            <span className="mb-2 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--lobb-text-tertiary)]">
+              Find · Book · Play
+            </span>
           </div>
-          <OnboardingTitle>
+          <div className="mt-3 h-px bg-[var(--lobb-border)]" />
+        </div>
+
+        {/* ── Title + step badge ────────────────────────────────────────── */}
+        <div className="mt-4 flex items-start justify-between gap-3">
+          <h1 className="text-[34px] font-black leading-[1.04] tracking-tight text-[var(--lobb-black)] sm:text-[40px]">
             Check your
             <br />
             {pendingAuth?.email ? "email" : "phone"}
-          </OnboardingTitle>
-          <OnboardingCopy>
-            Code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"}.
-          </OnboardingCopy>
-          <div className="mt-6 flex items-start gap-4 rounded-[20px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-5 backdrop-blur-md">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-surface)] text-[var(--lobb-text-primary)] border border-[var(--lobb-border)]">
-              <RoleIcon className="size-5" />
-            </span>
-            <div>
-              <p className="text-[14px] font-black text-[var(--lobb-text-primary)]">{roleLabel}</p>
-              <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
-                {pendingAuth?.role === "coach"
-                  ? "After verification, you will complete your coach profile, set availability, and review details."
-                  : "After verification, you will complete your player profile and start booking sessions."}
-              </p>
+          </h1>
+          {pendingAuth?.mode === "signup" && (
+            <div className="mt-1.5 shrink-0 rounded-full border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay)]/8 px-3 py-1.5">
+              <span className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+                Step 2 / 2
+              </span>
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="mt-10">
+        {/* ── Info pill ────────────────────────────────────────────────── */}
+        <div className="mt-3 flex items-center gap-2.5 rounded-[10px] border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay)]/6 px-3.5 py-2.5">
+          <RoleIcon className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
+          <span className="text-[12px] font-semibold leading-snug text-[var(--lobb-text-secondary)]">
+            Code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"} · {roleLabel}
+          </span>
+        </div>
+
+        {/* ── OTP digit inputs ─────────────────────────────────────────── */}
+        <div className="mt-9">
           <div className={`grid grid-cols-6 gap-2 ${isShaking ? "animate-[shake_0.35s_ease-in-out]" : ""}`}>
             {digits.map((digit, index) => (
               <input
                 key={index}
-                ref={(element) => {
-                  inputs.current[index] = element;
-                }}
+                ref={(element) => { inputs.current[index] = element; }}
                 aria-label={`Digit ${index + 1}`}
                 inputMode="numeric"
                 maxLength={6}
@@ -342,27 +336,38 @@ export default function VerifyPage() {
                   }
                 }}
                 className={`h-[60px] rounded-[16px] border bg-[var(--lobb-surface-2)] text-[var(--lobb-text-primary)] text-center text-[22px] font-black shadow-[0_4px_24px_rgba(0,0,0,0.06)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[var(--lobb-clay)] focus:bg-[var(--lobb-surface)] focus:shadow-[0_8px_32px_rgba(196,98,45,0.15)] ${
-                  error ? "border-[var(--lobb-border-error)]/50 focus:border-[var(--lobb-border-error)] text-[var(--lobb-border-error)] focus:shadow-[0_8px_32px_rgba(214,64,69,0.15)]" : "border-[var(--lobb-border)]"
+                  error
+                    ? "border-[var(--lobb-border-error)]/50 text-[var(--lobb-border-error)] focus:border-[var(--lobb-border-error)] focus:shadow-[0_8px_32px_rgba(214,64,69,0.15)]"
+                    : "border-[var(--lobb-border)]"
                 }`}
               />
             ))}
           </div>
-          {error && <p className="mt-4 text-[13px] font-semibold text-[var(--lobb-error)] text-center">{error}</p>}
+          {error && (
+            <p className="mt-4 text-center text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>
+          )}
         </div>
 
+        {/* ── Resend ───────────────────────────────────────────────────── */}
         <button
           type="button"
           disabled={seconds > 0}
           onClick={resend}
-          className="mt-8 mx-auto w-fit flex rounded-full px-6 py-2.5 text-[12px] font-bold tracking-wide text-[var(--lobb-text-secondary)] border border-transparent transition-all hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface-2)] hover:border-[var(--lobb-border)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)]/40 disabled:hover:bg-transparent disabled:hover:border-transparent"
+          className="mt-7 mx-auto w-fit flex rounded-full border border-transparent px-6 py-2.5 text-[12px] font-bold tracking-wide text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface-2)] hover:text-[var(--lobb-text-primary)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)]/40 disabled:hover:border-transparent disabled:hover:bg-transparent"
         >
-          {seconds > 0 ? `Resend code (0:${String(seconds).padStart(2, "0")})` : "Resend code"}
+          {seconds > 0
+            ? `Resend code (0:${String(seconds).padStart(2, "0")})`
+            : "Resend code"}
         </button>
 
-        <div className="mt-auto pb-8 text-center">
+        <div className="mt-auto pb-8 pt-10 text-center">
           <p className="inline-flex items-center justify-center gap-2 text-[13px] font-medium text-[var(--lobb-text-secondary)]">
             {verifying && <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />}
-            {verifying ? "Checking your code..." : code.length === 6 ? "Submitting..." : "Enter all 6 digits to continue."}
+            {verifying
+              ? "Checking your code…"
+              : code.length === 6
+              ? "Submitting…"
+              : "Enter all 6 digits to continue."}
           </p>
         </div>
       </section>
