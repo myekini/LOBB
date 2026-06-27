@@ -59,15 +59,25 @@ export async function POST(request: Request) {
 
     if (signInError) {
       const msg = signInError.message.toLowerCase();
+      console.error("[send-otp] signInWithOtp error:", signInError.message, signInError.status);
       if (msg.includes("signup") || msg.includes("signups not allowed")) {
         return NextResponse.json(
           { error: "No account found with this email. Sign up first." },
           { status: 404 }
         );
       }
-      if (msg.includes("rate limit") || msg.includes("too many")) {
+      if (msg.includes("rate limit") || msg.includes("too many") || msg.includes("email rate")) {
         return NextResponse.json(
           { error: "Too many requests. Please wait a minute before trying again." },
+          { status: 429 }
+        );
+      }
+      if (msg.includes("security purposes") || msg.includes("after ")) {
+        // Supabase per-email cooldown: "For security purposes, you can only request this after X seconds"
+        const seconds = signInError.message.match(/after (\d+) second/)?.[1];
+        const wait = seconds ? `${seconds} seconds` : "a moment";
+        return NextResponse.json(
+          { error: `Please wait ${wait} before requesting another code.` },
           { status: 429 }
         );
       }
