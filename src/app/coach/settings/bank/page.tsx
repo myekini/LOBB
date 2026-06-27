@@ -151,7 +151,7 @@ export default function CoachBankSetupPage() {
               <p className="mt-1 text-[15px] font-black">{coachData?.dva_bank_name ?? "Virtual account"}</p>
               <p className="font-mono text-sm text-[var(--lobb-text-secondary)]">{coachData?.dva_account_number}</p>
               <p className="mt-1 text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
-                Players' payments arrive here. LOBB auto-transfers your net earnings to your payout bank below.
+                Players&apos; payments arrive here. LOBB auto-transfers your net earnings to your payout bank below.
               </p>
             </div>
           </div>
