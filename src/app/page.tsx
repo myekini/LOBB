@@ -629,11 +629,11 @@ function LandingSplash() {
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 rounded-[8px] bg-[var(--lobb-clay)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
               Find a coach
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
-            <Link href="/auth/signup/coach" className="inline-flex h-14 items-center justify-center rounded-[8px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-black)] transition duration-300 hover:border-[var(--lobb-clay)]/45 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
+            <Link href="/auth/signup/coach" className="inline-flex h-14 items-center justify-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-black)] transition duration-300 hover:border-[var(--lobb-clay)]/45 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
               Join as a coach
             </Link>
           </div>
@@ -645,7 +645,7 @@ function LandingSplash() {
               [10, "minute slot hold"],
             ] as [number, string][]).map(([value, label]) => (
               <div key={label} className="border-r border-[var(--lobb-border)] px-3 py-4 first:pl-0 last:border-r-0 last:pr-0 sm:px-5">
-                <p className="text-[36px] font-black tabular-nums tracking-tight text-[var(--lobb-black)] sm:text-[52px]"><StatValue value={value} /></p>
+                <p className="text-[28px] font-black tabular-nums tracking-tight text-[var(--lobb-black)] sm:text-[38px]"><StatValue value={value} /></p>
                 <p className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">{label}</p>
               </div>
             ))}
@@ -739,32 +739,38 @@ function LandingSplash() {
         </div>
       </div>
 
-      <section className="relative z-10 bg-[var(--lobb-black)] px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
-        <div className="mx-auto max-w-7xl">
-          <div data-reveal className="mb-14">
-            <DotLabel light>How booking works</DotLabel>
-            <h2 className="mt-3 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight text-white sm:text-[44px] text-balance">
-              Three steps.<br />On court by morning.
-            </h2>
-          </div>
-          <div className="grid gap-10 md:grid-cols-3 md:gap-14">
-            {([
-              ["01", "Find your coach", "Browse verified coaches by area, skill level, and available time slots. Rates shown upfront — no back-and-forth."],
-              ["02", "Hold your slot", "Reserve your session with a 10-minute hold while you complete the booking. Nobody can take it mid-payment."],
-              ["03", "Pay once, play", "LOBB holds the coach's payout until after your session, then releases it automatically. Every incentive points at the court."],
-            ] as const).map(([num, title, body], i) => (
-              <div
-                key={num}
-                data-reveal
-                style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
-                className="border-t border-white/[0.08] pt-7"
-              >
-                <p className="mb-5 text-[44px] font-black leading-none tracking-tight text-[var(--lobb-clay)] sm:text-[52px]">{num}</p>
-                <p className="text-[18px] font-black leading-tight tracking-tight text-white">{title}</p>
-                <p className="mt-3 text-[14px] leading-[1.65] text-white/50">{body}</p>
+      <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
+        <div data-reveal className="lg:sticky lg:top-24 lg:self-start">
+          <DotLabel>How booking works</DotLabel>
+          <h2 className="mt-3 max-w-md text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
+            From open slot to paid session.
+          </h2>
+          <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--lobb-muted)]">
+            The whole flow is built so neither side has to trust a stranger: the calendar is real, the slot is held, and the money waits until the lesson happens.
+          </p>
+        </div>
+        <div>
+          {([
+            ["A real calendar", "Coaches publish actual availability. The slot you see is a slot that exists, not the start of a negotiation."],
+            ["A 10-minute hold", "Checkout locks your slot while you pay. Nobody can take it from under you mid-payment."],
+            ["LOBB holds, then pays", "You never pay into a stranger's account. LOBB holds the coach's payout until after your session, then releases it automatically."],
+            ["Paid after play", "The coach is paid out after the session happens. Every incentive points at the court."],
+          ] as const).map(([title, body], i) => (
+            <div
+              key={title}
+              data-reveal
+              style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
+              className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 border-t border-[var(--lobb-border)] py-7 transition duration-300 last:border-b sm:grid-cols-[88px_minmax(0,1fr)]"
+            >
+              <span className="text-[30px] font-black leading-none tracking-tight text-[var(--lobb-text-tertiary)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)] sm:text-[40px]">
+                0{i + 1}
+              </span>
+              <div className="transition-transform duration-300 group-hover:translate-x-1">
+                <p className="text-xl font-black tracking-tight">{title}</p>
+                <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--lobb-muted)]">{body}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -823,7 +829,7 @@ function LandingSplash() {
               </div>
             ))}
           </div>
-          <Link href="/auth/signup/coach" className="lobb-cta-sheen group mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-[8px] bg-[var(--lobb-black)] px-5 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
+          <Link href="/auth/signup/coach" className="lobb-cta-sheen group mt-8 inline-flex h-12 items-center justify-center gap-2 bg-[var(--lobb-black)] px-5 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
             Apply as a coach
             <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
@@ -864,11 +870,11 @@ function LandingSplash() {
             Pick a coach, hold a slot, pay once. The rest happens on court.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 rounded-[8px] bg-[var(--lobb-clay)] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
               Find a coach
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
-            <Link href="/auth/signup/coach" className="inline-flex h-14 w-full items-center justify-center rounded-[8px] border border-white/20 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:border-white/55 active:scale-[0.98] sm:w-auto">
+            <Link href="/auth/signup/coach" className="inline-flex h-14 w-full items-center justify-center border border-white/20 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:border-white/55 active:scale-[0.98] sm:w-auto">
               Join as a coach
             </Link>
           </div>
@@ -914,9 +920,9 @@ function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: 
       href={href}
       data-reveal
       style={{ "--reveal-delay": `${Math.min(index, 6) * 70}ms` } as React.CSSProperties}
-      className="group/coach w-[240px] shrink-0 snap-start overflow-hidden rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] shadow-[0_2px_10px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-1 hover:border-[var(--lobb-clay)]/40 hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)]"
+      className="lobb-landing-panel group/coach w-[230px] shrink-0 snap-start border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-1 hover:border-[var(--lobb-clay)]/40"
     >
-      <div className="relative h-[176px] overflow-hidden bg-[var(--lobb-bg-secondary)]">
+      <div className="relative h-[160px] overflow-hidden bg-[var(--lobb-bg-secondary)]">
         {coach.profile_photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -925,13 +931,12 @@ function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: 
             className="size-full object-cover transition-transform duration-500 group-hover/coach:scale-105"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[44px] font-black text-[var(--lobb-text-tertiary)]/35">
+          <div className="flex size-full items-center justify-center text-[40px] font-black text-[var(--lobb-text-tertiary)]">
             {coach.full_name.charAt(0)}
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent" />
         {coach.hourly_rate_ngn != null && (
-          <span className="absolute bottom-2.5 left-2.5 rounded-[6px] bg-[#0d0d0d]/82 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
+          <span className="absolute bottom-2 left-2 bg-[#0d0d0d]/85 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
             ₦{coach.hourly_rate_ngn.toLocaleString("en-NG")}<span className="font-bold text-white/75">/hr</span>
           </span>
         )}
@@ -939,14 +944,14 @@ function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: 
       <div className="p-4">
         <div className="flex items-center justify-between gap-2">
           <p className="truncate text-[15px] font-black">{coach.full_name}</p>
-          <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--lobb-clay)]/10 px-2 py-0.5 text-[10px] font-black text-[var(--lobb-clay)]">
-            <Star className="size-2.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
+          <span className="flex shrink-0 items-center gap-1 text-xs font-black">
+            <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
             {coach.avg_rating ?? "New"}
           </span>
         </div>
         <p className="mt-1 truncate text-xs font-semibold text-[var(--lobb-muted)]">{coach.headline ?? "Tennis coach"}</p>
         {coach.primary_location && (
-          <p className="mt-3 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.1em] text-[var(--lobb-text-secondary)]">
+          <p className="mt-2.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--lobb-text-secondary)]">
             <MapPin className="size-3 shrink-0 text-[var(--lobb-clay)]" />
             <span className="truncate">{coach.primary_location}</span>
           </p>
