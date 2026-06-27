@@ -58,8 +58,9 @@ export async function POST(request: Request) {
     });
 
     if (signInError) {
-      const msg = signInError.message.toLowerCase();
-      console.error("[send-otp] signInWithOtp error:", signInError.message, signInError.status);
+      const msg = (signInError.message ?? "").toLowerCase();
+      console.error("[send-otp] signInWithOtp error:", signInError.message, signInError.status, signInError.code);
+
       if (msg.includes("signup") || msg.includes("signups not allowed")) {
         return NextResponse.json(
           { error: "No account found with this email. Sign up first." },
@@ -73,19 +74,17 @@ export async function POST(request: Request) {
         );
       }
       if (msg.includes("security purposes") || msg.includes("after ")) {
-        // Supabase per-email cooldown: "For security purposes, you can only request this after X seconds"
-        const seconds = signInError.message.match(/after (\d+) second/)?.[1];
-        const wait = seconds ? `${seconds} seconds` : "a moment";
-        return NextResponse.json(
-          { error: `Please wait ${wait} before requesting another code.` },
-          { status: 429 }
-        );
+        // Supabase security cooldown: still fires the hook with the existing valid OTP.
+        // Email already arrived — navigate user to verify rather than showing an error.
+        console.log("[send-otp] security cooldown — existing OTP valid, returning success");
+        return NextResponse.json({ email });
       }
       return NextResponse.json({ error: "Could not send code. Try again." }, { status: 500 });
     }
 
     return NextResponse.json({ email });
-  } catch {
+  } catch (err) {
+    console.error("[send-otp] Unexpected error:", err);
     return NextResponse.json({ error: "Unable to send login code." }, { status: 500 });
   }
 }
