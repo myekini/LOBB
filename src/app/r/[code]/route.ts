@@ -13,7 +13,9 @@ export async function GET(request: Request, { params }: { params: { code: string
   const existing = cookieHeader.split(";").find((c) => c.trim().startsWith(`${COOKIE_NAME}=`));
   if (existing) return response;
 
-  const code = params.code.toLowerCase();
+  // Referral codes are stored in uppercase. Normalize incoming links so both
+  // manually typed lowercase URLs and the uppercase dashboard link work.
+  const code = params.code.trim().toUpperCase();
 
   // Validate the code belongs to an active coach
   const admin = createAdminClient();

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { CoachRow, CourtAccess } from "@/lib/types";
@@ -182,7 +183,25 @@ export async function PATCH(request: Request) {
       }
     }
 
-    return NextResponse.json({ ok: true });
+    const { data: updatedCoach } = await supabase
+      .from("coaches")
+      .select("full_name, slug, referral_code")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    revalidatePath("/coach/profile");
+    revalidatePath("/coach/profile/preview");
+    revalidatePath("/coach/dashboard");
+    revalidatePath("/coaches");
+    if (updatedCoach?.slug) {
+      revalidatePath(`/coaches/${updatedCoach.slug}`);
+      revalidatePath(`/api/coaches/${updatedCoach.slug}`);
+    }
+
+    return NextResponse.json(
+      { ok: true, coach: updatedCoach },
+      { headers: { "Cache-Control": "private, no-store, max-age=0" } }
+    );
   } catch {
     return NextResponse.json({ error: "Unable to update profile" }, { status: 500 });
   }

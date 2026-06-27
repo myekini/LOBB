@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { CoachProfileContent } from "@/app/coaches/[slug]/coach-profile-content";
 import type { CoachPublicProfile, CourtAccess } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 function asArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }

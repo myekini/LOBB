@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { internalError } from "@/lib/api-response";
 import type { CoachPublicProfile } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _request: Request,
   { params }: { params: { slug: string } }
@@ -27,9 +29,10 @@ export async function GET(
     if (error) return internalError(error);
     if (!data) return NextResponse.json({ error: "Coach not found" }, { status: 404 });
 
-    return NextResponse.json({ coach: data as CoachPublicProfile }, {
-      headers: { "Cache-Control": "public, s-maxage=120, stale-while-revalidate=600" },
-    });
+    return NextResponse.json(
+      { coach: data as CoachPublicProfile },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
   } catch {
     return NextResponse.json({ error: "Unable to load coach profile" }, { status: 500 });
   }

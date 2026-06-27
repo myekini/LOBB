@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Camera, CheckCircle2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
@@ -83,7 +82,6 @@ function toggle(value: string, list: string[]): string[] {
 }
 
 export default function CoachProfileEditPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -198,7 +196,7 @@ export default function CoachProfileEditPage() {
           setLoading(false);
         });
     });
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (!hasUnsavedChanges) return;
@@ -297,8 +295,14 @@ export default function CoachProfileEditPage() {
             photoUrl: finalPhotoUrl,
           })
         );
-        router.push("/coach/profile");
-        router.refresh();
+        // The dashboard has an offline fallback. Clear its previous snapshot so
+        // it cannot restore pre-edit coach details if the next request fails.
+        window.localStorage.removeItem("lobb.dashboard.coach");
+
+        // A full replacement guarantees the server-rendered profile and its
+        // share card are read again after the mutation. Calling refresh directly
+        // after router.push can refresh the edit route before navigation settles.
+        window.location.replace("/coach/profile");
       }
     } catch {
       setError("Something went wrong. Please try again.");

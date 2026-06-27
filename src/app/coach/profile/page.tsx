@@ -10,6 +10,8 @@ import { CoachKicker, CoachSurface } from "@/components/common/coach-surface";
 import { CoachShareSheet } from "@/features/coaches/coach-share-sheet";
 import { CoachProfileCopyLink } from "@/features/coaches/coach-profile-copy-link";
 
+export const dynamic = "force-dynamic";
+
 type Section = {
   label: string;
   detail: string;

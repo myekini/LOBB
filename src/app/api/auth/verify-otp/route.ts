@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     // Referral attribution — read first-touch cookie, link to referring coach on first sign-in
     const cookieHeader = request.headers.get("cookie") ?? "";
     const refMatch = cookieHeader.split(";").find((c) => c.trim().startsWith("lobb_ref="));
-    const refCode = refMatch ? refMatch.split("=")[1]?.trim() : null;
+    const refCode = refMatch ? refMatch.split("=")[1]?.trim().toUpperCase() : null;
     if (refCode) {
       const { data: referringCoach } = await admin
         .from("coaches")
