@@ -128,6 +128,8 @@ export default function CoachAvailabilityPage() {
 
   const applyQuick = () => {
     if (!selectedDows.length || quickStart >= quickEnd) return;
+    const hasExisting = windows.some((w) => selectedDows.includes(w.dow));
+    if (hasExisting && !window.confirm("This will replace existing hours for the selected days. Continue?")) return;
     setWindows((prev) => [
       ...prev.filter((w) => !selectedDows.includes(w.dow)),
       ...selectedDows.map((dow) => ({
@@ -210,7 +212,6 @@ export default function CoachAvailabilityPage() {
             ends_at:     `${w.end}:00`,
           })),
           blocked_dates: blockedDates,
-          blocked_slots: [],
         }),
       });
       if (!res.ok) throw await readApiError(res, "AVAILABILITY_SAVE_FAILED");
