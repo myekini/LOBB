@@ -9,6 +9,10 @@ import { clearPendingAuth, getPendingAuth, setPendingAuth } from "@/lib/auth-flo
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { track } from "@/lib/analytics";
 
+// Must match the "Email OTP Length" setting in Supabase Auth (currently 8).
+// Override with NEXT_PUBLIC_OTP_LENGTH if the dashboard setting changes.
+const OTP_LENGTH = Math.min(10, Math.max(6, Number(process.env.NEXT_PUBLIC_OTP_LENGTH) || 8));
+
 function displayIdentifier(auth: { email?: string; phone?: string }) {
   if (auth.email) return auth.email;
   const phone = auth.phone ?? "";
@@ -37,7 +41,7 @@ function getSafeNextPath(nextPath: string | undefined, role: string | undefined)
 
 export default function VerifyPage() {
   const router = useRouter();
-  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [seconds, setSeconds] = useState(60);
   const [error, setError] = useState("");
   const [verifying, setVerifying] = useState(false);
@@ -81,7 +85,7 @@ export default function VerifyPage() {
   };
 
   const verify = async (nextCode = code) => {
-    if (!pendingAuth || nextCode.length !== 6 || verifying) {
+    if (!pendingAuth || nextCode.length < 6 || verifying) {
       return;
     }
 
@@ -208,14 +212,14 @@ export default function VerifyPage() {
   };
 
   const fillAllDigits = (value: string) => {
-    const numeric = value.replace(/\D/g, "").slice(0, 6);
+    const numeric = value.replace(/\D/g, "").slice(0, OTP_LENGTH);
     if (!numeric) return;
-    const next = Array(6).fill("").map((_, i) => numeric[i] ?? "");
+    const next = Array(OTP_LENGTH).fill("").map((_, i) => numeric[i] ?? "");
     setDigits(next);
     const nextCode = next.join("");
-    const focusIndex = Math.min(numeric.length, 5);
+    const focusIndex = Math.min(numeric.length, OTP_LENGTH - 1);
     inputs.current[focusIndex]?.focus();
-    if (nextCode.replace(/\s/g, "").length === 6) verify(nextCode);
+    if (nextCode.replace(/\s/g, "").length === OTP_LENGTH) verify(nextCode);
   };
 
   const updateDigit = (index: number, value: string) => {
@@ -230,12 +234,12 @@ export default function VerifyPage() {
     next[index] = numeric;
     setDigits(next);
 
-    if (numeric && index < 5) {
+    if (numeric && index < OTP_LENGTH - 1) {
       inputs.current[index + 1]?.focus();
     }
 
     const nextCode = next.join("");
-    if (nextCode.length === 6) {
+    if (nextCode.length === OTP_LENGTH) {
       verify(nextCode);
     }
   };
@@ -270,7 +274,7 @@ export default function VerifyPage() {
     setPendingAuth({ ...pendingAuth, sentAt: Date.now() });
 
     setSeconds(60);
-    setDigits(["", "", "", "", "", ""]);
+    setDigits(Array(OTP_LENGTH).fill(""));
     setError("");
     inputs.current[0]?.focus();
     showLobbToast({ type: "success", message: "New code sent." });
@@ -319,14 +323,17 @@ export default function VerifyPage() {
 
         {/* ── OTP digit inputs ─────────────────────────────────────────── */}
         <div className="mt-9">
-          <div className={`grid grid-cols-6 gap-2 ${isShaking ? "animate-[shake_0.35s_ease-in-out]" : ""}`}>
+          <div
+            className={`grid gap-2 ${isShaking ? "animate-[shake_0.35s_ease-in-out]" : ""}`}
+            style={{ gridTemplateColumns: `repeat(${OTP_LENGTH}, minmax(0, 1fr))` }}
+          >
             {digits.map((digit, index) => (
               <input
                 key={index}
                 ref={(element) => { inputs.current[index] = element; }}
                 aria-label={`Digit ${index + 1}`}
                 inputMode="numeric"
-                maxLength={6}
+                maxLength={OTP_LENGTH}
                 value={digit}
                 onChange={(event) => updateDigit(index, event.target.value)}
                 onPaste={handlePaste}
@@ -365,9 +372,9 @@ export default function VerifyPage() {
             {verifying && <Loader2 className="size-4 animate-spin text-[var(--lobb-clay)]" />}
             {verifying
               ? "Checking your code…"
-              : code.length === 6
+              : code.length === OTP_LENGTH
               ? "Submitting…"
-              : "Enter all 6 digits to continue."}
+              : `Enter all ${OTP_LENGTH} digits to continue.`}
           </p>
         </div>
       </section>

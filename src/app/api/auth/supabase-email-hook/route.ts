@@ -114,8 +114,10 @@ export async function POST(request: Request) {
   const otpActions = ["signup", "magiclink", "email", "recovery", "email_change", "reauthentication"];
 
   if (!email || !token || !otpActions.includes(actionType)) {
-    // Return 200 so Supabase doesn't retry — we simply don't send for these types
-    return new NextResponse(null, { status: 200 });
+    // Return 200 so Supabase doesn't retry — we simply don't send for these types.
+    // Must be JSON: Supabase rejects hook responses without a JSON Content-Type
+    // (error: hook_payload_invalid_content_type), which fails the whole signInWithOtp.
+    return NextResponse.json({});
   }
 
   try {
@@ -138,9 +140,12 @@ export async function POST(request: Request) {
       });
     }
   } catch (err) {
-    // Log but still return 200 — Supabase retries on non-200 which can cause duplicate sends
     console.error("Email hook send failed:", err instanceof Error ? err.message : err);
+    return NextResponse.json(
+      { error: "Email delivery failed" },
+      { status: 502 }
+    );
   }
 
-  return new NextResponse(null, { status: 200 });
+  return NextResponse.json({});
 }

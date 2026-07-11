@@ -21,9 +21,10 @@ export async function POST(request: Request) {
       role?: "player" | "coach" | "admin";
     };
 
+    // Supabase OTP length is a project setting (6 by default, up to 10) — accept the range
     const code = (body.code ?? body.otp ?? "").replace(/\D/g, "");
-    if (code.length !== 6) {
-      return NextResponse.json({ error: "Enter the 6-digit code." }, { status: 400 });
+    if (code.length < 6 || code.length > 10) {
+      return NextResponse.json({ error: "Enter the code from your email." }, { status: 400 });
     }
 
     const email = normalizeEmail(body.email);

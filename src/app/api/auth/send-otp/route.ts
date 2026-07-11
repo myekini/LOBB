@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeEmail } from "@/lib/email";
 
 function getAnonClient() {
@@ -24,25 +23,6 @@ export async function POST(request: Request) {
 
     if (!email) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
-    }
-
-    const admin = createAdminClient();
-
-    // Login mode (no role in body) — verify the account exists before sending an OTP.
-    // Prevents silent account creation for users who meant to log in.
-    if (!isSignup) {
-      const { data: existing } = await admin
-        .from("profiles")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
-
-      if (!existing) {
-        return NextResponse.json(
-          { error: "No account found with this email. Sign up first." },
-          { status: 404 }
-        );
-      }
     }
 
     const role = getRequestedRole(body.role);
@@ -74,10 +54,15 @@ export async function POST(request: Request) {
         );
       }
       if (msg.includes("security purposes") || msg.includes("after ")) {
-        // Supabase security cooldown: still fires the hook with the existing valid OTP.
-        // Email already arrived — navigate user to verify rather than showing an error.
-        console.log("[send-otp] security cooldown — existing OTP valid, returning success");
-        return NextResponse.json({ email });
+        const seconds = signInError.message?.match(/after (\d+) second/)?.[1];
+        return NextResponse.json(
+          {
+            error: seconds
+              ? `Please wait ${seconds} seconds before requesting another code.`
+              : "Please wait before requesting another code.",
+          },
+          { status: 429 }
+        );
       }
       return NextResponse.json({ error: "Could not send code. Try again." }, { status: 500 });
     }
