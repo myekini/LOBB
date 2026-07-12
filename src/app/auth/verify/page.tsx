@@ -9,9 +9,9 @@ import { clearPendingAuth, getPendingAuth, setPendingAuth } from "@/lib/auth-flo
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { track } from "@/lib/analytics";
 
-// Must match the "Email OTP Length" setting in Supabase Auth (currently 8).
+// Must match the "Email OTP Length" setting in Supabase Auth (standard: 6).
 // Override with NEXT_PUBLIC_OTP_LENGTH if the dashboard setting changes.
-const OTP_LENGTH = Math.min(10, Math.max(6, Number(process.env.NEXT_PUBLIC_OTP_LENGTH) || 8));
+const OTP_LENGTH = Math.min(10, Math.max(6, Number(process.env.NEXT_PUBLIC_OTP_LENGTH) || 6));
 
 function displayIdentifier(auth: { email?: string; phone?: string }) {
   if (auth.email) return auth.email;

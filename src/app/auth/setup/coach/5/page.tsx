@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
 import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
@@ -234,47 +234,28 @@ export default function CoachSetupStep5Page() {
           </label>
         </div>
 
-        <div className="mt-8 space-y-3">
-          <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 transition hover:border-[var(--lobb-clay)]/40">
-            <input
-              type="checkbox"
-              checked={acceptedCoachAgreement}
-              onChange={(event) => setAcceptedCoachAgreement(event.target.checked)}
-              className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
-            />
-            <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-              I have read and agree to the{" "}
-              <Link href="/coach-agreement" className="font-black text-[var(--lobb-clay)]">LOBB Coach Agreement</Link>,
-              including the 15% commission and payout structure.
-            </span>
-          </label>
-          <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 transition hover:border-[var(--lobb-clay)]/40">
-            <input
-              type="checkbox"
-              checked={confirmedProfileAccuracy}
-              onChange={(event) => setConfirmedProfileAccuracy(event.target.checked)}
-              className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
-            />
-            <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-              I confirm all information in my profile is accurate. I understand that false information may result in immediate account suspension.
-            </span>
-          </label>
-          <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 transition hover:border-[var(--lobb-clay)]/40">
-            <input
-              type="checkbox"
-              checked={acceptedCoachConduct}
-              onChange={(event) => setAcceptedCoachConduct(event.target.checked)}
-              className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
-            />
-            <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-              I agree to LOBB&apos;s{" "}
-              <Link href="/terms" className="font-black text-[var(--lobb-clay)]">Terms of Service</Link>,{" "}
-              <Link href="/privacy" className="font-black text-[var(--lobb-clay)]">Privacy Policy</Link>,
-              and{" "}
-              <Link href="/coach-agreement" className="font-black text-[var(--lobb-clay)]">Code of Conduct</Link>
-              for coaches.
-            </span>
-          </label>
+        <div className="mt-8 space-y-2.5">
+          <ConsentCheckbox
+            checked={acceptedCoachAgreement}
+            onChange={setAcceptedCoachAgreement}
+            hint="Includes the 15% commission and payout structure."
+          >
+            I have read and agree to the{" "}
+            <ConsentLink href="/coach-agreement">LOBB Coach Agreement</ConsentLink>.
+          </ConsentCheckbox>
+          <ConsentCheckbox
+            checked={confirmedProfileAccuracy}
+            onChange={setConfirmedProfileAccuracy}
+            hint="False information may result in immediate account suspension."
+          >
+            I confirm all information in my profile is accurate.
+          </ConsentCheckbox>
+          <ConsentCheckbox checked={acceptedCoachConduct} onChange={setAcceptedCoachConduct}>
+            I agree to LOBB&apos;s{" "}
+            <ConsentLink href="/terms">Terms of Service</ConsentLink>,{" "}
+            <ConsentLink href="/privacy">Privacy Policy</ConsentLink>, and{" "}
+            <ConsentLink href="/coach-agreement">Code of Conduct</ConsentLink> for coaches.
+          </ConsentCheckbox>
         </div>
 
         <div className="mt-10 pb-10">

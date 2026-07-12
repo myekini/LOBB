@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock3, ShieldCheck, ShieldX, AlertTriangle } from "lucide-react";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { ConsentCheckbox } from "@/components/ui/consent-checkbox";
 import { createClient } from "@/lib/supabase/client";
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
 
@@ -272,17 +273,13 @@ export default function CoachKycPage() {
             </div>
 
             {/* Consent */}
-            <label className="flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4 transition hover:border-[var(--lobb-clay)]/35">
-              <input
-                type="checkbox"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="mt-0.5 size-4 shrink-0 accent-[var(--lobb-clay)]"
-              />
-              <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-                I consent to LOBB verifying my identity using my NIN and BVN through our licensed identity verification provider. This information is encrypted, stored securely, and used solely for KYC compliance.
-              </span>
-            </label>
+            <ConsentCheckbox
+              checked={consent}
+              onChange={setConsent}
+              hint="This information is encrypted, stored securely, and used solely for KYC compliance."
+            >
+              I consent to LOBB verifying my identity using my NIN and BVN through our licensed identity verification provider.
+            </ConsentCheckbox>
 
             {error && (
               <p role="alert" className="rounded-[12px] bg-[var(--lobb-error)]/10 px-3 py-2 text-sm font-semibold text-[var(--lobb-error)]">

@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
+import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { CoachPublicProfile } from "@/lib/types";
@@ -271,19 +272,15 @@ function BookingStep3Content() {
         </div>
       </div>
 
-      <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-left transition hover:border-[var(--lobb-clay)]/35">
-        <input
-          type="checkbox"
-          checked={acceptedCancellationPolicy}
-          onChange={(event) => setAcceptedCancellationPolicy(event.target.checked)}
-          className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
-        />
-        <span className="text-xs font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-          I understand this booking is subject to LOBB&apos;s{" "}
-          <Link href="/cancellation-policy" className="font-black text-[var(--lobb-clay)]">Cancellation Policy</Link>.
-          Free cancellation until 24 hours before the session. After that, a 50% cancellation fee applies.
-        </span>
-      </label>
+      <ConsentCheckbox
+        className="mt-4"
+        checked={acceptedCancellationPolicy}
+        onChange={setAcceptedCancellationPolicy}
+        hint="Free cancellation until 24 hours before the session. After that, a 50% cancellation fee applies."
+      >
+        I agree to LOBB&apos;s{" "}
+        <ConsentLink href="/cancellation-policy">Cancellation Policy</ConsentLink> for this booking.
+      </ConsentCheckbox>
 
       <BookingButton disabled={!canPay} loading={paying} onClick={handlePay}>
         {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}

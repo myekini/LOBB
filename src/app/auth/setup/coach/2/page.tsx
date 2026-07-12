@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
 import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
@@ -119,18 +119,15 @@ export default function CoachSetupStep2Page() {
           </label>
         </div>
 
-        <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 transition hover:border-[var(--lobb-clay)]/40">
-          <input
-            type="checkbox"
-            checked={acceptedIdentityConsent}
-            onChange={(event) => setAcceptedIdentityConsent(event.target.checked)}
-            className="mt-1 size-4 shrink-0 accent-[var(--lobb-clay)]"
-          />
-          <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-            I consent to LOBB and its identity verification partner processing my NIN and BVN to confirm my identity. I understand this data is encrypted, stored securely, and retained for a minimum of 5 years as required by law. See our{" "}
-            <Link href="/privacy" className="font-black text-[var(--lobb-clay)]">Privacy Policy</Link>.
-          </span>
-        </label>
+        <ConsentCheckbox
+          className="mt-6"
+          checked={acceptedIdentityConsent}
+          onChange={setAcceptedIdentityConsent}
+          hint="Your data is encrypted, stored securely, and retained for a minimum of 5 years as required by law."
+        >
+          I consent to LOBB and its identity verification partner processing my NIN and BVN to confirm my identity. See our{" "}
+          <ConsentLink href="/privacy">Privacy Policy</ConsentLink>.
+        </ConsentCheckbox>
 
         <div className="mt-auto pb-8 pt-10">
           {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}

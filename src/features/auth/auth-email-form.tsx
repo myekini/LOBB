@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import { OnboardingShell } from "@/features/auth/onboarding-shell";
+import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
 import { setPendingAuth } from "@/lib/auth-flow";
 
 type LoginRole = "player" | "coach" | "admin";
@@ -209,56 +210,21 @@ export function AuthEmailForm({
 
         {/* ── Legal checkboxes — signup only ───────────────────────────── */}
         {authMode === "signup" && (
-          <div className="mt-6 flex flex-col divide-y divide-[var(--lobb-border)]">
-            <label className="flex cursor-pointer items-start gap-3.5 py-4">
-              <div className="relative mt-0.5 flex shrink-0">
-                <input
-                  type="checkbox"
-                  checked={acceptedCoreTerms}
-                  onChange={(e) => setAcceptedCoreTerms(e.target.checked)}
-                  className="peer size-5 appearance-none rounded-[6px] border-[1.5px] border-[var(--lobb-border)] bg-transparent checked:border-[var(--lobb-clay)] checked:bg-[var(--lobb-clay)] transition-all cursor-pointer"
-                />
-                {acceptedCoreTerms && (
-                  <svg
-                    className="pointer-events-none absolute inset-0 m-auto text-white"
-                    width="10" height="8" viewBox="0 0 10 8" fill="none"
-                  >
-                    <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-              <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-                I have read and agree to LOBB&apos;s{" "}
-                <Link href="/terms" className="font-black text-[var(--lobb-clay)] hover:underline">Terms of Service</Link>{" "}
-                and{" "}
-                <Link href="/privacy" className="font-black text-[var(--lobb-clay)] hover:underline">Privacy Policy</Link>.
-              </span>
-            </label>
+          <div className="mt-6 flex flex-col gap-2.5">
+            <ConsentCheckbox checked={acceptedCoreTerms} onChange={setAcceptedCoreTerms}>
+              I have read and agree to LOBB&apos;s{" "}
+              <ConsentLink href="/terms">Terms of Service</ConsentLink> and{" "}
+              <ConsentLink href="/privacy">Privacy Policy</ConsentLink>.
+            </ConsentCheckbox>
 
-            <label className="flex cursor-pointer items-start gap-3.5 py-4">
-              <div className="relative mt-0.5 flex shrink-0">
-                <input
-                  type="checkbox"
-                  checked={acceptedCancellation}
-                  onChange={(e) => setAcceptedCancellation(e.target.checked)}
-                  className="peer size-5 appearance-none rounded-[6px] border-[1.5px] border-[var(--lobb-border)] bg-transparent checked:border-[var(--lobb-clay)] checked:bg-[var(--lobb-clay)] transition-all cursor-pointer"
-                />
-                {acceptedCancellation && (
-                  <svg
-                    className="pointer-events-none absolute inset-0 m-auto text-white"
-                    width="10" height="8" viewBox="0 0 10 8" fill="none"
-                  >
-                    <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-              <span className="text-[12px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
-                I understand that LOBB holds coach payments until sessions are completed, and I agree to the{" "}
-                <Link href="/cancellation-policy" className="font-black text-[var(--lobb-clay)] hover:underline">
-                  Cancellation &amp; Refund Policy
-                </Link>.
-              </span>
-            </label>
+            <ConsentCheckbox
+              checked={acceptedCancellation}
+              onChange={setAcceptedCancellation}
+              hint="LOBB holds coach payments securely until your session is completed."
+            >
+              I agree to the{" "}
+              <ConsentLink href="/cancellation-policy">Cancellation &amp; Refund Policy</ConsentLink>.
+            </ConsentCheckbox>
           </div>
         )}
 
