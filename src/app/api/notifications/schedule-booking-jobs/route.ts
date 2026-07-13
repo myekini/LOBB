@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
+import { isCronAuthorized } from "@/lib/cron-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { NotificationBookingInfo } from "@/lib/notification-messages";
 import { queueBookingReminderEmails } from "@/lib/email-notifications";
 
 export const dynamic = "force-dynamic";
-
-function isAuthorized(request: Request) {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get("authorization");
-  if (auth === `Bearer ${secret}`) return true;
-  return request.headers.get("x-admin-secret") === secret;
-}
 
 function firstJoin<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -19,7 +12,7 @@ function firstJoin<T>(value: T | T[] | null | undefined): T | null {
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

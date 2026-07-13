@@ -1,17 +1,10 @@
 import { NextResponse } from "next/server";
+import { isCronAuthorized } from "@/lib/cron-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { emailAppUrl, emailEscapeHtml, emailShell } from "@/lib/email-templates";
 
 export const dynamic = "force-dynamic";
-
-function isAuthorized(request: Request) {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const auth = request.headers.get("authorization");
-  if (auth === `Bearer ${secret}`) return true;
-  return request.headers.get("x-admin-secret") === secret;
-}
 
 function money(ngn: number) {
   return new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", maximumFractionDigits: 0 }).format(ngn);
@@ -25,7 +18,7 @@ function stat(label: string, value: string, color = "#0d0d0d") {
 }
 
 export async function GET(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   }
 

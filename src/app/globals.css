@@ -11,8 +11,12 @@
   }
 }
 
-/* Accessibility: keyboard focus rings — overrides outline-none utilities for keyboard users */
-*:focus-visible {
+/* Accessibility: keyboard focus rings — overrides outline-none utilities for
+   keyboard users. Editable fields are excluded: browsers flag them
+   :focus-visible even on mouse click, and their containers already render a
+   clay border + glow via focus-within (the raw outline got clipped by
+   overflow-hidden wrappers into odd orange bars at the field edges). */
+*:focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) {
   outline: 2px solid var(--lobb-clay) !important;
   outline-offset: 2px !important;
 }

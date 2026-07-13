@@ -104,9 +104,12 @@ export async function PUT(request: Request) {
       }
     }
 
+    // p_slots is jsonb — pass the array itself; stringifying makes it a jsonb
+    // string scalar and jsonb_array_length() fails with "cannot get array
+    // length of a scalar"
     const { error: rpcError } = await auth.admin.rpc("set_coach_availability", {
       p_coach_id: auth.user.id,
-      p_slots: JSON.stringify(slots),
+      p_slots: slots,
       p_blocked_dates: blockedDates,
     });
 
