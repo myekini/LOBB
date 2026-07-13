@@ -25,6 +25,7 @@ import { showLobbToast } from "@/providers/lobb-global-state";
 import type { AvailableSlot, CoachPublicProfile } from "@/lib/types";
 import { LAGOS_COURTS } from "@/lib/types";
 import { CoachShareSheet } from "@/features/coaches/coach-share-sheet";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { PlayerHeader } from "@/components/layout/player-nav";
 
 type Tab = "about" | "availability" | "reviews";
@@ -233,25 +234,28 @@ export function CoachProfileContent({
       )}
 
       {isPreview && (
-        <div className="sticky top-0 z-50 border-b border-white/10 bg-[var(--lobb-bg-inverse)] px-4 py-3 text-[var(--lobb-text-inverse)] shadow-[0_6px_18px_rgba(0,0,0,0.16)]">
+        <div className="sticky top-0 z-50 border-b border-[var(--lobb-clay)]/25 bg-[var(--lobb-bg-elevated)]/95 px-4 py-3 shadow-[0_6px_18px_rgba(0,0,0,0.12)] backdrop-blur-md">
           <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/coach/profile"
-                className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+                className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40"
                 aria-label="Back to coach profile"
               >
                 <ArrowLeft className="size-4" />
               </Link>
               <div className="min-w-0">
-                <p className="truncate text-sm font-black text-white">Player preview</p>
-                <p className="truncate text-xs font-semibold text-white/75">This is the public booking page.</p>
+                <p className="flex items-center gap-2 truncate text-sm font-black text-[var(--lobb-text-primary)]">
+                  <span className="inline-flex size-2 shrink-0 rounded-full bg-[var(--lobb-clay)]" />
+                  Player preview
+                </p>
+                <p className="truncate text-xs font-semibold text-[var(--lobb-text-secondary)]">This is how players see your booking page.</p>
               </div>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <Link href="/coach/profile/edit" data-keep-light className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-white px-3 text-xs font-black text-[#0d0d0d]">
-                <Pencil className="size-3.5 text-[var(--lobb-clay)]" />
+              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--lobb-clay)] px-3.5 text-xs font-black text-white transition hover:bg-[var(--lobb-clay-dark)]">
+                <Pencil className="size-3.5" />
                 <span className="hidden sm:inline">Edit</span>
               </Link>
               {coach.slug && (
@@ -259,7 +263,7 @@ export function CoachProfileContent({
                   href={profilePath}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex size-10 items-center justify-center rounded-[12px] border border-white/10 bg-white/5 text-white"
+                  className="inline-flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40"
                   aria-label="Open live profile"
                 >
                   <ExternalLink className="size-3.5" />
@@ -270,7 +274,7 @@ export function CoachProfileContent({
                 disabled={!canSharePublicProfile}
                 profileUrl={profileUrl}
                 triggerLabel=""
-                triggerClassName="inline-flex size-10 items-center justify-center rounded-[12px] border border-white/10 bg-white/5 text-white disabled:opacity-45"
+                triggerClassName="inline-flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40 disabled:opacity-45"
               />
             </div>
           </div>
@@ -698,27 +702,23 @@ export function CoachProfileContent({
         </aside>
       </section>
 
-      <div className="lobb-app-header fixed bottom-0 left-0 z-50 flex w-full items-center justify-between border-t border-[var(--lobb-border-subtle)] p-4 shadow-[var(--lobb-shadow-sheet)] md:hidden">
-        <div>
-          <div className="font-mono text-xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
-          <div className="text-xs font-semibold text-[var(--lobb-text-secondary)]">per session</div>
-        </div>
-        {isPreview ? (
-          <Link
-            href="/coach/profile"
-            className="flex min-h-11 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-8 py-3 text-sm font-black text-[var(--lobb-text-inverse)]"
-          >
-            Back
-          </Link>
-        ) : (
+      {isPreview ? (
+        // Coach stays inside their app shell while previewing
+        <CoachBottomNav active="profile" />
+      ) : (
+        <div className="lobb-app-header fixed bottom-0 left-0 z-50 flex w-full items-center justify-between border-t border-[var(--lobb-border-subtle)] p-4 shadow-[var(--lobb-shadow-sheet)] md:hidden">
+          <div>
+            <div className="font-mono text-xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
+            <div className="text-xs font-semibold text-[var(--lobb-text-secondary)]">per session</div>
+          </div>
           <a
             href={bookingHref}
             className="flex min-h-11 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-8 py-3 text-sm font-black text-[var(--lobb-text-inverse)]"
           >
             Book session
           </a>
-        )}
-      </div>
+        </div>
+      )}
     </main>
   );
 }

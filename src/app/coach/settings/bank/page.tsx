@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2, Landmark, WalletCards } from "lucide-react";
+import { AlertTriangle, CheckCircle2, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { createClient } from "@/lib/supabase/client";
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
@@ -180,27 +181,16 @@ export default function CoachBankSetupPage() {
 
           <div>
             <label className="mb-2 block text-sm font-black">Bank *</label>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--lobb-clay)] pointer-events-none">
-                <Landmark className="size-5" />
-              </div>
-              <select
-                value={bankCode}
-                disabled={loadingBanks}
-                onChange={(e) => handleBankChange(e.target.value)}
-                className="h-14 w-full appearance-none rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] pl-12 pr-5 text-[15px] font-bold text-[var(--lobb-text-primary)] outline-none transition focus:border-[var(--lobb-clay)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)] disabled:opacity-60"
-              >
-                <option value="">Select your bank</option>
-                {loadingBanks
-                  ? <option disabled>Loading banks...</option>
-                  : banks.map((bank) => (
-                    <option key={bank.code} value={bank.code}>{bank.name}</option>
-                  ))}
-              </select>
-              {selectedBank && (
-                <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-[var(--lobb-clay)]" />
-              )}
-            </div>
+            <SearchableSelect
+              className="h-14 rounded-[12px]"
+              value={bankCode}
+              onChange={handleBankChange}
+              options={banks.map((bank) => ({ value: bank.code, label: bank.name }))}
+              placeholder={loadingBanks ? "Loading banks…" : "Select your bank"}
+              searchPlaceholder="Search banks…"
+              emptyMessage="No bank matches that search."
+              disabled={loadingBanks}
+            />
           </div>
 
           <div>

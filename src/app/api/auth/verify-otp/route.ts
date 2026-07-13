@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       const { data: referringCoach } = await admin
         .from("coaches")
         .select("id")
-        .eq("referral_code", refCode)
+        .ilike("referral_code", refCode)
         .eq("status", "active")
         .maybeSingle();
       if (referringCoach) {

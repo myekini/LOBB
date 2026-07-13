@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
@@ -56,6 +58,33 @@ export default function CoachSetupStep4Page() {
 
   const canContinue = hourlyRate !== null && hourlyRate >= 1000 && Boolean(primaryLocation) && skillLevels.length > 0;
 
+  // Prefill from the existing draft so revisiting this step never loses work
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: coach } = await supabase
+        .from("coaches")
+        .select("hourly_rate_ngn, primary_location, service_areas, skill_levels")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (!coach) return;
+      if (coach.hourly_rate_ngn) {
+        setHourlyRate((current) => current ?? coach.hourly_rate_ngn);
+        if (!RATE_OPTIONS.includes(coach.hourly_rate_ngn)) setCustomRate(String(coach.hourly_rate_ngn));
+      }
+      setPrimaryLocation((current) => current || coach.primary_location || "");
+      if (Array.isArray(coach.service_areas)) {
+        setServiceAreas((current) =>
+          current.length ? current : (coach.service_areas as string[]).filter((a) => a !== coach.primary_location)
+        );
+      }
+      if (Array.isArray(coach.skill_levels)) {
+        setSkillLevels((current) => (current.length ? current : (coach.skill_levels as string[])));
+      }
+    });
+  }, []);
+
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!canContinue) return;
@@ -110,7 +139,7 @@ export default function CoachSetupStep4Page() {
   };
 
   return (
-    <OnboardingShell step="4 of 6">
+    <OnboardingShell step="4 of 6" backHref="/auth/setup/coach/3">
       <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -172,23 +201,14 @@ export default function CoachSetupStep4Page() {
           {/* Primary location */}
           <div className="group">
             <OnboardingFieldLabel required>Primary location</OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-4 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <select
-                value={primaryLocation}
-                onChange={(event) => setPrimaryLocation(event.target.value)}
-                className="relative z-10 h-full w-full appearance-none border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none focus:ring-0 [&>option]:bg-[var(--lobb-surface)] [&>option]:text-[var(--lobb-text-primary)]"
-              >
-                <option value="" className="text-[var(--lobb-text-tertiary)] bg-[var(--lobb-surface)]">Choose primary area</option>
-                {LAGOS_LOCATIONS.map((loc) => (
-                  <option key={loc} value={loc} className="bg-[var(--lobb-surface)] text-[var(--lobb-text-primary)]">
-                    {loc}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-5 flex items-center text-[var(--lobb-text-secondary)]/50">
-                <svg className="size-4 fill-current" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-              </div>
-            </div>
+            <SearchableSelect
+              className="mt-2 h-16"
+              value={primaryLocation}
+              onChange={setPrimaryLocation}
+              options={LAGOS_LOCATIONS}
+              placeholder="Choose primary area"
+              searchPlaceholder="Search areas…"
+            />
           </div>
 
           {/* Other service areas */}
@@ -235,7 +255,7 @@ export default function CoachSetupStep4Page() {
         </div>
 
         <div className="mt-10 pb-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

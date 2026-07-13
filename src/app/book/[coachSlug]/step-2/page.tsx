@@ -124,6 +124,22 @@ function BookingStep2Content() {
   }, [coach]);
 
   const hasCoachCourts = Boolean(coach?.courts_worked_with?.length);
+  const courtAccess = coach?.court_access;
+
+  // court_access shapes the guidance: coaches who provide courts lead with
+  // their courts; player_arranges coaches make clear the venue is on the player.
+  const courtHeader = hasCoachCourts
+    ? "Coach's session courts"
+    : courtAccess === "player_arranges"
+    ? "Choose your court"
+    : "Where will you play?";
+  const courtSubcopy = hasCoachCourts
+    ? "Select a court your coach holds sessions at."
+    : courtAccess === "player_arranges"
+    ? "This coach travels to you — pick a court you have access to, or enter your own venue below."
+    : courtAccess === "coach_can_recommend"
+    ? "Pick a court, or ask your coach for a recommendation after booking."
+    : "Tap a court to confirm your session venue.";
 
   const canContinue = showCustom
     ? customLocation.trim().length > 0
@@ -195,12 +211,10 @@ function BookingStep2Content() {
           </span>
           <div>
             <h2 className="text-base font-black text-[var(--lobb-text-primary)]">
-              {hasCoachCourts ? "Coach's session courts" : "Where will you play?"}
+              {courtHeader}
             </h2>
             <p className="mt-0.5 text-sm font-semibold leading-snug text-[var(--lobb-text-secondary)]">
-              {hasCoachCourts
-                ? "Select a court your coach holds sessions at."
-                : "Tap a court to confirm your session venue."}
+              {courtSubcopy}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
@@ -53,7 +54,7 @@ export function AuthEmailForm({
   const [selectedRole, setSelectedRole] = useState<PublicLoginRole>(
     forcedRole ?? (intentRole === "coach" ? "coach" : "player")
   );
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [acceptedCoreTerms, setAcceptedCoreTerms] = useState(false);
   const [acceptedCancellation, setAcceptedCancellation] = useState(false);
   const [error, setError] = useState("");
@@ -84,7 +85,11 @@ export function AuthEmailForm({
 
     const result = (await response.json().catch(() => null)) as { error?: string } | null;
     if (!response.ok) {
-      setError(result?.error || "Could not send code. Try again.");
+      setError(
+        response.status === 404 && authMode === "login"
+          ? "no_account"
+          : result?.error || "Could not send code. Try again."
+      );
       return;
     }
 
@@ -203,9 +208,20 @@ export function AuthEmailForm({
               className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold text-[var(--lobb-black)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
             />
           </div>
-          {error && (
-            <p className="text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>
-          )}
+          {error === "no_account" ? (
+            <FormAlert className="mt-1" variant="info" title="No account with this email yet">
+              Want to join LOBB?{" "}
+              <Link href={`/auth/signup/player?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="font-black text-[var(--lobb-clay)] underline-offset-2 hover:underline">
+                Sign up as a player
+              </Link>{" "}
+              or{" "}
+              <Link href={`/auth/signup/coach?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="font-black text-[var(--lobb-clay)] underline-offset-2 hover:underline">
+                as a coach
+              </Link>.
+            </FormAlert>
+          ) : error ? (
+            <FormAlert className="mt-1">{error}</FormAlert>
+          ) : null}
         </div>
 
         {/* ── Legal checkboxes — signup only ───────────────────────────── */}

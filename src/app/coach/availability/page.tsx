@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarCheck2, CalendarX2, ChevronLeft, ChevronRight, Clock3, Plus, Trash2, X } from "lucide-react";
 import type { CoachAvailabilityRow, CoachAvailabilityBlock } from "@/lib/types";
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { LobbErrorBanner } from "@/components/common/lobb-error";
 import { appError, type AppErrorPayload } from "@/lib/app-errors";
@@ -637,20 +638,20 @@ function DaysOffSection({
 
 function TimeSelect({ label, onChange, value }: { label: string; onChange: (v: string) => void; value: string }) {
   return (
-    <label className="block">
+    <div className="block">
       <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">
         {label}
       </span>
-      <select
+      <SearchableSelect
+        className="h-10 rounded-[12px] px-3 text-xs"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-2 text-xs font-black text-[var(--lobb-text-primary)] outline-none transition-colors focus:border-[var(--lobb-clay)]"
-      >
-        {TIME_OPTIONS.map((m) => {
+        onChange={onChange}
+        options={TIME_OPTIONS.map((m) => {
           const t = minutesToTime(m);
-          return <option key={t} value={t}>{timeLabel(t)}</option>;
+          return { value: t, label: timeLabel(t) };
         })}
-      </select>
-    </label>
+        searchPlaceholder="Jump to time…"
+      />
+    </div>
   );
 }

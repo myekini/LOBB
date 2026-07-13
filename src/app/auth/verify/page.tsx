@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -350,12 +351,14 @@ export default function VerifyPage() {
               />
             ))}
           </div>
-          {error && (
-            <p className="mt-4 text-center text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>
-          )}
+          {error && <FormAlert className="mt-4">{error}</FormAlert>}
         </div>
 
         {/* ── Resend ───────────────────────────────────────────────────── */}
+        <p className="mt-5 text-center text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+          Not seeing the email? Check your spam or junk folder.
+        </p>
+
         <button
           type="button"
           disabled={seconds > 0}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { track } from "@/lib/analytics";
 import { ArrowRight, Plus, User } from "lucide-react";
@@ -25,13 +26,31 @@ export default function CoachSetupStepOnePage() {
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [savedPhotoUrl, setSavedPhotoUrl] = useState("");
 
-  const canContinue = Boolean(fullName.trim() && headline.trim() && photoUrl && photoFile);
+  // A saved photo counts — only require a new upload when there is none yet
+  const canContinue = Boolean(fullName.trim() && headline.trim() && (photoFile || savedPhotoUrl));
 
+  // Prefill from the existing draft so coaches can come back and edit a field
+  // (e.g. fix their name for bank verification) without losing anything.
   useEffect(() => {
     try {
-      createClient().auth.getUser().then(({ data }) => {
-        if (data.user?.email) setAuthEmail(data.user.email);
+      const supabase = createClient();
+      supabase.auth.getUser().then(async ({ data }) => {
+        if (!data.user) return;
+        if (data.user.email) setAuthEmail(data.user.email);
+        const { data: coach } = await supabase
+          .from("coaches")
+          .select("full_name, headline, profile_photo_url")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        if (!coach) return;
+        setFullName((current) => current || coach.full_name || "");
+        setHeadline((current) => current || coach.headline || "");
+        if (coach.profile_photo_url) {
+          setSavedPhotoUrl(coach.profile_photo_url);
+          setPhotoUrl((current) => current || coach.profile_photo_url);
+        }
       });
     } catch (error) {
       setError(error instanceof Error ? error.message : "Sign in is temporarily unavailable.");
@@ -56,7 +75,7 @@ export default function CoachSetupStepOnePage() {
       error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError || !user || !photoFile) {
+    if (userError || !user) {
       setSaving(false);
       setError("Session expired. Please sign in again.");
       return;
@@ -65,7 +84,9 @@ export default function CoachSetupStepOnePage() {
     const normalizedEmail = (user.email || authEmail).trim().toLowerCase();
 
     try {
-      const uploadedPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "coach-avatar");
+      const uploadedPhotoUrl = photoFile
+        ? await uploadProfilePhoto(supabase, user.id, photoFile, "coach-avatar")
+        : savedPhotoUrl;
 
       const response = await fetch("/api/coaches/onboarding/step-1", {
         method: "POST",
@@ -175,7 +196,7 @@ export default function CoachSetupStepOnePage() {
         </div>
 
         <div className="mt-auto pb-8 pt-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton type="submit" disabled={saving} loading={saving}>
             <span className="inline-flex items-center gap-2">
               {saving ? "Saving" : "Next"} {!saving && <ArrowRight className="size-4" />}

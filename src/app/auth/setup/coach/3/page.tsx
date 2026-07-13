@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
@@ -23,6 +24,22 @@ export default function CoachSetupStep3Page() {
 
   const bioLength = bio.trim().length;
   const canContinue = bioLength >= 50 && experienceYears !== null && experienceYears >= 0 && experienceYears <= 60;
+
+  // Prefill from the existing draft so revisiting this step never loses work
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: coach } = await supabase
+        .from("coaches")
+        .select("bio, experience_years")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (!coach) return;
+      setBio((current) => current || coach.bio || "");
+      setExperienceYears((current) => current ?? coach.experience_years ?? null);
+    });
+  }, []);
 
   const next = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -68,7 +85,7 @@ export default function CoachSetupStep3Page() {
   };
 
   return (
-    <OnboardingShell step="3 of 6">
+    <OnboardingShell step="3 of 6" backHref="/auth/setup/coach/2">
       <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -133,7 +150,7 @@ export default function CoachSetupStep3Page() {
         </div>
 
         <div className="mt-auto pb-8 pt-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton type="submit" disabled={!canContinue} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Landmark, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   OnboardingButton,
   OnboardingCopy,
@@ -95,7 +97,7 @@ export default function CoachSetupBankPage() {
   };
 
   return (
-    <OnboardingShell step="6 of 6">
+    <OnboardingShell step="6 of 6" backHref="/auth/setup/coach/5">
       <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -113,26 +115,16 @@ export default function CoachSetupBankPage() {
           {/* Bank selector */}
           <div>
             <OnboardingFieldLabel required>Bank</OnboardingFieldLabel>
-            <div className="relative mt-2">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--lobb-clay)] pointer-events-none">
-                <Landmark className="size-5" />
-              </div>
-              <select
-                value={bankCode}
-                onChange={(e) => handleBankChange(e.target.value)}
-                className="h-16 w-full appearance-none rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] pl-12 pr-5 text-[15px] font-bold text-[var(--lobb-text-primary)] outline-none transition-all focus:border-[var(--lobb-clay)]/50 focus:bg-[var(--lobb-surface)] focus:shadow-[0_0_24px_rgba(196,98,45,0.12)]"
-              >
-                <option value="">Select your bank</option>
-                {banks.length === 0
-                  ? <option disabled>Loading banks...</option>
-                  : banks.map((bank) => (
-                    <option key={bank.code} value={bank.code}>{bank.name}</option>
-                  ))}
-              </select>
-              {selectedBank && (
-                <CheckCircle2 className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-[var(--lobb-clay)]" />
-              )}
-            </div>
+            <SearchableSelect
+              className="mt-2 h-16"
+              value={bankCode}
+              onChange={handleBankChange}
+              options={banks.map((bank) => ({ value: bank.code, label: bank.name }))}
+              placeholder={banks.length === 0 ? "Loading banks…" : "Select your bank"}
+              searchPlaceholder="Search banks…"
+              emptyMessage="No bank matches that search."
+              disabled={banks.length === 0}
+            />
           </div>
 
           {/* Account number */}
@@ -189,7 +181,19 @@ export default function CoachSetupBankPage() {
         </div>
 
         <div className="mt-10 pb-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && (
+            <FormAlert className="mb-4">
+              {error}
+              {/mismatch/i.test(error) && (
+                <a
+                  href="/auth/setup/coach/1"
+                  className="mt-1.5 block font-black text-[var(--lobb-clay)] underline-offset-2 hover:underline"
+                >
+                  Edit your profile name →
+                </a>
+              )}
+            </FormAlert>
+          )}
           <OnboardingButton type="submit" disabled={!canContinue || saving}>
             {saving ? "Saving..." : "Save & submit profile"}
           </OnboardingButton>

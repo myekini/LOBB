@@ -17,12 +17,13 @@ export async function GET(request: Request, { params }: { params: { code: string
   // manually typed lowercase URLs and the uppercase dashboard link work.
   const code = params.code.trim().toUpperCase();
 
-  // Validate the code belongs to an active coach
+  // Validate the code belongs to an active coach (case-insensitive: some
+  // legacy codes were stored lowercase)
   const admin = createAdminClient();
   const { data: coach } = await admin
     .from("coaches")
     .select("id")
-    .eq("referral_code", code)
+    .ilike("referral_code", code)
     .eq("status", "active")
     .maybeSingle();
 

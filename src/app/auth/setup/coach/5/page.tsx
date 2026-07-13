@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
 import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
@@ -47,6 +48,25 @@ export default function CoachSetupStep5Page() {
     acceptedCoachAgreement &&
     confirmedProfileAccuracy &&
     acceptedCoachConduct;
+
+  // Prefill from the existing draft so revisiting this step never loses work
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: coach } = await supabase
+        .from("coaches")
+        .select("certifications, specializations, languages, court_access, demo_video_url")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (!coach) return;
+      if (Array.isArray(coach.certifications)) setCertifications((c) => (c.length ? c : (coach.certifications as string[])));
+      if (Array.isArray(coach.specializations)) setSpecializations((c) => (c.length ? c : (coach.specializations as string[])));
+      if (Array.isArray(coach.languages)) setLanguages((c) => (c.length ? c : (coach.languages as string[])));
+      if (coach.court_access) setCourtAccess((c) => c || (coach.court_access as CourtAccess));
+      if (coach.demo_video_url) setDemoVideoUrl((c) => c || coach.demo_video_url || "");
+    });
+  }, []);
 
   const toggleCert = (cert: string) => {
     if (cert === "No formal certification") {
@@ -121,7 +141,7 @@ export default function CoachSetupStep5Page() {
   };
 
   return (
-    <OnboardingShell step="5 of 6">
+    <OnboardingShell step="5 of 6" backHref="/auth/setup/coach/4">
       <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -259,7 +279,7 @@ export default function CoachSetupStep5Page() {
         </div>
 
         <div className="mt-10 pb-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton type="submit" disabled={!canContinue || saving}>
             {saving ? "Submitting..." : "Submit for review"}
           </OnboardingButton>

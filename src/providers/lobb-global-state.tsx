@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, CloudOff, Info, X, XCircle, type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CloudOff } from "lucide-react";
+import { Toaster, toast } from "sonner";
 
 export type LobbToastType = "success" | "error" | "info" | "warning";
 
@@ -12,76 +12,44 @@ type LobbToastPayload = {
   title?: string;
 };
 
-type LobbToast = LobbToastPayload & {
-  id: number;
-};
-
-const toastStyles: Record<LobbToastType, { accent: string; bg: string; Icon: LucideIcon; title: string }> = {
-  success: { accent: "var(--lobb-success)", bg: "var(--lobb-success-soft)", Icon: CheckCircle2, title: "Done" },
-  error: { accent: "var(--lobb-error)", bg: "rgba(214,64,69,0.12)", Icon: XCircle, title: "Action needed" },
-  info: { accent: "var(--lobb-clay)", bg: "var(--lobb-clay-light)", Icon: Info, title: "Update" },
-  warning: { accent: "var(--lobb-star)", bg: "rgba(244,162,40,0.16)", Icon: AlertTriangle, title: "Heads up" },
-};
-
+/**
+ * App-wide toast helper. Renders through sonner — call sites pass the same
+ * payload as before; `title` becomes the toast text with `message` as the
+ * description, otherwise `message` is the toast text.
+ */
 export function showLobbToast(payload: LobbToastPayload) {
-  window.dispatchEvent(new CustomEvent<LobbToastPayload>("lobb:toast", { detail: payload }));
+  const fn =
+    payload.type === "success" ? toast.success :
+    payload.type === "error" ? toast.error :
+    payload.type === "warning" ? toast.warning :
+    toast.info;
+  if (payload.title) {
+    fn(payload.title, { description: payload.message });
+  } else {
+    fn(payload.message);
+  }
 }
 
 export function LobbToaster() {
-  const [toasts, setToasts] = useState<LobbToast[]>([]);
-
-  useEffect(() => {
-    const onToast = (event: Event) => {
-      const detail = (event as CustomEvent<LobbToastPayload>).detail;
-      const id = Date.now();
-      setToasts((current) => [...current, { ...detail, id }].slice(-3));
-      window.setTimeout(() => {
-        setToasts((current) => current.filter((toast) => toast.id !== id));
-      }, detail.type === "error" ? 6200 : 4400);
-    };
-
-    window.addEventListener("lobb:toast", onToast);
-    return () => window.removeEventListener("lobb:toast", onToast);
-  }, []);
-
-  const dismiss = (id: number) => {
-    setToasts((current) => current.filter((toast) => toast.id !== id));
-  };
-
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+92px)] z-[100] flex flex-col items-center gap-2 px-4 md:bottom-auto md:right-5 md:left-auto md:top-5 md:items-end md:px-0">
-      {toasts.map((toast) => {
-        const { Icon, accent, bg, title } = toastStyles[toast.type];
-        return (
-          <div
-            key={toast.id}
-            role={toast.type === "error" ? "alert" : "status"}
-            aria-live={toast.type === "error" ? "assertive" : "polite"}
-            className={cn(
-              "pointer-events-auto relative grid w-full max-w-[390px] grid-cols-[auto_1fr_auto] gap-3 overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 py-3.5 text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-modal)]",
-              "animate-[toastSlideDown_300ms_ease-out]"
-            )}
-          >
-            <span className="absolute inset-y-3 left-0 w-1 rounded-r-full" style={{ background: accent }} />
-            <span className="mt-0.5 flex size-10 items-center justify-center rounded-[12px] ring-1 ring-black/5" style={{ background: bg, color: accent }}>
-              <Icon className="size-4 shrink-0" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-black leading-5">{toast.title ?? title}</span>
-              <span className="mt-1 block text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">{toast.message}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => dismiss(toast.id)}
-              className="pointer-events-auto flex size-8 items-center justify-center rounded-[10px] text-[var(--lobb-text-tertiary)] transition hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"
-              aria-label="Dismiss notification"
-            >
-              <X className="size-3.5" />
-            </button>
-          </div>
-        );
-      })}
-    </div>
+    <Toaster
+      position="top-center"
+      duration={4000}
+      gap={8}
+      offset={16}
+      mobileOffset={{ top: 12 }}
+      toastOptions={{
+        style: {
+          background: "var(--lobb-bg-elevated)",
+          color: "var(--lobb-text-primary)",
+          border: "1px solid var(--lobb-border-subtle)",
+          borderRadius: "14px",
+          fontSize: "13px",
+          fontWeight: 600,
+          boxShadow: "var(--lobb-shadow-modal)",
+        },
+      }}
+    />
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
@@ -52,7 +53,7 @@ export default function CoachSetupStep2Page() {
   };
 
   return (
-    <OnboardingShell step="2 of 6">
+    <OnboardingShell step="2 of 6" backHref="/auth/setup/coach/1">
       <form onSubmit={next} className="flex flex-1 flex-col pt-4 relative z-10">
         <section>
           <OnboardingKicker>Coach onboarding</OnboardingKicker>
@@ -130,7 +131,7 @@ export default function CoachSetupStep2Page() {
         </ConsentCheckbox>
 
         <div className="mt-auto pb-8 pt-10">
-          {error && <p className="mb-4 text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton type="submit" disabled={!canContinue || saving} loading={saving}>
             {saving ? "Saving" : <span className="inline-flex items-center gap-2">Next <ArrowRight className="size-4" /></span>}
           </OnboardingButton>

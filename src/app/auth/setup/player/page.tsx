@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import { track } from "@/lib/analytics";
@@ -185,7 +186,7 @@ export default function PlayerSetupPage() {
         </div>
 
         <div className="mt-auto space-y-3 pb-8 pt-10">
-          {error && <p className="text-[13px] font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton type="submit" disabled={!fullName.trim()} loading={saving}>
             {saving ? "Saving" : "Finish Setup"}
           </OnboardingButton>

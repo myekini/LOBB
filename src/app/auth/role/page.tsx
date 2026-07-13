@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { Check, GraduationCap, Trophy } from "lucide-react";
 import {
@@ -163,7 +164,7 @@ export default function RolePage() {
         </div>
 
         <div className="mt-auto pb-8 pt-12">
-          {error && <p className="mb-4 text-center text-sm font-semibold text-[var(--lobb-error)]">{error}</p>}
+          {error && <FormAlert className="mb-4">{error}</FormAlert>}
           <OnboardingButton disabled={!selected} loading={saving} onClick={continueFlow}>
             {saving ? "Saving" : "Continue"}
           </OnboardingButton>
