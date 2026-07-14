@@ -5,7 +5,7 @@ import { verifyWebhookSignature } from "@/lib/paystack";
 import {
   type NotificationBookingInfo,
 } from "@/lib/notification-messages";
-import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendPaymentReceiptEmail } from "@/lib/email-notifications";
+import { queueBookingReminderEmails, sendBookingConfirmedEmails, sendOpsAlertEmail, sendPaymentReceiptEmail } from "@/lib/email-notifications";
 import { sendBookingConfirmedSms } from "@/lib/sms-notifications";
 
 // Paystack requires raw body for signature verification — do NOT parse via middleware
@@ -32,15 +32,86 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Only handle successful charges
+  const admin = createAdminClient();
+
+  // ── Refund lifecycle: keep payments.status truthful end-to-end ──────────────
+  if (event.event === "refund.processed" || event.event === "refund.failed") {
+    const txRef = (event.data.transaction_reference ?? event.data.reference) as string | undefined;
+    if (!txRef) return NextResponse.json({ ok: true });
+
+    const { data: payment } = await admin
+      .from("payments")
+      .select("id, booking_id, amount_ngn, status")
+      .eq("paystack_reference", txRef)
+      .maybeSingle();
+    if (!payment) return NextResponse.json({ ok: true });
+
+    if (event.event === "refund.processed") {
+      const refundedKobo = Number(event.data.amount ?? 0);
+      const fullRefund = refundedKobo >= payment.amount_ngn * 100;
+      await admin
+        .from("payments")
+        .update({ status: fullRefund ? "refunded" : "partial_refund" })
+        .eq("id", payment.id);
+    } else {
+      // A refund we promised the player did NOT go through — act today.
+      waitUntil(
+        sendOpsAlertEmail(admin, "Paystack refund FAILED", [
+          ["Transaction", txRef],
+          ["Booking", payment.booking_id],
+          ["Amount (kobo)", String(event.data.amount ?? "unknown")],
+          ["Action", "Retry the refund from the Paystack dashboard, then tell the player."],
+        ], { urgent: true, dedupeKey: `refund_failed_${txRef}` })
+      );
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Chargebacks: the bank-side dispute clock is short — alert immediately ───
+  if (event.event === "charge.dispute.create" || event.event === "charge.dispute.remind") {
+    const txRef = ((event.data.transaction as Record<string, unknown> | undefined)?.reference ??
+      event.data.reference) as string | undefined;
+    waitUntil(
+      sendOpsAlertEmail(admin, "Paystack chargeback opened", [
+        ["Transaction", txRef ?? "unknown"],
+        ["Due by", String(event.data.due_at ?? "check dashboard")],
+        ["Action", "Respond with evidence in the Paystack dashboard BEFORE the deadline or it auto-resolves against LOBB."],
+      ], { urgent: true, dedupeKey: `chargeback_${txRef ?? "unknown"}` })
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  // ── Failed/reversed coach transfers: reopen for the cron to retry ───────────
+  if (event.event === "transfer.failed" || event.event === "transfer.reversed") {
+    const transferRef = event.data.reference as string | undefined;
+    // Payout references are `{payment_reference}-payout`
+    const paymentRef = transferRef?.replace(/-payout$/, "");
+    if (paymentRef) {
+      await admin
+        .from("bookings")
+        .update({
+          paystack_transfer_code: null,
+          transfer_last_error: `Paystack ${event.event}: ${String(event.data.reason ?? "no reason given")}`,
+        })
+        .eq("paystack_reference", paymentRef);
+    }
+    waitUntil(
+      sendOpsAlertEmail(admin, "Coach payout transfer failed", [
+        ["Transfer ref", transferRef ?? "unknown"],
+        ["Reason", String(event.data.reason ?? "unknown")],
+        ["Action", "Cron will retry automatically; check the coach's bank details if it repeats."],
+      ], { dedupeKey: `transfer_failed_${transferRef ?? "unknown"}` })
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  // Only successful charges beyond this point
   if (event.event !== "charge.success") {
     return NextResponse.json({ ok: true });
   }
 
   const reference = event.data.reference as string;
   if (!reference) return NextResponse.json({ ok: true });
-
-  const admin = createAdminClient();
 
   // ── Idempotency: skip if already processed ─────────────────────────────────
   const { data: existing } = await admin

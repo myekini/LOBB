@@ -720,3 +720,23 @@ export function disputeResolvedEmail(
     text: `Issue resolved: ${outcome}\nSession: ${formatDate(info.startsAt)}\nRef: ${info.humanRef ?? info.bookingId}\nDisagree? Reply within 7 days.`,
   };
 }
+
+// ─── Ops alerts (admin-only) ──────────────────────────────────────────────────
+
+export function opsAlertEmail(title: string, lines: Array<[string, string | null | undefined]>, urgent = false): EmailTemplate {
+  const subject = `${urgent ? "🔴 URGENT — " : ""}${title}`;
+  const preview = lines[0] ? `${lines[0][0]}: ${lines[0][1] ?? ""}` : title;
+  const html = shell(
+    title,
+    preview,
+    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">${urgent ? "This needs action now — money or merchant standing is at risk." : "Heads up from LOBB ops monitoring."}</p>
+    ${detailTable(lines)}`,
+    { label: "Open admin", href: appUrl("/admin") }
+  );
+  return {
+    subject,
+    preview,
+    html,
+    text: `${subject}\n${lines.map(([k, v]) => `${k}: ${v ?? ""}`).join("\n")}`,
+  };
+}

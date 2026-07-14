@@ -16,6 +16,7 @@ import {
   disputeOpenedOtherPartyEmail,
   disputeOpenedReporterEmail,
   disputeResolvedEmail,
+  opsAlertEmail,
   type DisputeEmailInfo,
   type EmailBookingInfo,
 } from "@/lib/email-templates";
@@ -467,4 +468,30 @@ export async function sendDisputeResolvedEmails(
     );
   }
   await Promise.allSettled(sends);
+}
+
+// ─── Ops alerts ───────────────────────────────────────────────────────────────
+
+export async function sendOpsAlertEmail(
+  admin: SupabaseClient,
+  title: string,
+  lines: Array<[string, string | null | undefined]>,
+  options: { urgent?: boolean; dedupeKey?: string } = {}
+) {
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (adminEmails.length === 0) return;
+
+  const template = opsAlertEmail(title, lines, options.urgent);
+  await Promise.allSettled(
+    adminEmails.map((email) =>
+      sendAndRecord(admin, {
+        type: options.dedupeKey ? `ops_alert_${options.dedupeKey}` : "ops_alert",
+        recipient_email: email,
+        template,
+      })
+    )
+  );
 }
