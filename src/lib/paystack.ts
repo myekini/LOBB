@@ -22,7 +22,6 @@ export type InitTransactionInput = {
   amount_kobo: number;
   reference: string;
   callback_url: string;
-  subaccount?: string;          // coach Paystack subaccount code (optional for MVP)
   metadata?: Record<string, unknown>;
 };
 
@@ -42,12 +41,6 @@ export async function initializeTransaction(
     callback_url: input.callback_url,
     metadata:     input.metadata ?? {},
   };
-
-  // Only attach subaccount split when the coach has one configured
-  if (input.subaccount) {
-    body.subaccount = input.subaccount;
-    body.bearer     = "account"; // LOBB bears Paystack's transaction fees
-  }
 
   const res  = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
     method:  "POST",

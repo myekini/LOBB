@@ -36,7 +36,6 @@ export type CoachRow = {
   courts_worked_with: string[];
   demo_video_url: string | null;
   profile_photo_url: string | null;
-  paystack_subaccount_code: string | null; // legacy — superseded by recipient_code + DVA
   paystack_recipient_code: string | null;
   paystack_customer_code: string | null;
   dva_account_number: string | null;
@@ -55,7 +54,7 @@ export type CoachRow = {
 /** Public profile returned by the coach_profiles_public view */
 export type CoachPublicProfile = Omit<
   CoachRow,
-  | "paystack_subaccount_code" | "paystack_recipient_code" | "paystack_customer_code"
+  | "paystack_recipient_code" | "paystack_customer_code"
   | "dva_account_number" | "dva_bank_name" | "dva_bank_code"
   | "bank_account_number" | "bank_code" | "bank_name"
   | "updated_at"
