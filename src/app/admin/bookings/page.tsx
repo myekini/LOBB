@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Circle, Loader2, Send } from "lucide-react";
+import { Circle, Gavel, Loader2, Send } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -17,6 +17,33 @@ export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<DashboardBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [payoutBusyId, setPayoutBusyId] = useState<string | null>(null);
+  const [disputeBusyId, setDisputeBusyId] = useState<string | null>(null);
+
+  const openDispute = async (booking: DashboardBooking) => {
+    const reason = window.prompt(
+      `Open a dispute on booking #${booking.id.slice(0, 8)}?\n\nDescribe the problem (required):`
+    )?.trim();
+    if (!reason) return;
+
+    setDisputeBusyId(booking.id);
+    try {
+      const res = await fetch("/api/admin/disputes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: booking.id, reason }),
+      });
+      const json = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Could not open dispute");
+      showLobbToast({ type: "success", message: "Dispute opened — booking payout is frozen" });
+      setBookings((current) =>
+        current.map((item) => (item.id === booking.id ? { ...item, status: "disputed" } : item))
+      );
+    } catch (error) {
+      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Could not open dispute" });
+    } finally {
+      setDisputeBusyId(null);
+    }
+  };
 
   useEffect(() => {
     let alive = true;
@@ -128,6 +155,17 @@ export default function AdminBookingsPage() {
                 >
                   {payoutBusyId === booking.id ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                   Pay out
+                </button>
+              )}
+              {["confirmed", "completed"].includes(booking.status) && (
+                <button
+                  type="button"
+                  disabled={disputeBusyId === booking.id}
+                  onClick={() => openDispute(booking)}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-[12px] border border-[var(--lobb-error)]/30 px-3 text-xs font-black text-[var(--lobb-error)] transition hover:bg-[var(--lobb-error)]/8 disabled:opacity-60"
+                >
+                  {disputeBusyId === booking.id ? <Loader2 className="size-4 animate-spin" /> : <Gavel className="size-3.5" />}
+                  Dispute
                 </button>
               )}
             </div>

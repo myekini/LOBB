@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays, LayoutDashboard, LogOut, UserCheck, WalletCards } from "lucide-react";
+import { ArrowLeft, CalendarDays, Gavel, LayoutDashboard, LogOut, UserCheck, Users, WalletCards } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/coaches", label: "Coaches", icon: UserCheck },
+  { href: "/admin/players", label: "Players", icon: Users },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
   { href: "/admin/earnings", label: "Earnings", icon: WalletCards },
+  { href: "/admin/disputes", label: "Disputes", icon: Gavel },
 ] as const;
 
 export function AdminShell({ children, active = "Dashboard" }: { children: React.ReactNode; active?: string }) {
@@ -48,7 +50,7 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
         <section className="min-w-0">{children}</section>
       </div>
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/95 px-3 py-2 backdrop-blur-xl md:hidden" aria-label="Admin mobile navigation">
-        <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+        <div className="mx-auto grid max-w-md grid-cols-6 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.label === active || (active === "Coach Approvals" && item.label === "Coaches") || (active === "All Bookings" && item.label === "Bookings") || (active === "Platform Earnings" && item.label === "Earnings");

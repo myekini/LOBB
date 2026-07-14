@@ -5,31 +5,32 @@ const COOKIE_NAME = "lobb_ref";
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 
 export async function GET(request: Request, { params }: { params: { code: string } }) {
-  const home = new URL("/", request.url);
-  const response = NextResponse.redirect(home);
+  const code = params.code.trim();
 
-  // First-touch attribution: never overwrite an existing cookie
-  const cookieHeader = request.headers.get("cookie") ?? "";
-  const existing = cookieHeader.split(";").find((c) => c.trim().startsWith(`${COOKIE_NAME}=`));
-  if (existing) return response;
-
-  // Referral codes are stored in uppercase. Normalize incoming links so both
-  // manually typed lowercase URLs and the uppercase dashboard link work.
-  const code = params.code.trim().toUpperCase();
-
-  // Validate the code belongs to an active coach (case-insensitive: some
-  // legacy codes were stored lowercase)
+  // Look up the referring coach (case-insensitive — legacy codes vary in case)
   const admin = createAdminClient();
   const { data: coach } = await admin
     .from("coaches")
-    .select("id")
+    .select("id, slug")
     .ilike("referral_code", code)
     .eq("status", "active")
     .maybeSingle();
 
-  if (!coach) return response; // unknown or inactive coach — redirect clean
+  // Land referred visitors straight on the coach's profile — when T-Pro shares
+  // his link, his students want to book *him*, not browse the homepage.
+  const destination = coach?.slug
+    ? new URL(`/coaches/${coach.slug}`, request.url)
+    : new URL("/", request.url);
+  const response = NextResponse.redirect(destination);
 
-  response.cookies.set(COOKIE_NAME, code, {
+  if (!coach) return response; // unknown or inactive code — clean redirect home
+
+  // First-touch attribution: never overwrite an existing referral cookie
+  const cookieHeader = request.headers.get("cookie") ?? "";
+  const existing = cookieHeader.split(";").find((c) => c.trim().startsWith(`${COOKIE_NAME}=`));
+  if (existing) return response;
+
+  response.cookies.set(COOKIE_NAME, code.toUpperCase(), {
     maxAge: COOKIE_MAX_AGE,
     path: "/",
     httpOnly: true,

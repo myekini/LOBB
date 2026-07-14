@@ -149,5 +149,60 @@ export async function GET(request: Request) {
     transferFailed = transferResults.filter((r) => r.status === "rejected").length;
   }
 
-  return NextResponse.json({ released, dbFailed, transferred, transferFailed });
+  // ── Pass 3: pay out referral credits once a coach crosses the threshold ──────
+  // Credits accrue as 'released'; batch them per coach and transfer when the
+  // total reaches ₦5,000 (batching keeps transfer-fee overhead sane).
+  const REFERRAL_PAYOUT_THRESHOLD_NGN = 5000;
+  let referralPaid = 0;
+  let referralFailed = 0;
+
+  const { data: releasedCredits } = await admin
+    .from("referral_credits")
+    .select("id, referring_coach_id, amount")
+    .eq("status", "released");
+
+  const creditsByCoach = new Map<string, { ids: string[]; total: number }>();
+  for (const credit of releasedCredits ?? []) {
+    const entry = creditsByCoach.get(credit.referring_coach_id) ?? { ids: [], total: 0 };
+    entry.ids.push(credit.id);
+    entry.total += credit.amount;
+    creditsByCoach.set(credit.referring_coach_id, entry);
+  }
+
+  const dueCoachIds = Array.from(creditsByCoach.entries())
+    .filter(([, entry]) => entry.total >= REFERRAL_PAYOUT_THRESHOLD_NGN)
+    .map(([coachId]) => coachId);
+
+  if (dueCoachIds.length > 0) {
+    const { data: refCoaches } = await admin
+      .from("coaches")
+      .select("id, paystack_recipient_code")
+      .in("id", dueCoachIds);
+    const refRecipientMap = new Map(
+      (refCoaches ?? []).map((c) => [c.id, c.paystack_recipient_code])
+    );
+
+    for (const coachId of dueCoachIds) {
+      const recipientCode = refRecipientMap.get(coachId);
+      if (!recipientCode) continue; // no payout destination yet — credits stay released
+      const entry = creditsByCoach.get(coachId)!;
+      try {
+        await createTransfer({
+          amount_kobo: Math.round(entry.total * 100),
+          recipient_code: recipientCode,
+          reference: `refcred-${coachId}-${Date.now()}`,
+          reason: "LOBB referral earnings payout",
+        });
+        await admin
+          .from("referral_credits")
+          .update({ status: "paid_out", paid_out_at: new Date().toISOString() })
+          .in("id", entry.ids);
+        referralPaid += entry.ids.length;
+      } catch {
+        referralFailed += entry.ids.length;
+      }
+    }
+  }
+
+  return NextResponse.json({ released, dbFailed, transferred, transferFailed, referralPaid, referralFailed });
 }
