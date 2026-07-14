@@ -10,7 +10,7 @@ import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 
 type Filter = "all" | "pending" | "confirmed" | "completed" | "disputed" | "cancelled";
 
-const filters: Filter[] = ["all", "pending", "confirmed", "completed", "cancelled"];
+const filters: Filter[] = ["all", "pending", "confirmed", "completed", "disputed", "cancelled"];
 
 export default function AdminBookingsPage() {
   const [filter, setFilter] = useState<Filter>("all");

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, CalendarDays, Circle, CreditCard, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Circle, CreditCard, Flag, Loader2, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
 import {
   durationMinutes,
@@ -21,6 +21,22 @@ function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
   return profile?.phone_number ?? null;
 }
 
+type BookingDispute = {
+  id: string;
+  status: "open" | "resolved";
+  resolution: string | null;
+  player_refund_percent: number | null;
+  created_at: string;
+  resolved_at: string | null;
+};
+
+const REPORT_CATEGORIES = [
+  { value: "coach_no_show", label: "Coach didn't show up" },
+  { value: "session_cut_short", label: "Session was cut short" },
+  { value: "safety_concern", label: "Safety concern" },
+  { value: "other", label: "Something else" },
+] as const;
+
 function toWhatsAppNumber(phone: string) {
   return phone.replace(/[^0-9]/g, "");
 }
@@ -32,6 +48,11 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<DashboardBooking | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [dispute, setDispute] = useState<BookingDispute | null>(null);
+  const [showReport, setShowReport] = useState(false);
+  const [reportCategory, setReportCategory] = useState<string>("");
+  const [reportText, setReportText] = useState("");
+  const [reporting, setReporting] = useState(false);
   const coach = firstJoin(booking?.coaches);
 
   useEffect(() => {
@@ -55,6 +76,40 @@ export default function BookingDetailPage() {
       alive = false;
     };
   }, [params.id]);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/bookings/${params.id}/report`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ dispute: BookingDispute | null }>) : { dispute: null }))
+      .then((json) => {
+        if (alive) setDispute(json.dispute ?? null);
+      })
+      .catch(() => null);
+    return () => {
+      alive = false;
+    };
+  }, [params.id]);
+
+  const submitReport = async () => {
+    if (!booking || !reportCategory || reportText.trim().length < 10) return;
+    setReporting(true);
+    try {
+      const response = await fetch(`/api/bookings/${booking.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: reportCategory, description: reportText.trim() }),
+      });
+      const payload = (await response.json()) as { dispute?: BookingDispute; error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not send your report");
+      setDispute(payload.dispute ?? { id: "new", status: "open", resolution: null, player_refund_percent: null, created_at: new Date().toISOString(), resolved_at: null });
+      setShowReport(false);
+      toastAppSuccess("Report received. The coach payout is on hold while we review — expect an update within 48 hours.");
+    } catch (error) {
+      toastAppError(error, "UNKNOWN_ERROR");
+    } finally {
+      setReporting(false);
+    }
+  };
 
   const cancelBooking = async () => {
     if (!booking) return;
@@ -216,8 +271,48 @@ export default function BookingDetailPage() {
           </div>
         </DetailSection>
 
+        {/* Session protection — report an issue / dispute status */}
+        {dispute ? (
+          <div className={`mt-6 rounded-[16px] border p-4 ${dispute.status === "open" ? "border-[var(--lobb-warning)]/30 bg-[var(--lobb-warning)]/8" : "border-[var(--lobb-success)]/25 bg-[var(--lobb-success-soft)]"}`}>
+            {dispute.status === "open" ? (
+              <>
+                <p className="flex items-center gap-2 text-sm font-black">
+                  <Flag className="size-4 text-[var(--lobb-warning)]" />
+                  We&apos;re reviewing your report
+                </p>
+                <p className="mt-1.5 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                  The coach&apos;s payout is on hold until this is resolved. You&apos;ll hear from us
+                  within 48 hours — your money is protected.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="flex items-center gap-2 text-sm font-black">
+                  <CheckCircle2 className="size-4 text-[var(--lobb-success)]" />
+                  Issue resolved
+                </p>
+                <p className="mt-1.5 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                  {dispute.resolution === "refund_player"
+                    ? "Resolved in your favour — your refund is on its way to your payment method."
+                    : dispute.resolution === "split" && (dispute.player_refund_percent ?? 0) > 0
+                    ? `Resolved with a ${dispute.player_refund_percent}% refund to you.`
+                    : "Resolved after review. If you disagree, reply to the resolution email and we'll take another look."}
+                </p>
+              </>
+            )}
+          </div>
+        ) : (booking.status === "confirmed" || booking.status === "completed") && payment?.status === "paid" ? (
+          <button
+            onClick={() => setShowReport(true)}
+            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-black text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-warning)]/40 hover:text-[var(--lobb-text-primary)]"
+          >
+            <Flag className="size-4 text-[var(--lobb-warning)]" />
+            Something wrong? Report this session
+          </button>
+        ) : null}
+
         {isUpcoming && (
-          <button onClick={() => setShowCancel(true)} className="mt-6 h-12 w-full rounded-[12px] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-black text-[var(--lobb-error)]">
+          <button onClick={() => setShowCancel(true)} className="mt-3 h-12 w-full rounded-[12px] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-black text-[var(--lobb-error)]">
             Cancel booking
           </button>
         )}
@@ -232,6 +327,60 @@ export default function BookingDetailPage() {
           </aside>
         </div>
       </section>
+
+      <Dialog.Root open={showReport} onOpenChange={setShowReport}>
+        <Dialog.Portal>
+          <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
+          <Dialog.Popup aria-labelledby="report-session-title" className="fixed inset-x-0 bottom-0 z-[70] p-4">
+            <div className="mx-auto w-full max-w-md rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
+              <div className="flex items-start justify-between gap-4">
+                <h2 id="report-session-title" className="text-lg font-black">What went wrong?</h2>
+                <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
+              </div>
+              <p className="mt-1 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                Reporting instantly puts the coach&apos;s payout on hold. We review every report within 48 hours.
+              </p>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {REPORT_CATEGORIES.map((category) => (
+                  <button
+                    key={category.value}
+                    type="button"
+                    onClick={() => setReportCategory(category.value)}
+                    className={`rounded-[12px] border px-3 py-2.5 text-left text-[12px] font-black leading-tight transition ${
+                      reportCategory === category.value
+                        ? "border-[var(--lobb-clay)]/50 bg-[var(--lobb-clay)]/8 text-[var(--lobb-clay)]"
+                        : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]"
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                ))}
+              </div>
+
+              <textarea
+                value={reportText}
+                onChange={(event) => setReportText(event.target.value)}
+                placeholder="Tell us what happened (required)…"
+                rows={3}
+                className="mt-3 w-full rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[13px] font-semibold text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]/50"
+              />
+
+              <button
+                type="button"
+                disabled={reporting || !reportCategory || reportText.trim().length < 10}
+                onClick={submitReport}
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] disabled:opacity-45"
+              >
+                {reporting ? <Loader2 className="size-4 animate-spin" /> : "Send report & hold payout"}
+              </button>
+              <p className="mt-2 text-center text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+                False reports may lead to account review.
+              </p>
+            </div>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <Dialog.Root open={showCancel} onOpenChange={setShowCancel}>
         <Dialog.Portal>
