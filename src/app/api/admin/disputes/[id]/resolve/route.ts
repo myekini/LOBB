@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withRole } from "@/lib/api-auth";
 import { initiateRefund } from "@/lib/paystack";
+import { sendDisputeResolvedEmails } from "@/lib/email-notifications";
 
 type Resolution = "refund_player" | "release_to_coach" | "split";
 
@@ -39,7 +40,12 @@ export const POST = withRole("admin", async (request, auth, context) => {
 
   const { data: booking } = await auth.admin
     .from("bookings")
-    .select("id, status, total_amount_ngn, coach_payout_ngn, escrow_released_at, payments(paystack_reference, status)")
+    .select(
+      `id, booking_ref, player_id, coach_id, status, starts_at, total_amount_ngn, coach_payout_ngn,
+       escrow_released_at, payments(paystack_reference, status),
+       coaches!bookings_coach_id_fkey ( full_name ),
+       players!bookings_player_id_fkey ( full_name )`
+    )
     .eq("id", dispute.booking_id)
     .maybeSingle();
 
@@ -118,6 +124,33 @@ export const POST = withRole("admin", async (request, auth, context) => {
       refund_error: refundError,
     },
   });
+
+  // Tell both parties the outcome in plain language. Never blocks the resolution.
+  try {
+    const [{ data: playerProfile }, { data: coachProfile }] = await Promise.all([
+      auth.admin.from("profiles").select("id, email, email_notifications_enabled").eq("id", booking.player_id).maybeSingle(),
+      auth.admin.from("profiles").select("id, email, email_notifications_enabled").eq("id", booking.coach_id).maybeSingle(),
+    ]);
+    const coachJoin = booking.coaches as { full_name: string | null } | { full_name: string | null }[] | null;
+    const playerJoin = booking.players as { full_name: string | null } | { full_name: string | null }[] | null;
+    await sendDisputeResolvedEmails(
+      auth.admin,
+      {
+        bookingId: booking.id,
+        humanRef: booking.booking_ref,
+        coachName: (Array.isArray(coachJoin) ? coachJoin[0] : coachJoin)?.full_name ?? "Coach",
+        playerName: (Array.isArray(playerJoin) ? playerJoin[0] : playerJoin)?.full_name ?? "Player",
+        startsAt: booking.starts_at,
+        category: "other",
+      },
+      body.resolution,
+      refundPercent,
+      playerProfile,
+      coachProfile
+    );
+  } catch {
+    // recorded in email_jobs; resolution already committed
+  }
 
   return NextResponse.json({ ok: true, refund_error: refundError });
 });

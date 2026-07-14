@@ -12,6 +12,11 @@ import {
   payoutProcessedEmail,
   refundIssuedEmail,
   reviewRequestEmail,
+  disputeOpenedAdminEmail,
+  disputeOpenedOtherPartyEmail,
+  disputeOpenedReporterEmail,
+  disputeResolvedEmail,
+  type DisputeEmailInfo,
   type EmailBookingInfo,
 } from "@/lib/email-templates";
 
@@ -358,4 +363,108 @@ export async function sendAdminDigestEmail(
     recipient_email: email,
     template: adminPendingDigestEmail(pendingCount),
   });
+}
+
+// ─── Disputes ─────────────────────────────────────────────────────────────────
+
+export async function sendDisputeOpenedEmails(
+  admin: SupabaseClient,
+  info: DisputeEmailInfo,
+  description: string,
+  reporterRole: "player" | "coach",
+  playerProfile: EmailProfileWithId | null,
+  coachProfile: EmailProfileWithId | null
+) {
+  const sends: Promise<unknown>[] = [];
+  const reporterProfile = reporterRole === "player" ? playerProfile : coachProfile;
+  const otherProfile = reporterRole === "player" ? coachProfile : playerProfile;
+  const otherRole = reporterRole === "player" ? "coach" : "player";
+
+  if (canEmail(reporterProfile) && reporterProfile.email) {
+    sends.push(
+      sendAndRecord(admin, {
+        type: `dispute_opened_${reporterRole}`,
+        recipient_user_id: reporterProfile.id ?? undefined,
+        recipient_email: reporterProfile.email,
+        booking_id: info.bookingId,
+        template: disputeOpenedReporterEmail(info),
+      })
+    );
+  }
+
+  if (canEmail(otherProfile) && otherProfile.email) {
+    sends.push(
+      sendAndRecord(admin, {
+        type: `dispute_opened_${otherRole}`,
+        recipient_user_id: otherProfile.id ?? undefined,
+        recipient_email: otherProfile.email,
+        booking_id: info.bookingId,
+        template: disputeOpenedOtherPartyEmail(info, otherRole),
+      })
+    );
+  }
+
+  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  for (const adminEmail of adminEmails) {
+    sends.push(
+      sendAndRecord(admin, {
+        type: "dispute_opened_admin",
+        recipient_email: adminEmail,
+        booking_id: info.bookingId,
+        template: disputeOpenedAdminEmail(info, description),
+      })
+    );
+  }
+
+  await Promise.allSettled(sends);
+}
+
+export async function sendDisputeResolvedEmails(
+  admin: SupabaseClient,
+  info: DisputeEmailInfo,
+  resolution: "refund_player" | "release_to_coach" | "split",
+  playerRefundPercent: number,
+  playerProfile: EmailProfileWithId | null,
+  coachProfile: EmailProfileWithId | null
+) {
+  const playerOutcome =
+    resolution === "refund_player"
+      ? "Resolved in your favour — your full refund is on its way to your payment method (2–5 business days)."
+      : resolution === "split"
+      ? `Resolved with a ${playerRefundPercent}% refund to you, on its way to your payment method (2–5 business days).`
+      : "After review, the session was confirmed as delivered and the coach will be paid. If you disagree, reply to this email.";
+  const coachOutcome =
+    resolution === "release_to_coach"
+      ? "Resolved in your favour — your payout for this session will be included in the next payout run."
+      : resolution === "split"
+      ? `Resolved with a partial payout: you'll receive ${100 - playerRefundPercent}% of the session payout in the next payout run.`
+      : "After review, the session was refunded to the player and no payout will be made for it. If you disagree, reply to this email.";
+
+  const sends: Promise<unknown>[] = [];
+  if (canEmail(playerProfile) && playerProfile.email) {
+    sends.push(
+      sendAndRecord(admin, {
+        type: "dispute_resolved_player",
+        recipient_user_id: playerProfile.id ?? undefined,
+        recipient_email: playerProfile.email,
+        booking_id: info.bookingId,
+        template: disputeResolvedEmail(info, "player", playerOutcome),
+      })
+    );
+  }
+  if (canEmail(coachProfile) && coachProfile.email) {
+    sends.push(
+      sendAndRecord(admin, {
+        type: "dispute_resolved_coach",
+        recipient_user_id: coachProfile.id ?? undefined,
+        recipient_email: coachProfile.email,
+        booking_id: info.bookingId,
+        template: disputeResolvedEmail(info, "coach", coachOutcome),
+      })
+    );
+  }
+  await Promise.allSettled(sends);
 }

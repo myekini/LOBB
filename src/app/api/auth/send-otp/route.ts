@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { normalizeEmail } from "@/lib/email";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 function getAnonClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -23,6 +24,17 @@ export async function POST(request: Request) {
 
     if (!email) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    }
+
+    // App-level throttle on top of Supabase's own OTP limits: per IP and per email
+    const ipLimit = rateLimit(`send-otp:ip:${clientIp(request)}`, 10, 10 * 60 * 1000);
+    const emailLimit = rateLimit(`send-otp:email:${email}`, 5, 10 * 60 * 1000);
+    if (!ipLimit.ok || !emailLimit.ok) {
+      const retry = Math.max(ipLimit.retryAfterSecs, emailLimit.retryAfterSecs);
+      return NextResponse.json(
+        { error: `Too many code requests. Try again in ${retry}s.` },
+        { status: 429, headers: { "Retry-After": String(retry) } }
+      );
     }
 
     const role = getRequestedRole(body.role);

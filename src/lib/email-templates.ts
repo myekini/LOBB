@@ -598,3 +598,125 @@ export function adminPendingDigestEmail(pendingCount: number): EmailTemplate {
     text: `${subject}\nReview: ${appUrl("/admin/coaches")}`,
   };
 }
+
+// ─── Disputes ─────────────────────────────────────────────────────────────────
+
+export type DisputeEmailInfo = {
+  bookingId: string;
+  humanRef?: string | null;
+  coachName: string;
+  playerName: string;
+  startsAt: string;
+  category: string;
+};
+
+const DISPUTE_CATEGORY_LABELS: Record<string, string> = {
+  coach_no_show: "Coach didn't show up",
+  player_no_show: "Player didn't show up",
+  session_cut_short: "Session was cut short",
+  safety_concern: "Safety concern",
+  other: "Other issue",
+};
+
+export function disputeCategoryLabel(category: string) {
+  return DISPUTE_CATEGORY_LABELS[category] ?? "Issue reported";
+}
+
+export function disputeOpenedReporterEmail(info: DisputeEmailInfo): EmailTemplate {
+  const subject = "We got your report — your money is protected";
+  const preview = "Payout is on hold. We'll resolve this within 48 hours.";
+  const html = shell(
+    "Report received",
+    preview,
+    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">Thanks for telling us. The payout for this session is <strong>on hold</strong> while we review, and we'll get back to you within <strong>48 hours</strong>.</p>
+    ${detailTable([
+      ["Issue", disputeCategoryLabel(info.category)],
+      ["Coach", info.coachName],
+      ["Session", formatDate(info.startsAt)],
+      ["Booking ref", info.humanRef ?? info.bookingId],
+    ])}`,
+    { label: "View booking", href: appUrl(`/dashboard/bookings/${info.bookingId}`) }
+  );
+  return {
+    subject,
+    preview,
+    html,
+    text: `Report received — payout on hold.\nIssue: ${disputeCategoryLabel(info.category)}\nCoach: ${info.coachName}\nSession: ${formatDate(info.startsAt)}\nWe'll resolve this within 48 hours.`,
+  };
+}
+
+export function disputeOpenedOtherPartyEmail(info: DisputeEmailInfo, recipient: "player" | "coach"): EmailTemplate {
+  const subject = "An issue was reported on your LOBB session";
+  const preview = "The session payout is paused while LOBB reviews.";
+  const bookingPath = recipient === "coach" ? `/coach/bookings/${info.bookingId}` : `/dashboard/bookings/${info.bookingId}`;
+  const html = shell(
+    "Issue under review",
+    preview,
+    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">An issue was reported on this session, so the payout is paused while LOBB reviews it. If you have context to share, reply to this email — it goes straight to the review team.</p>
+    ${detailTable([
+      ["Issue", disputeCategoryLabel(info.category)],
+      ["Session", formatDate(info.startsAt)],
+      ["With", recipient === "coach" ? info.playerName : info.coachName],
+      ["Booking ref", info.humanRef ?? info.bookingId],
+    ])}`,
+    { label: "View booking", href: appUrl(bookingPath) }
+  );
+  return {
+    subject,
+    preview,
+    html,
+    text: `An issue was reported on your LOBB session (${formatDate(info.startsAt)}). The payout is paused while LOBB reviews. Reply to this email to add context.`,
+  };
+}
+
+export function disputeOpenedAdminEmail(info: DisputeEmailInfo, description: string): EmailTemplate {
+  const subject = `Dispute opened: ${info.playerName} vs ${info.coachName}`;
+  const preview = "48h SLA clock is running.";
+  const html = shell(
+    "New dispute",
+    preview,
+    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">A new dispute needs review — the 48-hour SLA clock is running.</p>
+    ${detailTable([
+      ["Issue", disputeCategoryLabel(info.category)],
+      ["Player", info.playerName],
+      ["Coach", info.coachName],
+      ["Session", formatDate(info.startsAt)],
+      ["Booking ref", info.humanRef ?? info.bookingId],
+      ["Report", description],
+    ])}`,
+    { label: "Resolve dispute", href: appUrl("/admin/disputes") }
+  );
+  return {
+    subject,
+    preview,
+    html,
+    text: `New dispute: ${info.playerName} vs ${info.coachName}\nIssue: ${disputeCategoryLabel(info.category)}\nReport: ${description}\nResolve: ${appUrl("/admin/disputes")}`,
+  };
+}
+
+export function disputeResolvedEmail(
+  info: DisputeEmailInfo,
+  recipient: "player" | "coach",
+  outcome: string
+): EmailTemplate {
+  const subject = "Your LOBB session issue has been resolved";
+  const preview = outcome;
+  const bookingPath = recipient === "coach" ? `/coach/bookings/${info.bookingId}` : `/dashboard/bookings/${info.bookingId}`;
+  const html = shell(
+    "Issue resolved",
+    preview,
+    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">${escapeHtml(outcome)}</p>
+    ${detailTable([
+      ["Session", formatDate(info.startsAt)],
+      ["Booking ref", info.humanRef ?? info.bookingId],
+    ])}
+    <p style="margin:18px 0 0;color:#42392f;font:700 13px/1.6 Arial,Helvetica,sans-serif;">If you disagree with this outcome, reply to this email within 7 days and we'll take another look.</p>`,
+    { label: "View booking", href: appUrl(bookingPath) }
+  );
+  return {
+    subject,
+    preview,
+    html,
+    text: `Issue resolved: ${outcome}\nSession: ${formatDate(info.startsAt)}\nRef: ${info.humanRef ?? info.bookingId}\nDisagree? Reply within 7 days.`,
+  };
+}

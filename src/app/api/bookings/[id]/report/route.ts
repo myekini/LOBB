@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { withRole } from "@/lib/api-auth";
+import { sendDisputeOpenedEmails } from "@/lib/email-notifications";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 /**
  * Player/coach-facing issue reporting — the low-friction front door to
@@ -55,6 +57,14 @@ export const POST = withRole(["player", "coach"], async (request, auth, context)
     description?: string;
   };
 
+  const rl = rateLimit(`booking-report:${clientIp(request)}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: `Too many reports. Try again in ${rl.retryAfterSecs}s.` },
+      { status: 429, headers: { "Retry-After": String(rl.retryAfterSecs) } }
+    );
+  }
+
   const category = body.category;
   const description = body.description?.trim() ?? "";
   if (!category || !CATEGORIES.includes(category)) {
@@ -66,7 +76,11 @@ export const POST = withRole(["player", "coach"], async (request, auth, context)
 
   const { data: booking } = await auth.admin
     .from("bookings")
-    .select("id, player_id, coach_id, status, ends_at, paystack_transfer_code")
+    .select(
+      `id, booking_ref, player_id, coach_id, status, starts_at, ends_at, paystack_transfer_code,
+       coaches!bookings_coach_id_fkey ( full_name ),
+       players!bookings_player_id_fkey ( full_name )`
+    )
     .eq("id", id)
     .maybeSingle();
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
@@ -121,6 +135,33 @@ export const POST = withRole(["player", "coach"], async (request, auth, context)
     target_id: dispute.id,
     metadata: { booking_id: booking.id, category, reporter: reporterRole },
   });
+
+  // Notify reporter (ack + SLA), the other party, and admins. Never blocks the report.
+  try {
+    const [{ data: playerProfile }, { data: coachProfile }] = await Promise.all([
+      auth.admin.from("profiles").select("id, email, email_notifications_enabled").eq("id", booking.player_id).maybeSingle(),
+      auth.admin.from("profiles").select("id, email, email_notifications_enabled").eq("id", booking.coach_id).maybeSingle(),
+    ]);
+    const coachJoin = booking.coaches as { full_name: string | null } | { full_name: string | null }[] | null;
+    const playerJoin = booking.players as { full_name: string | null } | { full_name: string | null }[] | null;
+    await sendDisputeOpenedEmails(
+      auth.admin,
+      {
+        bookingId: booking.id,
+        humanRef: booking.booking_ref,
+        coachName: (Array.isArray(coachJoin) ? coachJoin[0] : coachJoin)?.full_name ?? "Coach",
+        playerName: (Array.isArray(playerJoin) ? playerJoin[0] : playerJoin)?.full_name ?? "Player",
+        startsAt: booking.starts_at,
+        category,
+      },
+      description,
+      reporterRole,
+      playerProfile,
+      coachProfile
+    );
+  } catch {
+    // email failures are recorded in email_jobs; the report itself succeeded
+  }
 
   return NextResponse.json({ ok: true, dispute });
 });
