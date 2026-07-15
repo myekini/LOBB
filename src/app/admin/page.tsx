@@ -230,56 +230,40 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
   );
 }
 
+// Compact row list — no fixed-width table, so it works on any screen without
+// sideways scrolling, and player/coach names don't fight for space.
 function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[780px] border-collapse text-left text-sm">
-        <thead>
-          <tr className="border-b border-[var(--lobb-border)] text-[11px] font-black text-[var(--lobb-muted)]">
-            <th className="py-3 pr-4">Client</th>
-            <th className="px-4 py-3">Booking ID</th>
-            <th className="px-4 py-3">Session</th>
-            <th className="px-4 py-3">Coach</th>
-            <th className="px-4 py-3">Status</th>
-            <th className="py-3 pl-4 text-right">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bookings.map((booking) => {
-            const coach = firstJoin(booking.coaches);
-            const player = firstJoin(booking.players);
-            const coachName = coach?.full_name ?? "Coach";
-            const playerName = player?.full_name ?? "Player";
+    <div className="divide-y divide-[var(--lobb-border)]">
+      {bookings.map((booking) => {
+        const coach = firstJoin(booking.coaches);
+        const player = firstJoin(booking.players);
+        const coachName = coach?.full_name ?? "Coach";
+        const playerName = player?.full_name ?? "Player";
 
-            return (
-              <tr key={booking.id} className="border-b border-[var(--lobb-border)] last:border-b-0">
-                <td className="py-3 pr-4">
-                  <PersonCell name={playerName} imageUrl={player?.avatar_url ?? null} />
-                </td>
-                <td className="px-4 py-3 font-mono text-xs font-black text-[var(--lobb-muted)]">
-                  {booking.paystack_reference ?? `#${booking.id.slice(0, 6)}`}
-                </td>
-                <td className="px-4 py-3 text-xs font-semibold text-[var(--lobb-muted)]">{formatBookingDate(booking.starts_at)}</td>
-                <td className="px-4 py-3">
-                  <PersonCell name={coachName} imageUrl={coach?.profile_photo_url ?? null} compact />
-                </td>
-                <td className="px-4 py-3"><StatusBadge status={booking.status} /></td>
-                <td className="py-3 pl-4 text-right font-black">{money(booking.total_amount_ngn)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+        return (
+          <div key={booking.id} className="flex items-center gap-3 py-3">
+            <Avatar name={playerName} imageUrl={player?.avatar_url ?? null} size="md" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black leading-tight">
+                {playerName}
+                <span className="mx-1.5 font-bold text-[var(--lobb-text-tertiary)]">with</span>
+                {coachName}
+              </p>
+              <p className="mt-0.5 truncate text-[11px] font-semibold text-[var(--lobb-muted)]">
+                {formatBookingDate(booking.starts_at)}
+                <span className="mx-1.5">·</span>
+                <span className="font-mono">{booking.paystack_reference ?? `#${booking.id.slice(0, 6)}`}</span>
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <span className="text-sm font-black">{money(booking.total_amount_ngn)}</span>
+              <StatusBadge status={booking.status} />
+            </div>
+          </div>
+        );
+      })}
     </div>
-  );
-}
-
-function PersonCell({ name, imageUrl, compact }: { name: string; imageUrl?: string | null; compact?: boolean }) {
-  return (
-    <span className="flex min-w-0 items-center gap-2.5">
-      <Avatar name={name} imageUrl={imageUrl} size={compact ? "sm" : "md"} />
-      <span className="truncate font-black">{name}</span>
-    </span>
   );
 }
 
