@@ -162,8 +162,11 @@ Manual trigger (any of them):
 ## Current deploy checklist (as of 2026-07-19)
 
 Done: `CRON_SECRET` set in Production, live webhook registered, staging
-Supabase project created + Vercel Preview env vars scoped, staging data
-wiped, `release_escrow` fix live in production.
+Supabase project created + Vercel Preview env vars scoped, staging AND
+production data wiped clean (production now holds only the admin account —
+every test coach/player/booking created during development was removed),
+`release_escrow` fix live in production, `staging.lobb.ng` domain assigned
+to the project (DNS + git-branch binding still needed, see below).
 
 - [ ] Run `scripts/prod-finish-cleanup.sql` in production (an earlier cleanup
       migration partially landed — `paystack_subaccount_code` was dropped but
