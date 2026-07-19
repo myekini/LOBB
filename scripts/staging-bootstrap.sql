@@ -561,6 +561,10 @@ do $$ declare t text; begin
     'coach_availability', 'bookings', 'payments', 'reviews', 'disputes',
     'otp_verifications'
   ]) loop
+    -- Skip tables that don't exist (otp_verifications is dropped by cleanup)
+    if to_regclass('public.' || t) is null then
+      continue;
+    end if;
     execute format(
       'drop trigger if exists set_updated_at on public.%I; '
       'create trigger set_updated_at before update on public.%I '
