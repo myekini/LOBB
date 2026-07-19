@@ -3,41 +3,94 @@
 How LOBB is deployed, what a proper staging setup looks like, and the
 runbooks for the things that can break.
 
-## Environment strategy (recommended)
+## Environment strategy (as built)
 
-Three tiers. The key principle: **staging is a real deployment against a real
-(separate) Supabase project and Paystack test keys — not localhost.**
+Three tiers. **Staging is a real deployment against a real, separate
+Supabase project and Paystack test keys — not localhost.**
 
 | Tier | Frontend | Database/Auth | Payments | Purpose |
 |---|---|---|---|---|
-| **Local** | `npm run dev` | shared *staging* Supabase | Paystack **test** keys | day-to-day development |
-| **Staging** | Vercel preview deployments (every push to a non-main branch, or a pinned `staging` branch domain e.g. `staging.lobb.ng`) | dedicated **staging Supabase project** | Paystack **test** keys | integration testing, demoing, pre-release QA |
-| **Production** | Vercel production (`lobb.ng`, deploys from `main`) | production Supabase project | Paystack **live** keys | real users, real money |
+| **Local** | `npm run dev` | staging Supabase project | Paystack **test** keys | day-to-day development |
+| **Staging** | Vercel Preview deployment, `staging` branch | dedicated **staging Supabase project** (`zvqkofnkjdgxlbtbwhct`) | Paystack **test** keys | integration testing, demoing, pre-release QA |
+| **Production** | Vercel Production, `main` branch, `lobb.ng` | production Supabase project (`nnzddpvhldwjvhxbrrgh`) | Paystack **live** keys | real users, real money |
 
-### Setting staging up (one-time, ~1 hour)
+### Deployment topology — what actually happens on push
 
-1. Create a second Supabase project (`lobb-staging`). Run every file in
-   `supabase/migrations/` against it in order (or `supabase db push` with the
-   CLI linked to the staging ref).
-2. In Vercel → Project → Settings → Environment Variables, scope variables
-   by environment: **Preview** gets the staging Supabase URL/keys + Paystack
-   test keys; **Production** keeps the live set. Same variable names, so no
-   code changes.
-3. Configure the staging Supabase project identically: Email OTP length 6,
-   send-email hook pointed at the preview URL, seed test accounts
-   (`LOBB_ENABLE_TEST_OTP=true` is fine here — never in production).
-4. Optional but recommended: a long-lived `staging` branch with a fixed
-   domain assigned in Vercel, so QA links don't change per-push.
-5. Point local `.env.local` at the **staging** project too — no developer
-   should ever hold production service-role keys for daily work.
+The `lobb` Vercel project is connected directly to `github.com/myekini/LOBB`.
+No extra pipeline config is needed for this part — Vercel's GitHub
+integration does it automatically:
 
-### Migration workflow
+- **Push to `main`** → Vercel builds and promotes straight to **Production**
+  (`lobb.ng`), using the env vars scoped to *Production* in Vercel.
+- **Push to `staging`** → Vercel builds a **Preview** deployment at
+  `lobb-git-staging-myekinis-projects.vercel.app`, using the env vars scoped
+  to *Preview*. Same code, different secrets — that's the whole trick.
+- **Any other branch or PR** → also gets its own throwaway Preview URL
+  automatically (Vercel does this for every branch by default); only `main`
+  and `staging` have anything pointed at them deliberately.
+- Preview deployments sit behind Vercel's Deployment Protection (SSO wall) by
+  default — disabled for the `staging` branch so QA links work without a
+  Vercel login (Project → Settings → Deployment Protection).
 
-Migrations live in `supabase/migrations/` (timestamped, append-only — never
-edit an applied file). Flow: write migration → apply to staging → test the
-flows it touches → apply to production (SQL editor today; `supabase db push`
-or the Supabase MCP once wired). **The repo is the source of truth**; the two
-currently-pending production files are tracked in the deploy checklist below.
+**What Vercel does NOT do:** touch the database. A `git push` only ships
+application code. Database changes are a separate step — see below.
+
+### Database migrations now apply automatically too
+
+`.github/workflows/db-migrate.yml` runs on every push that touches
+`supabase/migrations/**`:
+
+- push to `staging` → replays every file in `supabase/migrations/` against
+  the **staging** database
+- push to `main` → replays every file against **production**
+
+It works by literally running each `.sql` file through `psql` in filename
+order — no separate migration-history table to keep in sync. This is safe
+*because* every migration in this repo is written idempotently (`create
+table if not exists`, `create or replace function`, `drop ... if exists`,
+`do $$ ... exception when duplicate_object then null $$`) — replaying the
+full history every time is a deliberate design choice, not a shortcut.
+**Keep writing migrations this way** and the pipeline needs zero maintenance.
+
+One-time setup: add two repo secrets (GitHub → Settings → Secrets and
+variables → Actions):
+
+| Secret | Where to get it |
+|---|---|
+| `STAGING_DB_URL` | Staging Supabase → Project Settings → Database → Connection string → **URI** (Session pooler), password filled in |
+| `PROD_DB_URL` | Same, for the production project |
+
+Once both secrets exist, **the manual "paste this SQL in the editor" step is
+retired** — future migrations ship by merging to `staging`, testing, then
+merging to `main`, exactly like application code.
+
+### Setting staging up (one-time — done; keep for reference)
+
+1. Create a second Supabase project. Run every file in `supabase/migrations/`
+   against it in order (the `db-migrate` workflow now does this on every push
+   once the secret is added — the very first run needs the two repo secrets
+   in place, or a manual paste for the initial bootstrap).
+2. Vercel → Project → Settings → Environment Variables, scoped to
+   **Preview**: staging Supabase URL/keys, Paystack **test** keys, staging
+   app URL. Production keeps the live set. Same variable names, no code
+   changes required.
+3. Staging Supabase → Authentication → Email: OTP length **6**, and a Send
+   Email hook pointed at `https://<staging-url>/api/auth/email-hook` using
+   the **same** `SUPABASE_EMAIL_HOOK_SECRET` as production (it's shared
+   across both scopes in Vercel).
+4. `staging` branch pinned in Vercel with Deployment Protection disabled, so
+   QA links are stable and reachable without a login wall.
+5. Never hold a production service-role key on a developer machine for daily
+   work — point local `.env.local` at staging.
+
+### Resetting staging data
+
+Staging accumulates test signups/bookings over time. To wipe it back to an
+empty (but fully migrated) state: delete every row in `auth.users` via the
+Supabase Auth admin API or dashboard — profiles, coaches, players, bookings,
+payments, and everything else cascade-delete via foreign keys. Two tables
+don't cascade from a user and need a separate truncate: `paystack_events` and
+`admin_audit_log`. The schema itself is untouched by this — only data.
 
 ## Environment variables (production checklist)
 
@@ -106,10 +159,22 @@ Manual trigger (any of them):
   `payments.paystack_reference` allow full reconciliation of money state
   after any DB incident.
 
-## Current deploy checklist (as of 2026-07-14)
+## Current deploy checklist (as of 2026-07-19)
 
-- [ ] Run `supabase/migrations/20260713000001_fix_release_escrow.sql` in prod
-- [ ] Run `supabase/migrations/20260714000001_db_cleanup.sql` in prod
-- [ ] Set `CRON_SECRET` in Vercel (Production) and redeploy
-- [ ] Register the live webhook URL in the Paystack dashboard
-- [ ] Create the staging Supabase project + scope Vercel Preview env vars
+Done: `CRON_SECRET` set in Production, live webhook registered, staging
+Supabase project created + Vercel Preview env vars scoped, staging data
+wiped, `release_escrow` fix live in production.
+
+- [ ] Run `scripts/prod-finish-cleanup.sql` in production (an earlier cleanup
+      migration partially landed — `paystack_subaccount_code` was dropped but
+      `otp_verifications` was not; this finishes it)
+- [ ] Run `supabase/migrations/20260719000001_writable_session_columns.sql`
+      in **both** staging and production — on production this fixes a live
+      bug: `platform_commission_ngn` has been silently under-reported (~5%
+      instead of the correct 15%) on every booking since launch, corrupting
+      the admin earnings dashboard. Actual charges and coach payouts are
+      unaffected.
+- [ ] Add `STAGING_DB_URL` and `PROD_DB_URL` repo secrets so
+      `.github/workflows/db-migrate.yml` takes over future migrations
+- [ ] Configure the staging Supabase email hook (send-otp currently fails on
+      staging without it)

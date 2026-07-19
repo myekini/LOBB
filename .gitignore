@@ -52,3 +52,5 @@ supabase/.temp/
 # TypeScript build cache
 *.tsbuildinfo
 next-env.d.ts
+
+.env*

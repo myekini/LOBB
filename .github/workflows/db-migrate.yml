@@ -1,0 +1,56 @@
+name: Apply database migrations
+
+# Runs every SQL file in supabase/migrations/ (in filename order) against the
+# matching Supabase project whenever migrations change on staging or main.
+#
+# This works because every migration in this repo is written idempotently —
+# `create table if not exists`, `create or replace function`, `drop ... if
+# exists`, `do $$ ... exception when duplicate_object then null $$` — so
+# replaying the full set on every run is safe and requires no migration-
+# history bookkeeping. New files just get added to the bottom of the list.
+#
+# Setup (one-time): add two repository secrets —
+#   STAGING_DB_URL — staging project's direct Postgres connection string
+#   PROD_DB_URL    — production project's direct Postgres connection string
+# Get each from: Supabase Dashboard → Project Settings → Database →
+# Connection string → URI (mode: Session), with the DB password filled in.
+
+on:
+  push:
+    branches: [staging, main]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch: {}
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Select target database
+        id: target
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "env_name=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "env_name=staging" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply migrations (${{ steps.target.outputs.env_name }})
+        env:
+          DB_URL: ${{ github.ref == 'refs/heads/main' && secrets.PROD_DB_URL || secrets.STAGING_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "::error::Missing DB_URL secret for ${{ steps.target.outputs.env_name }}. Add STAGING_DB_URL / PROD_DB_URL in repo Settings → Secrets → Actions."
+            exit 1
+          fi
+          set -e
+          for f in supabase/migrations/*.sql; do
+            echo "── Applying $f"
+            psql "$DB_URL" -v ON_ERROR_STOP=1 -f "$f"
+          done
+          echo "✓ All migrations applied to ${{ steps.target.outputs.env_name }}"
