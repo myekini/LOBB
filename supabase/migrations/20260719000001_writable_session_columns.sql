@@ -1,16 +1,29 @@
--- Fix schema drift between production and fresh databases (staging).
+-- Fix schema drift between production and fresh databases (staging), AND a
+-- live commission-reporting bug on production. Run on BOTH — not staging-only.
 --
--- The canonical schema defines bookings.session_date/session_start_time/
--- session_end_time as GENERATED ALWAYS, but the booking API inserts explicit
--- values into them (and production's columns are plain/writable, predating
--- the canonical file). On a fresh DB every booking insert failed with
--- "cannot insert a non-DEFAULT value into column" — surfaced to players as
--- PAYMENT_INIT_FAILED.
+-- Part A (fresh-DB blocker): the canonical schema defines bookings.
+-- session_date/session_start_time/session_end_time as GENERATED ALWAYS, but
+-- the booking API inserts explicit values into them (production's columns
+-- predate the canonical file and are plain/writable, which is why this never
+-- surfaced there). On a fresh DB every booking insert failed with "cannot
+-- insert a non-DEFAULT value into column" — surfaced to players as
+-- PAYMENT_INIT_FAILED. This part is a genuine no-op on production.
+--
+-- Part B (live bug on production, not a no-op): the current
+-- sync_booking_spec_columns() unconditionally overwrites
+-- platform_commission_ngn with platform_fee_ngn. The booking API inserts the
+-- correct 15%-of-session-rate commission into platform_commission_ngn and a
+-- separate 5% convenience_fee into platform_fee_ngn — the trigger then
+-- clobbers the former with the latter on every booking. Verified against 5
+-- real production bookings: platform_commission_ngn reads e.g. 500 where the
+-- correct commission is 1,500 (3x under-reported). Actual money movement
+-- (charges, coach payouts) is unaffected — only this reporting column, which
+-- feeds the admin earnings dashboard, is wrong. The new trigger preserves a
+-- caller-supplied non-zero platform_commission_ngn instead of overwriting it.
 --
 -- Normalize: convert generated columns to regular writable columns (DROP
 -- EXPRESSION keeps existing values), and have sync_booking_spec_columns()
--- derive them from starts_at/ends_at on every write so callers don't need to
--- supply them. No-op on production, where the columns are already writable.
+-- derive session_date/start/end from starts_at/ends_at on every write.
 
 do $$
 declare col text;
