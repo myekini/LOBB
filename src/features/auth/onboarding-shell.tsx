@@ -50,6 +50,7 @@ export function OnboardingShell({
 
   return (
     <main
+      id="main-content"
       className={cn(
         "lobb-onboarding relative min-h-[100dvh] bg-[var(--lobb-bg)] text-[var(--lobb-black)] font-sans overflow-x-hidden",
         className
@@ -154,7 +155,7 @@ export function OnboardingButton({
       disabled={disabled || loading}
       onClick={onClick}
       data-onboarding-primary
-      className="group relative flex h-14 w-full items-center justify-center overflow-hidden bg-[var(--lobb-clay)] text-[13px] font-black uppercase tracking-widest text-white shadow-[0_14px_30px_rgba(150,74,35,0.22)] transition-all duration-300 hover:bg-[var(--lobb-clay-dark)] hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-surface-2)] disabled:text-[var(--lobb-muted)] disabled:shadow-none disabled:transform-none"
+      className="group relative flex h-[var(--lobb-control-lg)] w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] text-[13px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-[var(--lobb-clay-dark)] active:translate-y-px disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
     >
       <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       {loading ? (

@@ -5,14 +5,16 @@ import { cn } from "@/lib/utils"
 function Card({
   className,
   size = "default",
+  variant = "surface",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & { size?: "default" | "sm"; variant?: "surface" | "outlined" | "interactive" | "inset" }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-variant={variant}
       className={cn(
-        "group/card flex flex-col gap-4 overflow-hidden rounded-xl bg-card py-4 text-sm text-card-foreground ring-1 ring-foreground/10 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-4 overflow-hidden rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-elevated)] py-4 text-sm text-[var(--lobb-text-primary)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 data-[variant=outlined]:border data-[variant=outlined]:border-[var(--lobb-border-subtle)] data-[variant=interactive]:border data-[variant=interactive]:border-[var(--lobb-border-subtle)] data-[variant=interactive]:transition-colors data-[variant=interactive]:hover:bg-[var(--lobb-bg-secondary)] data-[variant=inset]:bg-[var(--lobb-bg-secondary)] *:[img:first-child]:rounded-t-[var(--lobb-radius-lg)] *:[img:last-child]:rounded-b-[var(--lobb-radius-lg)]",
         className
       )}
       {...props}

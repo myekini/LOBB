@@ -1,50 +1,68 @@
-# Design
+# LOBB design system
 
-## Visual Theme
-The visual theme is **Saturday Morning Court**, a warm-neutral athletic theme inspired by tennis clay, paper textures, and premium sports editorial layouts. It supports a full responsive Dark Mode.
+LOBB should feel like a calm, trustworthy operations product: warm enough to feel human, restrained enough to make booking and money movement easy to scan.
 
-## Typography
-- **Font Stack**: Clean, geometric sans-serif stack (system defaults paired with `lucide-react` icons).
-- **Scale**: Fixed rem scales. No fluid clamp sizing for in-app views (headers, sidebars, dashboard metrics).
-- **Letter Spacing**: Display headings use tight tracking (`tracking-tight` or `-0.02em` to `-0.04em`). No tracking tighter than `-0.04em`.
+## Foundations
 
-## Color Palette
-Using a curated, high-contrast, warm-neutral athletic palette:
+### Tokens
 
-### Light Mode ("Saturday Morning Court")
-- `--lobb-bg-primary`: `#FAF8F5` (warm clay-tinted off-white)
-- `--lobb-bg-secondary`: `#F2EFE9` (darker panel wash)
-- `--lobb-bg-elevated`: `#FFFFFF` (pure white sheet cards)
-- `--lobb-bg-inverse`: `#0D0D0D` (deep charcoal black)
-- `--lobb-clay`: `#C4622D` (primary clay orange brand color)
-- `--lobb-clay-light`: `#F5E6DC` (soft clay highlight)
-- `--lobb-clay-dark`: `#A3501F` (deep active clay hover)
-- `--lobb-text-primary`: `#1A1714` (ink black body)
-- `--lobb-text-secondary`: `#6B6560` (readable neutral text)
-- `--lobb-text-tertiary`: `#A09890` (quiet text/labels)
-- `--lobb-border-subtle`: `#E8E3DC` (fine borders)
+`src/styles/tokens.css` defines scales. `src/app/globals.css` owns light and dark values. Shadcn aliases (`--background`, `--card`, `--primary`, and related tokens) map directly to LOBB tokens; do not introduce a parallel palette.
 
-### Dark Mode
-- `--lobb-bg-primary`: `#0D0D0D` (deep pitch)
-- `--lobb-bg-secondary`: `#1A1714` (dark panel charcoal)
-- `--lobb-bg-elevated`: `#242018` (warm charcoal elevated card)
-- `--lobb-bg-inverse`: `#FAF8F5` (warm paper text)
-- `--lobb-clay-light`: `rgba(196, 98, 45, 0.15)`
-- `--lobb-clay-dark`: `#E2824C`
-- `--lobb-text-primary`: `#FAF8F5`
-- `--lobb-text-secondary`: `#A09890`
-- `--lobb-text-tertiary`: `#6B6560`
-- `--lobb-border-subtle`: `#2E2924`
+| System | Allowed values |
+| --- | --- |
+| Control height | 32px, 40px, 48px |
+| Radius | 6px, 10px, 14px |
+| Spacing | 4px base scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64px |
+| Weight | 400 body, 500–600 UI, 700 headings and essential emphasis |
+| Elevation | Floating navigation, popovers, modals, and active elevation only |
 
-## Layout and Spacing
-- **Grids**: Responsive layout grids using `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`.
-- **Card Borders**: Crisp `border border-border` with max `rounded-[12px]` to `rounded-[14px]` (no oversized roundness).
-- **Navigation Controls**:
-  - PWA/Mobile: Rounded floating bottom nav menu (`lobb-bottom-nav`) with blur overlays.
-  - Desktop: Top header header-centered navigation panels.
+### Colour roles
 
-## Key CSS Classes
-- `.lobb-landing`: Standard marketing backdrop styles.
-- `.lobb-app-card`: Premium dashboard sheet container styling.
-- `.lobb-bottom-nav`: Translucent glass-filtered mobile navigation bar.
-- `.lobb-onboarding`: Container styling with subtle athletic court grid gridlines.
+- Clay is the sole brand/action accent: primary calls to action, active selection, and small emphasis.
+- Charcoal is for neutral high-confidence actions and inverse surfaces.
+- Warm paper surfaces are for pages, cards, and fields.
+- Green, amber, and red are semantic only: success, warning, and error. Never use them as decorative accents.
+- Pills are reserved for status and removable filters. Use the 6px radius for ordinary metadata labels.
+
+## Component contract
+
+All new product UI must use `src/components/ui` primitives.
+
+| Primitive | Use | States included |
+| --- | --- | --- |
+| `Button` / icon sizes | Clay primary, dark, quiet secondary, ghost, destructive actions | Hover, pressed, focus, disabled, invalid; loading content is supplied with `InlineActionLoader` |
+| `Input`, `Textarea`, `Field` | Every ordinary form control and its label, hint, or error | Focus, invalid, disabled |
+| `Select`, `SearchableSelect`, `SearchInput` | Controlled options, long searchable lists, and free-text search | Hover, focus, open, invalid, disabled, empty |
+| `Checkbox` | Consent and boolean preferences | Hover, checked, focus, disabled |
+| `StatusBadge`, `VerifiedBadge` | Semantic status and verification only | Success, warning, error, neutral |
+| `Tabs` | Segmented view switching | Selected, hover, keyboard focus |
+| `Card` | `surface`, `outlined`, `interactive`, or `inset` content containers | Hover for interactive cards only |
+| `FormAlert` | Inline success, information, warning, and error feedback | Accessible `alert`/`status` roles |
+| `Skeleton`, `LobbBrandLoader` | Content and page loading | Motion honours reduced-motion preferences |
+| `LobbEmptyState`, `LobbErrorBanner`, `LobbEmptyErrorState` | No-results, failure, and recovery flows | Optional retry/action support |
+
+Avoid native controls styled per page. Existing native controls should migrate to these primitives as their containing screen is touched.
+
+## Surface rules
+
+- `surface`: elevated paper, no automatic border or shadow.
+- `outlined`: surface plus quiet border.
+- `interactive`: outlined card with a quiet hover surface shift.
+- `inset`: secondary warm background for grouping inside another surface.
+- Do not nest cards merely to make spacing. Use stack spacing and dividers first.
+
+## Accessibility and interaction
+
+- Keep controls at least 40px high; prefer 48px for form and mobile actions.
+- Every interactive element has a visible clay focus ring.
+- Error states pair colour with text and an icon where necessary.
+- Use `disabled` only when the user can understand how to re-enable an action.
+- Keep transitions to 150–200ms and use transform/opacity for motion.
+
+## Brand assets
+
+- Logo assets: `brand/logo/`
+- Icons: `brand/icons/`
+- Verified asset: `brand/badges/`
+
+The product promise is: **Book a coach. Not a favor.**

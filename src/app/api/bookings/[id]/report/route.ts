@@ -7,7 +7,7 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
  * Player/coach-facing issue reporting — the low-friction front door to
  * disputes. Reporting instantly freezes the coach payout (booking →
  * disputed) so the player never has to chase money that already left.
- * Admin resolves within the 48h SLA (see docs/flows/disputes.md).
+ * Admin resolves within the 48h SLA (see docs/FLOWS.md).
  */
 
 const CATEGORIES = [

@@ -55,9 +55,9 @@ export function SearchableSelect({
         id={id}
         aria-invalid={invalid || undefined}
         className={cn(
-          "flex h-14 w-full items-center justify-between gap-3 rounded-[16px] border bg-[var(--lobb-surface-2)] px-5 text-left text-[15px] font-bold text-[var(--lobb-text-primary)] transition-all",
-          "hover:border-[var(--lobb-clay)]/35 focus-visible:outline-none focus-visible:border-[var(--lobb-clay)]/50 focus-visible:shadow-[0_0_24px_rgba(196,98,45,0.12)]",
-          "data-[popup-open]:border-[var(--lobb-clay)]/50 data-[popup-open]:bg-[var(--lobb-surface)]",
+          "flex h-[var(--lobb-control-lg)] w-full items-center justify-between gap-3 rounded-[var(--lobb-radius-md)] border bg-[var(--lobb-bg-elevated)] px-3 text-left text-sm font-medium text-[var(--lobb-text-primary)] transition-colors",
+          "hover:border-[var(--lobb-clay)]/35 focus-visible:outline-none focus-visible:border-[var(--lobb-clay)] focus-visible:ring-2 focus-visible:ring-[var(--lobb-clay)]/20",
+          "data-[popup-open]:border-[var(--lobb-clay)] data-[popup-open]:bg-[var(--lobb-bg-elevated)]",
           "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
           invalid ? "border-[var(--lobb-error)]/50" : "border-[var(--lobb-border)]",
           className
@@ -71,7 +71,7 @@ export function SearchableSelect({
 
       <Combobox.Portal>
         <Combobox.Positioner side="bottom" sideOffset={6} className="isolate z-[90] w-[var(--anchor-width)]">
-          <Combobox.Popup className="max-h-[min(340px,var(--available-height))] w-full overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-modal)]">
+          <Combobox.Popup className="max-h-[min(340px,var(--available-height))] w-full overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-modal)]">
             <div className="flex items-center gap-2.5 border-b border-[var(--lobb-border)] px-4">
               <Search className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />
               <Combobox.Input

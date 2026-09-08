@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./brand-kit/logos/lobb-logo-with-tagline.svg" alt="LOBB - Book a coach. Not a favor." width="420" />
+  <img src="./brand/logo/lobb-logo-with-tagline.svg" alt="LOBB - Book a coach. Not a favor." width="420" />
 </p>
 
 <p align="center">
@@ -87,7 +87,7 @@ Premium and operational aesthetics with a warm, accessible color palette:
 | `--lobb-success` | `#2D6A4F` | Confirmed, approved states |
 | `--lobb-star` | `#F4A228` | Ratings and reviews |
 
-See `brand-kit/design.md` and `brand-kit/brand-preview.html` for full system documentation.
+See `docs/DESIGN.md` and `brand-kit/brand-preview.html` for the canonical design documentation and visual preview.
 
 ## Repository Structure
 

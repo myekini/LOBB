@@ -29,12 +29,12 @@
   --lobb-size-caption:  0.75rem;   /* 12px */
   --lobb-size-mono:     0.875rem;  /* 14px */
 
-  --lobb-weight-display: 900;
-  --lobb-weight-h1:      900;
-  --lobb-weight-h2:      900;
+  --lobb-weight-display: 700;
+  --lobb-weight-h1:      700;
+  --lobb-weight-h2:      600;
   --lobb-weight-body:    400;
-  --lobb-weight-label:   700;
-  --lobb-weight-caption: 700;
+  --lobb-weight-label:   600;
+  --lobb-weight-caption: 600;
   --lobb-weight-mono:    500;
 
   --lobb-leading-display: 0.96;
@@ -70,6 +70,14 @@
   --lobb-sp-10: 2.5rem;   /* 40px */
   --lobb-sp-12: 3rem;     /* 48px */
   --lobb-sp-16: 4rem;     /* 64px */
+
+  /* Controls: never introduce a fourth height or radius. */
+  --lobb-control-sm: 2rem;      /* 32px */
+  --lobb-control-md: 2.5rem;    /* 40px */
+  --lobb-control-lg: 3rem;      /* 48px */
+  --lobb-radius-sm: 0.375rem;   /*  6px */
+  --lobb-radius-md: 0.625rem;   /* 10px */
+  --lobb-radius-lg: 0.875rem;   /* 14px */
 
   /* ─── Color token reference ─────────────────────────────────────────────────
    * Values and dark-mode overrides live in globals.css.

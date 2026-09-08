@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import { OnboardingShell } from "@/features/auth/onboarding-shell";
 import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
+import { Button, Input, Field } from "@/components/ui";
 import { setPendingAuth } from "@/lib/auth-flow";
 
 type LoginRole = "player" | "coach" | "admin";
@@ -192,12 +193,8 @@ export function AuthEmailForm({
         )}
 
         {/* ── Email input ───────────────────────────────────────────────── */}
-        <div className="mt-7 flex flex-col gap-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">
-            Email address <span className="text-[var(--lobb-clay)] normal-case">*</span>
-          </label>
-          <div className="group relative flex h-[58px] items-center overflow-hidden rounded-[14px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface-2)]">
-            <input
+        <Field label="Email address" className="mt-7" error={error && error !== "no_account" ? error : undefined}>
+            <Input
               autoFocus
               type="email"
               inputMode="email"
@@ -205,9 +202,7 @@ export function AuthEmailForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
-              className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold text-[var(--lobb-black)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
             />
-          </div>
           {error === "no_account" ? (
             <FormAlert className="mt-1" variant="info" title="No account with this email yet">
               Want to join LOBB?{" "}
@@ -222,7 +217,7 @@ export function AuthEmailForm({
           ) : error ? (
             <FormAlert className="mt-1">{error}</FormAlert>
           ) : null}
-        </div>
+        </Field>
 
         {/* ── Legal checkboxes — signup only ───────────────────────────── */}
         {authMode === "signup" && (
@@ -246,12 +241,12 @@ export function AuthEmailForm({
 
         {/* ── CTA ──────────────────────────────────────────────────────── */}
         <div className="mt-7">
-          <button
+          <Button
             type="submit"
             disabled={!isReady || loading}
-            className="group relative flex h-14 w-full items-center justify-center overflow-hidden bg-[var(--lobb-clay)] text-[12px] font-black uppercase tracking-[0.15em] text-white shadow-[0_14px_30px_rgba(150,74,35,0.2)] transition-all duration-300 hover:bg-[var(--lobb-clay-dark)] hover:-translate-y-0.5 active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-surface-2)] disabled:text-[var(--lobb-muted)] disabled:shadow-none disabled:transform-none"
+            size="lg"
+            className="w-full uppercase tracking-[0.12em]"
           >
-            <span className="absolute inset-0 bg-white/10 opacity-0 transition-opacity group-hover:opacity-100" />
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <Loader2 className="size-4 animate-spin text-white/75" />
@@ -262,7 +257,7 @@ export function AuthEmailForm({
             ) : (
               "Send login code"
             )}
-          </button>
+          </Button>
 
           {authMode === "login" && (
             <p className="mt-4 px-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--lobb-text-tertiary)]">
