@@ -38,7 +38,6 @@ export default function CoachSetupStep5Page() {
   const [demoVideoUrl, setDemoVideoUrl] = useState("");
   const [acceptedCoachAgreement, setAcceptedCoachAgreement] = useState(false);
   const [confirmedProfileAccuracy, setConfirmedProfileAccuracy] = useState(false);
-  const [acceptedCoachConduct, setAcceptedCoachConduct] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -48,8 +47,7 @@ export default function CoachSetupStep5Page() {
     languages.length > 0 &&
     Boolean(courtAccess) &&
     acceptedCoachAgreement &&
-    confirmedProfileAccuracy &&
-    acceptedCoachConduct;
+    confirmedProfileAccuracy;
 
   // Prefill from the existing draft so revisiting this step never loses work
   useEffect(() => {
@@ -132,7 +130,7 @@ export default function CoachSetupStep5Page() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        documents: ["coach_agreement", "coach_profile_accuracy", "coach_code_of_conduct", "terms_of_service", "privacy_policy"],
+        documents: ["coach_agreement", "coach_code_of_conduct", "coach_profile_accuracy"],
         metadata: { source: "coach_profile_submission" },
       }),
     }).catch(() => null);
@@ -260,23 +258,16 @@ export default function CoachSetupStep5Page() {
           <ConsentCheckbox
             checked={acceptedCoachAgreement}
             onChange={setAcceptedCoachAgreement}
-            hint="Includes the 15% commission and payout structure."
+            hint="Covers the 15% commission, payout terms, and how we expect coaches to conduct themselves on LOBB."
           >
-            I have read and agree to the{" "}
-            <ConsentLink href="/coach-agreement">LOBB Coach Agreement</ConsentLink>.
+            I agree to the <ConsentLink href="/coach-agreement">LOBB Coach Agreement</ConsentLink>.
           </ConsentCheckbox>
           <ConsentCheckbox
             checked={confirmedProfileAccuracy}
             onChange={setConfirmedProfileAccuracy}
             hint="False information may result in immediate account suspension."
           >
-            I confirm all information in my profile is accurate.
-          </ConsentCheckbox>
-          <ConsentCheckbox checked={acceptedCoachConduct} onChange={setAcceptedCoachConduct}>
-            I agree to LOBB&apos;s{" "}
-            <ConsentLink href="/terms">Terms of Service</ConsentLink>,{" "}
-            <ConsentLink href="/privacy">Privacy Policy</ConsentLink>, and{" "}
-            <ConsentLink href="/coach-agreement">Code of Conduct</ConsentLink> for coaches.
+            Everything in my profile is accurate.
           </ConsentCheckbox>
         </div>
 

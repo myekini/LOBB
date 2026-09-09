@@ -125,7 +125,7 @@ export default function CoachSetupStep2Page() {
           className="mt-6"
           checked={acceptedIdentityConsent}
           onChange={setAcceptedIdentityConsent}
-          hint="Your data is encrypted, stored securely, and retained for a minimum of 5 years as required by law."
+          hint="Encrypted before storage and used only to confirm your identity and set up payouts."
         >
           I consent to LOBB and its identity verification partner processing my NIN and BVN to confirm my identity. See our{" "}
           <ConsentLink href="/privacy">Privacy Policy</ConsentLink>.

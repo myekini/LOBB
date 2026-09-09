@@ -1,4 +1,6 @@
-# LOBB product flows`r`n`r`nThis is the canonical reference for authentication, booking, availability, payments, KYC, referrals, reviews, and disputes.`r`n
+# LOBB product flows
+
+This is the canonical reference for authentication, booking, availability, payments, KYC, referrals, reviews, and disputes.
 
 ---
 
@@ -102,105 +104,15 @@ testing. Never enable in production.
 ---
 
 
-# Booking
+# Availability
 
-Availability setup and slot-generation details are maintained in [availability-and-booking.md](availability-and-booking.md). This document is the canonical player booking lifecycle reference.
-
-Three-step flow from a coach's public profile to a paid, confirmed session.
-For how availability itself is modelled (weekly windows, blocked dates, slot
-generation SQL), see [availability-and-booking.md](../availability-and-booking.md).
-
-## Slot discovery
-
-- `GET /api/coaches/[slug]/slots` calls the `get_available_slots` SQL
-  function: weekly windows − blocked dates − granular slot blocks − existing
-  bookings − active slot locks, minimum 24h in the future, 14-day horizon.
-- The coach profile page groups slots by day; picking one starts the flow.
-
-## Step 1 — hold the slot (`/book/[coachSlug]/step-1`)
-
-`POST /api/bookings/lock` writes a `slot_locks` row (coach, starts_at,
-player, expires_at = **10 minutes**). The lock:
-- prevents double-booking the same slot while someone is checking out,
-- is surfaced in the UI as a countdown; at 2 minutes remaining a warning
-  toast fires; at 0 the player is bounced back to the profile with
-  `?timeout=slot`.
-Expired locks are ignored by `get_available_slots` and cleaned up lazily.
-
-## Step 2 — location & notes (`/book/[coachSlug]/step-2`)
-
-Court choice adapts to the coach's `court_access`:
-
-| court_access | Player sees |
-|---|---|
-| coach has courts (`courts_worked_with` set) | "Coach's session courts" — only those courts |
-| `player_arranges` | "Choose your court" — all Lagos courts + custom venue emphasised |
-| `coach_can_recommend` | All courts + "ask your coach for a recommendation" |
-
-Selection (court id or custom text) and an optional note are carried to step 3
-via query params along with the lock id.
-
-## Step 3 — review & pay (`/book/[coachSlug]/step-3`)
-
-1. Player reviews the summary (slot, venue, price breakdown) and accepts the
-   cancellation-policy consent checkbox.
-2. `POST /api/bookings` (auth required, player role):
-   - Re-validates the lock belongs to this player and hasn't expired.
-   - Computes money server-side (never trusts client amounts):
-     `gross = hourly_rate`, `convenience_fee` (player-side),
-     `platform_commission` (15% coach-side), `coach_payout = gross − commission`,
-     `total_amount = gross + convenience_fee`.
-   - Inserts `bookings` (status **pending**) + `payments` (status **pending**)
-     with a generated `booking_ref` (LOBB-YYYYMMDD-XXXX) and Paystack
-     reference, then calls Paystack `transaction/initialize`.
-   - Returns the `authorization_url`; the client redirects to Paystack checkout.
-3. Payment confirmation is dual-path (webhook + verify-on-return) — see
-   [payments.md](payments.md). On success the booking flips to **confirmed**
-   and both sides get confirmation emails.
-
-## Booking lifecycle
-
-```
-pending ── paid (webhook/verify) ──▶ confirmed ──▶ session happens
-   │                                     │
-   │ unpaid 30+ min                      │ nightly release-escrow cron
-   ▼                                     ▼
-cancelled (expire cron)              completed + escrow_released_at
-                                         │ transfer to coach's bank
-                                     disputed ⇄ (admin resolution)
-```
-
-- `expire-pending-bookings` cron cancels stale unpaid bookings so locks/slots
-  free up.
-- `release-escrow` cron (see payments.md) completes ended sessions and pays
-  coaches.
-- Either party can cancel a pending/confirmed booking
-  (`POST /api/bookings/[id]/cancel`) under the policy: free until 24h before
-  the session; within 24h a 50% fee applies (player-side); coach cancellations
-  always refund the player 100%. Refunds go back through Paystack
-  automatically.
-
-## Reviews
-
-After a booking reaches **completed**, the player can leave a rating/comment
-(`/api/reviews`, one per booking, enforced server-side). Aggregates feed
-`coach_profiles_public.avg_rating` / `review_count`.
-
-
----
-
-
-# LOBB Feature Documentation
-
-## Manage Availability
-
-### Overview
+## Overview
 
 Coaches set when they are available to be booked. The system has two layers: a **weekly template** (hours that repeat every week) and **one-off date overrides** (specific days the coach wants to close). Players see generated 60-minute slots derived from these layers, up to 14 days ahead.
 
 ---
 
-### Data model
+## Data model
 
 | Table | What it stores |
 | --- | --- |
@@ -210,7 +122,7 @@ Coaches set when they are available to be booked. The system has two layers: a *
 
 ---
 
-### How slots are generated (server-side RPC)
+## How slots are generated (server-side RPC)
 
 `get_coach_available_slots(p_coach_id)` runs in Supabase with `timezone = 'Africa/Lagos'`. It:
 
@@ -227,17 +139,17 @@ The ±15 min booking buffer means a 10am booking silently removes the 9am and 11
 
 ---
 
-### UI (`/coach/availability`)
+## UI (`/coach/availability`)
 
 Two sections, one page, no view-toggle.
 
-#### Section 1 — Weekly hours
+### Section 1 — Weekly hours
 
 - Day toggles (Sun–Sat) with Mon–Fri, Weekend, Every day presets
 - "From / Until" time pickers + **Apply** button — sets the chosen hours on all selected days at once (replaces, not merges)
 - Per-day list showing every day's current hours with inline edit (time pickers + trash button) and a + button to add a second window per day
 
-#### Section 2 — Days off
+### Section 2 — Days off
 
 - Month calendar with prev/next navigation
 - Tap any future date to close it (turns red with strikethrough)
@@ -250,7 +162,7 @@ Two sections, one page, no view-toggle.
 
 ---
 
-### Known constraints
+## Known constraints
 
 - Players only see 14 days ahead regardless of how far out availability is set
 - The 24h advance booking rule means today's slots are never shown to players
@@ -258,7 +170,7 @@ Two sections, one page, no view-toggle.
 
 ---
 
-### Source files
+## Source files
 
 | File | Purpose |
 | --- | --- |
@@ -266,17 +178,15 @@ Two sections, one page, no view-toggle.
 | [src/app/api/coaches/me/availability/route.ts](src/app/api/coaches/me/availability/route.ts) | GET (load) + PUT (full replace save) |
 | [supabase/migrations/20260529000001_slots_exclude_active_locks.sql](supabase/migrations/20260529000001_slots_exclude_active_locks.sql) | Latest `get_coach_available_slots` RPC |
 
----
-
-## Booking Flow
-
-### Overview
-
-The booking flow is a 3-step process that lets a player reserve a 60-minute private coaching session with a verified coach, pick a court, and pay securely via Paystack. A slot lock prevents double-booking during checkout.
 
 ---
 
-### Step 1 — Pick a slot (`/book/[coachSlug]/step-1`)
+
+# Booking
+
+Three-step flow from a coach's public profile to a paid, confirmed session. A slot lock prevents double-booking during checkout.
+
+## Step 1 — Pick a slot (`/book/[coachSlug]/step-1`)
 
 1. Fetches the coach profile and available slots in parallel on load.
 2. Slots are grouped by day and shown in a 7-day scrollable calendar. Navigation arrows move forward/back one week (up to 2 weeks out).
@@ -291,12 +201,17 @@ The booking flow is a 3-step process that lets a player reserve a 60-minute priv
 
 ---
 
-### Step 2 — Pick a court (`/book/[coachSlug]/step-2`)
+## Step 2 — Pick a court (`/book/[coachSlug]/step-2`)
 
 1. A **live countdown timer** initialised from `expires_at` counts down the 10-minute lock window. At zero, the player is redirected back to the coach page (`?timeout=slot`). A warning toast fires at 2 minutes remaining.
-2. Player picks a venue in one of two modes:
-   - **Suggested** — curated list of Lagos tennis courts filtered to the coach's service areas.
-   - **Custom** — free-text address the player types in.
+2. What the player sees depends on the coach's `court_access` setting:
+
+   | `court_access` | Player sees |
+   | --- | --- |
+   | coach has courts (`courts_worked_with` set) | "Coach's session courts" — only those courts |
+   | `player_arranges` | "Choose your court" — all Lagos courts + custom venue emphasised |
+   | `coach_can_recommend` | All courts + "ask your coach for a recommendation" |
+
 3. **National Stadium special handling:** selecting it reveals a sub-picker for the specific court:
    - Front Courts (Members) — only accessible on weekdays before 4pm. Greyed out otherwise.
    - Center Court — always available.
@@ -306,7 +221,7 @@ The booking flow is a 3-step process that lets a player reserve a 60-minute priv
 
 ---
 
-### Step 3 — Review & pay (`/book/[coachSlug]/step-3`)
+## Step 3 — Review & pay (`/book/[coachSlug]/step-3`)
 
 1. Shows a full summary: coach identity, session date/time, location, and fee breakdown.
 2. Fee breakdown:
@@ -314,20 +229,25 @@ The booking flow is a 3-step process that lets a player reserve a 60-minute priv
    - LOBB service fee = 5% of session fee (charged to the player on top)
    - Total = session fee + service fee
 3. The 10-minute countdown continues here. A toast fires at 2 minutes remaining.
-4. Tapping **Pay** calls **POST `/api/bookings`**:
+4. A single consent checkbox — "I agree to the Cancellation Policy for this
+   booking" — gates the **Pay** button. This is the only cancellation-policy
+   confirmation in the booking flow (see Checkboxes & consent below).
+5. Tapping **Pay** calls **POST `/api/bookings`**:
    - Validates auth, player profile, and slot lock (not expired, not already used).
    - Confirms coach is `active` and has a `paystack_subaccount_code`.
    - Checks for court double-booking at National Stadium.
    - Calculates the split: 15% commission to LOBB, 85% payout to coach.
-   - Inserts a `bookings` row (`status: pending`) and a `payments` row.
+   - Inserts a `bookings` row (`status: pending`) and a `payments` row (both
+     `cancellation_policy_accepted` and this consent are logged to
+     `consent_logs`).
    - Initialises a Paystack transaction with the subaccount split config.
    - Returns `paystack_url`.
-5. Browser redirects to `paystack_url` — payment happens on Paystack's hosted page.
-6. Paystack redirects back to `/book/confirm?reference=...`.
+6. Browser redirects to `paystack_url` — payment happens on Paystack's hosted page.
+7. Paystack redirects back to `/book/confirm?reference=...`.
 
 ---
 
-### After Payment — Confirm (`/book/confirm`)
+## After Payment — Confirm (`/book/confirm`)
 
 1. **GET `/api/payments/verify?reference=...`** is called.
 2. Looks up the payment record in the DB first — if the Paystack webhook already fired and marked it `paid`, the booking is confirmed immediately.
@@ -348,7 +268,7 @@ The booking flow is a 3-step process that lets a player reserve a 60-minute priv
 
 ---
 
-### Money flow (Paystack subaccount split)
+## Money flow (Paystack subaccount split)
 
 ```text
 Player pays: session fee + 5% convenience fee
@@ -360,7 +280,7 @@ Money routes directly to the coach's bank account via Paystack's split payment f
 
 ---
 
-### Guard rails
+## Guard rails
 
 | Rule | Enforced in | Error code |
 | --- | --- | --- |
@@ -376,7 +296,7 @@ Money routes directly to the coach's bank account via Paystack's split payment f
 
 ---
 
-### Booking source files
+## Booking source files
 
 | File | Purpose |
 | --- | --- |
@@ -390,6 +310,30 @@ Money routes directly to the coach's bank account via Paystack's split payment f
 | [src/app/api/bookings/webhook/route.ts](src/app/api/bookings/webhook/route.ts) | Paystack webhook handler |
 | [src/lib/paystack.ts](src/lib/paystack.ts) | Paystack SDK wrapper |
 | [src/lib/app-errors.ts](src/lib/app-errors.ts) | Error code definitions |
+
+## Reviews
+
+After a booking reaches **completed**, the player can leave a rating/comment
+(`/api/reviews`, one per booking, enforced server-side). Aggregates feed
+`coach_profiles_public.avg_rating` / `review_count`.
+
+## Checkboxes & consent (cross-flow summary)
+
+Every consent checkbox in the product maps to exactly one document in
+`LEGAL_DOCUMENT_NAMES` (`src/lib/legal-consent.ts`) and is logged to
+`consent_logs` with document name, version, IP, and user agent. Each document
+is asked for **once** in the flow that actually needs it — no document is
+re-confirmed at a later step:
+
+| Where | Checkbox(es) | Documents |
+| --- | --- | --- |
+| Signup (`/auth/signup/*`) | One: Terms, Privacy, Cancellation & Refund Policy | `terms_of_service`, `privacy_policy`, `cancellation_policy` |
+| Coach onboarding step 2 (`/auth/setup/coach/2`) | One: NIN/BVN processing consent | `identity_verification_consent` |
+| Coach onboarding step 5 (`/auth/setup/coach/5`) | Two: Coach Agreement + Code of Conduct; profile-accuracy confirmation | `coach_agreement`, `coach_code_of_conduct`, `coach_profile_accuracy` |
+| Booking checkout (`/book/[coachSlug]/step-3`) | One: cancellation policy for this booking | `cancellation_policy` (booking-scoped, separate log entry from signup's) |
+
+See [docs/LEGAL.md](LEGAL.md) for what still needs an actual legal/compliance
+review rather than an engineering decision.
 
 
 ---
@@ -465,8 +409,7 @@ or `ADMIN_SECRET` — see OPERATIONS.md):
 3. Call Paystack Refund (full or partial amount in kobo). Refund failures are
    surfaced in the response and can be retried by admin.
 
-Dispute resolutions can also trigger refunds — see
-[disputes.md](disputes.md).
+Dispute resolutions can also trigger refunds — see the Disputes section below.
 
 ## Idempotency & reconciliation
 
@@ -492,16 +435,16 @@ Dispute resolutions can also trigger refunds — see
 
 Why: LOBB moves money to individuals, so identity must be verified before
 payouts — both for fraud protection and because Paystack requires validated
-details to create transfer recipients. Strategy background:
-[../LOBB_KYC_Payments_Referral_Brand.md](../LOBB_KYC_Payments_Referral_Brand.md).
+details to create transfer recipients.
 
 ## Onboarding path (6 steps)
 
 1. **Profile basics** — name, photo, headline. Prefilled from the draft on
    revisit, so coaches can safely go back and edit (e.g. to fix a name that
    fails bank matching) without losing anything.
-2. **Identity** — NIN + BVN (11 digits each) with explicit consent copy
-   (encrypted, 5-year retention per regulation).
+2. **Identity** — NIN + BVN (11 digits each), encrypted at rest
+   (`nin_encrypted`/`bvn_encrypted`, AES-256-GCM — see `src/lib/crypto.ts`)
+   with explicit consent captured before collection.
 3. **Bio & experience.**
 4. **Rate, location, player levels.**
 5. **Certifications, specialisations, languages, court access + legal
@@ -532,8 +475,8 @@ Approval generates the referral code and sends the "profile is live" email.
   (`paystack_recipient_code` on the coach row). That's the payout
   destination.
 - Session payouts: nightly escrow cron transfers `coach_payout_ngn` per
-  completed booking (see [payments.md](payments.md)).
-- Referral payouts: batched ≥ ₦5,000 (see [referrals.md](referrals.md)).
+  completed booking (see the Payments section above).
+- Referral payouts: batched ≥ ₦5,000 (see the Referrals section below).
 - Coaches can update their payout bank in `/coach/settings/bank` — gated
   behind KYC (BVN present) — and see their current account + history.
 

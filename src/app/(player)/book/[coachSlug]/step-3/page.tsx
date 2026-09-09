@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
@@ -247,17 +246,6 @@ function BookingStep3Content() {
         )}
         </div>
       </section>
-
-      {/* Cancellation policy */}
-      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-medium leading-relaxed text-[var(--lobb-text-primary)]">
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-text-tertiary)]">Cancellation policy</p>
-          <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">
-            Free cancellation up to 24 hours before the session. Cancel within 24 hours and 50% is refunded.
-            <Link href="/cancellation-policy" className="ml-1 font-medium text-[var(--lobb-clay)]">Read policy</Link>
-          </p>
-        </div>
-      </div>
 
       {/* Payment protection banner */}
       <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] p-4 text-xs font-medium leading-relaxed text-[var(--lobb-text-primary)]">

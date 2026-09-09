@@ -8,14 +8,7 @@ The documentation is intentionally flat. Each file is a canonical source of trut
 - [Operations](OPERATIONS.md) — environments, deployments, jobs, monitoring, and recovery
 - [Security](SECURITY.md) — authorization, sensitive data, money movement, and known gaps
 - [Setup](SETUP.md) — Supabase dashboard and environment setup
+- [Cloudflare](CLOUDFLARE.md) — proxying the app through Cloudflare (DNS, TLS, caching, WAF)
+- [Legal](LEGAL.md) — what's already covered in-app vs. what needs an actual lawyer
 
 Historical feature dumps and exploratory research are intentionally not retained as parallel documentation sources.
-
-## Cleanup manifest
-
-| Classification | Location | Decision |
-| --- | --- | --- |
-| Keep | `src/app/api`, `supabase/migrations`, `legal/`, `brand/` | Runtime, compliance, and product assets |
-| Merge | Shared UI controls and state components | Migrate to `src/components/ui` and `src/components/feedback` |
-| Archive | Historical product exploration | Removed after extracting relevant flow and design decisions |
-| Delete | `.claude/skills`, duplicate design/feature documents | Removed; no runtime references were found |
