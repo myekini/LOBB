@@ -5,27 +5,32 @@
 
 # Authentication
 
-Passwordless email OTP via Supabase Auth. No passwords anywhere in the system.
+Supabase Auth with password-first sign-in, email verification codes, optional passkeys, and role-specific onboarding.
 
 ## Signup
 
-1. `/auth/signup/player` or `/auth/signup/coach` (or the generic `/auth/login?mode=signup` with role tabs).
-   User enters email and accepts the legal checkboxes (Terms + Privacy, Cancellation & Refund).
-2. Client calls `POST /api/auth/send-otp` with `{ email, role }`.
+1. `/auth/signup` asks whether the user wants to book coaching or offer coaching.
+   The choice routes to `/auth/signup/player` or `/auth/signup/coach`.
+   Direct role-specific URLs remain supported for contextual marketing links.
+2. User enters an email and accepts the Terms of Service and Privacy Policy.
+3. Client calls `POST /api/auth/send-otp` with `{ email, role }`.
    - Signup mode uses `shouldCreateUser: true`; the chosen role is stored in
      `raw_user_meta_data.role`.
    - Supabase generates a **6-digit** code (dashboard: Authentication → Email →
      "Email OTP Length" — must match `NEXT_PUBLIC_OTP_LENGTH`).
    - The send-email auth hook (`/api/auth/email-hook`, secured with
      `SUPABASE_EMAIL_HOOK_SECRET`) delivers the code via Resend.
-3. The pending request (email, mode, role, sentAt, accepted documents) is kept
-   in `sessionStorage` (`lib/auth-flow.ts`) and the user lands on `/auth/verify`.
-4. User enters the code → `POST /api/auth/verify-otp`:
+4. The pending request (email, mode, role, sentAt, accepted documents) is kept
+   in `localStorage` (`lib/auth-flow.ts`) and the user lands on `/auth/verify`.
+5. User enters the code → `POST /api/auth/verify-otp`:
    - Verifies via `supabase.auth.verifyOtp` and returns the session tokens.
    - Reads the `lobb_ref` referral cookie and stamps
      `profiles.referred_by_coach_id` (first touch only — never overwritten).
-   - Client sets the session, records legal consent (`POST /api/legal/consent`
-     → `consent_logs`), and routes by role (see Routing below).
+   - Client sets the session and records legal consent (`POST /api/legal/consent`
+     → `consent_logs`).
+6. New accounts continue to `/auth/secure` to create a password, then route
+   into the player profile or six-step coach application. Passkey enrollment
+   is deferred to `/account/security` and the post-onboarding security nudge.
 
 ### Database side of signup
 
@@ -43,16 +48,18 @@ never reintroduce here:
   work from the API explode inside signup. Use `pg_catalog` functions or
   schema-qualify everything.
 
-## Login
+## Sign in
 
-Same flow with `shouldCreateUser: false`. If the email has no account,
-send-otp returns **404** and the UI shows an inline "no account — sign up as
-player / coach" alert with the email carried over. Codes are rate-limited by
-Supabase (60s resend cooldown → surfaced as 429 with a friendly message).
+`/auth/login` presents email and password as the primary path. "Use a different
+sign-in method" progressively reveals email verification code and passkey
+options. Password reset is a distinct action: email code → `/auth/verify` →
+`/auth/secure?reset=1`. Verification-code requests use `shouldCreateUser: false`
+and remain rate-limited by Supabase and the application API.
 
 ## Verify-page routing
 
-After a successful verify, `/auth/verify` routes by profile state:
+After a verification-code sign-in, `/auth/verify` routes by profile state.
+New signups pass through password creation before this destination:
 
 | Profile state | Destination |
 |---|---|

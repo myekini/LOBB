@@ -124,33 +124,33 @@ export default function CoachEarningsPage() {
         {/* ── Top summary card ────────────────────────────────────────────── */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
           <section className="overflow-hidden bg-[#0D0D0D] p-5 text-white sm:p-6">
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-white/75">Total earnings</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/75">Total earnings</p>
             {loading ? (
               <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" />
             ) : (
-              <p className="mt-6 text-[38px] font-black leading-none sm:text-[48px]">{money(totalEarnings)}</p>
+              <p className="mt-6 text-[38px] font-semibold leading-none sm:text-[48px]">{money(totalEarnings)}</p>
             )}
-            <p className="mt-3 text-sm font-semibold text-white/75">Sessions and referral bonuses combined.</p>
+            <p className="mt-3 text-sm font-medium text-white/75">Sessions and referral bonuses combined.</p>
 
             {/* 3-column breakdown */}
-            <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-[18px] border border-white/10">
+            <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-[var(--lobb-radius-lg)] border border-white/10">
               <WalletStat value={loading ? null : money(sessionEarnings)} label="Sessions" />
               <WalletStat value={loading ? null : money(referralEarnings)} label="Referrals" bordered />
               <WalletStat value={loading ? null : money(summary?.pending_payout_ngn ?? 0)} label="Pending" bordered />
             </div>
           </section>
 
-          <Link href="/coach/settings/bank" className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 transition-colors hover:border-[var(--lobb-clay)]/35">
+          <Link href="/coach/settings/bank" className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 transition-colors hover:border-[var(--lobb-clay)]/35">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex size-12 items-center justify-center rounded-[16px] bg-[var(--lobb-clay-light)]">
+              <div className="flex size-12 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)]">
                 <Landmark className="size-5 text-[var(--lobb-clay)]" />
               </div>
               <ArrowRight className="size-4 text-[var(--lobb-text-tertiary)]" />
             </div>
-            <p className="mt-5 text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Bank account</p>
-            <p className="mt-2 text-lg font-black">{hasBank ? bank?.bank_name : "No bank connected"}</p>
-            <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">{maskedAccount(bank?.bank_account_number)}</p>
-            <p className="mt-5 inline-flex h-10 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]">
+            <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Bank account</p>
+            <p className="mt-2 text-lg font-medium">{hasBank ? bank?.bank_name : "No bank connected"}</p>
+            <p className="mt-1 text-sm font-medium text-[var(--lobb-text-secondary)]">{maskedAccount(bank?.bank_account_number)}</p>
+            <p className="mt-5 inline-flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-medium text-[var(--lobb-text-inverse)]">
               {hasBank ? "Manage payout bank" : "Add payout bank"}
             </p>
           </Link>
@@ -159,15 +159,15 @@ export default function CoachEarningsPage() {
         {/* ── Session payouts ─────────────────────────────────────────────── */}
         <div className="mt-7 flex items-center justify-between">
           <div>
-            <h2 className="font-black">Session payouts</h2>
-            <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">Settlements sent or queued for your bank account.</p>
+            <h2 className="font-semibold">Session payouts</h2>
+            <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">Settlements sent or queued for your bank account.</p>
           </div>
         </div>
 
         <section className="mt-3 grid gap-3">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <article key={i} className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+              <article key={i} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <SkeletonBlock className="h-5 w-32" />
                 <SkeletonBlock className="mt-3 h-10 w-full" />
               </article>
@@ -177,20 +177,20 @@ export default function CoachEarningsPage() {
               const meta = payoutStatusMeta[payout.status] ?? payoutStatusMeta.pending;
               const Icon = meta.icon;
               return (
-                <article key={payout.id} className="lobb-app-card grid gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
+                <article key={payout.id} className="lobb-surface-outlined grid gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
                   <div className="flex min-w-0 gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-bg-secondary)]">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)]">
                       <WalletCards className="size-4 text-[var(--lobb-clay)]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-black">{payoutDate(payout)}</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                      <p className="text-sm font-medium">{payoutDate(payout)}</p>
+                      <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
                         {payout.session_count} {payout.session_count === 1 ? "session" : "sessions"}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-black sm:text-right">{money(payout.amount_ngn)}</p>
-                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[var(--lobb-bg-secondary)] px-2.5 py-1 text-[10px] font-black uppercase text-[var(--lobb-text-secondary)] sm:justify-self-end">
+                  <p className="text-sm font-medium sm:text-right">{money(payout.amount_ngn)}</p>
+                  <span className="inline-flex w-fit items-center gap-1 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)] px-2.5 py-1 text-[10px] font-medium uppercase text-[var(--lobb-text-secondary)] sm:justify-self-end">
                     <Icon className="size-3" style={{ color: meta.color }} />
                     {meta.label}
                   </span>
@@ -199,12 +199,12 @@ export default function CoachEarningsPage() {
             })
           ) : (
             <CoachSurface className="p-5">
-              <p className="text-sm font-black text-[var(--lobb-text-primary)]">No payouts yet</p>
-              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+              <p className="text-sm font-medium text-[var(--lobb-text-primary)]">No payouts yet</p>
+              <p className="mt-1 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
                 Completed sessions ready for payout will appear here.
               </p>
               {!hasBank && (
-                <Link href="/coach/settings/bank" className="mt-4 inline-flex h-10 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]">
+                <Link href="/coach/settings/bank" className="mt-4 inline-flex h-10 items-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-medium text-[var(--lobb-text-inverse)]">
                   Add payout bank
                 </Link>
               )}
@@ -215,8 +215,8 @@ export default function CoachEarningsPage() {
         {/* ── Referral earnings ───────────────────────────────────────────── */}
         <div className="mt-9 flex items-center justify-between">
           <div>
-            <h2 className="font-black">Referral earnings</h2>
-            <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+            <h2 className="font-semibold">Referral earnings</h2>
+            <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
               ₦1,500 per new player you bring to LOBB who completes their first session.
             </p>
           </div>
@@ -234,7 +234,7 @@ export default function CoachEarningsPage() {
 
         {/* Withdrawal notice */}
         {!loading && referralEarnings > 0 && (
-          <p className="mt-3 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+          <p className="mt-3 text-xs font-medium text-[var(--lobb-text-secondary)]">
             {canWithdrawReferral
               ? `₦${availableReferral.toLocaleString()} available — LOBB will include this in your next payout.`
               : `Referral balance: ${money(availableReferral)} · Withdrawable once you reach ${money(PAYOUT_THRESHOLD)}.`}
@@ -244,7 +244,7 @@ export default function CoachEarningsPage() {
         <section className="mt-3 grid gap-3">
           {loading ? (
             Array.from({ length: 2 }).map((_, i) => (
-              <article key={i} className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+              <article key={i} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <SkeletonBlock className="h-5 w-32" />
                 <SkeletonBlock className="mt-3 h-8 w-full" />
               </article>
@@ -254,18 +254,18 @@ export default function CoachEarningsPage() {
               const meta = creditStatusMeta[credit.status] ?? creditStatusMeta.pending;
               const Icon = meta.icon;
               return (
-                <article key={credit.id} className="lobb-app-card grid gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
+                <article key={credit.id} className="lobb-surface-outlined grid gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:grid-cols-[minmax(0,1fr)_140px_120px] sm:items-center">
                   <div className="flex min-w-0 gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-clay-light)]">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)]">
                       <Gift className="size-4 text-[var(--lobb-clay)]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-black">Referral bonus</p>
-                      <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">{creditDate(credit)}</p>
+                      <p className="text-sm font-medium">Referral bonus</p>
+                      <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{creditDate(credit)}</p>
                     </div>
                   </div>
-                  <p className="text-sm font-black sm:text-right">{money(credit.amount)}</p>
-                  <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[var(--lobb-bg-secondary)] px-2.5 py-1 text-[10px] font-black uppercase text-[var(--lobb-text-secondary)] sm:justify-self-end">
+                  <p className="text-sm font-medium sm:text-right">{money(credit.amount)}</p>
+                  <span className="inline-flex w-fit items-center gap-1 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)] px-2.5 py-1 text-[10px] font-medium uppercase text-[var(--lobb-text-secondary)] sm:justify-self-end">
                     <Icon className="size-3" style={{ color: meta.color }} />
                     {meta.label}
                   </span>
@@ -274,8 +274,8 @@ export default function CoachEarningsPage() {
             })
           ) : (
             <CoachSurface className="p-5">
-              <p className="text-sm font-black text-[var(--lobb-text-primary)]">No referral earnings yet</p>
-              <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+              <p className="text-sm font-medium text-[var(--lobb-text-primary)]">No referral earnings yet</p>
+              <p className="mt-1 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
                 Share your referral link from the dashboard. You earn ₦1,500 each time a referred player completes their first session.
               </p>
             </CoachSurface>
@@ -291,8 +291,8 @@ export default function CoachEarningsPage() {
 function WalletStat({ value, label, bordered }: { value: string | null; label: string; bordered?: boolean }) {
   return (
     <div className={`p-4 ${bordered ? "border-l border-white/10" : ""}`}>
-      {value ? <p className="truncate text-lg font-black text-white">{value}</p> : <SkeletonBlock className="h-6 w-24 bg-white/15" />}
-      <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-white/75">{label}</p>
+      {value ? <p className="truncate text-lg font-medium text-white">{value}</p> : <SkeletonBlock className="h-6 w-24 bg-white/15" />}
+      <p className="mt-1 text-[10px] font-medium uppercase leading-4 tracking-[0.12em] text-white/75">{label}</p>
     </div>
   );
 }
@@ -300,8 +300,8 @@ function WalletStat({ value, label, bordered }: { value: string | null; label: s
 function ReferralStat({ value, label, bordered }: { value: string; label: string; bordered?: boolean }) {
   return (
     <div className={`p-4 ${bordered ? "border-l border-[var(--lobb-border-subtle)]" : ""}`}>
-      <p className="truncate text-lg font-black">{value}</p>
-      <p className="mt-1 text-[10px] font-black uppercase leading-4 tracking-[0.12em] text-[var(--lobb-text-tertiary)]">{label}</p>
+      <p className="truncate text-lg font-medium">{value}</p>
+      <p className="mt-1 text-[10px] font-medium uppercase leading-4 tracking-[0.12em] text-[var(--lobb-text-tertiary)]">{label}</p>
     </div>
   );
 }

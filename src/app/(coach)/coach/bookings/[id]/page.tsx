@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -88,8 +89,8 @@ export default function CoachBookingDetailPage() {
       <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
         <CoachFlowHeader title="Booking" eyebrow="Not found" showLogout={false} />
         <section className="mx-auto max-w-5xl pt-5">
-          <h1 className="text-xl font-black">Booking not found</h1>
-          <Link href="/coach/bookings" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+          <h1 className="text-xl font-semibold">Booking not found</h1>
+          <Link href="/coach/bookings" className="mt-5 block text-sm font-medium text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );
@@ -110,7 +111,7 @@ export default function CoachBookingDetailPage() {
     <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Booking Detail" eyebrow="Coach schedule" actionHref="/coach/bookings" actionLabel="List" showLogout={false} />
       <section className="mx-auto max-w-5xl pt-5 lg:pt-7">
-        <Link href="/coach/bookings" className="mb-4 inline-flex items-center gap-2 text-xs font-black text-[var(--lobb-text-secondary)]">
+        <Link href="/coach/bookings" className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-[var(--lobb-text-secondary)]">
           <ArrowLeft className="size-4" />
           Back to bookings
         </Link>
@@ -118,19 +119,19 @@ export default function CoachBookingDetailPage() {
         <section className="overflow-hidden bg-[#0D0D0D] p-5 text-white shadow-[var(--lobb-shadow-modal)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-black capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/75"}`}>
+              <span className={`inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] px-3 py-1.5 text-xs font-medium capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/75"}`}>
                 <Circle className="size-2 fill-current text-[var(--lobb-success)]" />
                 {booking.status}
               </span>
-              <h2 className="mt-5 text-[28px] font-black leading-tight text-white sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
-              <p className="mt-2 text-sm font-semibold text-white/75">
+              <h2 className="mt-5 text-[28px] font-semibold leading-tight text-white sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-2 text-sm font-medium text-white/75">
                 {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} session
               </p>
             </div>
-            <div className="rounded-[18px] border border-white/10 bg-white/[0.06] p-4 sm:min-w-[220px]">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-white/75">Coach payout</p>
-              <p className="mt-2 text-2xl font-black text-white">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
-              <p className="mt-1 text-xs font-semibold text-white/75">From this session</p>
+            <div className="rounded-[var(--lobb-radius-lg)] border border-white/10 bg-white/[0.06] p-4 sm:min-w-[220px]">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-white/75">Coach payout</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
+              <p className="mt-1 text-xs font-medium text-white/75">From this session</p>
             </div>
           </div>
         </section>
@@ -139,7 +140,7 @@ export default function CoachBookingDetailPage() {
           <section className="space-y-4">
             <DetailSection title="Player">
               <div className="flex items-center gap-3">
-                <div className="flex size-12 items-center justify-center overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
+                <div className="flex size-12 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
                   {playerProfile?.avatar_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={playerProfile.avatar_url} alt="" className="size-full object-cover" />
@@ -148,7 +149,7 @@ export default function CoachBookingDetailPage() {
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-black">{player?.full_name ?? "Player"}</p>
+                  <p className="truncate font-medium">{player?.full_name ?? "Player"}</p>
                   {booking.player_notes && (
                     <p className="mt-1 text-sm font-medium italic text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
                   )}
@@ -158,7 +159,7 @@ export default function CoachBookingDetailPage() {
                 <div className="mt-4 flex items-center gap-3">
                   <a
                     href={`tel:${playerProfile.phone_number}`}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-black"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-medium"
                   >
                     <Phone className="size-3.5 text-[var(--lobb-clay)]" />
                     Call Player
@@ -167,14 +168,14 @@ export default function CoachBookingDetailPage() {
                     href={`https://wa.me/${playerProfile.phone_number.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex flex-1 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-black"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-medium"
                   >
                     <MessageCircle className="size-3.5 text-[var(--lobb-clay)]" />
                     WhatsApp
                   </a>
                 </div>
               ) : (
-                <p className="mt-4 flex items-center gap-2 text-sm font-black text-[var(--lobb-text-secondary)]">
+                <p className="mt-4 flex items-center gap-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   <Phone className="size-4 text-[var(--lobb-clay)]" />
                   Contact details are in your confirmation email
                 </p>
@@ -182,7 +183,7 @@ export default function CoachBookingDetailPage() {
             </DetailSection>
 
             <DetailSection title="Location">
-              <p className="flex items-start gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+              <p className="flex items-start gap-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
                 {booking.location || "Location not specified"}
               </p>
@@ -191,7 +192,7 @@ export default function CoachBookingDetailPage() {
 
           <aside className="space-y-4">
             <DetailSection title="Earnings">
-              <div className="mb-3 flex items-center gap-2 text-sm font-black">
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium">
                 <WalletCards className="size-4 text-[var(--lobb-clay)]" />
                 Session breakdown
               </div>
@@ -200,24 +201,24 @@ export default function CoachBookingDetailPage() {
               <div className="my-2 border-t border-[var(--lobb-border-subtle)]" />
               <PaymentRow label="Your payout" amount={booking.coach_payout_ngn ?? booking.hourly_rate_ngn} strong />
               {sessionRef && (
-                <p className="mt-3 rounded-[10px] bg-[var(--lobb-bg-primary)] px-3 py-2 font-mono text-xs font-black tracking-wider text-[var(--lobb-text-secondary)]">
+                <p className="mt-3 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 py-2 font-mono text-xs font-medium tracking-wider text-[var(--lobb-text-secondary)]">
                   {sessionRef}
                 </p>
               )}
             </DetailSection>
 
             {canCancel && (
-              <section className="lobb-app-panel border border-[var(--lobb-error)]/30 bg-[var(--lobb-bg-elevated)] p-4">
-                <p className="text-sm font-black">Need to cancel?</p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+              <section className="lobb-surface-inset border border-[var(--lobb-error)]/30 bg-[var(--lobb-bg-elevated)] p-4">
+                <p className="text-sm font-medium">Need to cancel?</p>
+                <p className="mt-1 text-sm font-medium leading-5 text-[var(--lobb-text-secondary)]">
                   Cancelling refunds the player and removes the session from both schedules.
                 </p>
-                <button
+                <LobbButton variant="unstyled"
                   onClick={() => setShowCancel(true)}
-                  className="mt-4 h-11 w-full rounded-[14px] border border-[var(--lobb-error)] text-sm font-black text-[var(--lobb-error)]"
+                  className="mt-4 h-11 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-error)] text-sm font-medium text-[var(--lobb-error)]"
                 >
                   Cancel Session
-                </button>
+                </LobbButton>
               </section>
             )}
           </aside>
@@ -237,9 +238,9 @@ export default function CoachBookingDetailPage() {
             aria-labelledby="coach-cancel-title"
             className="fixed inset-x-0 bottom-0 z-[70] p-4"
           >
-            <section className="lobb-app-card mx-auto w-full max-w-md bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
+            <section className="lobb-surface-outlined mx-auto w-full max-w-md bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
               <div className="flex items-start justify-between gap-4">
-                <h2 id="coach-cancel-title" className="text-lg font-black">Cancel this session?</h2>
+                <h2 id="coach-cancel-title" className="text-lg font-semibold">Cancel this session?</h2>
                 <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center">
                   <X className="size-5" />
                 </Dialog.Close>
@@ -255,23 +256,23 @@ export default function CoachBookingDetailPage() {
                   </>
                 )}
               </p>
-              <p className="mt-3 rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold leading-5 text-[var(--lobb-text-secondary)]">
+              <p className="mt-3 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold leading-5 text-[var(--lobb-text-secondary)]">
                 {cancelPolicy.note}
               </p>
-              <p className="mt-3 text-sm font-semibold text-[var(--lobb-error)]">
+              <p className="mt-3 text-sm font-medium text-[var(--lobb-error)]">
                 Repeated cancellations may affect your coach standing on LOBB.
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <Dialog.Close className="h-12 rounded-[14px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
+                <Dialog.Close className="h-12 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]">
                   Keep Session
                 </Dialog.Close>
-                <button
+                <LobbButton variant="unstyled"
                   disabled={cancelling}
                   onClick={cancelBooking}
-                  className="h-12 rounded-[14px] border border-[var(--lobb-error)] text-sm font-black text-[var(--lobb-error)] disabled:opacity-60"
+                  className="h-12 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-error)] text-sm font-medium text-[var(--lobb-error)] disabled:opacity-60"
                 >
                   {cancelling ? "Cancelling..." : "Yes, Cancel"}
-                </button>
+                </LobbButton>
               </div>
             </section>
           </Dialog.Popup>
@@ -283,8 +284,8 @@ export default function CoachBookingDetailPage() {
 
 function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-      <p className="mb-4 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</p>
+    <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+      <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</p>
       {children}
     </section>
   );
@@ -292,7 +293,7 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
 
 function PaymentRow({ amount, label, strong, negative }: { amount: number; label: string; strong?: boolean; negative?: boolean }) {
   return (
-    <p className={`flex justify-between gap-5 py-1 text-sm ${strong ? "font-black text-[var(--lobb-text-primary)]" : "font-semibold text-[var(--lobb-text-secondary)]"}`}>
+    <p className={`flex justify-between gap-5 py-1 text-sm ${strong ? "font-medium text-[var(--lobb-text-primary)]" : "font-medium text-[var(--lobb-text-secondary)]"}`}>
       <span>{label}</span>
       <span className={negative ? "text-[var(--lobb-error)]" : undefined}>
         {negative ? "−" : ""}{money(amount)}

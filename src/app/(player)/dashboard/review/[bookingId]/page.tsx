@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -70,7 +72,7 @@ export default function LeaveReviewPage() {
             <BookingCardSkeleton />
           </div>
           <SkeletonBlock className="mx-auto mt-8 h-12 w-64 rounded-full" />
-          <SkeletonBlock className="mt-8 h-28 w-full rounded-[16px]" />
+          <SkeletonBlock className="mt-8 h-28 w-full rounded-[var(--lobb-radius-lg)]" />
         </section>
       </main>
     );
@@ -80,8 +82,8 @@ export default function LeaveReviewPage() {
     return (
       <main className="lobb-app-page min-h-screen px-5 py-10 text-[var(--lobb-text-primary)]">
         <section className="mx-auto max-w-md">
-          <h1 className="text-xl font-black">Booking not found</h1>
-          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+          <h1 className="text-xl font-semibold">Booking not found</h1>
+          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-medium text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );
@@ -91,50 +93,50 @@ export default function LeaveReviewPage() {
     <main className="lobb-app-page min-h-screen px-5 pb-10 pt-5 text-[var(--lobb-text-primary)]">
       <section className="mx-auto max-w-md">
         <header className="mb-8 flex items-center gap-3">
-          <Link href="/dashboard/bookings" className="flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)]" aria-label="Go back">
+          <Link href="/dashboard/bookings" className="flex size-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
-          <h1 className="font-black">Leave a review</h1>
+          <h1 className="font-semibold">Leave a review</h1>
         </header>
 
-        <h2 className="text-[22px] font-black leading-tight">How was your session with {(coach?.full_name ?? "your coach").split(" ")[0]}?</h2>
-        <p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">{formatBookingDate(booking.starts_at)}</p>
+        <h2 className="text-[22px] font-semibold leading-tight">How was your session with {(coach?.full_name ?? "your coach").split(" ")[0]}?</h2>
+        <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
 
-        <div className="lobb-app-card mt-7 flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+        <div className="lobb-surface-outlined mt-7 flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={coach?.profile_photo_url || "/favicon.svg"} alt="" className="size-14 rounded-full object-cover" />
           <div>
-            <p className="font-black">{coach?.full_name ?? "Coach"}</p>
-            <p className="text-sm font-semibold text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || booking.location}</p>
+            <p className="font-medium">{coach?.full_name ?? "Coach"}</p>
+            <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{coach?.headline || coach?.primary_location || booking.location}</p>
           </div>
         </div>
 
-        <div className="my-8 h-px bg-[var(--lobb-border)]" />
+        <div className="my-8 h-px bg-[var(--lobb-border-subtle)]" />
 
         <div className="flex justify-center gap-2">
           {[1, 2, 3, 4, 5].map((value) => (
-            <button key={value} onClick={() => setRating(value)} className="flex size-12 items-center justify-center rounded-full transition active:scale-95" aria-label={`${value} stars`}>
-              <Star className={`size-10 ${value <= rating ? "fill-[var(--lobb-star)] text-[var(--lobb-star)]" : "text-[var(--lobb-muted)]"}`} />
-            </button>
+            <LobbButton variant="unstyled" key={value} onClick={() => setRating(value)} className="flex size-12 items-center justify-center rounded-full transition active:scale-95" aria-label={`${value} stars`}>
+              <Star className={`size-10 ${value <= rating ? "fill-[var(--lobb-star)] text-[var(--lobb-star)]" : "text-[var(--lobb-text-secondary)]"}`} />
+            </LobbButton>
           ))}
         </div>
-        <p className="mt-3 text-center text-sm font-semibold text-[var(--lobb-muted)]">{rating ? `${rating} out of 5` : "Tap to rate"}</p>
+        <p className="mt-3 text-center text-sm font-medium text-[var(--lobb-text-secondary)]">{rating ? `${rating} out of 5` : "Tap to rate"}</p>
 
         <label className="mt-8 block">
-          <textarea
+          <LobbTextarea
             value={review}
             maxLength={200}
             onChange={(event) => setReview(event.target.value)}
             placeholder="Tell others what you thought (optional)"
-            className="h-28 w-full resize-none rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 text-sm font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]"
+            className="h-28 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-sm font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]"
           />
-          <span className="mt-2 block text-right text-xs font-bold text-[var(--lobb-muted)]">{review.length}/200</span>
+          <span className="mt-2 block text-right text-xs font-bold text-[var(--lobb-text-secondary)]">{review.length}/200</span>
         </label>
 
-        <button disabled={!rating || submitting} onClick={submit} className="mt-5 h-14 w-full rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:shadow-none">
+        <LobbButton variant="unstyled" disabled={!rating || submitting} onClick={submit} className="mt-5 h-14 w-full rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-semibold text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:shadow-none">
           {submitting ? "Submitting" : "Submit review"}
-        </button>
-        <Link href="/dashboard/bookings" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-muted)]">
+        </LobbButton>
+        <Link href="/dashboard/bookings" className="mt-5 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
           Skip for now
         </Link>
       </section>

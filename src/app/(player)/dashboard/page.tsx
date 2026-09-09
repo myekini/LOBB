@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -140,7 +141,7 @@ function StatusChip({ booking }: { booking: DashboardBooking }) {
         : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)]";
 
   return (
-    <p className={`inline-flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs font-black capitalize ${cls}`}>
+    <p className={`inline-flex shrink-0 items-center gap-2 px-3 py-1.5 text-xs font-medium capitalize ${cls}`}>
       {isConfirmed ? (
         <Circle className="lobb-dot-pulse size-2 fill-current" />
       ) : pendingPay || isConfirming ? (
@@ -156,10 +157,10 @@ function StatusChip({ booking }: { booking: DashboardBooking }) {
 function CoachAvatar({ coach, size = "size-12" }: { coach: JoinedCoach | null; size?: string }) {
   if (coach?.profile_photo_url) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={coach.profile_photo_url} alt="" className={`${size} shrink-0 rounded-full object-cover transition-transform duration-300 group-hover:scale-105`} />;
+    return <img src={coach.profile_photo_url} alt="" className={`${size} shrink-0 rounded-[var(--lobb-radius-lg)] object-cover transition-transform duration-300 group-hover:scale-105`} />;
   }
   return (
-    <span className={`flex ${size} shrink-0 items-center justify-center rounded-full bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]`}>
+    <span className={`flex ${size} shrink-0 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]`}>
       <UserRound className="size-5" />
     </span>
   );
@@ -239,26 +240,26 @@ export default function DashboardPage() {
             }`}
           />
           {(["upcoming", "past"] as const).map((item) => (
-            <button
+            <LobbButton variant="unstyled"
               key={item}
               onClick={() => setTab(item)}
-              className={`relative z-10 h-11 text-sm font-black capitalize transition-colors duration-300 active:scale-[0.98] ${
+              className={`relative z-10 h-11 text-sm font-medium capitalize transition-colors duration-300 active:scale-[0.98] ${
                 tab === item ? "text-[var(--lobb-text-inverse)]" : "text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)]"
               }`}
             >
               {item}
-            </button>
+            </LobbButton>
           ))}
         </div>
 
         <div className="my-7 flex items-center gap-3">
-          <span key={tab} className="animate-in fade-in-0 slide-in-from-bottom-1 text-xs font-black capitalize text-[var(--lobb-muted)] duration-300">{tab}</span>
-          <span className="h-px flex-1 bg-[var(--lobb-border)]" />
+          <span key={tab} className="animate-in fade-in-0 slide-in-from-bottom-1 text-xs font-medium capitalize text-[var(--lobb-text-secondary)] duration-300">{tab}</span>
+          <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
         </div>
 
         {loading ? (
           <div>
-            <SkeletonBlock className="h-[260px] rounded-[14px]" />
+            <SkeletonBlock className="h-[260px] rounded-[var(--lobb-radius-lg)]" />
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               {Array.from({ length: 2 }).map((_, index) => <BookingCardSkeleton key={index} />)}
             </div>
@@ -272,8 +273,8 @@ export default function DashboardPage() {
               {laterSessions.length > 0 && (
                 <div>
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">Up next</span>
-                    <span className="h-px flex-1 bg-[var(--lobb-border)]" />
+                    <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">Up next</span>
+                    <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
                   </div>
                   <div className="grid gap-4">
                     {laterSessions.map((booking, index) => (
@@ -340,12 +341,12 @@ function NextSessionCard({
     <article className="lobb-hero-card relative overflow-visible border p-5 sm:p-7">
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] opacity-55">Next session</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] opacity-55">Next session</p>
           <StatusChip booking={booking} />
         </div>
 
-        <p className="mt-5 text-[11px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">{proximityLabel(booking.starts_at)}</p>
-        <h2 className="mt-1.5 text-[30px] font-black leading-none tracking-tight sm:text-[40px]">{formatDay(booking.starts_at)}</h2>
+        <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--lobb-clay)]">{proximityLabel(booking.starts_at)}</p>
+        <h2 className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight sm:text-[40px]">{formatDay(booking.starts_at)}</h2>
         <p className="mt-2.5 text-sm font-bold opacity-75">
           {formatTimeRange(booking.starts_at, booking.ends_at)} · {minutes} min
         </p>
@@ -353,33 +354,33 @@ function NextSessionCard({
         <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5">
           <CoachAvatar coach={coach} />
           <div className="min-w-0">
-            <p className="truncate font-black">{coachName}</p>
+            <p className="truncate font-medium">{coachName}</p>
             <p className="truncate text-sm font-medium opacity-60">{coach?.headline || "Tennis coach"}</p>
           </div>
         </div>
 
-        <button
+        <LobbButton variant="unstyled"
           type="button"
           disabled={!hasLocation}
           onClick={() => copyText(booking.location, "Location copied")}
-          className="mt-4 flex w-full items-start gap-2 rounded-[14px] border border-white/10 bg-white/[0.06] p-3 text-left transition duration-200 hover:border-white/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-default disabled:hover:border-white/10 disabled:hover:bg-white/[0.06]"
+          className="mt-4 flex w-full items-start gap-2 rounded-[var(--lobb-radius-lg)] border border-white/10 bg-white/[0.06] p-3 text-left transition duration-200 hover:border-white/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-default disabled:hover:border-white/10 disabled:hover:bg-white/[0.06]"
         >
             <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-white/45">Location</p>
-              <p className="mt-1 text-sm font-semibold leading-5 text-white/78">{hasLocation ? booking.location : "Location pending"}</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/45">Location</p>
+              <p className="mt-1 text-sm font-medium leading-5 text-white/78">{hasLocation ? booking.location : "Location pending"}</p>
               {hasLocation && <p className="mt-1 text-[11px] font-bold text-white/45">Click to copy location</p>}
             </div>
-        </button>
+        </LobbButton>
 
         {pendingPay && (
-          <p className="mt-5 flex items-start gap-2 border border-[var(--lobb-warning)]/40 bg-[var(--lobb-warning)]/12 p-3 text-xs font-semibold leading-5">
+          <p className="mt-5 flex items-start gap-2 border border-[var(--lobb-warning)]/40 bg-[var(--lobb-warning)]/12 p-3 text-xs font-medium leading-5">
             <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--lobb-warning)]" />
             This slot is not held until payment is complete.
           </p>
         )}
         {isConfirming && (
-          <p className="mt-5 flex items-start gap-2 border border-white/10 bg-white/[0.06] p-3 text-xs font-semibold leading-5 opacity-85">
+          <p className="mt-5 flex items-start gap-2 border border-white/10 bg-white/[0.06] p-3 text-xs font-medium leading-5 opacity-85">
             <AlertCircle className="mt-0.5 size-4 shrink-0" />
             Payment is recorded. We are finalizing this booking confirmation.
           </p>
@@ -388,14 +389,14 @@ function NextSessionCard({
         <div className="mt-6 flex flex-wrap gap-2">
           {pendingPay ? (
             <>
-              <button
+              <LobbButton variant="unstyled"
                 onClick={() => onPay(booking.id)}
                 disabled={payingId !== null}
-                className="flex h-11 flex-1 items-center justify-center rounded-[12px] bg-[var(--lobb-clay)] px-5 text-xs font-black uppercase tracking-[0.1em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
+                className="flex h-11 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-xs font-medium uppercase tracking-[0.1em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
               >
                 {payingId === booking.id ? "Starting payment…" : "Complete payment"}
-              </button>
-              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 items-center justify-center rounded-[12px] border border-white/15 px-4 text-xs font-black transition hover:border-white/40 active:scale-[0.98]">
+              </LobbButton>
+              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/15 px-4 text-xs font-medium transition hover:border-white/40 active:scale-[0.98]">
                 View details
               </Link>
             </>
@@ -407,12 +408,12 @@ function NextSessionCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   data-keep-light
-                  className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-white text-xs font-black text-[#0d0d0d] transition duration-300 hover:bg-white/85 active:scale-[0.98]"
+                  className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white text-xs font-medium text-[#0d0d0d] transition duration-300 hover:bg-white/85 active:scale-[0.98]"
                 >
                   <Navigation className="size-4 text-[var(--lobb-clay)]" /> Directions
                 </a>
               ) : (
-                <span className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[12px] bg-white/8 text-xs font-black text-white/45">
+                <span className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white/8 text-xs font-medium text-white/45">
                   <Navigation className="size-4" /> Location pending
                 </span>
               )}
@@ -420,12 +421,12 @@ function NextSessionCard({
                 href={googleCalendarUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-11 min-w-[142px] flex-1 items-center justify-center gap-2 rounded-[12px] border border-white/15 px-3 text-xs font-black transition hover:border-white/40 active:scale-[0.98]"
+                className="flex h-11 min-w-[142px] flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-white/15 px-3 text-xs font-medium transition hover:border-white/40 active:scale-[0.98]"
               >
                 <CalendarPlus className="size-4 text-[var(--lobb-clay)]" />
                 Add calendar
               </a>
-              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 min-w-[92px] flex-1 items-center justify-center rounded-[12px] border border-white/15 px-4 text-xs font-black transition hover:border-white/40 active:scale-[0.98]">
+              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 min-w-[92px] flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/15 px-4 text-xs font-medium transition hover:border-white/40 active:scale-[0.98]">
                 Details
               </Link>
             </>
@@ -448,20 +449,20 @@ function PastStats({ bookings }: { bookings: DashboardBooking[] }) {
 
   return (
     <div className="animate-in fade-in-0 slide-in-from-bottom-2 fill-mode-both duration-500">
-      <div className="grid grid-cols-3 border-y border-[var(--lobb-border)]">
+      <div className="grid grid-cols-3 border-y border-[var(--lobb-border-subtle)]">
         {([
           [String(played.length), played.length === 1 ? "session played" : "sessions played"],
           [hours % 1 === 0 ? String(hours) : hours.toFixed(1), "hours on court"],
           [String(coachCount), coachCount === 1 ? "coach trained with" : "coaches trained with"],
         ] as const).map(([value, label]) => (
-          <div key={label} className="border-r border-[var(--lobb-border)] px-3 py-4 first:pl-0 last:border-r-0 last:pr-0 sm:px-5">
-            <p className="text-[26px] font-black tabular-nums tracking-tight sm:text-[32px]">{value}</p>
-            <p className="mt-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">{label}</p>
+          <div key={label} className="border-r border-[var(--lobb-border-subtle)] px-3 py-4 first:pl-0 last:border-r-0 last:pr-0 sm:px-5">
+            <p className="text-[26px] font-semibold tabular-nums tracking-tight sm:text-[32px]">{value}</p>
+            <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">{label}</p>
           </div>
         ))}
       </div>
       {toReview > 0 && (
-        <p className="mt-4 inline-flex items-center gap-2 bg-[var(--lobb-clay-light)] px-3 py-2 text-xs font-black text-[var(--lobb-clay)]">
+        <p className="mt-4 inline-flex items-center gap-2 bg-[var(--lobb-clay-light)] px-3 py-2 text-xs font-medium text-[var(--lobb-clay)]">
           <Star className="size-3.5 fill-current" />
           {toReview === 1 ? "1 session is ready to review" : `${toReview} sessions are ready to review`}
         </p>
@@ -490,11 +491,11 @@ function BookingCard({
   const coachProfileHref = coach ? `/coaches/${coach.slug ?? coach.id}` : "/coaches";
 
   return (
-    <article className="lobb-app-card group h-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35 sm:p-5">
+    <article className="lobb-surface-outlined group h-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35 sm:p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[15px] font-black leading-5 sm:text-base">{formatDay(booking.starts_at)}</p>
-          <p className="mt-0.5 text-xs font-bold text-[var(--lobb-muted)]">{formatTimeRange(booking.starts_at, booking.ends_at)}</p>
+          <p className="text-[15px] font-medium leading-5 sm:text-base">{formatDay(booking.starts_at)}</p>
+          <p className="mt-0.5 text-xs font-bold text-[var(--lobb-text-secondary)]">{formatTimeRange(booking.starts_at, booking.ends_at)}</p>
         </div>
         <StatusChip booking={booking} />
       </div>
@@ -502,24 +503,24 @@ function BookingCard({
       <div className="mt-4 flex items-center gap-3">
         <CoachAvatar coach={coach} />
         <div className="min-w-0">
-          <p className="truncate font-black">{coach?.full_name ?? "Coach"}</p>
-          <p className="truncate text-sm font-medium text-[var(--lobb-muted)]">{coach?.headline || coach?.primary_location || "Tennis coach"}</p>
+          <p className="truncate font-medium">{coach?.full_name ?? "Coach"}</p>
+          <p className="truncate text-sm font-medium text-[var(--lobb-text-secondary)]">{coach?.headline || coach?.primary_location || "Tennis coach"}</p>
         </div>
       </div>
 
-      <p className="mt-3 flex items-start gap-1.5 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+      <p className="mt-3 flex items-start gap-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
         <MapPin className="mt-0.5 size-3.5 shrink-0 text-[var(--lobb-clay)]" />
         {booking.location}
       </p>
 
       {ownReview && (
-        <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-black text-[var(--lobb-text-secondary)]">
+        <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
           You rated <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" /> {ownReview.rating}
         </p>
       )}
 
       {isConfirming && (
-        <p className="mt-4 flex items-start gap-2 rounded-2xl border border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10 p-3 text-xs font-semibold leading-5 text-[var(--lobb-text-primary)]">
+        <p className="mt-4 flex items-start gap-2 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10 p-3 text-xs font-medium leading-5 text-[var(--lobb-text-primary)]">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           Payment is recorded. We are finalizing this booking confirmation.
         </p>
@@ -528,14 +529,14 @@ function BookingCard({
       <div className="mt-5 flex gap-2">
         {pendingPay ? (
           <>
-            <button
+            <LobbButton variant="unstyled"
               onClick={() => onPay(booking.id)}
               disabled={payingId !== null}
-              className="flex h-10 flex-1 items-center justify-center rounded-[12px] bg-[var(--lobb-clay)] text-xs font-black text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
+              className="flex h-10 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] text-xs font-medium text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
             >
               {payingId === booking.id ? "Starting payment…" : "Complete payment"}
-            </button>
-            <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] px-4 text-xs font-black transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
+            </LobbButton>
+            <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-xs font-medium transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
               Details
             </Link>
           </>
@@ -545,11 +546,11 @@ function BookingCard({
               href={mapsUrl(booking.location)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-border)] text-xs font-black transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98]"
+              className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] text-xs font-medium transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98]"
             >
               <Navigation className="size-3.5 text-[var(--lobb-clay)]" /> Directions
             </a>
-            <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] text-xs font-black transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
+            <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] text-xs font-medium transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
               View details
             </Link>
           </>
@@ -558,17 +559,17 @@ function BookingCard({
             {!isCancelled && (
               <Link
                 href={coachProfileHref}
-                className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-clay)] text-xs font-black text-[var(--lobb-clay)] transition duration-300 hover:bg-[var(--lobb-clay)] hover:text-white active:scale-[0.98]"
+                className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)] text-xs font-medium text-[var(--lobb-clay)] transition duration-300 hover:bg-[var(--lobb-clay)] hover:text-white active:scale-[0.98]"
               >
                 <Repeat className="size-3.5" /> Book again
               </Link>
             )}
             {booking.can_leave_review ? (
-              <Link href={`/dashboard/review/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)] transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98]">
+              <Link href={`/dashboard/review/${booking.id}`} className="flex h-10 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-xs font-medium text-[var(--lobb-text-inverse)] transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98]">
                 Leave a review
               </Link>
             ) : (
-              <Link href={`/dashboard/bookings/${booking.id}`} className={`flex h-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] px-4 text-xs font-black transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98] ${isCancelled ? "flex-1" : ""}`}>
+              <Link href={`/dashboard/bookings/${booking.id}`} className={`flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-xs font-medium transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)] active:scale-[0.98] ${isCancelled ? "flex-1" : ""}`}>
                 Details
               </Link>
             )}
@@ -617,7 +618,7 @@ function EmptyBookings({ tab }: { tab: BookingTab }) {
         title="No upcoming sessions"
         body="No sessions yet. Find a coach and get on court."
         action={
-          <Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-[16px] bg-[var(--lobb-clay)] px-6 text-sm font-black text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
+          <Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay)] px-6 text-sm font-medium text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
             Find a coach
           </Link>
         }
@@ -625,8 +626,8 @@ function EmptyBookings({ tab }: { tab: BookingTab }) {
       {suggested.length > 0 && (
         <section className="mt-8">
           <div className="mb-4 flex items-center gap-3">
-            <span className="text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">Start with one of these coaches</span>
-            <span className="h-px flex-1 bg-[var(--lobb-border)]" />
+            <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">Start with one of these coaches</span>
+            <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
             {suggested.map((coach, index) => (

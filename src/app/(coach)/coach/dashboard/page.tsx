@@ -1,9 +1,11 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Moon, Share2, Sun, Sunrise, User, WalletCards, XCircle } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { SecurityNudge } from "@/features/auth/security-nudge";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
@@ -165,16 +167,17 @@ export default function CoachDashboardPage() {
       <CoachFlowHeader title="Dashboard" eyebrow="LOBB Coach" active="home" />
 
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
+        <SecurityNudge />
         <section className="lobb-hero-card relative mb-5 overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
           <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[12px] border px-3 py-2">
+              <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[var(--lobb-radius-md)] border px-3 py-2">
                 <MoodIcon className="size-4 text-[var(--lobb-clay)]" />
-                <span className="truncate text-[11px] font-black uppercase tracking-[0.18em]">
+                <span className="truncate text-[11px] font-medium uppercase tracking-[0.18em]">
                   {getGreeting()}, {firstName}
                 </span>
               </div>
-              <h1 className="mt-4 max-w-2xl text-[28px] font-black leading-[1.08] tracking-tight text-balance sm:text-[38px]">
+              <h1 className="mt-4 max-w-2xl text-[28px] font-semibold leading-[1.08] tracking-tight text-balance sm:text-[38px]">
                 {mood.prompt}
               </h1>
               <p className="lobb-hero-muted mt-2 max-w-xl text-[14px] font-normal leading-[1.6]">
@@ -194,21 +197,21 @@ export default function CoachDashboardPage() {
           <aside className="space-y-4">
             <Link
               href={needsPayoutSetup ? "/coach/settings/bank" : coachStatus === "rejected" ? "/coach/profile/edit" : "/coach/profile"}
-              className="lobb-app-card block bg-[var(--lobb-bg-elevated)] p-4"
+              className="lobb-surface-outlined block bg-[var(--lobb-bg-elevated)] p-4"
             >
               <div className="flex items-start gap-3">
-                <div className="flex size-12 shrink-0 items-center justify-center rounded-[16px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                   <CompletionIcon className="size-5.5" style={{ color: completionCard.tone }} />
                 </div>
                 <div className="min-w-0 text-left">
-                  <p className="text-sm font-black">{completionCard.title}</p>
-                  <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">{completionCard.detail}</p>
+                  <p className="text-sm font-medium">{completionCard.title}</p>
+                  <p className="mt-1 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">{completionCard.detail}</p>
                 </div>
               </div>
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-[var(--lobb-bg-secondary)]">
-                <div className="h-full rounded-full" style={{ width: `${completionCard.progress}%`, backgroundColor: completionCard.tone }} />
+                <div className="h-full rounded-[var(--lobb-radius-lg)]" style={{ width: `${completionCard.progress}%`, backgroundColor: completionCard.tone }} />
               </div>
-              <p className="mt-2 text-[11px] font-black text-[var(--lobb-text-tertiary)]">{completionCard.progress}% complete</p>
+              <p className="mt-2 text-[11px] font-medium text-[var(--lobb-text-tertiary)]">{completionCard.progress}% complete</p>
             </Link>
 
             {needsPayoutSetup && (
@@ -218,9 +221,9 @@ export default function CoachDashboardPage() {
               >
                 <div className="flex items-center gap-2">
                   <Landmark className="size-4 text-[var(--lobb-error)]" />
-                  <p className="font-black text-[var(--lobb-error)]">Set up payouts to accept bookings</p>
+                  <p className="font-medium text-[var(--lobb-error)]">Set up payouts to accept bookings</p>
                 </div>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                <p className="mt-1 text-sm font-medium leading-5 text-[var(--lobb-text-secondary)]">
                   Add your bank account so players can book you and LOBB can send your earnings.
                 </p>
               </Link>
@@ -231,8 +234,8 @@ export default function CoachDashboardPage() {
                 href="/coach/availability"
                 className="block border border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] p-4"
               >
-                <p className="font-black text-[var(--lobb-clay)]">Set weekly availability</p>
-                <p className="mt-1 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                <p className="font-medium text-[var(--lobb-clay)]">Set weekly availability</p>
+                <p className="mt-1 text-sm font-medium leading-5 text-[var(--lobb-text-secondary)]">
                   Players need at least one available window before they can book.
                 </p>
               </Link>
@@ -244,8 +247,8 @@ export default function CoachDashboardPage() {
 
             <CoachSurface className="p-4">
               <div className="flex items-center justify-between">
-                <p className="font-black">Next session</p>
-                <Link href="/coach/availability" className="text-xs font-black text-[var(--lobb-clay)]">Availability</Link>
+                <p className="font-medium">Next session</p>
+                <Link href="/coach/availability" className="text-xs font-medium text-[var(--lobb-clay)]">Availability</Link>
               </div>
               {loading ? (
                 <div className="mt-5 flex items-center gap-3">
@@ -258,9 +261,9 @@ export default function CoachDashboardPage() {
               ) : nextSession ? (
                 <NextSession booking={nextSession} />
               ) : (
-                <p className="mt-4 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">No upcoming sessions yet.</p>
+                <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">No upcoming sessions yet.</p>
               )}
-              <Link href="/coach/availability" className="mt-4 flex h-11 items-center justify-center bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]">
+              <Link href="/coach/availability" className="mt-4 flex h-11 items-center justify-center bg-[var(--lobb-bg-inverse)] text-xs font-medium text-[var(--lobb-text-inverse)]">
                 Manage Availability
               </Link>
             </CoachSurface>
@@ -270,7 +273,7 @@ export default function CoachDashboardPage() {
             {loading ? (
               <div className="grid gap-3 sm:grid-cols-3">
                 {Array.from({ length: 3 }).map((_, index) => (
-                  <SkeletonBlock key={index} className="h-[150px] rounded-[18px]" />
+                  <SkeletonBlock key={index} className="h-[150px] rounded-[var(--lobb-radius-lg)]" />
                 ))}
               </div>
             ) : (
@@ -281,23 +284,23 @@ export default function CoachDashboardPage() {
               </div>
             )}
 
-            <section className="lobb-app-panel bg-[var(--lobb-bg-elevated)] p-4">
+            <section className="lobb-surface-inset bg-[var(--lobb-bg-elevated)] p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-black">Appointments</p>
-                  <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">Recent sessions and player bookings</p>
+                  <p className="font-medium">Appointments</p>
+                  <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">Recent sessions and player bookings</p>
                 </div>
-                <Link href="/coach/bookings" className="text-xs font-black text-[var(--lobb-clay)]">View all</Link>
+                <Link href="/coach/bookings" className="text-xs font-medium text-[var(--lobb-clay)]">View all</Link>
               </div>
 
               {loading ? (
                 <section className="mt-4 grid gap-3">
-                  {Array.from({ length: 5 }).map((_, index) => <SkeletonBlock key={index} className="h-14 rounded-[12px]" />)}
+                  {Array.from({ length: 5 }).map((_, index) => <SkeletonBlock key={index} className="h-14 rounded-[var(--lobb-radius-md)]" />)}
                 </section>
               ) : recentBookings.length ? (
                 <AppointmentsTable bookings={recentBookings.slice(0, 6)} />
               ) : (
-                <CoachSurface className="mt-4 p-5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                <CoachSurface className="mt-4 p-5 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   Bookings will appear here when players reserve a session.
                 </CoachSurface>
               )}
@@ -313,23 +316,23 @@ export default function CoachDashboardPage() {
 
 function HeroChip({ value, label }: { value: string; label: string }) {
   return (
-    <div className="min-w-0 rounded-[12px] border border-white/15 bg-white/[0.08] px-3 py-2.5">
-      <p className="truncate text-sm font-black capitalize text-white">{value}</p>
-      <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-white/50">{label}</p>
+    <div className="min-w-0 rounded-[var(--lobb-radius-md)] border border-white/15 bg-white/[0.08] px-3 py-2.5">
+      <p className="truncate text-sm font-medium capitalize text-white">{value}</p>
+      <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white/50">{label}</p>
     </div>
   );
 }
 
 function Stat({ value, label, detail, featured, icon: Icon }: { value: string; label: string; detail: string; featured?: boolean; icon: typeof CalendarDays }) {
   return (
-    <div className={`lobb-app-card p-5 ${featured ? "bg-[#0D0D0D] text-white" : "bg-[var(--lobb-bg-elevated)]"}`}>
+    <div className={`lobb-surface-outlined p-5 ${featured ? "bg-[#0D0D0D] text-white" : "bg-[var(--lobb-bg-elevated)]"}`}>
       <div className="flex items-start justify-between">
         <Icon className="size-5 text-[var(--lobb-clay)]" />
         <span className={`size-2 rounded-full ${featured ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-bg-secondary)]"}`} />
       </div>
-      <p className="mt-5 truncate text-3xl font-black leading-none">{value}</p>
-      <p className="mt-3 text-sm font-black">{label}</p>
-      <p className={`mt-1 text-xs font-semibold ${featured ? "text-white/65" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
+      <p className="mt-5 truncate text-3xl font-semibold leading-none">{value}</p>
+      <p className="mt-3 text-sm font-medium">{label}</p>
+      <p className={`mt-1 text-xs font-medium ${featured ? "text-white/65" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
     </div>
   );
 }
@@ -342,11 +345,11 @@ function NextSession({ booking }: { booking: DashboardBooking }) {
           <User className="size-5 text-[var(--lobb-text-tertiary)]" />
         </div>
         <div className="min-w-0">
-          <p className="truncate font-black">{firstJoin(booking.players)?.full_name ?? "Player"}</p>
-          <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
+          <p className="truncate font-medium">{firstJoin(booking.players)?.full_name ?? "Player"}</p>
+          <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
         </div>
       </div>
-      <div className="mt-4 space-y-2 border-t border-[var(--lobb-border-subtle)] pt-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+      <div className="mt-4 space-y-2 border-t border-[var(--lobb-border-subtle)] pt-4 text-xs font-medium text-[var(--lobb-text-secondary)]">
         <p className="flex items-start gap-2">
           <MapPin className="mt-0.5 size-3.5 shrink-0 text-[var(--lobb-clay)]" />
           <span>{booking.location}</span>
@@ -377,36 +380,36 @@ function ReferralCard({ referral }: { referral: NonNullable<CoachDashboardPayloa
     <CoachSurface className="p-4">
       <div className="flex items-center gap-2">
         <Gift className="size-4 text-[var(--lobb-clay)]" />
-        <p className="font-black">My Referral Link</p>
+        <p className="font-medium">My Referral Link</p>
       </div>
-      <p className="mt-3 truncate rounded-[10px] bg-[var(--lobb-bg-secondary)] px-3 py-2.5 font-mono text-sm font-black text-[var(--lobb-text-primary)]">
+      <p className="mt-3 truncate rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)] px-3 py-2.5 font-mono text-sm font-medium text-[var(--lobb-text-primary)]">
         {link}
       </p>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
+        <LobbButton variant="unstyled"
           onClick={copyLink}
-          className="flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-xs font-medium text-[var(--lobb-text-inverse)]"
         >
           Copy Link
-        </button>
+        </LobbButton>
         <a
           href={`https://wa.me/?text=${whatsappText}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-10 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-xs font-black text-[var(--lobb-text-primary)]"
+          className="flex h-10 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-xs font-medium text-[var(--lobb-text-primary)]"
         >
           <Share2 className="size-3.5" />
           WhatsApp
         </a>
       </div>
-      <div className="mt-4 flex items-center gap-3 border-t border-[var(--lobb-border-subtle)] pt-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+      <div className="mt-4 flex items-center gap-3 border-t border-[var(--lobb-border-subtle)] pt-4 text-xs font-medium text-[var(--lobb-text-secondary)]">
         <span>{referral.signups_count} sign-up{referral.signups_count !== 1 ? "s" : ""}</span>
         <span className="text-[var(--lobb-border-subtle)]">·</span>
         <span>{referral.booked_count} booked</span>
         {referral.total_earned_ngn > 0 && (
           <>
             <span className="text-[var(--lobb-border-subtle)]">·</span>
-            <span className="font-black text-[var(--lobb-clay)]">{money(referral.total_earned_ngn)} earned</span>
+            <span className="font-medium text-[var(--lobb-clay)]">{money(referral.total_earned_ngn)} earned</span>
           </>
         )}
       </div>
@@ -422,24 +425,24 @@ function AppointmentsTable({ bookings }: { bookings: DashboardBooking[] }) {
           {bookings.map((booking) => (
             <tr key={booking.id} className="border-t border-[var(--lobb-border-subtle)]">
               <td className="py-4 pr-4">
-                <p className="font-black">{new Date(booking.starts_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", timeZone: "Africa/Lagos" })}</p>
-                <p className="mt-1 text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+                <p className="font-medium">{new Date(booking.starts_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", timeZone: "Africa/Lagos" })}</p>
+                <p className="mt-1 text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
                   {new Date(booking.starts_at).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", timeZone: "Africa/Lagos" })}
                 </p>
               </td>
               <td className="px-4 py-4">
-                <p className="font-black">{firstJoin(booking.players)?.full_name ?? "Player"}</p>
-                <p className="mt-1 max-w-[220px] truncate text-[11px] font-semibold text-[var(--lobb-text-secondary)]">{booking.location || "Location pending"}</p>
+                <p className="font-medium">{firstJoin(booking.players)?.full_name ?? "Player"}</p>
+                <p className="mt-1 max-w-[220px] truncate text-[11px] font-medium text-[var(--lobb-text-secondary)]">{booking.location || "Location pending"}</p>
               </td>
               <td className="px-4 py-4">
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-black capitalize ${
+                <span className={`inline-flex items-center gap-1.5 rounded-[var(--lobb-radius-lg)] px-2.5 py-1 text-[11px] font-medium capitalize ${
                   booking.status === "confirmed" ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : booking.status === "completed" ? "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"
                 }`}>
                   <Circle className="size-2 fill-current" />
                   {booking.status}
                 </span>
               </td>
-              <td className="py-4 pl-4 text-right font-black">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</td>
+              <td className="py-4 pl-4 text-right font-medium">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</td>
             </tr>
           ))}
         </tbody>

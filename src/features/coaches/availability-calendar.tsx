@@ -71,7 +71,7 @@ export function AvailabilityCalendar({ slug }: { slug: string }) {
       <div className="space-y-4">
         <SkeletonBlock className="h-4 w-48" />
         {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4">
+          <div key={index} className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
             <SkeletonBlock className="h-4 w-28" />
             <div className="mt-3 flex flex-wrap gap-2">
               <SkeletonBlock className="h-8 w-20 rounded-full" />
@@ -104,7 +104,7 @@ export function AvailabilityCalendar({ slug }: { slug: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
+      <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">
         <CalendarDays className="size-4" />
         Next 14 days, 60-min sessions
       </div>
@@ -112,14 +112,14 @@ export function AvailabilityCalendar({ slug }: { slug: string }) {
       {groups.map((group) => (
         <div
           key={group.dateStr}
-          className="rounded-[22px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-4 shadow-[0_10px_22px_rgba(58,43,20,0.05)]"
+          className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 shadow-[0_10px_22px_rgba(58,43,20,0.05)]"
         >
-          <p className="mb-3 text-sm font-black">{group.label}</p>
+          <p className="mb-3 text-sm font-medium">{group.label}</p>
           <div className="flex flex-wrap gap-2">
             {group.slots.map((time) => (
               <span
                 key={time}
-                className="rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-bg)] px-3 py-1.5 text-xs font-bold"
+                className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-3 py-1.5 text-xs font-bold"
               >
                 {time}
               </span>

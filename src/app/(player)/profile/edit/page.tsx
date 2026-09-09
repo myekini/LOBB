@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, BellOff, Camera, Loader2, User } from "lucide-react";
@@ -104,25 +106,25 @@ export default function EditProfilePage() {
 
         {!loading && (
           <>
-            <div className="lobb-app-card flex flex-col items-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-6">
+            <div className="lobb-surface-outlined flex flex-col items-center border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6">
               <div className="relative size-24 overflow-hidden rounded-full bg-[var(--lobb-bg-inverse)]">
                 {displayPhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={displayPhoto} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-2xl font-black text-[var(--lobb-text-inverse)]">
+                  <span className="flex size-full items-center justify-center text-2xl font-semibold text-[var(--lobb-text-inverse)]">
                     {abbr ?? <User className="size-8 opacity-60" />}
                   </span>
                 )}
               </div>
-              <button
+              <LobbButton variant="unstyled"
                 onClick={() => fileRef.current?.click()}
-                className="mt-4 inline-flex items-center gap-2 text-sm font-black text-[var(--lobb-clay)]"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--lobb-clay)]"
               >
                 <Camera className="size-4" />
                 Change photo
-              </button>
-              <input
+              </LobbButton>
+              <LobbInput
                 ref={fileRef}
                 type="file"
                 accept="image/*"
@@ -132,55 +134,55 @@ export default function EditProfilePage() {
             </div>
 
             <label className="mt-6 block">
-              <span className="text-sm font-black">Full name</span>
-              <input
+              <span className="text-sm font-medium">Full name</span>
+              <LobbInput
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-2 h-14 w-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none transition focus:border-[var(--lobb-clay)]"
+                className="mt-2 h-14 w-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 font-medium outline-none transition focus:border-[var(--lobb-clay)]"
               />
             </label>
 
             <label className="mt-5 block">
-              <span className="text-sm font-black">Email</span>
-              <span className="ml-2 text-xs font-semibold text-[var(--lobb-muted)]">(optional)</span>
-              <input
+              <span className="text-sm font-medium">Email</span>
+              <span className="ml-2 text-xs font-medium text-[var(--lobb-text-secondary)]">(optional)</span>
+              <LobbInput
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="mt-2 h-14 w-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-4 font-semibold outline-none transition placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]"
+                className="mt-2 h-14 w-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 font-medium outline-none transition placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]"
               />
-              <p className="mt-1.5 text-xs font-semibold text-[var(--lobb-muted)] leading-relaxed">
+              <p className="mt-1.5 text-xs font-medium text-[var(--lobb-text-secondary)] leading-relaxed">
                 Used for booking confirmations, 24-hour reminders, and session reviews.
               </p>
             </label>
 
             {email.trim() && (
-              <button
+              <LobbButton variant="unstyled"
                 type="button"
                 onClick={() => setEmailNotifications((v) => !v)}
                 className={`mt-4 flex w-full items-center justify-between border p-4 transition-colors ${
                   emailNotifications
                     ? "border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay)]/[0.03]"
-                    : "border-[var(--lobb-border)] bg-[var(--lobb-surface)]"
+                    : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   {emailNotifications ? (
                     <Bell className="size-5 text-[var(--lobb-clay)]" />
                   ) : (
-                    <BellOff className="size-5 text-[var(--lobb-muted)]" />
+                    <BellOff className="size-5 text-[var(--lobb-text-secondary)]" />
                   )}
                   <div className="text-left">
-                    <p className="text-sm font-black">Email notifications</p>
-                    <p className="text-xs font-semibold text-[var(--lobb-muted)]">
+                    <p className="text-sm font-medium">Email notifications</p>
+                    <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">
                       {emailNotifications ? "Booking updates sent to your email" : "Email notifications are off"}
                     </p>
                   </div>
                 </div>
                 <div
                   className={`relative h-6 w-11 rounded-full transition-colors ${
-                    emailNotifications ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-border)]"
+                    emailNotifications ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-border-subtle)]"
                   }`}
                 >
                   <span
@@ -190,16 +192,16 @@ export default function EditProfilePage() {
                     }`}
                   />
                 </div>
-              </button>
+              </LobbButton>
             )}
 
-            <button
+            <LobbButton variant="unstyled"
               onClick={save}
               disabled={saving || !name.trim()}
-              className="mt-8 flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] text-sm font-black text-white transition hover:bg-[var(--lobb-clay-dark)] disabled:opacity-60"
+              className="mt-8 flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] text-sm font-medium text-white transition hover:bg-[var(--lobb-clay-dark)] disabled:opacity-60"
             >
               {saving ? <Loader2 className="size-4 animate-spin" /> : "Save Changes"}
-            </button>
+            </LobbButton>
           </>
         )}
       </section>

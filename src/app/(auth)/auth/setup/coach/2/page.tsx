@@ -1,5 +1,6 @@
 "use client";
 
+import { Input as LobbInput } from "@/components/ui/input";
 import { useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -68,7 +69,7 @@ export default function CoachSetupStep2Page() {
           </OnboardingCopy>
         </section>
 
-        <div className="mt-6 flex items-start gap-3 rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4">
+        <div className="mt-6 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4">
           <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--lobb-clay)]" />
           <p className="text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
             Your BVN is used to create your personal LOBB earnings account — a real bank account where your session payouts land.
@@ -81,8 +82,8 @@ export default function CoachSetupStep2Page() {
             <OnboardingFieldLabel required hint={`${ninClean.length}/11`}>
               National Identification Number (NIN)
             </OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 type="text"
                 inputMode="numeric"
                 maxLength={11}
@@ -102,8 +103,8 @@ export default function CoachSetupStep2Page() {
             <OnboardingFieldLabel required hint={`${bvnClean.length}/11`}>
               Bank Verification Number (BVN)
             </OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 type="text"
                 inputMode="numeric"
                 maxLength={11}

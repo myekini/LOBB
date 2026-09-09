@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Circle, Clock3, MapPin, User, WalletCards } from "lucide-react";
@@ -116,16 +117,16 @@ export default function CoachBookingsPage() {
 
           <div className="lobb-segmented grid grid-cols-3 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1">
             {tabs.map((item) => (
-              <button
+              <LobbButton variant="unstyled"
                 key={item.value}
                 type="button"
                 onClick={() => setTab(item.value)}
-                className={`h-11 text-sm font-black transition ${
+                className={`h-11 text-sm font-medium transition ${
                   tab === item.value ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]" : "text-[var(--lobb-text-secondary)]"
                 }`}
               >
                 {item.label}
-              </button>
+              </LobbButton>
             ))}
           </div>
         </div>
@@ -137,9 +138,9 @@ export default function CoachBookingsPage() {
             groupedBookings.map((group) => (
               <section key={group.label} className="grid gap-3">
                 <div className="flex items-center justify-between pt-2">
-                  <h2 className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">{group.label}</h2>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">{group.label}</h2>
                   {group.label === "Today" && (
-                    <span className="rounded-full bg-[var(--lobb-clay-light)] px-3 py-1 text-[11px] font-black text-[var(--lobb-clay)]">
+                    <span className="rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-3 py-1 text-[11px] font-medium text-[var(--lobb-clay)]">
                       {group.bookings.length} today
                     </span>
                   )}
@@ -173,10 +174,10 @@ function CoachBookingCard({ booking }: { booking: DashboardBooking }) {
   const isPending = isPendingBooking(booking);
 
   return (
-    <article className="lobb-app-card grid gap-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 md:grid-cols-[150px_minmax(0,1fr)_150px_112px] md:items-center">
+    <article className="lobb-surface-outlined grid gap-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 md:grid-cols-[150px_minmax(0,1fr)_150px_112px] md:items-center">
       <div>
-        <p className="text-sm font-black">{formatBookingDate(booking.starts_at)}</p>
-        <p className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-black capitalize ${
+        <p className="text-sm font-medium">{formatBookingDate(booking.starts_at)}</p>
+        <p className={`mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium capitalize ${
           isConfirmed ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : isPending ? "bg-[var(--lobb-warning)]/12 text-[var(--lobb-clay)]" : isCompleted ? "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"
         }`}>
           <Circle className="size-2 fill-current" />
@@ -185,7 +186,7 @@ function CoachBookingCard({ booking }: { booking: DashboardBooking }) {
       </div>
 
       <div className="flex min-w-0 items-center gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
+        <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
           {playerProfile?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={playerProfile.avatar_url} alt="" className="size-full object-cover" />
@@ -194,20 +195,20 @@ function CoachBookingCard({ booking }: { booking: DashboardBooking }) {
           )}
         </div>
         <div className="min-w-0">
-          <p className="truncate font-black">{player?.full_name ?? "Player"}</p>
-          <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+          <p className="truncate font-medium">{player?.full_name ?? "Player"}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
             <MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
             <span className="truncate">{booking.location || "Location not set"}</span>
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-sm font-black md:justify-end">
+      <div className="flex items-center gap-2 text-sm font-medium md:justify-end">
         {isPending ? <Clock3 className="size-4 text-[var(--lobb-clay)]" /> : <WalletCards className="size-4 text-[var(--lobb-clay)]" />}
         {isPending ? proximityLabel(booking.starts_at) : money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}
       </div>
 
-      <Link href={`/coach/bookings/${booking.id}`} className="flex h-10 items-center justify-center gap-1.5 bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)]">
+      <Link href={`/coach/bookings/${booking.id}`} className="flex h-10 items-center justify-center gap-1.5 bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)]">
         Details
         <ArrowRight className="size-3.5" />
       </Link>
@@ -218,8 +219,8 @@ function CoachBookingCard({ booking }: { booking: DashboardBooking }) {
 function BookingStat({ label, value, bordered }: { label: string; value: string; bordered?: boolean }) {
   return (
     <div className={`p-4 ${bordered ? "border-l border-[var(--lobb-border-subtle)]" : ""}`}>
-      <p className="truncate text-base font-black">{value}</p>
-      <p className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-text-secondary)]">{label}</p>
+      <p className="truncate text-base font-medium">{value}</p>
+      <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-text-secondary)]">{label}</p>
     </div>
   );
 }

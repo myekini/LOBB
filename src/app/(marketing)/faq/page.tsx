@@ -13,18 +13,18 @@ export default function FaqPage() {
       <p className="mt-4">
         <strong>How do payments work?</strong> Payment is held by LOBB, not released to the coach until two hours after your session starts. If your coach doesn&apos;t show, you get a full refund before anything is released.
       </p>
-      <p className="mt-6 border-t border-[var(--lobb-border)] pt-5">
+      <p className="mt-6 border-t border-[var(--lobb-border-subtle)] pt-5">
         For the full picture —{" "}
         <Link
           href="/how-it-works"
-          className="font-black text-[var(--lobb-black)] underline underline-offset-2 hover:text-[var(--lobb-clay)]"
+          className="font-medium text-[var(--lobb-bg-inverse)] underline underline-offset-2 hover:text-[var(--lobb-clay)]"
         >
           How LOBB works
         </Link>{" "}
         and the{" "}
         <Link
           href="/cancellation-policy"
-          className="font-black text-[var(--lobb-black)] underline underline-offset-2 hover:text-[var(--lobb-clay)]"
+          className="font-medium text-[var(--lobb-bg-inverse)] underline underline-offset-2 hover:text-[var(--lobb-clay)]"
         >
           Cancellation Policy
         </Link>

@@ -1,3 +1,4 @@
 export function BookingConfirmationCard({ title, body }: { title: string; body: string }) {
-  return <section className="rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5"><h2 className="font-black">{title}</h2><p className="mt-2 text-sm font-semibold text-[var(--lobb-muted)]">{body}</p></section>;
+  return <Card as="section" variant="outlined" className="p-5"><h2 className="font-semibold">{title}</h2><p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">{body}</p></Card>;
 }
+import { Card } from "@/components/ui/card";

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Gavel, LayoutDashboard, LogOut, UserCheck, Users, WalletCards } from "lucide-react";
@@ -30,20 +31,20 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
       <header className="lobb-app-header sticky top-3 z-50 border-b border-[var(--lobb-border-subtle)] backdrop-blur-xl md:top-5">
         <div className="flex h-20 items-center justify-between gap-4 px-5 sm:px-7">
           <Link href="/admin" className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center overflow-hidden rounded-[12px] bg-[var(--lobb-black)]">
+            <span className="flex size-9 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/favicon.svg" alt="" className="size-9" />
             </span>
             <span>
-              <span className="block text-[15px] font-black tracking-tight">LOBB</span>
+              <span className="block text-[15px] font-medium tracking-tight">LOBB</span>
               <span className="hidden text-[11px] font-bold text-[var(--lobb-text-secondary)] sm:block">Admin</span>
             </span>
           </Link>
           <AdminDesktopNav active={active} />
-          <button onClick={signOut} className="inline-flex h-10 items-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-black transition-colors hover:border-[var(--lobb-clay)]/35">
+          <LobbButton variant="unstyled" onClick={signOut} className="inline-flex h-10 items-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-semibold transition-colors hover:border-[var(--lobb-clay)]/35">
             <LogOut className="size-4" />
             <span className="hidden sm:inline">Log out</span>
-          </button>
+          </LobbButton>
         </div>
       </header>
       <div className="px-5 pb-6 sm:px-7">
@@ -55,7 +56,7 @@ export function AdminShell({ children, active = "Dashboard" }: { children: React
             const Icon = item.icon;
             const isActive = item.label === active || (active === "Coach Approvals" && item.label === "Coaches") || (active === "All Bookings" && item.label === "Bookings") || (active === "Platform Earnings" && item.label === "Earnings");
             return (
-              <Link key={item.href} href={item.href} className={cn("flex h-14 flex-col items-center justify-center gap-1 rounded-[12px] text-[10px] font-black text-[var(--lobb-text-tertiary)]", isActive && "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]")}>
+              <Link key={item.href} href={item.href} className={cn("flex h-14 flex-col items-center justify-center gap-1 rounded-[var(--lobb-radius-md)] text-[10px] font-medium text-[var(--lobb-text-tertiary)]", isActive && "bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]")}>
                 <Icon className={cn("size-4", isActive && "text-[var(--lobb-clay)]")} />
                 {item.label}
               </Link>
@@ -79,7 +80,7 @@ function AdminDesktopNav({ active }: { active: string }) {
             key={item.href}
             href={item.href}
             className={cn(
-              "inline-flex h-10 items-center gap-2 rounded-[12px] px-4 text-sm font-bold transition",
+              "inline-flex h-10 items-center gap-2 rounded-[var(--lobb-radius-md)] px-4 text-sm font-bold transition",
               isActive
                 ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                 : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-elevated)] hover:text-[var(--lobb-text-primary)]"
@@ -100,7 +101,7 @@ export function AdminBackHeader({ title, href = "/admin" }: { title: string; hre
       <Link href={href} className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]" aria-label="Go back">
         <ArrowLeft className="size-5" />
       </Link>
-      <h1 className="truncate text-center text-[22px] font-black md:text-2xl lg:text-left">{title}</h1>
+      <h1 className="truncate text-center text-[22px] font-semibold md:text-2xl lg:text-left">{title}</h1>
       <div aria-hidden="true" />
     </div>
   );

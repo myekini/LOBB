@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -95,7 +97,7 @@ export default function CoachSetupStep5Page() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Session expired. Please log in again.");
+      setError("Your session expired. Please sign in again.");
       return;
     }
 
@@ -160,18 +162,18 @@ export default function CoachSetupStep5Page() {
             <OnboardingFieldLabel required>Specializations</OnboardingFieldLabel>
             <div className="mt-3 flex flex-wrap gap-2">
               {SPECIALIZATION_OPTIONS.map((spec) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={spec}
                   type="button"
                   onClick={() => setSpecializations((current) => toggle(spec, current))}
-                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
+                  className={`inline-flex min-h-11 items-center justify-center rounded-[var(--lobb-radius-lg)] border px-[18px] py-2.5 text-center text-[12px] font-medium leading-tight transition-all active:scale-[0.97] ${
                     specializations.includes(spec)
                       ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {spec}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
@@ -180,18 +182,18 @@ export default function CoachSetupStep5Page() {
             <OnboardingFieldLabel required>Languages spoken</OnboardingFieldLabel>
             <div className="mt-3 flex flex-wrap gap-2">
               {LANGUAGE_OPTIONS.map((language) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={language}
                   type="button"
                   onClick={() => setLanguages((current) => toggle(language, current))}
-                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
+                  className={`inline-flex min-h-11 items-center justify-center rounded-[var(--lobb-radius-lg)] border px-[18px] py-2.5 text-center text-[12px] font-medium leading-tight transition-all active:scale-[0.97] ${
                     languages.includes(language)
                       ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {language}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
@@ -200,19 +202,19 @@ export default function CoachSetupStep5Page() {
             <OnboardingFieldLabel required>Court access</OnboardingFieldLabel>
             <div className="mt-3 space-y-2.5">
               {COURT_ACCESS_OPTIONS.map((option) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={option.value}
                   type="button"
                   onClick={() => setCourtAccess(option.value)}
-                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[16px] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
+                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[var(--lobb-radius-lg)] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
                     courtAccess === option.value
                       ? "bg-[var(--lobb-clay)]/[0.08] text-[var(--lobb-text-primary)] border-[var(--lobb-clay)]/50 shadow-[0_0_24px_rgba(196,98,45,0.08)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-elevated)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {option.label}
                   {courtAccess === option.value && <CheckCircle2 className="size-5 shrink-0 text-[var(--lobb-clay)]" />}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
@@ -221,29 +223,29 @@ export default function CoachSetupStep5Page() {
             <OnboardingFieldLabel required>Certifications</OnboardingFieldLabel>
             <div className="mt-3 space-y-2.5">
               {CERTIFICATION_OPTIONS.map((cert) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={cert}
                   type="button"
                   onClick={() => toggleCert(cert)}
-                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[16px] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
+                  className={`flex min-h-14 w-full items-center justify-between gap-4 rounded-[var(--lobb-radius-lg)] border px-5 py-[18px] text-left text-[14px] font-bold leading-snug transition-all active:scale-[0.97] ${
                     certifications.includes(cert)
                       ? "bg-[var(--lobb-clay)]/[0.08] text-[var(--lobb-text-primary)] border-[var(--lobb-clay)]/50 shadow-[0_0_24px_rgba(196,98,45,0.08)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-surface)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-elevated)] hover:text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {cert}
                   {certifications.includes(cert) && (
                     <CheckCircle2 className="size-5 shrink-0 text-[var(--lobb-clay)]" />
                   )}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
 
           <label className="block group">
             <OnboardingFieldLabel hint="optional">Demo video URL</OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 type="url"
                 value={demoVideoUrl}
                 onChange={(e) => setDemoVideoUrl(e.target.value)}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -130,8 +131,8 @@ export default function CoachSetupBankPage() {
           {/* Account number */}
           <div>
             <OnboardingFieldLabel required>Account number</OnboardingFieldLabel>
-            <div className="relative mt-2 flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="relative mt-2 flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 type="text"
                 inputMode="numeric"
                 maxLength={10}
@@ -145,16 +146,16 @@ export default function CoachSetupBankPage() {
                 <CheckCircle2 className="ml-3 size-5 shrink-0 text-[var(--lobb-clay)]" />
               )}
             </div>
-            <p className="mt-2 text-[12px] font-semibold text-[var(--lobb-text-tertiary)]">
+            <p className="mt-2 text-[12px] font-medium text-[var(--lobb-text-tertiary)]">
               Must be exactly 10 digits — your NUBAN number
             </p>
           </div>
 
           {/* Account name confirmation */}
           {resolvedName && (
-            <div className="rounded-[16px] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
-              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Account name</p>
-              <p className="mt-1.5 text-[15px] font-black text-[var(--lobb-text-primary)]">{resolvedName}</p>
+            <div className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Account name</p>
+              <p className="mt-1.5 text-[15px] font-medium text-[var(--lobb-text-primary)]">{resolvedName}</p>
               <p className="mt-1 text-[12px] font-medium text-[var(--lobb-text-secondary)]/70">
                 Confirm this matches your name on LOBB exactly. Mismatches will block your payout setup.
               </p>
@@ -163,15 +164,15 @@ export default function CoachSetupBankPage() {
 
           {/* Summary card */}
           {selectedBank && /^\d{10}$/.test(accountNumber) && (
-            <div className="rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-4 space-y-3">
+            <div className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4 space-y-3">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Personal bank account</p>
-                <p className="mt-1.5 text-[15px] font-black text-[var(--lobb-text-primary)]">{selectedBank.name}</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Personal bank account</p>
+                <p className="mt-1.5 text-[15px] font-medium text-[var(--lobb-text-primary)]">{selectedBank.name}</p>
                 <p className="mt-0.5 font-mono text-sm font-bold text-[var(--lobb-text-secondary)]">{accountNumber}</p>
               </div>
-              <div className="border-t border-[var(--lobb-border)] pt-3">
-                <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">LOBB earnings account</p>
-                <p className="mt-1.5 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+              <div className="border-t border-[var(--lobb-border-subtle)] pt-3">
+                <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">LOBB earnings account</p>
+                <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
                   A dedicated account in your name will be created when your profile is approved.
                   Session payouts go there — withdraw anytime.
                 </p>
@@ -187,7 +188,7 @@ export default function CoachSetupBankPage() {
               {/mismatch/i.test(error) && (
                 <a
                   href="/auth/setup/coach/1"
-                  className="mt-1.5 block font-black text-[var(--lobb-clay)] underline-offset-2 hover:underline"
+                  className="mt-1.5 block font-medium text-[var(--lobb-clay)] underline-offset-2 hover:underline"
                 >
                   Edit your profile name →
                 </a>

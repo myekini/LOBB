@@ -7,6 +7,7 @@ import { CoachLogoutButton } from "@/components/common/coach-logout-button";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { SecurityNudge } from "@/features/auth/security-nudge";
 
 function maskedAccount(account: string | null | undefined) {
   if (!account) return "Not connected";
@@ -73,16 +74,17 @@ export default async function CoachSettingsPage() {
       <CoachFlowHeader title="Settings" eyebrow="Coach account" active="profile" />
 
       <div className="mx-auto max-w-2xl px-5 pt-6 sm:px-6">
+        <SecurityNudge />
         <section className="mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-          <p className="text-xs font-black text-[var(--lobb-clay)]">Coach account</p>
+          <p className="text-xs font-medium text-[var(--lobb-clay)]">Coach account</p>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-black tracking-tight">Settings</h1>
-              <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+              <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+              <p className="mt-1 text-sm font-medium text-[var(--lobb-text-secondary)]">
                 Manage login, payout, and notification details.
               </p>
             </div>
-            <span className="inline-flex w-fit items-center rounded-full bg-[var(--lobb-clay-light)] px-3 py-1.5 text-xs font-black capitalize text-[var(--lobb-clay)]">
+            <span className="inline-flex w-fit items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-3 py-1.5 text-xs font-medium capitalize text-[var(--lobb-clay)]">
               {accountStatus}
             </span>
           </div>
@@ -99,6 +101,12 @@ export default async function CoachSettingsPage() {
             label="Email"
             value={profile?.email ?? "Not set"}
             href="/coach/profile/edit"
+          />
+          <SettingRow
+            icon={<ShieldCheck className="size-[18px]" />}
+            label="Sign-in & security"
+            value="Password & passkey"
+            href="/account/security"
           />
           <SettingRow
             icon={<Shield className="size-[18px]" />}
@@ -159,7 +167,7 @@ function SettingGroup({ label, children }: { label: string; children: React.Reac
       <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
         {label}
       </p>
-      <div className="lobb-settings-group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <div className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         {children}
       </div>
     </div>
@@ -185,7 +193,7 @@ function SettingRow({
         !last ? "border-b border-[var(--lobb-border-subtle)]" : ""
       }`}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-bold text-[var(--lobb-text-primary)]">{label}</p>
         <p className="mt-0.5 truncate text-[12px] capitalize text-[var(--lobb-text-tertiary)]">{value}</p>

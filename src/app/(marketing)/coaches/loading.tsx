@@ -7,7 +7,7 @@ export default function CoachesLoading() {
       <PlayerHeader active="coaches" title="Coaches" eyebrow="Browse" />
       <section className="mx-auto max-w-6xl px-5 pt-7">
         <div className="h-5 w-32 rounded-full lobb-skeleton" />
-        <div className="mt-6 h-14 rounded-full lobb-skeleton" />
+        <div className="mt-6 h-14 rounded-[var(--lobb-radius-lg)] lobb-skeleton" />
         <div className="mt-5 flex gap-2">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-9 w-20 rounded-full lobb-skeleton" />

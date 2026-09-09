@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useMemo, useState } from "react";
 import { Check, ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
@@ -83,26 +85,26 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
         title="Book a coach"
         actions={
           <>
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               onClick={() => setShowSort(true)}
-              className="hidden h-10 items-center gap-1.5 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-xs font-black sm:flex"
+              className="hidden h-10 items-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-xs font-medium sm:flex"
             >
               Sort <ChevronDown className="size-3.5" />
-            </button>
-            <button
+            </LobbButton>
+            <LobbButton variant="unstyled"
               type="button"
               onClick={() => setShowFilter(true)}
-              className="relative flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition active:scale-[0.97]"
+              className="relative flex size-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition active:scale-[0.97]"
               aria-label="Filters"
             >
               <SlidersHorizontal className="size-4" />
               {filterCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-4.5 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-[9px] font-black text-white ring-2 ring-[var(--lobb-bg)]">
+                <span className="absolute -right-0.5 -top-0.5 flex size-4.5 items-center justify-center rounded-full bg-[var(--lobb-clay)] text-[9px] font-medium text-white ring-2 ring-[var(--lobb-bg-primary)]">
                   {filterCount}
                 </span>
               )}
-            </button>
+            </LobbButton>
           </>
         }
       />
@@ -110,49 +112,49 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
       <div className="mx-auto max-w-5xl px-4 sm:px-5">
 
         <div className="pt-4">
-          <label className="lobb-app-card flex h-[52px] items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4">
-            <Search className="size-5 shrink-0 text-[var(--lobb-muted)]" />
-            <input
+          <label className="lobb-surface-outlined flex h-[52px] items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4">
+            <Search className="size-5 shrink-0 text-[var(--lobb-text-secondary)]" />
+            <LobbInput
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search coach, area, skill"
-              className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
+              className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
             />
             {query && (
-              <button type="button" onClick={() => setQuery("")} aria-label="Clear search" className="flex size-7 items-center justify-center rounded-[10px] bg-[var(--lobb-surface-2)]">
+              <LobbButton variant="unstyled" type="button" onClick={() => setQuery("")} aria-label="Clear search" className="flex size-7 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)]">
                 <X className="size-3.5 text-[var(--lobb-text-secondary)]" />
-              </button>
+              </LobbButton>
             )}
           </label>
         </div>
 
         <div className="-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0">
           {LOCATION_FILTERS.map((item) => (
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               key={item}
               onClick={() => setLocation(item)}
               aria-pressed={location === item}
-              className={`h-9 shrink-0 rounded-full px-4 text-sm font-black transition ${
+              className={`h-9 shrink-0 rounded-[var(--lobb-radius-lg)] px-4 text-sm font-medium transition ${
                 location === item
                   ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                   : "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-text-primary)]"
               }`}
             >
               {item}
-            </button>
+            </LobbButton>
           ))}
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-xs font-semibold text-[var(--lobb-muted)]">
-            <span className="font-black text-[var(--lobb-black)]">{results.length}</span> coach{results.length !== 1 ? "es" : ""}
+          <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">
+            <span className="font-medium text-[var(--lobb-bg-inverse)]">{results.length}</span> coach{results.length !== 1 ? "es" : ""}
             {filterCount > 0 || query ? " · filtered" : ""}
           </p>
           {(filterCount > 0 || query) && (
-              <button type="button" onClick={reset} className="text-xs font-black text-[var(--lobb-clay)] hover:underline">
+              <LobbButton variant="unstyled" type="button" onClick={reset} className="text-xs font-semibold text-[var(--lobb-clay)] hover:underline">
               Clear all
-            </button>
+            </LobbButton>
           )}
         </div>
 
@@ -166,9 +168,9 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
                 title="No coaches match your search."
                 body="Try a different area or clear your filters."
                 action={
-                  <button type="button" className="rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 py-2 text-sm font-black text-[var(--lobb-text-inverse)]" onClick={reset}>
+                  <LobbButton variant="unstyled" type="button" className="rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 py-2 text-sm font-semibold text-[var(--lobb-text-inverse)]" onClick={reset}>
                     Clear filters
-                  </button>
+                  </LobbButton>
                 }
               />
             </div>
@@ -178,10 +180,10 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
 
       <BottomSheet title="Filter coaches" open={showFilter} onClose={() => setShowFilter(false)}>
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-lg font-black">Filter coaches</h2>
-            <button type="button" className="text-sm font-bold text-[var(--lobb-clay)]" onClick={() => { resetFiltersOnly(); }}>
+            <h2 className="text-lg font-semibold">Filter coaches</h2>
+            <LobbButton variant="unstyled" type="button" className="text-sm font-bold text-[var(--lobb-clay)]" onClick={() => { resetFiltersOnly(); }}>
               Reset
-            </button>
+            </LobbButton>
           </div>
           <ChipBlock
             title="Location"
@@ -196,71 +198,71 @@ export function CoachesClient({ initialCoaches }: { initialCoaches: CoachPublicP
             onToggle={(item) => setSpecs((prev) => prev.includes(item) ? prev.filter((s) => s !== item) : [...prev, item])}
           />
           <div className="mt-6">
-            <h3 className="mb-3 text-sm font-black">Price range</h3>
+            <h3 className="mb-3 text-sm font-semibold">Price range</h3>
             <div className="flex flex-wrap gap-2">
               {PRICE_RANGES.map((r) => (
-                <button
+                <LobbButton variant="unstyled"
                   type="button"
                   key={r.label}
                   onClick={() => setPriceLabel(r.label)}
                   aria-pressed={priceLabel === r.label}
-                  className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                  className={`rounded-[var(--lobb-radius-lg)] border px-4 py-2 text-sm font-bold transition ${
                     priceLabel === r.label
                       ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]"
-                      : "border-[var(--lobb-border)] text-[var(--lobb-muted)]"
+                      : "border-[var(--lobb-border-subtle)] text-[var(--lobb-text-secondary)]"
                   }`}
                 >
                   {r.label}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
           <div className="mt-6">
-            <h3 className="mb-3 text-sm font-black">Availability</h3>
+            <h3 className="mb-3 text-sm font-semibold">Availability</h3>
             <div className="flex gap-2">
               {(["Any", "Has availability"] as AvailFilter[]).map((opt) => (
-                <button
+                <LobbButton variant="unstyled"
                   type="button"
                   key={opt}
                   onClick={() => setAvailFilter(opt)}
                   aria-pressed={availFilter === opt}
-                  className={`rounded-full border px-4 py-2 text-sm font-bold transition ${
+                  className={`rounded-[var(--lobb-radius-lg)] border px-4 py-2 text-sm font-bold transition ${
                     availFilter === opt
                       ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]"
-                      : "border-[var(--lobb-border)] text-[var(--lobb-muted)]"
+                      : "border-[var(--lobb-border-subtle)] text-[var(--lobb-text-secondary)]"
                   }`}
                 >
                   {opt}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
-          <button
+          <LobbButton variant="unstyled"
             type="button"
             onClick={() => setShowFilter(false)}
-            className="mt-6 h-14 w-full rounded-[12px] bg-[var(--lobb-bg-inverse)] font-black text-[var(--lobb-text-inverse)]"
+            className="mt-6 h-14 w-full rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] font-medium text-[var(--lobb-text-inverse)]"
           >
             Show {results.length} coach{results.length !== 1 ? "es" : ""}
-          </button>
+          </LobbButton>
         </BottomSheet>
 
       <BottomSheet title="Sort coaches" open={showSort} onClose={() => setShowSort(false)}>
-          <h2 className="mb-4 text-lg font-black">Sort</h2>
+          <h2 className="mb-4 text-lg font-semibold">Sort</h2>
           {(["Best Match", "Highest Rated", "Most Reviewed", "Lowest Price", "Newest"] as SortOption[]).map((option) => (
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               key={option}
               aria-pressed={sort === option}
-              className="flex w-full items-center justify-between border-b border-[var(--lobb-border)] py-4 text-left font-semibold last:border-0"
+              className="flex w-full items-center justify-between border-b border-[var(--lobb-border-subtle)] py-4 text-left font-medium last:border-0"
               onClick={() => { setSort(option); setShowSort(false); }}
             >
               <span>{option}</span>
               {sort === option ? (
                 <Check className="size-4 text-[var(--lobb-clay)]" />
               ) : (
-                <span className="size-4 rounded-full border border-[var(--lobb-border)]" />
+                <span className="size-4 rounded-full border border-[var(--lobb-border-subtle)]" />
               )}
-            </button>
+            </LobbButton>
           ))}
         </BottomSheet>
 
@@ -281,25 +283,25 @@ function ChipBlock({
 }: { title: string; items: string[]; selected: string[]; onToggle: (item: string) => void }) {
   return (
     <div className="mt-5">
-      <h3 className="mb-3 text-sm font-black">{title}</h3>
+      <h3 className="mb-3 text-sm font-semibold">{title}</h3>
       <div className="flex flex-wrap gap-2">
         {items.map((item) => {
           const active = selected.includes(item);
           return (
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               key={item}
               onClick={() => onToggle(item)}
               aria-pressed={active}
-              className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition ${
+              className={`inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-lg)] border px-4 text-sm font-bold transition ${
                 active
                   ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay-dark)]"
-                  : "border-[var(--lobb-border)] text-[var(--lobb-muted)]"
+                  : "border-[var(--lobb-border-subtle)] text-[var(--lobb-text-secondary)]"
               }`}
             >
               {item}
               {active && <Check className="size-3.5" />}
-            </button>
+            </LobbButton>
           );
         })}
       </div>
@@ -316,7 +318,7 @@ function BottomSheet({ children, onClose, title, open }: { children: React.React
           aria-label={title}
           className="fixed bottom-0 left-0 right-0 z-[60] max-h-[88vh] overflow-y-auto border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 pb-10 shadow-[var(--lobb-shadow-modal)] sm:left-1/2 sm:max-w-lg sm:-translate-x-1/2"
         >
-          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--lobb-border)]" />
+          <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--lobb-border-subtle)]" />
           {children}
         </Dialog.Popup>
       </Dialog.Portal>

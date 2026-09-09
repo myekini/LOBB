@@ -152,27 +152,27 @@ function BookingStep3Content() {
       backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}`}
     >
       {/* Countdown */}
-      <div className="lobb-app-card mb-4 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <div className="lobb-surface-outlined mb-4 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Review & pay</p>
-            <h2 className="mt-1 text-xl font-black text-[var(--lobb-text-primary)]">Confirm your session</h2>
+            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Review & pay</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--lobb-text-primary)]">Confirm your session</h2>
           </div>
-          <span className={`rounded-full px-3 py-2 text-xs font-black transition-colors duration-500 ${countdownStyle(seconds)}`}>
+          <span className={`rounded-[var(--lobb-radius-lg)] px-3 py-2 text-xs font-medium transition-colors duration-500 ${countdownStyle(seconds)}`}>
             {formatCountdown(seconds)}
           </span>
         </div>
         </div>
       </div>
 
-      <section className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <section className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         <div className="bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)]">
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/75">Payment summary</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/75">Payment summary</p>
           <div className="mt-2 flex items-end justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-black">{coach ? money(total) : "Loading"}</h2>
-              <p className="mt-1 text-xs font-semibold text-white/75">60-minute private coaching session</p>
+              <h2 className="text-2xl font-semibold">{coach ? money(total) : "Loading"}</h2>
+              <p className="mt-1 text-xs font-medium text-white/75">60-minute private coaching session</p>
             </div>
             <ShieldCheck className="size-7 text-[var(--lobb-clay)]" />
           </div>
@@ -181,7 +181,7 @@ function BookingStep3Content() {
         {/* Coach identity */}
         {coach && (
           <div className="mb-4 flex items-center gap-3.5 border-b border-[var(--lobb-border-subtle)] pb-4">
-            <div className="size-14 shrink-0 overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+            <div className="size-14 shrink-0 overflow-hidden rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -192,26 +192,26 @@ function BookingStep3Content() {
               )}
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Tennis Professional</p>
-              <p className="text-base font-black tracking-tight text-[var(--lobb-text-primary)]">{coach.full_name}</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Tennis Professional</p>
+              <p className="text-base font-medium tracking-tight text-[var(--lobb-text-primary)]">{coach.full_name}</p>
             </div>
           </div>
         )}
 
         {/* Session details */}
-        <div className="grid gap-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+        <div className="grid gap-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
           {slot && (
-            <div className="flex items-center gap-3 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+            <div className="flex items-center gap-3 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <CalendarDays className="size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="text-[var(--lobb-text-primary)]">{formatSlotShort(slot)} - {formatSlotEnd(slot)}</span>
             </div>
           )}
-          <div className="flex items-center gap-3 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+          <div className="flex items-center gap-3 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
             <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" />
             <span className="text-[var(--lobb-text-primary)]">60 minutes</span>
           </div>
           {location && (
-            <div className="flex items-start gap-3 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
+            <div className="flex items-start gap-3 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
               <span className="leading-relaxed text-[var(--lobb-text-primary)]">{location}</span>
             </div>
@@ -223,18 +223,18 @@ function BookingStep3Content() {
         {/* Fee breakdown */}
         {coach ? (
           <div className="space-y-3.5">
-            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-text-secondary)]">
+            <div className="flex justify-between text-sm font-medium text-[var(--lobb-text-secondary)]">
               <span>Session fee</span>
-              <span className="font-black text-[var(--lobb-text-primary)]">{money(sessionFee)}</span>
+              <span className="font-medium text-[var(--lobb-text-primary)]">{money(sessionFee)}</span>
             </div>
-            <div className="flex justify-between text-sm font-semibold text-[var(--lobb-text-secondary)]">
+            <div className="flex justify-between text-sm font-medium text-[var(--lobb-text-secondary)]">
               <span>LOBB service fee (5%)</span>
-              <span className="font-black text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
+              <span className="font-medium text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
             </div>
             <div className="pt-2">
-              <div className="flex items-center justify-between rounded-[12px] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
-                <span className="text-xs font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">Total</span>
-                <span className="text-xl font-black text-[var(--lobb-clay)]">{money(total)}</span>
+              <div className="flex items-center justify-between rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
+                <span className="text-xs font-medium uppercase tracking-wider text-[var(--lobb-text-primary)]">Total</span>
+                <span className="text-xl font-semibold text-[var(--lobb-clay)]">{money(total)}</span>
               </div>
             </div>
           </div>
@@ -242,28 +242,28 @@ function BookingStep3Content() {
           <div className="space-y-3 py-2">
             <SkeletonBlock className="h-4 w-full" />
             <SkeletonBlock className="h-4 w-3/4" />
-            <SkeletonBlock className="h-12 w-full rounded-2xl" />
+            <SkeletonBlock className="h-12 w-full rounded-[var(--lobb-radius-lg)]" />
           </div>
         )}
         </div>
       </section>
 
       {/* Cancellation policy */}
-      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold leading-relaxed text-[var(--lobb-text-primary)]">
+      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-medium leading-relaxed text-[var(--lobb-text-primary)]">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-[var(--lobb-text-tertiary)]">Cancellation policy</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-text-tertiary)]">Cancellation policy</p>
           <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">
             Free cancellation up to 24 hours before the session. Cancel within 24 hours and 50% is refunded.
-            <Link href="/cancellation-policy" className="ml-1 font-black text-[var(--lobb-clay)]">Read policy</Link>
+            <Link href="/cancellation-policy" className="ml-1 font-medium text-[var(--lobb-clay)]">Read policy</Link>
           </p>
         </div>
       </div>
 
       {/* Payment protection banner */}
-      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] p-4 text-xs font-semibold leading-relaxed text-[var(--lobb-text-primary)]">
+      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] p-4 text-xs font-medium leading-relaxed text-[var(--lobb-text-primary)]">
         <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
         <div>
-          <p className="text-[10px] font-black uppercase tracking-wider text-[var(--lobb-success)]">Protected payment</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-success)]">Protected payment</p>
           <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">
             {coach
               ? `Your ${money(total)} is held safely and released to ${coach.full_name?.split(" ")[0]} after your session.`
@@ -286,7 +286,7 @@ function BookingStep3Content() {
         {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}
       </BookingButton>
 
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-black uppercase tracking-wider text-[var(--lobb-text-secondary)]">
+      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-text-secondary)]">
         Secured by Paystack · Powered by LOBB
       </p>
     </BookingShell>

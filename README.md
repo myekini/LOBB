@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./brand/logo/lobb-logo-with-tagline.svg" alt="LOBB - Book a coach. Not a favor." width="420" />
+  <img src="./brand/logo/lockup-dark.svg" alt="LOBB - Book a coach. Not a favor." width="272" />
 </p>
 
 <p align="center">

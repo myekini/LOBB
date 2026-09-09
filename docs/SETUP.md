@@ -51,6 +51,44 @@ fallback to a `profiles` query if the claim is missing, so this is a
 
 - [ ] Enable **Custom Access Token** hook → function `custom_access_token_hook`
 
+## 4b. Authentication → Sessions (refresh token lifetime)
+
+LOBB's model: one OTP at signup, then a long-lived session. Returning users
+re-authenticate with a **password or passkey**, never another code — so the
+session should last long enough that mobile users rarely hit a cold login.
+
+- [ ] **Refresh token expiry ≈ 60–90 days** (5184000–7776000s)
+- [ ] **Refresh token rotation = ON**, reuse interval 10s (the default)
+- [ ] Leave **"Enforce single session per user"** OFF
+
+## 4c. Authentication → Providers → Passkeys (WebAuthn) — optional
+
+Only needed to turn on the "Sign in with a passkey" button. Safe to skip; the
+UI stays hidden until both sides are enabled.
+
+- [ ] Enable the **Passkey / WebAuthn** provider
+- [ ] Relying Party ID = the bare domain (`lobb.ng` / `staging.lobb.ng`)
+- [ ] Add the app origins to the allowlist (`https://lobb.ng`, etc.)
+- [ ] Then set `NEXT_PUBLIC_LOBB_ENABLE_PASSKEYS=true` in Vercel for that env
+
+## 4d. Email/password sign-in
+
+- [ ] **Authentication → Providers → Email** — keep "Enable Email provider" ON
+      (it carries both OTP and password; no separate toggle)
+- [ ] **Password policy**: minimum length ≥ 8, "Check against HaveIBeenPwned" ON
+- [ ] Password is set *after* signup via `POST /api/auth/set-password`
+      (the `/auth/secure` step); there is no self-serve "forgot password" reset
+      flow yet — users fall back to "email me a login code" on the login page
+
+## 4e. Bot protection — Cloudflare Turnstile (optional but recommended)
+
+Guards `POST /api/auth/send-otp` on signup (the only place a code goes to a
+brand-new address). Verification **fails open** when unset.
+
+- [ ] Create a Turnstile widget at dash.cloudflare.com → Turnstile
+- [ ] Add the app domains to the widget's hostname allowlist
+- [ ] Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` in Vercel
+
 ## 5. Database → Extensions
 
 - [ ] `pgcrypto` enabled (used for `gen_random_uuid()`/`gen_random_bytes()` in

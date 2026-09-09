@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useState } from "react";
@@ -7,8 +8,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { GraduationCap, Loader2, Trophy } from "lucide-react";
 import { OnboardingShell } from "@/features/auth/onboarding-shell";
 import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
-import { Button, Input, Field } from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import { setPendingAuth } from "@/lib/auth-flow";
+import { TurnstileWidget, turnstileConfigured } from "@/features/auth/turnstile-widget";
 
 type LoginRole = "player" | "coach" | "admin";
 type PublicLoginRole = "player" | "coach";
@@ -57,13 +61,15 @@ export function AuthEmailForm({
   );
   const [email, setEmail] = useState(searchParams.get("email") ?? "");
   const [acceptedCoreTerms, setAcceptedCoreTerms] = useState(false);
-  const [acceptedCancellation, setAcceptedCancellation] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
+  const needsTurnstile = authMode === "signup" && turnstileConfigured();
   const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-  const hasAcceptedSignupLegal = authMode !== "signup" || (acceptedCoreTerms && acceptedCancellation);
-  const isReady = hasValidEmail && hasAcceptedSignupLegal;
+  const hasAcceptedSignupLegal = authMode !== "signup" || acceptedCoreTerms;
+  const isReady =
+    hasValidEmail && hasAcceptedSignupLegal && (!needsTurnstile || turnstileToken !== null);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -79,6 +85,7 @@ export function AuthEmailForm({
       body: JSON.stringify({
         email: email.trim().toLowerCase(),
         ...(roleToSend ? { role: roleToSend } : {}),
+        ...(turnstileToken ? { turnstileToken } : {}),
       }),
     });
 
@@ -100,7 +107,7 @@ export function AuthEmailForm({
       sentAt: Date.now(),
       nextPath,
       ...(authMode === "signup"
-        ? { acceptedLegalDocuments: ["terms_of_service", "privacy_policy", "cancellation_policy"] }
+        ? { acceptedLegalDocuments: ["terms_of_service", "privacy_policy"] }
         : {}),
       ...(roleToSend ? { role: roleToSend } : {}),
     });
@@ -115,68 +122,42 @@ export function AuthEmailForm({
     ? selectedRole === "coach" ? "Coach" : "Player"
     : null;
 
-  const escapeHref = isDedicatedSignup
-    ? forcedRole === "coach" ? "/auth/signup/player" : "/auth/signup/coach"
-    : null;
-  const escapeLabel = isDedicatedSignup
-    ? forcedRole === "coach" ? "I'm a player →" : "I'm a coach →"
-    : null;
+  const escapeHref = isDedicatedSignup ? "/auth/signup" : null;
+  const escapeLabel = isDedicatedSignup ? "Change account type" : null;
 
   return (
-    <OnboardingShell backHref="/">
+    <OnboardingShell backHref={authMode === "signup" ? "/auth/signup" : "/"}>
       <form onSubmit={submit} className="flex flex-1 flex-col pb-10">
 
-        {/* ── Wordmark hero strip ───────────────────────────────────────── */}
-        <div className="pt-1 pb-5">
-          <div className="flex items-end gap-3">
-            <span className="text-[58px] font-black leading-none tracking-[-0.03em] text-[var(--lobb-black)] sm:text-[68px]">
-              LOBB
-            </span>
-            <span className="mb-2 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--lobb-text-tertiary)]">
-              Find · Book · Play
-            </span>
-          </div>
-          <div className="mt-3 h-px bg-[var(--lobb-border)]" />
-        </div>
-
-        {/* ── Title + step badge ────────────────────────────────────────── */}
-        <div className="mt-4 flex items-start justify-between gap-3">
-          <h1 className="text-[34px] font-black leading-[1.04] tracking-tight text-[var(--lobb-black)] sm:text-[40px]">
-            {headingRole && <>{headingRole}<br /></>}
-            {authMode === "signup" ? "Sign up" : <>Welcome<br />back</>}
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <h1 className="text-[34px] font-semibold leading-[1.04] tracking-tight text-[var(--lobb-bg-inverse)] sm:text-[40px]">
+            {authMode === "signup" ? `Create your ${headingRole?.toLowerCase()} account` : "Sign in to LOBB"}
           </h1>
-          {authMode === "signup" && (
-            <div className="mt-1.5 shrink-0 rounded-full border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay)]/8 px-3 py-1.5">
-              <span className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
-                Step 1 / 2
-              </span>
-            </div>
-          )}
         </div>
-        <p className="mt-2 text-[13px] leading-relaxed text-[var(--lobb-muted)]">
+        <p className="mt-2 text-[13px] leading-relaxed text-[var(--lobb-text-secondary)]">
           {authMode === "signup"
-            ? "We'll send a 6-digit magic code to verify your email."
-            : "Enter your registered email for a secure, passwordless login code."}
+            ? "Enter your email. We'll send a six-digit verification code."
+            : "Enter your email to receive a verification code."}
         </p>
 
         {/* ── Underline role tabs — generic signup only ─────────────────── */}
         {authMode === "signup" && !isDedicatedSignup && (
-          <div className="mt-5 flex border-b border-[var(--lobb-border)]" aria-label="Choose account type">
+          <div className="mt-5 flex border-b border-[var(--lobb-border-subtle)]" aria-label="Choose account type">
             {roleOptions.map((option) => {
               const isSelected = selectedRole === option.role;
               return (
-                <button
+                <LobbButton variant="unstyled"
                   key={option.role}
                   type="button"
                   onClick={() => setSelectedRole(option.role)}
                   className={`-mb-px mr-5 pb-3 text-[12px] font-bold uppercase tracking-[0.13em] border-b-2 transition-all duration-200 ${
                     isSelected
                       ? "border-[var(--lobb-clay)] text-[var(--lobb-clay)]"
-                      : "border-transparent text-[var(--lobb-muted)] hover:text-[var(--lobb-black)]"
+                      : "border-transparent text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-bg-inverse)]"
                   }`}
                 >
                   {option.title}
-                </button>
+                </LobbButton>
               );
             })}
           </div>
@@ -184,16 +165,16 @@ export function AuthEmailForm({
 
         {/* ── Info pill — dedicated signup ─────────────────────────────── */}
         {authMode === "signup" && isDedicatedSignup && (
-          <div className="mt-5 flex items-center gap-2.5 rounded-[10px] border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay)]/6 px-3.5 py-2.5">
+          <div className="mt-5 flex items-center gap-2.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay)]/6 px-3.5 py-2.5">
             <SelectedIcon className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
-            <span className="text-[12px] font-semibold leading-snug text-[var(--lobb-text-secondary)]">
+            <span className="text-[12px] font-medium leading-snug text-[var(--lobb-text-secondary)]">
               {selectedOption.body}
             </span>
           </div>
         )}
 
         {/* ── Email input ───────────────────────────────────────────────── */}
-        <Field label="Email address" className="mt-7" error={error && error !== "no_account" ? error : undefined}>
+        <Field label="Email address" className="mt-7">
             <Input
               autoFocus
               type="email"
@@ -206,11 +187,11 @@ export function AuthEmailForm({
           {error === "no_account" ? (
             <FormAlert className="mt-1" variant="info" title="No account with this email yet">
               Want to join LOBB?{" "}
-              <Link href={`/auth/signup/player?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="font-black text-[var(--lobb-clay)] underline-offset-2 hover:underline">
+              <Link href={`/auth/signup/player?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="font-medium text-[var(--lobb-clay)] underline-offset-2 hover:underline">
                 Sign up as a player
               </Link>{" "}
               or{" "}
-              <Link href={`/auth/signup/coach?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="font-black text-[var(--lobb-clay)] underline-offset-2 hover:underline">
+              <Link href={`/auth/signup/coach?email=${encodeURIComponent(email.trim().toLowerCase())}`} className="font-medium text-[var(--lobb-clay)] underline-offset-2 hover:underline">
                 as a coach
               </Link>.
             </FormAlert>
@@ -219,7 +200,7 @@ export function AuthEmailForm({
           ) : null}
         </Field>
 
-        {/* ── Legal checkboxes — signup only ───────────────────────────── */}
+        {/* Essential account consent. Booking terms appear during checkout. */}
         {authMode === "signup" && (
           <div className="mt-6 flex flex-col gap-2.5">
             <ConsentCheckbox checked={acceptedCoreTerms} onChange={setAcceptedCoreTerms}>
@@ -227,15 +208,14 @@ export function AuthEmailForm({
               <ConsentLink href="/terms">Terms of Service</ConsentLink> and{" "}
               <ConsentLink href="/privacy">Privacy Policy</ConsentLink>.
             </ConsentCheckbox>
+          </div>
+        )}
 
-            <ConsentCheckbox
-              checked={acceptedCancellation}
-              onChange={setAcceptedCancellation}
-              hint="LOBB holds coach payments securely until your session is completed."
-            >
-              I agree to the{" "}
-              <ConsentLink href="/cancellation-policy">Cancellation &amp; Refund Policy</ConsentLink>.
-            </ConsentCheckbox>
+        {/* ── Bot check — signup only ─────────────────────────────────── */}
+        {needsTurnstile && (
+          <div className="mt-6">
+            <TurnstileWidget onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} />
+            {!turnstileToken && <p className="mt-2 text-xs text-[var(--lobb-text-secondary)]">Complete the security check to continue.</p>}
           </div>
         )}
 
@@ -253,14 +233,14 @@ export function AuthEmailForm({
                 Sending code…
               </span>
             ) : authMode === "signup" ? (
-              "Send sign-up code"
+              "Send verification code"
             ) : (
-              "Send login code"
+              "Send verification code"
             )}
           </Button>
 
           {authMode === "login" && (
-            <p className="mt-4 px-4 text-center text-[11px] font-semibold leading-relaxed text-[var(--lobb-text-tertiary)]">
+            <p className="mt-4 px-4 text-center text-[11px] font-medium leading-relaxed text-[var(--lobb-text-tertiary)]">
               By continuing you agree to our{" "}
               <Link href="/terms" className="text-[var(--lobb-clay)]">Terms</Link> &amp;{" "}
               <Link href="/privacy" className="text-[var(--lobb-clay)]">Privacy Policy</Link>
@@ -271,23 +251,23 @@ export function AuthEmailForm({
           {authMode === "login" && (
             <div className="mt-6">
               <div className="relative flex items-center gap-3">
-                <div className="h-px flex-1 bg-[var(--lobb-border)]" />
-                <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+                <div className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
+                <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
                   New to LOBB?
                 </span>
-                <div className="h-px flex-1 bg-[var(--lobb-border)]" />
+                <div className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
                   href="/auth/signup/player"
-                  className="flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[12px] font-bold text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-clay)]/40 hover:bg-[var(--lobb-clay)]/5 hover:text-[var(--lobb-clay)]"
+                  className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[12px] font-bold text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-clay)]/40 hover:bg-[var(--lobb-clay)]/5 hover:text-[var(--lobb-clay)]"
                 >
                   <Trophy className="size-3.5" />
                   Player
                 </Link>
                 <Link
                   href="/auth/signup/coach"
-                  className="flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[12px] font-bold text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-clay)]/40 hover:bg-[var(--lobb-clay)]/5 hover:text-[var(--lobb-clay)]"
+                  className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[12px] font-bold text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-clay)]/40 hover:bg-[var(--lobb-clay)]/5 hover:text-[var(--lobb-clay)]"
                 >
                   <GraduationCap className="size-3.5" />
                   Coach
@@ -301,7 +281,7 @@ export function AuthEmailForm({
             <div className="mt-5 text-center">
               <Link
                 href={escapeHref}
-                className="text-[12px] font-semibold text-[var(--lobb-text-tertiary)] hover:text-[var(--lobb-clay)] transition-colors"
+                className="text-[12px] font-medium text-[var(--lobb-text-tertiary)] hover:text-[var(--lobb-clay)] transition-colors"
               >
                 {escapeLabel}
               </Link>
@@ -313,9 +293,9 @@ export function AuthEmailForm({
             <div className="mt-4 text-center">
               <Link
                 href="/auth/login"
-                className="text-[12px] font-semibold text-[var(--lobb-text-tertiary)] hover:text-[var(--lobb-black)] transition-colors"
+                className="text-[12px] font-medium text-[var(--lobb-text-tertiary)] hover:text-[var(--lobb-bg-inverse)] transition-colors"
               >
-                Already have an account? <span className="text-[var(--lobb-black)] font-black">Log in</span>
+                Already have an account? <span className="text-[var(--lobb-bg-inverse)] font-medium">Sign in</span>
               </Link>
             </div>
           )}
@@ -330,12 +310,12 @@ export function LoginSkeleton() {
     <OnboardingShell>
       <section className="flex flex-1 flex-col pb-8">
         <div className="pt-1 pb-5">
-          <div className="h-16 w-40 rounded-[8px] bg-[var(--lobb-border)] animate-pulse" />
-          <div className="mt-3 h-px bg-[var(--lobb-border)]" />
+          <div className="h-16 w-40 rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-border-subtle)] animate-pulse" />
+          <div className="mt-3 h-px bg-[var(--lobb-border-subtle)]" />
         </div>
-        <div className="mt-4 h-12 w-48 rounded-[8px] bg-[var(--lobb-border)] animate-pulse" />
-        <div className="mt-7 h-[58px] w-full rounded-[14px] bg-[var(--lobb-border)] animate-pulse" />
-        <div className="mt-7 h-14 w-full rounded-none bg-[var(--lobb-border)] animate-pulse" />
+        <div className="mt-4 h-12 w-48 rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-border-subtle)] animate-pulse" />
+        <div className="mt-7 h-[58px] w-full rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-border-subtle)] animate-pulse" />
+        <div className="mt-7 h-14 w-full rounded-none bg-[var(--lobb-border-subtle)] animate-pulse" />
       </section>
     </OnboardingShell>
   );

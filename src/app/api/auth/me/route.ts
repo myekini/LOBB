@@ -16,6 +16,8 @@ export async function GET() {
       full_name: profile.full_name,
       avatar_url: profile.avatar_url,
       is_active: profile.is_active ?? true,
+      has_password: profile.has_password ?? false,
+      has_passkey: profile.has_passkey ?? false,
     },
     role: profile.role,
   });

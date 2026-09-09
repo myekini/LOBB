@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, CheckCircle2, WalletCards } from "lucide-react";
@@ -122,16 +124,16 @@ export default function CoachBankSetupPage() {
 
         {/* KYC gate — shown until BVN is submitted */}
         {!loadingCoach && !hasKyc && (
-          <div className="mb-6 flex items-start gap-3 rounded-[14px] border border-[var(--lobb-warning)]/35 bg-[var(--lobb-warning)]/8 p-4">
+          <div className="mb-6 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-warning)]/35 bg-[var(--lobb-warning)]/8 p-4">
             <AlertTriangle className="mt-0.5 size-5 shrink-0 text-[var(--lobb-warning)]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-black text-[var(--lobb-text-primary)]">Identity verification required</p>
-              <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+              <p className="text-sm font-medium text-[var(--lobb-text-primary)]">Identity verification required</p>
+              <p className="mt-1 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
                 You must submit your NIN and BVN before adding a payout bank. This protects you and your earnings.
               </p>
               <Link
                 href="/coach/settings/kyc"
-                className="mt-3 inline-flex h-9 items-center rounded-[10px] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-black text-[var(--lobb-text-inverse)]"
+                className="mt-3 inline-flex h-9 items-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-xs font-medium text-[var(--lobb-text-inverse)]"
               >
                 Verify identity first
               </Link>
@@ -141,48 +143,48 @@ export default function CoachBankSetupPage() {
 
         {/* DVA card — shown once created */}
         {!loadingCoach && hasDva && (
-          <div className="mb-6 flex items-start gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)]">
+          <div className="mb-6 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)]">
               <WalletCards className="size-4 text-[var(--lobb-clay)]" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
                 LOBB earnings account (DVA)
               </p>
-              <p className="mt-1 text-[15px] font-black">{coachData?.dva_bank_name ?? "Virtual account"}</p>
+              <p className="mt-1 text-[15px] font-medium">{coachData?.dva_bank_name ?? "Virtual account"}</p>
               <p className="font-mono text-sm text-[var(--lobb-text-secondary)]">{coachData?.dva_account_number}</p>
-              <p className="mt-1 text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+              <p className="mt-1 text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
                 Players&apos; payments arrive here. LOBB auto-transfers your net earnings to your payout bank below.
               </p>
             </div>
           </div>
         )}
 
-        {loadingCoach && <SkeletonBlock className="mb-6 h-20 w-full rounded-[14px]" />}
+        {loadingCoach && <SkeletonBlock className="mb-6 h-20 w-full rounded-[var(--lobb-radius-lg)]" />}
 
         {/* Current payout bank */}
         {existing && (
-          <div className="lobb-app-card mb-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
+          <div className="lobb-surface-outlined mb-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
               Current payout account
             </p>
-            <p className="mt-2 text-[15px] font-black">{existing.bankName ?? "Bank account"}</p>
+            <p className="mt-2 text-[15px] font-medium">{existing.bankName ?? "Bank account"}</p>
             <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">**** {existing.lastFour}</p>
           </div>
         )}
 
-        <form onSubmit={save} className="lobb-app-card space-y-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+        <form onSubmit={save} className="lobb-surface-outlined space-y-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
           <div>
-            <h1 className="text-xl font-black tracking-tight">{existing ? "Update payout bank" : "Add payout bank"}</h1>
-            <p className="mt-1 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+            <h1 className="text-xl font-semibold tracking-tight">{existing ? "Update payout bank" : "Add payout bank"}</h1>
+            <p className="mt-1 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
               {existing ? "Use the account where LOBB should send future payouts." : "Add the account where LOBB should send your session earnings."}
             </p>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-black">Bank *</label>
+            <label className="mb-2 block text-sm font-medium">Bank *</label>
             <SearchableSelect
-              className="h-14 rounded-[12px]"
+              className="h-14 rounded-[var(--lobb-radius-md)]"
               value={bankCode}
               onChange={handleBankChange}
               options={banks.map((bank) => ({ value: bank.code, label: bank.name }))}
@@ -194,9 +196,9 @@ export default function CoachBankSetupPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-black">Account number *</label>
-            <div className="relative flex h-14 items-center overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-4 transition focus-within:border-[var(--lobb-clay)] focus-within:ring-2 focus-within:ring-[rgba(196,98,45,0.12)]">
-              <input
+            <label className="mb-2 block text-sm font-medium">Account number *</label>
+            <div className="relative flex h-14 items-center overflow-hidden rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-4 transition focus-within:border-[var(--lobb-clay)] focus-within:ring-2 focus-within:ring-[rgba(196,98,45,0.12)]">
+              <LobbInput
                 type="text"
                 inputMode="numeric"
                 autoComplete="off"
@@ -213,33 +215,33 @@ export default function CoachBankSetupPage() {
           </div>
 
           {selectedBank && /^\d{10}$/.test(accountNumber) && (
-            <div className="rounded-[12px] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Will receive payouts at</p>
-              <p className="mt-2 text-[15px] font-black">{selectedBank.name}</p>
+            <div className="rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Will receive payouts at</p>
+              <p className="mt-2 text-[15px] font-medium">{selectedBank.name}</p>
               <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">{accountNumber}</p>
             </div>
           )}
 
           {error && (
-            <p role="alert" className="rounded-[12px] bg-[var(--lobb-error)]/10 px-3 py-2 text-sm font-semibold text-[var(--lobb-error)]">
+            <p role="alert" className="rounded-[var(--lobb-radius-md)] bg-[var(--lobb-error)]/10 px-3 py-2 text-sm font-medium text-[var(--lobb-error)]">
               {error}
             </p>
           )}
           {success && (
-            <p className="rounded-[12px] bg-[var(--lobb-success-soft)] px-3 py-2 text-sm font-semibold text-[var(--lobb-success)]">
+            <p className="rounded-[var(--lobb-radius-md)] bg-[var(--lobb-success-soft)] px-3 py-2 text-sm font-medium text-[var(--lobb-success)]">
               Bank account saved.
             </p>
           )}
 
-          <button
+          <LobbButton variant="unstyled"
             type="submit"
             disabled={!canSave || saving || loadingBanks || !hasKyc}
-            className="mt-2 flex h-14 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
+            className="mt-2 flex h-14 w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
           >
             {saving ? <InlineActionLoader label="Saving" /> : "Save bank account"}
-          </button>
+          </LobbButton>
           {!hasKyc && !loadingCoach && (
-            <p className="mt-2 text-center text-xs font-semibold text-[var(--lobb-text-tertiary)]">
+            <p className="mt-2 text-center text-xs font-medium text-[var(--lobb-text-tertiary)]">
               Complete identity verification above to enable this.
             </p>
           )}

@@ -27,7 +27,7 @@ export async function getAuthedUser() {
 
   const { data: profile } = await admin
     .from("profiles")
-    .select("id, role, phone_number, email, full_name, avatar_url, is_active")
+    .select("id, role, phone_number, email, full_name, avatar_url, is_active, has_password, has_passkey")
     .eq("id", user.id)
     .maybeSingle();
 

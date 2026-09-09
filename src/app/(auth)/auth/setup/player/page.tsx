@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -102,8 +104,8 @@ export default function PlayerSetupPage() {
 
         <label className="mt-10 block group">
           <OnboardingFieldLabel required>Full name</OnboardingFieldLabel>
-          <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-            <input
+          <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+            <LobbInput
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               placeholder="e.g. Fola Adeola"
@@ -115,7 +117,7 @@ export default function PlayerSetupPage() {
         {authEmail && (
           <label className="mt-6 block">
             <OnboardingFieldLabel>Email</OnboardingFieldLabel>
-            <div className="mt-2 flex h-16 items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]/50 px-5 text-[15px] font-bold tracking-wide text-[var(--lobb-text-secondary)]/70 backdrop-blur-sm">
+            <div className="mt-2 flex h-16 items-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]/50 px-5 text-[15px] font-bold tracking-wide text-[var(--lobb-text-secondary)]/70 backdrop-blur-sm">
               {authEmail}
             </div>
           </label>
@@ -123,8 +125,8 @@ export default function PlayerSetupPage() {
 
         <label className="mt-6 block group">
           <OnboardingFieldLabel hint="optional">Phone number</OnboardingFieldLabel>
-          <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-            <input
+          <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+            <LobbInput
               type="tel"
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
@@ -135,14 +137,14 @@ export default function PlayerSetupPage() {
           <p className="mt-3 text-[11px] font-medium text-[var(--lobb-text-secondary)]/70">Coaches can reach you on WhatsApp for session details</p>
         </label>
 
-        <div className="mt-8 flex flex-col items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
+        <div className="mt-8 flex flex-col items-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-8 relative overflow-hidden">
           <label className="group flex cursor-pointer flex-col items-center relative z-10">
-            <div className="relative flex size-[104px] items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-text-secondary)] transition-all duration-500 group-hover:border-[var(--lobb-clay)]/50 group-hover:shadow-[0_0_32px_rgba(196,98,45,0.12)] group-hover:scale-105 group-hover:bg-[var(--lobb-surface-2)]">
+            <div className="relative flex size-[104px] items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] transition-all duration-500 group-hover:border-[var(--lobb-clay)]/50 group-hover:shadow-[0_0_32px_rgba(196,98,45,0.12)] group-hover:scale-105 group-hover:bg-[var(--lobb-bg-secondary)]">
               {photoUrl ? (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={photoUrl} alt="" className="size-full object-cover" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--lobb-black)]/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]">
+                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--lobb-bg-inverse)]/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]">
                     <Camera className="size-6 text-white" />
                   </div>
                 </>
@@ -152,13 +154,13 @@ export default function PlayerSetupPage() {
                 </div>
               )}
             </div>
-            <span className="mt-5 text-[14px] font-black text-[var(--lobb-text-primary)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)]">
+            <span className="mt-5 text-[14px] font-medium text-[var(--lobb-text-primary)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)]">
               {photoUrl ? "Change photo" : "Add your photo"}
             </span>
             <span className="mt-2 text-[12px] font-medium text-[var(--lobb-text-secondary)]/70 text-center max-w-[220px] leading-relaxed">
               Recommended to help Lagos tennis coaches recognize you
             </span>
-            <input
+            <LobbInput
               type="file"
               accept="image/*"
               className="sr-only"
@@ -172,16 +174,16 @@ export default function PlayerSetupPage() {
             />
           </label>
           {photoUrl && (
-            <button
+            <LobbButton variant="unstyled"
               type="button"
-              className="mt-5 relative z-10 h-9 rounded-full px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--lobb-error)]/80 transition-all hover:text-[var(--lobb-error)] hover:bg-[var(--lobb-error)]/10 border border-transparent hover:border-[var(--lobb-error)]/20"
+              className="mt-5 relative z-10 h-9 rounded-[var(--lobb-radius-lg)] px-5 text-[11px] font-bold uppercase tracking-wider text-[var(--lobb-error)]/80 transition-all hover:text-[var(--lobb-error)] hover:bg-[var(--lobb-error)]/10 border border-transparent hover:border-[var(--lobb-error)]/20"
               onClick={() => {
                 setPhotoUrl("");
                 setPhotoFile(null);
               }}
             >
               Remove photo
-            </button>
+            </LobbButton>
           )}
         </div>
 

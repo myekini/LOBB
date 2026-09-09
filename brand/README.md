@@ -1,10 +1,10 @@
 # LOBB brand assets
 
-- `logo/` contains light, dark, mark, wordmark, and lockup assets.
+- `logo/` contains `mark.svg`, light/dark wordmarks, and light/dark lockups.
 - `icons/` contains favicon and install-icon assets.
 - `badges/` contains product trust badges.
 
-Use [docs/DESIGN.md](../docs/DESIGN.md) for usage rules and visual tokens.
+Use [guidelines.md](guidelines.md) for brand rules and [docs/DESIGN.md](../docs/DESIGN.md) for interface tokens.
 
 ## Placement rules
 

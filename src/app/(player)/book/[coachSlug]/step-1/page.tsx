@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, LockKeyhole, Star } from "lucide-react";
@@ -168,11 +169,11 @@ function BookingStep1Content() {
           <CoachCardSkeleton />
           <SkeletonBlock className="h-5 w-36" />
           <div className="grid grid-cols-7 gap-1.5">
-            {Array.from({ length: 7 }).map((_, i) => <SkeletonBlock key={i} className="h-16 rounded-2xl" />)}
+            {Array.from({ length: 7 }).map((_, i) => <SkeletonBlock key={i} className="h-16 rounded-[var(--lobb-radius-lg)]" />)}
           </div>
           <SkeletonBlock className="h-5 w-44" />
           <div className="grid grid-cols-2 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-12 rounded-full" />)}
+            {Array.from({ length: 4 }).map((_, i) => <SkeletonBlock key={i} className="h-12 rounded-[var(--lobb-radius-lg)]" />)}
           </div>
         </div>
       </BookingShell>
@@ -183,10 +184,10 @@ function BookingStep1Content() {
     <BookingShell step={1} backHref={`/coaches/${slug}`}>
       {/* Coach card */}
       {coach && (
-        <section className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+        <section className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
           <div className="p-4 sm:p-5">
           <div className="flex items-center gap-4">
-            <div className="relative size-16 shrink-0 overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
               {coach.profile_photo_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -197,20 +198,20 @@ function BookingStep1Content() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Booking with</p>
-              <h2 className="mt-1 truncate text-base font-black text-[var(--lobb-text-primary)]">{coach.full_name}</h2>
-              <p className="mt-0.5 truncate text-xs font-semibold text-[var(--lobb-text-secondary)]">{coach.headline}</p>
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Booking with</p>
+              <h2 className="mt-1 truncate text-base font-semibold text-[var(--lobb-text-primary)]">{coach.full_name}</h2>
+              <p className="mt-0.5 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">{coach.headline}</p>
               <div className="mt-2 flex items-center gap-3">
                 {coach.avg_rating != null && (
-                  <span className="flex items-center gap-1 rounded-full bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[11px] font-black text-[var(--lobb-clay)]">
+                  <span className="flex items-center gap-1 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[11px] font-medium text-[var(--lobb-clay)]">
                     <Star className="size-3 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
                     {coach.avg_rating}
                   </span>
                 )}
                 {coach.hourly_rate_ngn != null && (
-                  <span className="text-[11px] font-black text-[var(--lobb-clay)]">
+                  <span className="text-[11px] font-medium text-[var(--lobb-clay)]">
                     ₦{coach.hourly_rate_ngn.toLocaleString()}
-                    <span className="font-semibold text-[var(--lobb-text-secondary)]">/hr</span>
+                    <span className="font-medium text-[var(--lobb-text-secondary)]">/hr</span>
                   </span>
                 )}
               </div>
@@ -221,17 +222,17 @@ function BookingStep1Content() {
       )}
 
       {/* Week navigation */}
-      <div className="lobb-app-card mt-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+      <div className="lobb-surface-outlined mt-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3 px-1">
           <div>
-            <p className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
+            <p className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
               <CalendarDays className="size-3.5 text-[var(--lobb-clay)]" />
               Available dates
             </p>
-            <h2 className="mt-1 text-base font-black text-[var(--lobb-text-primary)]">{weekLabel}</h2>
+            <h2 className="mt-1 text-base font-semibold text-[var(--lobb-text-primary)]">{weekLabel}</h2>
           </div>
           <div className="flex items-center gap-1.5">
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               disabled={weekStart === 0}
               onClick={() => { setWeekStart(Math.max(0, weekStart - 7)); setSelectedSlot(""); }}
@@ -239,8 +240,8 @@ function BookingStep1Content() {
               aria-label="Previous week"
             >
               <ChevronLeft className="size-4 text-[var(--lobb-text-primary)]" />
-            </button>
-            <button
+            </LobbButton>
+            <LobbButton variant="unstyled"
               type="button"
               disabled={weekStart >= 21}
               onClick={() => { setWeekStart(weekStart + 7); setSelectedSlot(""); }}
@@ -248,7 +249,7 @@ function BookingStep1Content() {
               aria-label="Next week"
             >
               <ChevronRight className="size-4 text-[var(--lobb-text-primary)]" />
-            </button>
+            </LobbButton>
           </div>
         </div>
 
@@ -259,14 +260,14 @@ function BookingStep1Content() {
             const hasBookable = item.slots.some((s) => !s.tooSoon);
             const isSelected  = item.dateStr === selectedDate && hasBookable;
             return (
-              <button
+              <LobbButton variant="unstyled"
                 type="button"
                 key={item.dateStr}
                 disabled={!hasBookable}
                 onClick={() => { setSelectedDate(item.dateStr); setSelectedSlot(""); }}
                 aria-pressed={isSelected}
                 aria-label={`${isSelected ? "Selected" : "Select"} ${item.label}`}
-                className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-[12px] text-xs font-semibold transition-all duration-300 active:scale-95 ${
+                className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-[var(--lobb-radius-md)] text-xs font-medium transition-all duration-300 active:scale-95 ${
                   isSelected
                     ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                     : hasBookable
@@ -274,15 +275,15 @@ function BookingStep1Content() {
                     : "cursor-not-allowed border border-transparent bg-[var(--lobb-bg-secondary)]/70 text-[var(--lobb-text-tertiary)] opacity-45"
                 }`}
               >
-                <span className={`text-[9px] font-black uppercase tracking-wider ${isSelected ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{item.weekday}</span>
-                <span className="text-xl font-black leading-none">{item.day}</span>
+                <span className={`text-[9px] font-medium uppercase tracking-wider ${isSelected ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{item.weekday}</span>
+                <span className="text-xl font-semibold leading-none">{item.day}</span>
                 {hasBookable && (
                   <span className={`mt-0.5 size-1.5 rounded-full ${isSelected ? "bg-white animate-pulse" : "bg-[var(--lobb-clay)]"}`} />
                 )}
                 {hasSlots && !hasBookable && (
                   <span className="mt-0.5 size-1.5 rounded-full bg-[var(--lobb-text-tertiary)]/40" />
                 )}
-              </button>
+              </LobbButton>
             );
           })}
         </div>
@@ -292,8 +293,8 @@ function BookingStep1Content() {
       {selectedGroup ? (
         <>
           <div className="mt-6 flex items-center justify-between px-1">
-            <h3 className="text-sm font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">Pick a time</h3>
-            <span className="rounded-full bg-[var(--lobb-clay-light)] px-2.5 py-1 text-xs font-bold text-[var(--lobb-clay)]">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--lobb-text-primary)]">Pick a time</h3>
+            <span className="rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-2.5 py-1 text-xs font-bold text-[var(--lobb-clay)]">
               {selectedGroup.label}
             </span>
           </div>
@@ -302,14 +303,14 @@ function BookingStep1Content() {
               const isActive   = selectedSlot === slot.iso;
               const isDisabled = slot.tooSoon;
               return (
-                <button
+                <LobbButton variant="unstyled"
                   type="button"
                   key={slot.iso}
                   disabled={isDisabled}
                   onClick={() => !isDisabled && setSelectedSlot(slot.iso)}
                   aria-pressed={isActive}
                   title={isDisabled ? "Must be booked at least 24 hours in advance" : undefined}
-                  className={`flex h-16 flex-col items-center justify-center gap-0.5 rounded-[12px] border text-center transition-all duration-300 ${
+                  className={`flex h-16 flex-col items-center justify-center gap-0.5 rounded-[var(--lobb-radius-md)] border text-center transition-all duration-300 ${
                     isDisabled
                       ? "cursor-not-allowed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]/60 opacity-40"
                       : isActive
@@ -317,30 +318,30 @@ function BookingStep1Content() {
                       : "active:scale-95 border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/50"
                   }`}
                 >
-                  <span className="text-sm font-black">{slot.label}</span>
+                  <span className="text-sm font-medium">{slot.label}</span>
                   <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? "text-white/80" : "text-[var(--lobb-text-tertiary)]"}`}>
                     {isDisabled ? "24h advance" : "60 mins"}
                   </span>
-                </button>
+                </LobbButton>
               );
             })}
           </div>
         </>
       ) : (
-        <div className="lobb-app-card mt-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center">
+        <div className="lobb-surface-outlined mt-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-center">
           {coachStatus && coachStatus !== "active" ? (
             <>
-              <p className="text-sm font-black text-[var(--lobb-text-primary)]">
+              <p className="text-sm font-medium text-[var(--lobb-text-primary)]">
                 {coachStatus === "pending" ? "Pending review" : "Not accepting bookings"}
               </p>
-              <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+              <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
                 This coach is currently under review and not yet accepting bookings.
               </p>
             </>
           ) : (
             <>
-              <p className="text-sm font-black text-[var(--lobb-text-primary)]">No slots this week</p>
-              <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+              <p className="text-sm font-medium text-[var(--lobb-text-primary)]">No slots this week</p>
+              <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
                 {weekStart === 0 ? "Try the next week" : "No availability in the next 4 weeks"}
               </p>
             </>
@@ -349,7 +350,7 @@ function BookingStep1Content() {
       )}
 
       {/* Info strip */}
-      <div className="lobb-app-card mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+      <div className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-medium text-[var(--lobb-text-secondary)]">
         <p className="flex items-center gap-2">
           <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" /> Sessions are 60 minutes.
         </p>

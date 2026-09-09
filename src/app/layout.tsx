@@ -121,7 +121,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", geistSans.variable, geistMono.variable)} suppressHydrationWarning>
       <body className="antialiased">
-        <a href="#main-content" className="sr-only fixed left-4 top-4 z-[100] rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 py-2 text-sm font-semibold text-[var(--lobb-text-inverse)] focus:not-sr-only">
+        <a href="#main-content" className="sr-only fixed left-4 top-4 z-[100] rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 py-2 text-sm font-medium text-[var(--lobb-text-inverse)] focus:not-sr-only">
           Skip to content
         </a>
         <script

@@ -28,11 +28,11 @@ export default function CoachSubmittedPage() {
         </section>
 
         <section className="mt-10 space-y-4">
-          <div className="relative overflow-hidden border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
+          <div className="relative overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-bg-elevated)]">
             <div className="absolute top-0 right-0 p-6 opacity-[0.06] text-[var(--lobb-text-secondary)]">
               <Clock3 className="size-16" />
             </div>
-            <p className="relative z-10 flex items-center gap-3 text-[14px] font-black tracking-wide text-[var(--lobb-text-primary)]">
+            <p className="relative z-10 flex items-center gap-3 text-[14px] font-medium tracking-wide text-[var(--lobb-text-primary)]">
               <span className="flex size-8 items-center justify-center rounded-full bg-[var(--lobb-clay)]/20 text-[var(--lobb-clay)]">
                 <Clock3 className="size-4" />
               </span>
@@ -44,11 +44,11 @@ export default function CoachSubmittedPage() {
             </p>
           </div>
           
-          <div className="relative overflow-hidden border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-surface)]">
+          <div className="relative overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-6 backdrop-blur-sm transition-all hover:bg-[var(--lobb-bg-elevated)]">
             <div className="absolute top-0 right-0 p-6 opacity-[0.06] text-[var(--lobb-text-secondary)]">
               <Settings className="size-16" />
             </div>
-            <p className="relative z-10 flex items-center gap-3 text-[14px] font-black tracking-wide text-[var(--lobb-text-primary)]">
+            <p className="relative z-10 flex items-center gap-3 text-[14px] font-medium tracking-wide text-[var(--lobb-text-primary)]">
               <span className="flex size-8 items-center justify-center rounded-full bg-[var(--lobb-clay)]/20 text-[var(--lobb-clay)]">
                 <Settings className="size-4" />
               </span>
@@ -71,7 +71,7 @@ export default function CoachSubmittedPage() {
           </Link>
           <Link
             href="/coach/dashboard"
-            className="flex h-14 w-full items-center justify-center border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-surface)] active:scale-[0.98]"
+            className="flex h-14 w-full items-center justify-center border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-bg-elevated)] active:scale-[0.98]"
           >
             Go to dashboard
           </Link>

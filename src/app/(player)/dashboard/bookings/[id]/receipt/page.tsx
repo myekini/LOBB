@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
@@ -121,8 +122,8 @@ export default function BookingReceiptPage() {
     return (
       <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-4 py-10 text-[var(--lobb-text-primary)]">
         <section className="mx-auto max-w-2xl">
-          <h1 className="text-xl font-black">Receipt not found</h1>
-          <Link href="/dashboard/bookings" className="mt-5 inline-flex text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+          <h1 className="text-xl font-semibold">Receipt not found</h1>
+          <Link href="/dashboard/bookings" className="mt-5 inline-flex text-sm font-medium text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );
@@ -135,31 +136,31 @@ export default function BookingReceiptPage() {
           <Link href={`/dashboard/bookings/${booking.id}`} className="inline-flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]" aria-label="Back to booking">
             <ArrowLeft className="size-5" />
           </Link>
-          <button onClick={() => window.print()} className="inline-flex h-11 items-center gap-2 rounded-[14px] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-black text-[var(--lobb-text-inverse)]">
+          <LobbButton variant="unstyled" onClick={() => window.print()} className="inline-flex h-11 items-center gap-2 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-semibold text-[var(--lobb-text-inverse)]">
             <Printer className="size-4" />
             Print
-          </button>
+          </LobbButton>
         </header>
 
-        <article className="lobb-receipt-card overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] print:rounded-none print:border-0 print:shadow-none">
+        <article className="lobb-receipt-card overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] print:rounded-none print:border-0 print:shadow-none">
           <section className="lobb-receipt-hero border-b border-[var(--lobb-border-subtle)] p-6 sm:p-8">
             <div className="flex items-start justify-between gap-5">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[var(--lobb-clay)]">LOBB receipt</p>
-                <h1 className="lobb-receipt-title mt-3 text-3xl font-black tracking-tight sm:text-4xl">Thanks for your payment</h1>
-                <p className="mt-2 text-sm font-semibold text-[var(--lobb-text-secondary)]">Your Lagos tennis session is confirmed and recorded.</p>
+                <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--lobb-clay)]">LOBB receipt</p>
+                <h1 className="lobb-receipt-title mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Thanks for your payment</h1>
+                <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">Your Lagos tennis session is confirmed and recorded.</p>
               </div>
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-clay)]">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-clay)]">
                 <ReceiptText className="size-6" />
               </div>
             </div>
 
             <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Total paid</p>
-                <p className="lobb-receipt-total mt-2 text-5xl font-black tracking-tight">{money(booking.total_amount_ngn)}</p>
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Total paid</p>
+                <p className="lobb-receipt-total mt-2 text-5xl font-semibold tracking-tight">{money(booking.total_amount_ngn)}</p>
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] px-3 py-2 text-xs font-black text-[var(--lobb-success)]">
+              <span className="inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] px-3 py-2 text-xs font-medium text-[var(--lobb-success)]">
                 <CheckCircle2 className="size-4" />
                 {payment?.status ?? "paid"}
               </span>
@@ -176,25 +177,25 @@ export default function BookingReceiptPage() {
           <section className="lobb-receipt-summary p-6 sm:p-8">
             <div className="space-y-4">
               {rows.map((row) => (
-                <p key={row.label} className="flex items-center justify-between gap-5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                <p key={row.label} className="flex items-center justify-between gap-5 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   <span>{row.label}</span>
-                  <span className="font-black text-[var(--lobb-text-primary)]">{money(row.amount)}</span>
+                  <span className="font-medium text-[var(--lobb-text-primary)]">{money(row.amount)}</span>
                 </p>
               ))}
-              <p className="flex items-center justify-between gap-5 border-t border-[var(--lobb-border-subtle)] pt-5 text-base font-black">
+              <p className="flex items-center justify-between gap-5 border-t border-[var(--lobb-border-subtle)] pt-5 text-base font-medium">
                 <span>Total</span>
                 <span>{money(booking.total_amount_ngn)}</span>
               </p>
             </div>
 
-            <div className="mt-8 rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">Receipt ID</p>
-              <p className="mt-2 break-all font-mono text-sm font-black">{receiptId}</p>
+            <div className="mt-8 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
+              <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">Receipt ID</p>
+              <p className="mt-2 break-all font-mono text-sm font-medium">{receiptId}</p>
             </div>
 
-            <div className="mt-8 grid gap-4 text-sm font-semibold text-[var(--lobb-text-secondary)] sm:grid-cols-2">
-              <p><span className="font-black text-[var(--lobb-text-primary)]">Player:</span> {player?.full_name ?? "Player"}</p>
-              <p><span className="font-black text-[var(--lobb-text-primary)]">Booking:</span> {booking.id}</p>
+            <div className="mt-8 grid gap-4 text-sm font-medium text-[var(--lobb-text-secondary)] sm:grid-cols-2">
+              <p><span className="font-medium text-[var(--lobb-text-primary)]">Player:</span> {player?.full_name ?? "Player"}</p>
+              <p><span className="font-medium text-[var(--lobb-text-primary)]">Booking:</span> {booking.id}</p>
             </div>
           </section>
         </article>
@@ -206,11 +207,11 @@ export default function BookingReceiptPage() {
 function ReceiptBlock({ icon: Icon, label, value }: { icon: typeof CalendarDays; label: string; value: string }) {
   return (
     <div className="border-b border-[var(--lobb-border-subtle)] p-5 last:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 sm:[&:nth-last-child(-n+2)]:border-b-0">
-      <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
+      <p className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
         <Icon className="size-4 text-[var(--lobb-clay)]" />
         {label}
       </p>
-      <p className="mt-2 text-sm font-black leading-6">{value}</p>
+      <p className="mt-2 text-sm font-medium leading-6">{value}</p>
     </div>
   );
 }

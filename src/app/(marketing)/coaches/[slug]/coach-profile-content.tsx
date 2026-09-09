@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -227,7 +228,7 @@ export function CoachProfileContent({
               disabled={!canSharePublicProfile}
               profileUrl={profileUrl}
               triggerLabel=""
-              triggerClassName="inline-flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 disabled:opacity-45"
+              triggerClassName="inline-flex size-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 disabled:opacity-45"
             />
           }
         />
@@ -239,22 +240,22 @@ export function CoachProfileContent({
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/coach/profile"
-                className="flex size-10 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40"
+                className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40"
                 aria-label="Back to coach profile"
               >
                 <ArrowLeft className="size-4" />
               </Link>
               <div className="min-w-0">
-                <p className="flex items-center gap-2 truncate text-sm font-black text-[var(--lobb-text-primary)]">
+                <p className="flex items-center gap-2 truncate text-sm font-medium text-[var(--lobb-text-primary)]">
                   <span className="inline-flex size-2 shrink-0 rounded-full bg-[var(--lobb-clay)]" />
                   Player preview
                 </p>
-                <p className="truncate text-xs font-semibold text-[var(--lobb-text-secondary)]">This is how players see your booking page.</p>
+                <p className="truncate text-xs font-medium text-[var(--lobb-text-secondary)]">This is how players see your booking page.</p>
               </div>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] bg-[var(--lobb-clay)] px-3.5 text-xs font-black text-white transition hover:bg-[var(--lobb-clay-dark)]">
+              <Link href="/coach/profile/edit" className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-3.5 text-xs font-medium text-white transition hover:bg-[var(--lobb-clay-dark)]">
                 <Pencil className="size-3.5" />
                 <span className="hidden sm:inline">Edit</span>
               </Link>
@@ -263,7 +264,7 @@ export function CoachProfileContent({
                   href={profilePath}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40"
+                  className="inline-flex size-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40"
                   aria-label="Open live profile"
                 >
                   <ExternalLink className="size-3.5" />
@@ -274,7 +275,7 @@ export function CoachProfileContent({
                 disabled={!canSharePublicProfile}
                 profileUrl={profileUrl}
                 triggerLabel=""
-                triggerClassName="inline-flex size-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40 disabled:opacity-45"
+                triggerClassName="inline-flex size-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/40 disabled:opacity-45"
               />
             </div>
           </div>
@@ -284,10 +285,10 @@ export function CoachProfileContent({
       <section className="mx-auto grid max-w-[1280px] gap-6 md:grid-cols-12 md:px-6 md:py-8 lg:gap-8">
         <div className="md:col-span-7 lg:col-span-8">
           {/* ── Editorial hero ── */}
-          <section className="relative h-[480px] overflow-hidden bg-[var(--lobb-bg-secondary)] sm:h-[540px] md:rounded-[18px]">
+          <section className="relative h-[480px] overflow-hidden bg-[var(--lobb-bg-secondary)] sm:h-[540px] md:rounded-[var(--lobb-radius-lg)]">
             {/* Fallback initial */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[120px] font-black leading-none text-[var(--lobb-text-tertiary)]/20 select-none">{initials(fullName)}</span>
+              <span className="text-[120px] font-medium leading-none text-[var(--lobb-text-tertiary)]/20 select-none">{initials(fullName)}</span>
             </div>
             {coach.profile_photo_url && (
               // eslint-disable-next-line @next/next/no-img-element
@@ -317,7 +318,7 @@ export function CoachProfileContent({
             {/* Identity overlay — bottom of hero */}
             <div className="absolute inset-x-0 bottom-0 px-5 pb-6 md:px-7">
               {slotTimedOut && (
-                <div className="mb-4 flex items-center gap-2 rounded-lg border border-[var(--lobb-warning)]/40 bg-black/40 px-3 py-2 text-xs font-bold text-amber-300 backdrop-blur-sm">
+                <div className="mb-4 flex items-center gap-2 rounded-[var(--lobb-radius-sm)] border border-[var(--lobb-warning)]/40 bg-black/40 px-3 py-2 text-xs font-bold text-amber-300 backdrop-blur-sm">
                   <AlertCircle className="size-3.5 shrink-0" />
                   Your previous slot timed out. Select a new time.
                 </div>
@@ -327,23 +328,23 @@ export function CoachProfileContent({
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
                     {coach.is_verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-white/90 backdrop-blur-sm">
+                      <span className="inline-flex items-center gap-1 rounded-[var(--lobb-radius-lg)] bg-white/15 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.1em] text-white/90 backdrop-blur-sm">
                         <ShieldCheck className="size-3" />
                         Verified
                       </span>
                     )}
                     {coach.avg_rating != null && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-black text-white/90 backdrop-blur-sm">
+                      <span className="inline-flex items-center gap-1 rounded-[var(--lobb-radius-lg)] bg-white/15 px-2.5 py-1 text-[10px] font-medium text-white/90 backdrop-blur-sm">
                         <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
                         {ratingLabel}
                         {reviewCount > 0 && <span className="ml-0.5 opacity-75">({reviewCount})</span>}
                       </span>
                     )}
                   </div>
-                  <h1 className="mb-1 text-[28px] font-black leading-tight tracking-tight text-white sm:text-[34px]">
+                  <h1 className="mb-1 text-[28px] font-semibold leading-tight tracking-tight text-white sm:text-[34px]">
                     {fullName}
                   </h1>
-                  <p className="text-[13px] font-semibold text-white/75">
+                  <p className="text-[13px] font-medium text-white/75">
                     {headline}
                     {coach.experience_years ? ` · ${coach.experience_years} yrs exp` : ""}
                   </p>
@@ -351,13 +352,13 @@ export function CoachProfileContent({
 
                 {/* Rate — desktop shows in sidebar, mobile shows here */}
                 <div className="shrink-0 text-right md:hidden">
-                  <span className="block text-[26px] font-black leading-none text-white">{money(hourlyRate)}</span>
-                  <span className="text-[11px] font-semibold text-white/75">/hr</span>
+                  <span className="block text-[26px] font-semibold leading-none text-white">{money(hourlyRate)}</span>
+                  <span className="text-[11px] font-medium text-white/75">/hr</span>
                 </div>
               </div>
 
               {/* Quick stats row */}
-              <div className="mt-4 flex items-center gap-4 border-t border-white/15 pt-4 text-[11px] font-semibold text-white/75">
+              <div className="mt-4 flex items-center gap-4 border-t border-white/15 pt-4 text-[11px] font-medium text-white/75">
                 <span>{sessionCount > 0 ? `${sessionCount} sessions` : "New coach"}</span>
                 {locations.length > 0 && (
                   <>
@@ -377,7 +378,7 @@ export function CoachProfileContent({
             <div className="mb-6 space-y-4">
               {/* All locations — full list */}
               {locations.length > 1 && (
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                <div className="flex items-center gap-1.5 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   <MapPin className="size-4 shrink-0 text-[var(--lobb-clay)]" />
                   <span>{locations.join(" · ")}</span>
                 </div>
@@ -388,7 +389,7 @@ export function CoachProfileContent({
                 {(specializations.length ? specializations : skillLevels).slice(0, 5).map((item) => (
                   <span
                     key={item}
-                    className="inline-flex min-h-8 items-center rounded-full border border-[var(--lobb-border-subtle)] px-3.5 py-1 text-[12px] font-semibold leading-tight text-[var(--lobb-text-primary)]"
+                    className="inline-flex min-h-8 items-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] px-3.5 py-1 text-[12px] font-medium leading-tight text-[var(--lobb-text-primary)]"
                   >
                     {item}
                   </span>
@@ -396,16 +397,16 @@ export function CoachProfileContent({
               </div>
 
               {courtsWorkedWith.length > 0 ? (
-                <div className="lobb-app-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-3">
+                <div className="lobb-surface-inset border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-3">
                   <div className="mb-2 flex items-center gap-2 text-[var(--lobb-clay)]">
                     <Building2 className="size-4 shrink-0" />
-                    <span className="text-xs font-black uppercase tracking-[0.08em]">Courts I work with</span>
+                    <span className="text-xs font-medium uppercase tracking-[0.08em]">Courts I work with</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {courtsWorkedWith.map((court) => (
                       <span
                         key={court.id}
-                        className="inline-flex items-center rounded-[10px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 py-1 text-xs font-semibold text-[var(--lobb-text-primary)]"
+                        className="inline-flex items-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 py-1 text-xs font-medium text-[var(--lobb-text-primary)]"
                       >
                         {court.name}
                       </span>
@@ -413,9 +414,9 @@ export function CoachProfileContent({
                   </div>
                 </div>
               ) : (
-                <div className="lobb-app-panel flex items-center gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-3 text-[var(--lobb-text-primary)]">
+                <div className="lobb-surface-inset flex items-center gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-3 text-[var(--lobb-text-primary)]">
                   <Building2 className="size-5 text-[var(--lobb-clay)]" />
-                  <span className="text-sm font-semibold">{courtLabel}</span>
+                  <span className="text-sm font-medium">{courtLabel}</span>
                 </div>
               )}
 
@@ -426,18 +427,18 @@ export function CoachProfileContent({
 
             <div className="lobb-app-header sticky top-0 z-20 mb-6 flex border-b border-[var(--lobb-border-subtle)] md:top-16">
               {(["about", "availability", "reviews"] as const).map((item) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={item}
                   type="button"
                   onClick={() => setTab(item)}
-                  className={`min-h-11 flex-1 border-b-2 py-3 text-center text-sm font-semibold capitalize transition ${
+                  className={`min-h-11 flex-1 border-b-2 py-3 text-center text-sm font-medium capitalize transition ${
                     tab === item
                       ? "border-[var(--lobb-text-primary)] text-[var(--lobb-text-primary)]"
                       : "border-transparent text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)]"
                   }`}
                 >
                   {item}
-                </button>
+                </LobbButton>
               ))}
             </div>
 
@@ -455,12 +456,12 @@ export function CoachProfileContent({
                       {certifications.map((cert) => (
                         <li key={cert} className="group min-h-[76px] py-3 transition">
                           <div className="flex items-center gap-3">
-                          <span className="flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                          <span className="flex size-11 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                             <ShieldCheck className="size-5" />
                           </span>
                           <span className="min-w-0">
                             <span className="block text-xs font-bold text-[var(--lobb-text-tertiary)]">Verified credential</span>
-                            <span className="mt-1 block text-sm font-black leading-snug text-[var(--lobb-text-primary)]">{cert}</span>
+                            <span className="mt-1 block text-sm font-medium leading-snug text-[var(--lobb-text-primary)]">{cert}</span>
                           </span>
                           </div>
                         </li>
@@ -476,7 +477,7 @@ export function CoachProfileContent({
                     <h3 className="mb-3 text-2xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">Who I Coach</h3>
                     <div className="flex flex-wrap gap-2">
                       {skillLevels.map((level) => (
-                        <span key={level} className="inline-flex min-h-9 items-center rounded-full border border-[var(--lobb-border-subtle)] px-3.5 py-1.5 text-sm font-semibold leading-tight">
+                        <span key={level} className="inline-flex min-h-9 items-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] px-3.5 py-1.5 text-sm font-medium leading-tight">
                           {level}
                         </span>
                       ))}
@@ -484,7 +485,7 @@ export function CoachProfileContent({
                   </div>
                 )}
 
-                <p className="text-xs font-semibold text-[var(--lobb-text-tertiary)]">
+                <p className="text-xs font-medium text-[var(--lobb-text-tertiary)]">
                   Member since {formatDate(coach.created_at)}
                 </p>
               </section>
@@ -497,22 +498,22 @@ export function CoachProfileContent({
                     {selectedSlotDay ? `${selectedSlotDay.month} ${selectedSlotDay.day}` : "Availability"}
                   </h2>
                   <div className="flex gap-2">
-                    <button
+                    <LobbButton variant="unstyled"
                       type="button"
                       onClick={() => setSelectedDay((value) => Math.max(value - 1, 0))}
                       className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)]"
                       aria-label="Previous day"
                     >
                       <ChevronLeft className="size-4" />
-                    </button>
-                    <button
+                    </LobbButton>
+                    <LobbButton variant="unstyled"
                       type="button"
                       onClick={() => setSelectedDay((value) => Math.min(value + 1, Math.max(slots.length - 1, 0)))}
                       className="flex size-8 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)]"
                       aria-label="Next day"
                     >
                       <ChevronRight className="size-4" />
-                    </button>
+                    </LobbButton>
                   </div>
                 </div>
 
@@ -520,12 +521,12 @@ export function CoachProfileContent({
                   <div className="space-y-4">
                     <div className="flex gap-2 overflow-hidden">
                       {Array.from({ length: 5 }).map((_, index) => (
-                        <SkeletonBlock key={index} className="h-20 min-w-[60px] rounded-xl" />
+                        <SkeletonBlock key={index} className="h-20 min-w-[60px] rounded-[var(--lobb-radius-lg)]" />
                       ))}
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       {Array.from({ length: 4 }).map((_, index) => (
-                        <SkeletonBlock key={index} className="h-12 rounded-lg" />
+                        <SkeletonBlock key={index} className="h-12 rounded-[var(--lobb-radius-sm)]" />
                       ))}
                     </div>
                   </div>
@@ -533,11 +534,11 @@ export function CoachProfileContent({
                   <>
                     <div className="mb-6 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                       {slots.map((day, index) => (
-                        <button
+                        <LobbButton variant="unstyled"
                           key={day.dateKey}
                           type="button"
                           onClick={() => setSelectedDay(index)}
-                          className={`flex min-w-[60px] shrink-0 flex-col items-center rounded-[12px] p-3 transition ${
+                          className={`flex min-w-[60px] shrink-0 flex-col items-center rounded-[var(--lobb-radius-md)] p-3 transition ${
                             selectedDay === index
                               ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                               : "bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)]"
@@ -545,7 +546,7 @@ export function CoachProfileContent({
                         >
                           <span className="text-xs font-bold uppercase opacity-70">{day.weekday}</span>
                           <span className="text-2xl font-semibold">{day.day}</span>
-                        </button>
+                        </LobbButton>
                       ))}
                     </div>
 
@@ -555,7 +556,7 @@ export function CoachProfileContent({
                         <a
                           key={slot}
                           href={isPreview ? undefined : bookingHref}
-                          className="min-h-11 rounded-[12px] border border-[var(--lobb-border-subtle)] px-4 py-3 text-center text-sm font-semibold text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]"
+                          className="min-h-11 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 py-3 text-center text-sm font-medium text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]"
                         >
                           {slot}
                         </a>
@@ -574,7 +575,7 @@ export function CoachProfileContent({
             {tab === "reviews" && (
               <section>
                 <div className="mb-6 flex items-center gap-4">
-                  <div className="text-5xl font-black leading-none text-[var(--lobb-text-primary)]">{ratingLabel}</div>
+                  <div className="text-5xl font-semibold leading-none text-[var(--lobb-text-primary)]">{ratingLabel}</div>
                   <div>
                     <div className="mb-1 flex text-[var(--lobb-clay)]">
                       {Array.from({ length: 5 }).map((_, index) => (
@@ -584,7 +585,7 @@ export function CoachProfileContent({
                         />
                       ))}
                     </div>
-                    <div className="text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                    <div className="text-sm font-medium text-[var(--lobb-text-secondary)]">
                       Based on {reviewCount} reviews
                     </div>
                   </div>
@@ -593,7 +594,7 @@ export function CoachProfileContent({
                 {reviewsLoading ? (
                   <div className="space-y-5">
                     {Array.from({ length: 2 }).map((_, index) => (
-                      <SkeletonBlock key={index} className="h-24 rounded-xl" />
+                      <SkeletonBlock key={index} className="h-24 rounded-[var(--lobb-radius-lg)]" />
                     ))}
                   </div>
                 ) : reviews.length > 0 ? (
@@ -602,14 +603,14 @@ export function CoachProfileContent({
                       <article key={review.id} className="border-b border-[var(--lobb-border-subtle)] pb-6">
                         <div className="mb-2 flex items-center justify-between gap-4">
                           <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--lobb-bg-secondary)] text-sm font-black">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--lobb-bg-secondary)] text-sm font-medium">
                               {initials(review.player_first_name ?? "Player")}
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-[var(--lobb-text-primary)]">
+                              <p className="truncate text-sm font-medium text-[var(--lobb-text-primary)]">
                                 {review.player_first_name ?? "Player"}
                               </p>
-                              <p className="text-xs font-semibold text-[var(--lobb-text-tertiary)]">{formatDate(review.created_at)}</p>
+                              <p className="text-xs font-medium text-[var(--lobb-text-tertiary)]">{formatDate(review.created_at)}</p>
                             </div>
                           </div>
                           <div className="flex shrink-0 text-[var(--lobb-clay)]">
@@ -639,10 +640,10 @@ export function CoachProfileContent({
         </div>
 
         <aside className="hidden md:col-span-5 md:block lg:col-span-4">
-          <div className="lobb-app-card sticky top-24 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 shadow-[var(--lobb-shadow-card)]">
+          <div className="lobb-surface-outlined sticky top-24 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 shadow-[var(--lobb-shadow-card)]">
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <div className="font-mono text-3xl font-black tracking-tight text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
+                <div className="font-mono text-3xl font-semibold tracking-tight text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
                 <div className="text-sm font-medium text-[var(--lobb-text-secondary)]">per hour session</div>
               </div>
               {!isPreview && (
@@ -659,23 +660,23 @@ export function CoachProfileContent({
             <div className="mb-6 space-y-4">
               <div className="flex items-center gap-3">
                 <Zap className="size-5 text-[var(--lobb-clay)]" />
-                <span className="text-sm font-semibold">Instant booking confirmation</span>
+                <span className="text-sm font-medium">Instant booking confirmation</span>
               </div>
               <div className="flex items-center gap-3">
                 <CalendarCheck className="size-5 text-[var(--lobb-clay)]" />
-                <span className="text-sm font-semibold">Free cancellation 24h prior</span>
+                <span className="text-sm font-medium">Free cancellation 24h prior</span>
               </div>
             </div>
 
             {certifications.length > 0 && (
-              <div className="lobb-app-panel mb-6 border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay-light)] p-4">
+              <div className="lobb-surface-inset mb-6 border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay-light)] p-4">
                 <div className="mb-3 flex items-center gap-2 text-[var(--lobb-clay)]">
                   <Trophy className="size-4" />
-                  <p className="text-xs font-black uppercase tracking-[0.12em]">Credentials</p>
+                  <p className="text-xs font-medium uppercase tracking-[0.12em]">Credentials</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {certifications.slice(0, 3).map((cert) => (
-                    <span key={cert} className="inline-flex min-h-8 items-center rounded-full bg-[var(--lobb-bg-elevated)] px-3 py-1 text-xs font-black leading-tight text-[var(--lobb-clay)] shadow-sm ring-1 ring-[var(--lobb-clay)]/20">
+                    <span key={cert} className="inline-flex min-h-8 items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-elevated)] px-3 py-1 text-xs font-medium leading-tight text-[var(--lobb-clay)] shadow-sm ring-1 ring-[var(--lobb-clay)]/20">
                       {cert}
                     </span>
                   ))}
@@ -686,14 +687,14 @@ export function CoachProfileContent({
             {isPreview ? (
               <Link
                 href="/coach/profile"
-                className="flex min-h-11 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] py-4 text-sm font-black text-[var(--lobb-text-inverse)]"
+                className="flex min-h-11 w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] py-4 text-sm font-medium text-[var(--lobb-text-inverse)]"
               >
                 Back to profile
               </Link>
             ) : (
               <a
                 href={bookingHref}
-                className="flex min-h-11 w-full items-center justify-center rounded-[12px] bg-[var(--lobb-bg-inverse)] py-4 text-sm font-black text-[var(--lobb-text-inverse)] transition hover:bg-[var(--lobb-clay-dark)]"
+                className="flex min-h-11 w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] py-4 text-sm font-medium text-[var(--lobb-text-inverse)] transition hover:bg-[var(--lobb-clay-dark)]"
               >
                 Book session
               </a>
@@ -708,12 +709,12 @@ export function CoachProfileContent({
       ) : (
         <div className="lobb-app-header fixed bottom-0 left-0 z-50 flex w-full items-center justify-between border-t border-[var(--lobb-border-subtle)] p-4 shadow-[var(--lobb-shadow-sheet)] md:hidden">
           <div>
-            <div className="font-mono text-xl font-black text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
-            <div className="text-xs font-semibold text-[var(--lobb-text-secondary)]">per session</div>
+            <div className="font-mono text-xl font-semibold text-[var(--lobb-clay)]">{money(hourlyRate)}</div>
+            <div className="text-xs font-medium text-[var(--lobb-text-secondary)]">per session</div>
           </div>
           <a
             href={bookingHref}
-            className="flex min-h-11 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-8 py-3 text-sm font-black text-[var(--lobb-text-inverse)]"
+            className="flex min-h-11 items-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-8 py-3 text-sm font-medium text-[var(--lobb-text-inverse)]"
           >
             Book session
           </a>

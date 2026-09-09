@@ -1,5 +1,6 @@
 "use client";
 
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -126,12 +127,12 @@ export default function CoachSetupStepOnePage() {
           <OnboardingCopy>You&apos;ll complete your availability, rate, and verification before going live.</OnboardingCopy>
         </section>
 
-        <div className="mt-8 flex flex-col items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-8 relative overflow-hidden">
-          <p className="mb-6 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
+        <div className="mt-8 flex flex-col items-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-8 relative overflow-hidden">
+          <p className="mb-6 text-center text-[10px] font-medium uppercase tracking-[0.2em] text-[var(--lobb-clay)]">
             Public coach photo
           </p>
           <label className="group relative z-10 cursor-pointer flex flex-col items-center">
-            <div className="relative flex size-[120px] items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-text-secondary)] transition-all duration-500 group-hover:border-[var(--lobb-clay)]/50 group-hover:shadow-[0_0_32px_rgba(196,98,45,0.12)] group-hover:scale-105 group-hover:bg-[var(--lobb-surface-2)]">
+            <div className="relative flex size-[120px] items-center justify-center overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] transition-all duration-500 group-hover:border-[var(--lobb-clay)]/50 group-hover:shadow-[0_0_32px_rgba(196,98,45,0.12)] group-hover:scale-105 group-hover:bg-[var(--lobb-bg-secondary)]">
               {photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={photoUrl} alt="" className="size-full object-cover" />
@@ -142,10 +143,10 @@ export default function CoachSetupStepOnePage() {
                 </>
               )}
             </div>
-            <span className="absolute bottom-2 right-0 translate-x-1 translate-y-1 flex size-10 items-center justify-center rounded-full bg-[var(--lobb-clay)] border-[3px] border-[var(--lobb-surface-2)] text-white shadow-lg transition-transform group-hover:scale-110">
+            <span className="absolute bottom-2 right-0 translate-x-1 translate-y-1 flex size-10 items-center justify-center rounded-full bg-[var(--lobb-clay)] border-[3px] border-[var(--lobb-bg-secondary)] text-white shadow-lg transition-transform group-hover:scale-110">
               <Plus className="size-5" />
             </span>
-            <input
+            <LobbInput
               type="file"
               accept="image/*"
               className="sr-only"
@@ -164,8 +165,8 @@ export default function CoachSetupStepOnePage() {
         <div className="mt-8 space-y-6">
           <label className="block group">
             <OnboardingFieldLabel required>Full name</OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 value={fullName}
                 onChange={(event) => setFullName(event.target.value)}
                 placeholder="Enter your full name"
@@ -176,15 +177,15 @@ export default function CoachSetupStepOnePage() {
 
           <label className="block">
             <OnboardingFieldLabel>Email</OnboardingFieldLabel>
-            <div className="mt-2 flex h-16 items-center rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]/50 px-5 text-[15px] font-bold tracking-wide text-[var(--lobb-text-secondary)]/70 backdrop-blur-sm">
+            <div className="mt-2 flex h-16 items-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]/50 px-5 text-[15px] font-bold tracking-wide text-[var(--lobb-text-secondary)]/70 backdrop-blur-sm">
               {authEmail || "Loading…"}
             </div>
           </label>
 
           <label className="block group">
             <OnboardingFieldLabel required hint={`${headline.length}/150`}>Headline</OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 value={headline}
                 maxLength={150}
                 onChange={(event) => setHeadline(event.target.value)}

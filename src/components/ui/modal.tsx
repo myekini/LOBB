@@ -12,13 +12,13 @@ export function Modal({ title, children, onClose }: { title: string; children: R
           className="fixed inset-x-0 bottom-0 z-[80] p-4 md:flex md:items-center md:justify-center md:inset-0"
           aria-labelledby="lobb-modal-title"
         >
-          <section className="mx-auto w-full max-w-md rounded-t-[24px] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)] md:rounded-[24px]">
+          <section className="mx-auto w-full max-w-md rounded-t-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)] md:rounded-[var(--lobb-radius-lg)]">
             <div className="flex items-start justify-between gap-4">
-              <h2 id="lobb-modal-title" className="text-lg font-black">{title}</h2>
+              <h2 id="lobb-modal-title" className="text-lg font-semibold">{title}</h2>
               <Dialog.Close
                 onClick={onClose}
                 aria-label="Close"
-                className="flex size-8 items-center justify-center rounded-[8px] text-[var(--lobb-text-secondary)] transition hover:bg-[var(--lobb-bg-secondary)]"
+                className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-sm)] text-[var(--lobb-text-secondary)] transition hover:bg-[var(--lobb-bg-secondary)]"
               >
                 <X className="size-5" />
               </Dialog.Close>

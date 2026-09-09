@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -11,11 +12,13 @@ import {
   Mail,
   MessageSquare,
   Pencil,
+  ShieldCheck,
   User,
 } from "lucide-react";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { createClient } from "@/lib/supabase/client";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { SecurityNudge } from "@/features/auth/security-nudge";
 
 type ProfileData = {
   full_name: string | null;
@@ -64,6 +67,8 @@ export default function ProfilePage() {
       <PlayerHeader active="profile" title="Profile" />
       <div className="mx-auto max-w-lg px-5 pt-8 sm:px-6">
 
+        <SecurityNudge />
+
         {/* Avatar + name */}
         <div className="flex items-center gap-4 pb-8">
           {loading ? (
@@ -81,13 +86,13 @@ export default function ProfilePage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={profile.avatar_url} alt="" className="size-full object-cover" />
                 ) : (
-                  <span className="flex size-full items-center justify-center text-lg font-black text-white">
+                  <span className="flex size-full items-center justify-center text-lg font-medium text-white">
                     {abbr ?? <User className="size-6 opacity-75" />}
                   </span>
                 )}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-[17px] font-black">{profile?.full_name ?? "—"}</p>
+                <p className="truncate text-[17px] font-medium">{profile?.full_name ?? "—"}</p>
                 <p className="mt-0.5 truncate text-sm text-[var(--lobb-text-secondary)]">
                   {profile?.phone_number ?? profile?.email ?? ""}
                 </p>
@@ -99,6 +104,7 @@ export default function ProfilePage() {
         {/* Account */}
         <SettingGroup label="Account">
           <SettingRow href="/profile/edit" icon={<Pencil className="size-[18px]" />} label="Edit profile" description="Name, photo, contact info" />
+          <SettingRow href="/account/security" icon={<ShieldCheck className="size-[18px]" />} label="Sign-in & security" description="Password and passkey" last />
         </SettingGroup>
 
         {/* Support */}
@@ -117,12 +123,12 @@ export default function ProfilePage() {
 
         {/* Sign out */}
         <div className="mt-2">
-          <button
+          <LobbButton variant="unstyled"
             onClick={logout}
-            className="lobb-app-panel flex w-full items-center justify-between border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-5 py-4 text-sm font-black text-[var(--lobb-text-secondary)] transition hover:text-red-500"
+            className="lobb-surface-inset flex w-full items-center justify-between border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-5 py-4 text-sm font-medium text-[var(--lobb-text-secondary)] transition hover:text-red-500"
           >
             Sign out
-          </button>
+          </LobbButton>
         </div>
 
       </div>
@@ -137,7 +143,7 @@ function SettingGroup({ label, children }: { label: string; children: React.Reac
       <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
         {label}
       </p>
-      <div className="lobb-settings-group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <div className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         {children}
       </div>
     </div>

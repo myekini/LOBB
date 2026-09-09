@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { useCallback, useEffect, useMemo, useState, type ComponentType } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarCheck2, CalendarX2, ChevronLeft, ChevronRight, Clock3, Plus, Trash2, X } from "lucide-react";
@@ -240,16 +241,16 @@ export default function CoachAvailabilityPage() {
       {/* Mobile header */}
       <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] px-4 py-3 backdrop-blur-xl md:hidden">
         <div className="flex items-center justify-between">
-          <button
+          <LobbButton variant="unstyled"
             type="button"
             onClick={() => router.back()}
             aria-label="Back"
             className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"
           >
             <ArrowLeft className="size-4" />
-          </button>
+          </LobbButton>
           <div className="flex items-center gap-2">
-            <span className="font-black">Availability</span>
+            <span className="font-medium">Availability</span>
             {dirty && <span className="size-2 rounded-full bg-[var(--lobb-clay)]" />}
           </div>
           <div className="size-11" />
@@ -318,14 +319,14 @@ export default function CoachAvailabilityPage() {
           <span className="min-w-0 flex-1 truncate text-xs font-bold text-[var(--lobb-text-secondary)] sm:hidden">
             {dirty ? "Unsaved changes" : saved ? "Saved" : "Availability"}
           </span>
-          <button
+          <LobbButton variant="unstyled"
             type="button"
             onClick={save}
             disabled={loading || saving || !dirty}
-            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[14px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] disabled:opacity-40 sm:flex-none sm:px-9"
+            className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] disabled:opacity-40 sm:flex-none sm:px-9"
           >
             {saving ? <InlineActionLoader label="Saving" /> : saved && !dirty ? "✓ Saved" : "Save changes"}
-          </button>
+          </LobbButton>
         </div>
       </footer>
     </main>
@@ -334,12 +335,12 @@ export default function CoachAvailabilityPage() {
 
 function AvailabilityMetric({ icon: Icon, label, value }: { icon: ComponentType<{ className?: string }>; label: string; value: string }) {
   return (
-    <div className="lobb-app-card flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+    <div className="lobb-surface-outlined flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
         <Icon className="size-4" />
       </span>
       <div>
-        <p className="text-xl font-black leading-none">{value}</p>
+        <p className="text-xl font-semibold leading-none">{value}</p>
         <p className="mt-1 text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
       </div>
     </div>
@@ -377,16 +378,16 @@ function WeeklyHoursSection({
   ];
 
   return (
-    <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Weekly hours</p>
-      <h2 className="mt-1 text-xl font-black">When do you coach?</h2>
-      <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+    <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Weekly hours</p>
+      <h2 className="mt-1 text-xl font-semibold">When do you coach?</h2>
+      <p className="mt-1 text-sm font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
         These hours repeat every week. Players see open 60-minute slots up to 14 days ahead.
       </p>
 
       {/* Quick apply */}
-      <div className="lobb-app-panel mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
-        <p className="mb-3 text-xs font-black text-[var(--lobb-text-secondary)]">
+      <div className="lobb-surface-inset mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
+        <p className="mb-3 text-xs font-medium text-[var(--lobb-text-secondary)]">
           Apply hours to selected days
         </p>
 
@@ -395,20 +396,20 @@ function WeeklyHoursSection({
           {[0, 1, 2, 3, 4, 5, 6].map((dow) => {
             const on = selectedDows.includes(dow);
             return (
-              <button
+              <LobbButton variant="unstyled"
                 key={dow}
                 type="button"
                 onClick={() => toggleDow(dow)}
                 aria-pressed={on}
                 aria-label={`${on ? "Remove" : "Add"} ${DAY_NAMES[dow]}`}
-                className={`flex flex-col items-center gap-1 rounded-[12px] border py-2.5 text-xs transition-all ${
+                className={`flex flex-col items-center gap-1 rounded-[var(--lobb-radius-md)] border py-2.5 text-xs transition-all ${
                   on
                     ? "border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                     : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/40"
                 }`}
               >
-                <span className="text-[10px] font-black uppercase">{DAY_SHORT[dow]}</span>
-              </button>
+                <span className="text-[10px] font-medium uppercase">{DAY_SHORT[dow]}</span>
+              </LobbButton>
             );
           })}
         </div>
@@ -416,15 +417,15 @@ function WeeklyHoursSection({
         {/* Preset shortcuts */}
         <div className="mt-2 flex flex-wrap gap-1.5">
           {presets.map(([label, dows]) => (
-            <button
+            <LobbButton variant="unstyled"
               key={label}
               type="button"
               onClick={() => setSelectedDows([...dows])}
               aria-pressed={selectedDows.length === dows.length && dows.every((dow) => selectedDows.includes(dow))}
-              className="rounded-full border border-[var(--lobb-border-subtle)] px-3 py-1 text-[11px] font-black text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-text-primary)]"
+              className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] px-3 py-1 text-[11px] font-medium text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-text-primary)]"
             >
               {label}
-            </button>
+            </LobbButton>
           ))}
         </div>
 
@@ -432,14 +433,14 @@ function WeeklyHoursSection({
         <div className="mt-3 grid grid-cols-2 items-end gap-2 sm:grid-cols-[1fr_1fr_auto]">
           <TimeSelect label="From" value={quickStart} onChange={setQuickStart} />
           <TimeSelect label="Until" value={quickEnd} onChange={setQuickEnd} />
-          <button
+          <LobbButton variant="unstyled"
             type="button"
             disabled={!selectedDows.length || quickStart >= quickEnd}
             onClick={applyQuick}
-            className="col-span-2 h-10 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-40 sm:col-span-1"
+            className="col-span-2 h-10 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-40 sm:col-span-1"
           >
             Apply
-          </button>
+          </LobbButton>
         </div>
       </div>
 
@@ -453,26 +454,26 @@ function WeeklyHoursSection({
           return (
             <div
               key={dow}
-              className="rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]"
+              className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]"
             >
               <div className="flex flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm font-black">{DAY_NAMES[dow]}</span>
+                <span className="text-sm font-medium">{DAY_NAMES[dow]}</span>
                 <div className="flex items-center justify-between gap-2 sm:justify-end">
                   {isOpen ? (
-                    <span className="min-w-0 truncate text-xs font-semibold text-[var(--lobb-success)]">
+                    <span className="min-w-0 truncate text-xs font-medium text-[var(--lobb-success)]">
                       {dayWindows.map((w) => `${timeLabel(w.start)}–${timeLabel(w.end)}`).join(", ")}
                     </span>
                   ) : (
-                    <span className="text-xs font-semibold text-[var(--lobb-text-tertiary)]">Closed</span>
+                    <span className="text-xs font-medium text-[var(--lobb-text-tertiary)]">Closed</span>
                   )}
-                  <button
+                  <LobbButton variant="unstyled"
                     type="button"
                     onClick={() => addWindow(dow)}
                     aria-label={`Add hours for ${DAY_NAMES[dow]}`}
                     className="flex size-7 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-clay)]"
                   >
                     <Plus className="size-3.5" />
-                  </button>
+                  </LobbButton>
                 </div>
               </div>
 
@@ -490,14 +491,14 @@ function WeeklyHoursSection({
                         value={w.end}
                         onChange={(v) => updateWindow(w.id, { end: v })}
                       />
-                      <button
+                      <LobbButton variant="unstyled"
                         type="button"
                         onClick={() => removeWindow(w.id)}
                         aria-label="Remove"
-                        className="flex size-8 items-center justify-center rounded-[10px] border border-[var(--lobb-border-subtle)] text-[var(--lobb-error)] hover:bg-[var(--lobb-error)]/5"
+                        className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] text-[var(--lobb-error)] hover:bg-[var(--lobb-error)]/5"
                       >
                         <Trash2 className="size-3.5" />
-                      </button>
+                      </LobbButton>
                     </div>
                   ))}
                 </div>
@@ -523,10 +524,10 @@ function DaysOffSection({
   windows: Window[];
 }) {
   return (
-    <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-      <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Days off</p>
-      <h2 className="mt-1 text-xl font-black">Close specific dates</h2>
-      <p className="mt-1 text-sm font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+    <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Days off</p>
+      <h2 className="mt-1 text-xl font-semibold">Close specific dates</h2>
+      <p className="mt-1 text-sm font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
         Tap any date to close it. Weekly hours still apply to every other date.
         A{" "}
         <span className="inline-block size-1.5 rounded-full bg-[var(--lobb-success)] align-middle" />
@@ -535,29 +536,29 @@ function DaysOffSection({
 
       {/* Month navigation */}
       <div className="mt-5 flex items-center justify-between">
-        <button
+        <LobbButton variant="unstyled"
           type="button"
           onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
           aria-label="Previous month"
           className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]"
         >
           <ChevronLeft className="size-4" />
-        </button>
-        <span className="text-sm font-black">{monthLabel(month)}</span>
-        <button
+        </LobbButton>
+        <span className="text-sm font-medium">{monthLabel(month)}</span>
+        <LobbButton variant="unstyled"
           type="button"
           onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
           aria-label="Next month"
           className="flex size-9 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]"
         >
           <ChevronRight className="size-4" />
-        </button>
+        </LobbButton>
       </div>
 
       {/* Day-of-week headers */}
       <div className="mt-3 grid grid-cols-7 gap-1 text-center">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <span key={d} className="py-1 text-[10px] font-black text-[var(--lobb-text-secondary)]">{d}</span>
+          <span key={d} className="py-1 text-[10px] font-medium text-[var(--lobb-text-secondary)]">{d}</span>
         ))}
       </div>
 
@@ -574,14 +575,14 @@ function DaysOffSection({
           }
 
           return (
-            <button
+            <LobbButton variant="unstyled"
               key={cell.value}
               type="button"
               disabled={isPast}
               onClick={() => toggleDate(cell.value)}
               aria-pressed={isClosed}
               aria-label={`${isClosed ? "Reopen" : "Close"} ${cell.date.toLocaleDateString("en-NG", { weekday: "long", day: "numeric", month: "long" })}`}
-              className={`relative flex h-10 w-full items-center justify-center rounded-[10px] text-sm font-black transition-all active:scale-95 ${
+              className={`relative flex h-10 w-full items-center justify-center rounded-[var(--lobb-radius-md)] text-sm font-medium transition-all active:scale-95 ${
                 isPast
                   ? "cursor-not-allowed opacity-30 text-[var(--lobb-text-tertiary)]"
                   : isClosed
@@ -597,7 +598,7 @@ function DaysOffSection({
               {hasHours && !isClosed && !isPast && (
                 <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-[var(--lobb-success)]" />
               )}
-            </button>
+            </LobbButton>
           );
         })}
       </div>
@@ -605,30 +606,30 @@ function DaysOffSection({
       {/* Closed dates pills */}
       {upcomingClosed.length > 0 ? (
         <div className="mt-5">
-          <p className="mb-2.5 text-[11px] font-black uppercase tracking-wider text-[var(--lobb-text-secondary)]">
+          <p className="mb-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--lobb-text-secondary)]">
             Closed dates, tap to reopen
           </p>
           <div className="flex flex-wrap gap-2">
             {upcomingClosed.map((d) => (
-              <button
+              <LobbButton variant="unstyled"
                 key={d}
                 type="button"
                 onClick={() => toggleDate(d)}
                 aria-label={`Reopen ${new Date(`${d}T00:00:00`).toLocaleDateString("en-NG", {
                   weekday: "long", day: "numeric", month: "long",
                 })}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--lobb-error)]/25 bg-[var(--lobb-error)]/8 px-3 py-1.5 text-xs font-black text-[var(--lobb-error)] transition-colors hover:bg-[var(--lobb-error)]/15"
+                className="inline-flex items-center gap-1.5 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-error)]/25 bg-[var(--lobb-error)]/8 px-3 py-1.5 text-xs font-medium text-[var(--lobb-error)] transition-colors hover:bg-[var(--lobb-error)]/15"
               >
                 {new Date(`${d}T00:00:00`).toLocaleDateString("en-NG", {
                   weekday: "short", day: "numeric", month: "short",
                 })}
                 <X className="size-3" />
-              </button>
+              </LobbButton>
             ))}
           </div>
         </div>
       ) : (
-        <p className="mt-4 rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2.5 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+        <p className="mt-4 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
           No dates closed. Tap any future date to close it.
         </p>
       )}
@@ -639,11 +640,11 @@ function DaysOffSection({
 function TimeSelect({ label, onChange, value }: { label: string; onChange: (v: string) => void; value: string }) {
   return (
     <div className="block">
-      <span className="mb-1 block text-[10px] font-black uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">
+      <span className="mb-1 block text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">
         {label}
       </span>
       <SearchableSelect
-        className="h-10 rounded-[12px] px-3 text-xs"
+        className="h-10 rounded-[var(--lobb-radius-md)] px-3 text-xs"
         value={value}
         onChange={onChange}
         options={TIME_OPTIONS.map((m) => {

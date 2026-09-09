@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -71,7 +72,7 @@ export default function RolePage() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Please verify your phone number again.");
+      setError("Your verification session expired. Return to sign in and request a new code.");
       router.push("/auth/login");
       return;
     }
@@ -84,7 +85,8 @@ export default function RolePage() {
     setSaving(false);
 
     if (profileError) {
-      setError(profileError.message);
+      console.error("[auth-role] Could not save account type:", profileError.message);
+      setError("We could not save your account type. Check your connection and try again.");
       return;
     }
 
@@ -103,7 +105,7 @@ export default function RolePage() {
             LOBB today?
           </OnboardingTitle>
           <OnboardingCopy>
-            Select your account type to continue. You can set up the other path later.
+            Select the account type you want to use. You can contact support if this needs to change later.
           </OnboardingCopy>
         </div>
 
@@ -114,7 +116,7 @@ export default function RolePage() {
               const Icon = option.Icon;
 
               return (
-                <button
+                <LobbButton variant="unstyled"
                   key={option.role}
                   type="button"
                   onClick={() => setSelected(option.role)}
@@ -122,10 +124,10 @@ export default function RolePage() {
                 >
                   {/* Netflix Profile Square */}
                   <div
-                    className={`relative flex aspect-square w-full max-w-[140px] items-center justify-center rounded-[16px] border-[3px] transition-all duration-300 active:scale-95 ${
+                    className={`relative flex aspect-square w-full max-w-[140px] items-center justify-center rounded-[var(--lobb-radius-lg)] border-[3px] transition-all duration-300 active:scale-95 ${
                       isSelected
                         ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)]/[0.08] shadow-[0_16px_36px_rgba(196,98,45,0.12)] scale-105"
-                        : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] group-hover:border-[var(--lobb-clay)]/40 group-hover:scale-102 group-hover:shadow-[0_8px_24px_rgba(196,98,45,0.04)]"
+                        : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] group-hover:border-[var(--lobb-clay)]/40 group-hover:scale-102 group-hover:shadow-[0_8px_24px_rgba(196,98,45,0.04)]"
                     }`}
                   >
                     <Icon
@@ -146,7 +148,7 @@ export default function RolePage() {
 
                   {/* Profile Name */}
                   <span
-                    className={`mt-4 text-[13px] font-black uppercase tracking-[0.16em] transition-colors duration-300 ${
+                    className={`mt-4 text-[13px] font-medium uppercase tracking-[0.16em] transition-colors duration-300 ${
                       isSelected ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-secondary)] group-hover:text-[var(--lobb-text-primary)]"
                     }`}
                   >
@@ -157,7 +159,7 @@ export default function RolePage() {
                   <span className="mt-1.5 text-center text-[11px] font-medium leading-relaxed text-[var(--lobb-text-tertiary)] max-w-[125px]">
                     {option.body}
                   </span>
-                </button>
+                </LobbButton>
               );
             })}
           </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -100,7 +102,7 @@ export default function CoachSetupStep4Page() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Session expired. Please log in again.");
+      setError("Your session expired. Please sign in again.");
       return;
     }
 
@@ -159,28 +161,28 @@ export default function CoachSetupStep4Page() {
             <OnboardingFieldLabel required>Hourly rate</OnboardingFieldLabel>
             <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
               {RATE_OPTIONS.map((rate) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={rate}
                   type="button"
                   onClick={() => {
                     setHourlyRate(rate);
                     setCustomRate("");
                   }}
-                  className={`min-h-14 rounded-[16px] border px-3 py-3 text-[14px] font-black leading-tight transition-all active:scale-[0.97] ${
+                  className={`min-h-14 rounded-[var(--lobb-radius-lg)] border px-3 py-3 text-[14px] font-medium leading-tight transition-all active:scale-[0.97] ${
                     hourlyRate === rate
                       ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)] shadow-[0_4px_16px_rgba(196,98,45,0.08)] border-[var(--lobb-clay)]/50"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {formatRate(rate)}
-                </button>
+                </LobbButton>
               ))}
             </div>
             <label className="mt-4 block group/custom">
               <OnboardingFieldLabel>Custom hourly rate</OnboardingFieldLabel>
-              <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-                <span className="relative z-10 mr-2 font-black text-[var(--lobb-text-secondary)]/50">₦</span>
-                <input
+              <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+                <span className="relative z-10 mr-2 font-medium text-[var(--lobb-text-secondary)]/50">₦</span>
+                <LobbInput
                   inputMode="numeric"
                   value={customRate}
                   onChange={(event) => {
@@ -216,18 +218,18 @@ export default function CoachSetupStep4Page() {
             <OnboardingFieldLabel hint="optional">Other areas you cover</OnboardingFieldLabel>
             <div className="mt-3 flex flex-wrap gap-2">
               {LAGOS_LOCATIONS.filter((l) => l !== primaryLocation).map((loc) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={loc}
                   type="button"
                   onClick={() => toggle(loc, serviceAreas, setServiceAreas)}
-                  className={`inline-flex min-h-11 items-center justify-center rounded-full border px-[18px] py-2.5 text-center text-[12px] font-black leading-tight transition-all active:scale-[0.97] ${
+                  className={`inline-flex min-h-11 items-center justify-center rounded-[var(--lobb-radius-lg)] border px-[18px] py-2.5 text-center text-[12px] font-medium leading-tight transition-all active:scale-[0.97] ${
                     serviceAreas.includes(loc)
                       ? "bg-[var(--lobb-clay)] text-white shadow-[0_4px_16px_rgba(196,98,45,0.12)] border-[var(--lobb-clay)]"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {loc}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>
@@ -237,18 +239,18 @@ export default function CoachSetupStep4Page() {
             <OnboardingFieldLabel required>Player levels you coach</OnboardingFieldLabel>
             <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
               {SKILL_LEVEL_OPTIONS.map((level) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={level}
                   type="button"
                   onClick={() => toggle(level, skillLevels, setSkillLevels)}
-                  className={`min-h-14 rounded-[16px] border px-4 py-3 text-[14px] font-black leading-tight transition-all active:scale-[0.97] ${
+                  className={`min-h-14 rounded-[var(--lobb-radius-lg)] border px-4 py-3 text-[14px] font-medium leading-tight transition-all active:scale-[0.97] ${
                     skillLevels.includes(level)
                       ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)] shadow-[0_4px_16px_rgba(196,98,45,0.08)] border-[var(--lobb-clay)]/50"
-                      : "border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-surface)] hover:border-[var(--lobb-clay)]/40"
+                      : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/40"
                   }`}
                 >
                   {level}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </div>

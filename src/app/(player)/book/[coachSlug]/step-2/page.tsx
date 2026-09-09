@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, useMemo } from "react";
 import { CheckCircle2, MapPin, PenLine, Timer } from "lucide-react";
@@ -38,20 +40,20 @@ function countdownStyle(seconds: number) {
 function AccessBadge({ rule }: { rule: string }) {
   if (rule === "open") {
     return (
-      <span className="inline-flex items-center rounded-full bg-[var(--lobb-success-soft)] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--lobb-success)]">
+      <span className="inline-flex items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-success-soft)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--lobb-success)]">
         Open access
       </span>
     );
   }
   if (rule === "members_only") {
     return (
-      <span className="inline-flex items-center rounded-full bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-[var(--lobb-clay)]">
+      <span className="inline-flex items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--lobb-clay)]">
         Members only
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-blue-600">
+    <span className="inline-flex items-center rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--lobb-clay-dark)]">
       Restricted hours
     </span>
   );
@@ -183,17 +185,17 @@ function BookingStep2Content() {
     <BookingShell step={2} backHref={`/book/${slug}/step-1`}>
       {/* Slot recap */}
       {slot && (
-        <div className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+        <div className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
           <div className="p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Held slot</p>
-                <p className="mt-1 text-base font-black text-[var(--lobb-text-primary)]">{formatSlotDate(slot)}</p>
-                <p className="mt-0.5 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Held slot</p>
+                <p className="mt-1 text-base font-medium text-[var(--lobb-text-primary)]">{formatSlotDate(slot)}</p>
+                <p className="mt-0.5 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   {formatSlotTime(slot)} to {formatSlotEndTime(slot)}, 60 min
                 </p>
               </div>
-              <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-black ${countdownStyle(seconds)}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-[var(--lobb-radius-lg)] px-3 py-2 text-xs font-medium ${countdownStyle(seconds)}`}>
                 <Timer className="size-3.5" />
                 {formatCountdown(seconds)}
               </span>
@@ -203,17 +205,17 @@ function BookingStep2Content() {
       )}
 
       {/* Court picker */}
-      <div className="lobb-app-card mt-4 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+      <div className="lobb-surface-outlined mt-4 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
         {/* Header */}
         <div className="flex items-start gap-3 border-b border-[var(--lobb-border-subtle)] p-4 sm:p-5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
             <MapPin className="size-4" />
           </span>
           <div>
-            <h2 className="text-base font-black text-[var(--lobb-text-primary)]">
+            <h2 className="text-base font-semibold text-[var(--lobb-text-primary)]">
               {courtHeader}
             </h2>
-            <p className="mt-0.5 text-sm font-semibold leading-snug text-[var(--lobb-text-secondary)]">
+            <p className="mt-0.5 text-sm font-medium leading-snug text-[var(--lobb-text-secondary)]">
               {courtSubcopy}
             </p>
           </div>
@@ -223,10 +225,10 @@ function BookingStep2Content() {
         <div className="space-y-2 p-4 sm:p-5">
           {courtOptions.map((court) => (
             <div key={court.id}>
-              <button
+              <LobbButton variant="unstyled"
                 type="button"
                 onClick={() => handleSelectCourt(court.id)}
-                className={`w-full rounded-[14px] border p-4 text-left transition-all duration-150 active:scale-[0.99] ${
+                className={`w-full rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-all duration-150 active:scale-[0.99] ${
                   selectedCourtId === court.id && !showCustom
                     ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)]"
                     : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] hover:border-[var(--lobb-clay)]/40"
@@ -234,14 +236,14 @@ function BookingStep2Content() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className={`font-black leading-tight ${
+                    <p className={`font-medium leading-tight ${
                       selectedCourtId === court.id && !showCustom
                         ? "text-[var(--lobb-clay)]"
                         : "text-[var(--lobb-text-primary)]"
                     }`}>
                       {court.name}
                     </p>
-                    <p className="mt-1 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                    <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
                       {court.area}
                       {court.courtCount ? ` · ${court.courtCount} court${court.courtCount > 1 ? "s" : ""}` : ""}
                     </p>
@@ -258,58 +260,58 @@ function BookingStep2Content() {
                     )}
                   </div>
                 </div>
-              </button>
+              </LobbButton>
 
             </div>
           ))}
 
           {/* Other / custom location */}
           {showCustom ? (
-            <div className="rounded-[14px] border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] p-4">
-              <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-[var(--lobb-clay)]">
+            <div className="rounded-[var(--lobb-radius-lg)] border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] p-4">
+              <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-clay)]">
                 Custom location
               </p>
-              <textarea
+              <LobbTextarea
                 value={customLocation}
                 onChange={(e) => setCustomLocation(e.target.value)}
                 placeholder="e.g. Lekki Tennis Club, Lekki Phase 1"
                 rows={2}
                 autoFocus
-                className="w-full resize-none rounded-[10px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-sm font-semibold outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+                className="w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-sm font-medium outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
               />
-              <button
+              <LobbButton variant="unstyled"
                 type="button"
                 onClick={() => { setShowCustom(false); setCustomLocation(""); }}
-                className="mt-2 text-xs font-black text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)]"
+                className="mt-2 text-xs font-medium text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)]"
               >
                 ← Cancel
-              </button>
+              </LobbButton>
             </div>
           ) : (
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               onClick={handleShowCustom}
-              className="flex w-full items-center gap-2.5 rounded-[14px] border border-dashed border-[var(--lobb-border-subtle)] p-4 text-left transition-all duration-150 hover:border-[var(--lobb-clay)]/40 active:scale-[0.99]"
+              className="flex w-full items-center gap-2.5 rounded-[var(--lobb-radius-lg)] border border-dashed border-[var(--lobb-border-subtle)] p-4 text-left transition-all duration-150 hover:border-[var(--lobb-clay)]/40 active:scale-[0.99]"
             >
               <PenLine className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />
-              <span className="text-sm font-black text-[var(--lobb-text-secondary)]">Other location</span>
-            </button>
+              <span className="text-sm font-medium text-[var(--lobb-text-secondary)]">Other location</span>
+            </LobbButton>
           )}
         </div>
       </div>
 
       {/* Note to coach */}
-      <label className="lobb-app-card mt-4 block border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
-        <span className="text-sm font-black uppercase tracking-wider text-[var(--lobb-text-primary)]">
+      <label className="lobb-surface-outlined mt-4 block border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+        <span className="text-sm font-medium uppercase tracking-wider text-[var(--lobb-text-primary)]">
           Note to coach{" "}
           <span className="text-[10px] font-bold tracking-normal text-[var(--lobb-text-secondary)] lowercase">(optional)</span>
         </span>
-        <textarea
+        <LobbTextarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Focus area, injury note, or anything the coach should know"
           rows={3}
-          className="mt-3 h-24 w-full resize-none rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-semibold outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+          className="mt-3 h-24 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
         />
       </label>
 

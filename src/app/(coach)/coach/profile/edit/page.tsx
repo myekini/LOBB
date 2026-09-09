@@ -1,5 +1,8 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
+import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useMemo, useState } from "react";
 import { Camera, CheckCircle2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -45,7 +48,7 @@ function SectionHead({ id, title }: { id: string; title: string }) {
   return (
     <h2
       id={id}
-      className="mb-4 scroll-mt-6 text-xs font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]"
+      className="mb-4 scroll-mt-6 text-xs font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]"
     >
       {title}
     </h2>
@@ -62,10 +65,10 @@ function MultiChip({
   onClick: () => void;
 }) {
   return (
-    <button
+    <LobbButton variant="unstyled"
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-bold transition ${
+      className={`inline-flex items-center gap-1 rounded-[var(--lobb-radius-lg)] border px-3 py-1.5 text-sm font-bold transition ${
         selected
           ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay)] text-white"
           : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
@@ -73,7 +76,7 @@ function MultiChip({
     >
       {selected && <CheckCircle2 className="size-3.5" />}
       {value}
-    </button>
+    </LobbButton>
   );
 }
 
@@ -316,9 +319,9 @@ export default function CoachProfileEditPage() {
       <main className="lobb-app-page min-h-screen px-5 pb-36 pt-7">
         <section className="mx-auto max-w-md space-y-5">
           <SkeletonBlock className="h-8 w-44" />
-          <SkeletonBlock className="h-28 w-full rounded-[20px]" />
+          <SkeletonBlock className="h-28 w-full rounded-[var(--lobb-radius-lg)]" />
           {Array.from({ length: 6 }).map((_, index) => (
-            <SkeletonBlock key={index} className="h-14 w-full rounded-[18px]" />
+            <SkeletonBlock key={index} className="h-14 w-full rounded-[var(--lobb-radius-lg)]" />
           ))}
         </section>
       </main>
@@ -353,7 +356,7 @@ export default function CoachProfileEditPage() {
               <span className="absolute bottom-0 right-0 flex size-9 items-center justify-center rounded-full border-4 border-[var(--lobb-bg-primary)] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]">
                 <Plus className="size-4" />
               </span>
-              <input
+              <LobbInput
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 className="sr-only"
@@ -369,7 +372,7 @@ export default function CoachProfileEditPage() {
                 }}
               />
             </label>
-            <p className="mt-3 text-center text-xs font-semibold text-[var(--lobb-text-secondary)]">
+            <p className="mt-3 text-center text-xs font-medium text-[var(--lobb-text-secondary)]">
               Max 2 MB · JPEG, PNG or WebP
             </p>
           </section>
@@ -380,32 +383,32 @@ export default function CoachProfileEditPage() {
             <div className="space-y-4">
               <label className="block">
                 <span className="text-sm font-bold">Full name *</span>
-                <input
+                <LobbInput
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
+                  className="mt-2 h-14 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-medium outline-none transition focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
                 />
               </label>
               <label className="block">
                 <span className="text-sm font-bold">Email *</span>
-                <input
+                <LobbInput
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
+                  className="mt-2 h-14 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-medium outline-none transition focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
                 />
               </label>
               <label className="block">
                 <span className="text-sm font-bold">
                   Headline{" "}
-                  <span className="font-semibold text-[var(--lobb-text-secondary)]">(max 150 chars)</span>
+                  <span className="font-medium text-[var(--lobb-text-secondary)]">(max 150 chars)</span>
                 </span>
-                <input
+                <LobbInput
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
                   maxLength={150}
                   placeholder="ITF Certified · 8 Years · Lekki & VI"
-                  className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
+                  className="mt-2 h-14 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-medium outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
                 />
                 <span className="mt-1 block text-right text-xs font-bold text-[var(--lobb-text-secondary)]">
                   {headline.length}/150
@@ -417,13 +420,13 @@ export default function CoachProfileEditPage() {
           {/* ── Bio ──────────────────────────────────────────── */}
           <section>
             <SectionHead id="bio" title="Bio" />
-            <textarea
+            <LobbTextarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={7}
               maxLength={600}
               placeholder="Tell players about your coaching style, experience, and what to expect in a session..."
-              className="w-full resize-none rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 py-3 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
+              className="w-full resize-none rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 py-3 text-base font-medium outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
             />
             <span
               className={`mt-1 block text-right text-xs font-bold ${
@@ -439,15 +442,15 @@ export default function CoachProfileEditPage() {
             <SectionHead id="demo-video" title="Demo Video" />
             <label className="block">
               <span className="text-sm font-bold">YouTube or Instagram URL</span>
-              <input
+              <LobbInput
                 type="url"
                 value={demoVideoUrl}
                 onChange={(e) => setDemoVideoUrl(e.target.value)}
                 placeholder="https://youtube.com/..."
-                className="mt-2 h-14 w-full rounded-2xl border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-semibold outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
+                className="mt-2 h-14 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-base font-medium outline-none transition placeholder:font-normal placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)] focus:ring-2 focus:ring-[rgba(196,98,45,0.12)]"
               />
             </label>
-            <p className="mt-2 text-xs font-semibold text-[var(--lobb-text-secondary)]">
+            <p className="mt-2 text-xs font-medium text-[var(--lobb-text-secondary)]">
               Optional, but helps players trust your coaching style.
             </p>
           </section>
@@ -457,18 +460,18 @@ export default function CoachProfileEditPage() {
             <SectionHead id="rate" title="Hourly Rate" />
             <div className="grid grid-cols-3 gap-2">
               {HOURLY_RATE_OPTIONS.map((rate) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={rate}
                   type="button"
                   onClick={() => setHourlyRate(rate)}
-                  className={`h-12 rounded-2xl border text-sm font-black transition ${
+                  className={`h-12 rounded-[var(--lobb-radius-lg)] border text-sm font-medium transition ${
                     hourlyRate === rate
                       ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
                   ₦{(rate / 1000).toFixed(rate % 1000 === 0 ? 0 : 1)}k
-                </button>
+                </LobbButton>
               ))}
             </div>
           </section>
@@ -539,7 +542,7 @@ export default function CoachProfileEditPage() {
             <SectionHead id="certifications" title="Certifications" />
             <div className="space-y-2">
               {CERTIFICATION_OPTIONS.map((cert) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={cert}
                   type="button"
                   onClick={() => {
@@ -553,7 +556,7 @@ export default function CoachProfileEditPage() {
                       );
                     }
                   }}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left text-sm font-black transition ${
+                  className={`flex w-full items-center justify-between rounded-[var(--lobb-radius-lg)] border px-4 py-3.5 text-left text-sm font-medium transition ${
                     certifications.includes(cert)
                       ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
@@ -561,7 +564,7 @@ export default function CoachProfileEditPage() {
                 >
                   {cert}
                   {certifications.includes(cert) && <CheckCircle2 className="size-5 shrink-0" />}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </section>
@@ -586,11 +589,11 @@ export default function CoachProfileEditPage() {
             <SectionHead id="court-access" title="Court Access" />
             <div className="space-y-2">
               {COURT_ACCESS_OPTIONS.map((opt) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={opt.value}
                   type="button"
                   onClick={() => setCourtAccess(opt.value)}
-                  className={`flex w-full items-center justify-between rounded-2xl border px-4 py-4 text-left text-sm font-black transition ${
+                  className={`flex w-full items-center justify-between rounded-[var(--lobb-radius-lg)] border px-4 py-4 text-left text-sm font-medium transition ${
                     courtAccess === opt.value
                       ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:border-[var(--lobb-clay)]"
@@ -598,7 +601,7 @@ export default function CoachProfileEditPage() {
                 >
                   {opt.label}
                   {courtAccess === opt.value && <CheckCircle2 className="size-5 shrink-0" />}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </section>
@@ -606,31 +609,31 @@ export default function CoachProfileEditPage() {
           {/* ── My session courts ───────────────────────────── */}
           <section>
             <SectionHead id="courts-worked-with" title="My Session Courts" />
-            <p className="mb-3 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+            <p className="mb-3 text-sm font-medium leading-5 text-[var(--lobb-text-secondary)]">
               Select the courts where you hold sessions. Players will be shown these courts to pick from when booking with you. Leave empty to let players choose any Lagos court.
             </p>
             <div className="space-y-2">
               {LAGOS_COURTS.map((court) => (
-                <button
+                <LobbButton variant="unstyled"
                   key={court.id}
                   type="button"
                   onClick={() => setCourtsWorkedWith(toggle(court.id, courtsWorkedWith))}
-                  className={`flex w-full items-start justify-between rounded-2xl border px-4 py-3.5 text-left transition ${
+                  className={`flex w-full items-start justify-between rounded-[var(--lobb-radius-lg)] border px-4 py-3.5 text-left transition ${
                     courtsWorkedWith.includes(court.id)
                       ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)]"
                       : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]"
                   }`}
                 >
                   <span className="min-w-0">
-                    <span className={`block text-sm font-black leading-tight ${courtsWorkedWith.includes(court.id) ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-primary)]"}`}>
+                    <span className={`block text-sm font-medium leading-tight ${courtsWorkedWith.includes(court.id) ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-primary)]"}`}>
                       {court.name}
                     </span>
-                    <span className="mt-0.5 block text-xs font-semibold text-[var(--lobb-text-secondary)]">
+                    <span className="mt-0.5 block text-xs font-medium text-[var(--lobb-text-secondary)]">
                       {court.area}{court.publicNote ? ` · ${court.publicNote}` : ""}
                     </span>
                   </span>
                   {courtsWorkedWith.includes(court.id) && <CheckCircle2 className="ml-3 mt-0.5 size-5 shrink-0 text-[var(--lobb-clay)]" />}
-                </button>
+                </LobbButton>
               ))}
             </div>
           </section>
@@ -638,16 +641,16 @@ export default function CoachProfileEditPage() {
 
         {/* Save button */}
         {error && (
-          <p className="mt-6 text-sm font-semibold text-red-700">{error}</p>
+          <p className="mt-6 text-sm font-medium text-red-700">{error}</p>
         )}
-        <button
+        <LobbButton variant="unstyled"
           type="button"
           onClick={save}
           disabled={saving || bioInvalid || !fullName.trim() || !email.trim()}
-          className="mt-8 flex h-14 w-full items-center justify-center rounded-[16px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
+          className="mt-8 flex h-14 w-full items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.98] disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
         >
           {saving ? <InlineActionLoader label="Saving" /> : "Save Profile"}
-        </button>
+        </LobbButton>
       </div>
     </main>
   );

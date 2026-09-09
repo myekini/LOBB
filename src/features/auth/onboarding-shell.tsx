@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,26 +34,26 @@ export function OnboardingShell({
     <Link
       href={backHref}
       aria-label="Go back"
-      className="-ml-2.5 flex size-10 items-center justify-center rounded-full border border-transparent text-[var(--lobb-muted)] transition hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface-2)] hover:text-[var(--lobb-black)]"
+      className="-ml-2.5 flex size-10 items-center justify-center rounded-full border border-transparent text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-border-subtle)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-bg-inverse)]"
     >
       <ArrowLeft className="size-5" />
     </Link>
   ) : (
-    <button
+    <LobbButton variant="unstyled"
       type="button"
       aria-label="Go back"
       onClick={() => router.back()}
-      className="-ml-2.5 flex size-10 items-center justify-center rounded-full border border-transparent text-[var(--lobb-muted)] transition hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface-2)] hover:text-[var(--lobb-black)]"
+      className="-ml-2.5 flex size-10 items-center justify-center rounded-full border border-transparent text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-border-subtle)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-bg-inverse)]"
     >
       <ArrowLeft className="size-5" />
-    </button>
+    </LobbButton>
   );
 
   return (
     <main
       id="main-content"
       className={cn(
-        "lobb-onboarding relative min-h-[100dvh] bg-[var(--lobb-bg)] text-[var(--lobb-black)] font-sans overflow-x-hidden",
+        "lobb-onboarding relative min-h-[100dvh] bg-[var(--lobb-bg-primary)] text-[var(--lobb-bg-inverse)] font-sans overflow-x-hidden",
         className
       )}
     >
@@ -80,10 +81,10 @@ export function OnboardingShell({
         {/* Desktop wordmark — only shown when there is no back arrow to avoid duplication */}
         {!showBack && (
           <div className="hidden lg:flex items-center gap-2.5 mb-6">
-            <span className="flex size-8 items-center justify-center rounded-[10px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] shadow-[0_8px_24px_rgba(58,43,20,0.04)]">
+            <span className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[0_8px_24px_rgba(58,43,20,0.04)]">
               <LobbMark size={16} />
             </span>
-            <span className="text-[13px] font-black uppercase tracking-[0.18em] text-[var(--lobb-black)]">LOBB</span>
+            <span className="text-[13px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-bg-inverse)]">LOBB</span>
           </div>
         )}
 
@@ -93,10 +94,10 @@ export function OnboardingShell({
           <header className="flex h-16 shrink-0 items-center justify-between lg:h-14">
             {showBack ? backButton : (
               <div className="flex items-center gap-2 lg:hidden">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-[8px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)]">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-[var(--lobb-radius-sm)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
                   <LobbMark size={13} />
                 </span>
-                <p className="text-[12px] font-black tracking-[0.16em] uppercase text-[var(--lobb-black)]">LOBB</p>
+                <p className="text-[12px] font-medium tracking-[0.16em] uppercase text-[var(--lobb-bg-inverse)]">LOBB</p>
               </div>
             )}
             <ThemeToggle className="size-10" />
@@ -118,7 +119,7 @@ export function OnboardingShell({
         </div>
 
         {!showBack && (
-          <p className="hidden lg:block mt-6 text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+          <p className="hidden lg:block mt-6 text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
             Book a coach. Not a favor.
           </p>
         )}
@@ -150,12 +151,12 @@ export function OnboardingButton({
   onClick?: () => void;
 }) {
   return (
-    <button
+    <LobbButton variant="unstyled"
       type={type}
       disabled={disabled || loading}
       onClick={onClick}
       data-onboarding-primary
-      className="group relative flex h-[var(--lobb-control-lg)] w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] text-[13px] font-semibold uppercase tracking-widest text-white transition-colors hover:bg-[var(--lobb-clay-dark)] active:translate-y-px disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
+      className="group relative flex h-[var(--lobb-control-lg)] w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] text-[13px] font-medium uppercase tracking-widest text-white transition-colors hover:bg-[var(--lobb-clay-dark)] active:translate-y-px disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]"
     >
       <span className="absolute inset-0 w-full h-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       {loading ? (
@@ -166,18 +167,18 @@ export function OnboardingButton({
       ) : (
         children
       )}
-    </button>
+    </LobbButton>
   );
 }
 
 export function OnboardingKicker({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mb-5 inline-flex items-center gap-2 border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-3.5 py-1.5 self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
+    <div className="mb-5 inline-flex items-center gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-3.5 py-1.5 self-start animate-in fade-in-0 slide-in-from-bottom-2 duration-500">
       <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--lobb-clay)] opacity-50"></span>
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay)] opacity-50"></span>
         <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--lobb-clay)]"></span>
       </span>
-      <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
+      <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--lobb-text-secondary)]">
         {children}
       </span>
     </div>
@@ -186,7 +187,7 @@ export function OnboardingKicker({ children }: { children: React.ReactNode }) {
 
 export function OnboardingTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="max-w-[13ch] text-[34px] sm:text-[42px] font-black leading-[1.04] text-[var(--lobb-black)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
+    <h1 className="max-w-[13ch] text-[34px] sm:text-[42px] font-semibold leading-[1.04] text-[var(--lobb-bg-inverse)] animate-in fade-in-0 slide-in-from-bottom-4 duration-700 delay-75">
       {children}
     </h1>
   );
@@ -194,7 +195,7 @@ export function OnboardingTitle({ children }: { children: React.ReactNode }) {
 
 export function OnboardingCopy({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-4 max-w-[58ch] text-[15px] leading-[1.7] text-[var(--lobb-muted)] animate-in fade-in-0 duration-700 delay-150">
+    <p className="mt-4 max-w-[58ch] text-[15px] leading-[1.7] text-[var(--lobb-text-secondary)] animate-in fade-in-0 duration-700 delay-150">
       {children}
     </p>
   );

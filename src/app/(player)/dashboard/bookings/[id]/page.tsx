@@ -1,5 +1,7 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -154,8 +156,8 @@ export default function BookingDetailPage() {
     return (
       <main className="lobb-app-page min-h-screen px-4 py-10 text-[var(--lobb-text-primary)] sm:px-6">
         <section className="mx-auto max-w-3xl">
-          <h1 className="text-xl font-black">Booking not found</h1>
-          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-black text-[var(--lobb-clay)]">Back to bookings</Link>
+          <h1 className="text-xl font-semibold">Booking not found</h1>
+          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-medium text-[var(--lobb-clay)]">Back to bookings</Link>
         </section>
       </main>
     );
@@ -176,10 +178,10 @@ export default function BookingDetailPage() {
     <main className="lobb-app-page min-h-screen px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
       <section className="mx-auto max-w-5xl">
         <header className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
-          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]" aria-label="Go back">
+          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]" aria-label="Go back">
             <ArrowLeft className="size-5" />
           </Link>
-          <h1 className="truncate text-center font-black">Booking detail</h1>
+          <h1 className="truncate text-center font-semibold">Booking detail</h1>
           <div aria-hidden="true" />
         </header>
 
@@ -187,24 +189,24 @@ export default function BookingDetailPage() {
           <div>
             <section className="overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em] opacity-55">
+                <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] opacity-55">
                 <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
                 Session
               </p>
-                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-black capitalize">
+                <span className="inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] bg-white/10 px-3 py-1.5 text-xs font-medium capitalize">
                   <Circle className="size-2 fill-current text-[var(--lobb-clay)]" />
                   {booking.status.replaceAll("_", " ")}
                 </span>
               </div>
-              <h2 className="mt-3 text-[27px] font-black leading-none sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
-              <p className="mt-3 text-sm font-semibold opacity-60">
+              <h2 className="mt-3 text-[27px] font-semibold leading-none sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-3 text-sm font-medium opacity-60">
                 {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid
               </p>
             </section>
 
-            <section className="lobb-app-card mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+            <section className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
               <div className="flex items-start gap-3">
-                <div className="size-14 shrink-0 overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+                <div className="size-14 shrink-0 overflow-hidden rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
                   {coach?.profile_photo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -215,11 +217,11 @@ export default function BookingDetailPage() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Coach</p>
-                  <p className="mt-1 truncate text-base font-black">{coach?.full_name ?? "Coach"}</p>
-                  <p className="mt-0.5 text-sm font-semibold text-[var(--lobb-text-secondary)]">{coach?.headline || coach?.primary_location || "Tennis coach"}</p>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Coach</p>
+                  <p className="mt-1 truncate text-base font-medium">{coach?.full_name ?? "Coach"}</p>
+                  <p className="mt-0.5 text-sm font-medium text-[var(--lobb-text-secondary)]">{coach?.headline || coach?.primary_location || "Tennis coach"}</p>
                   {coach?.slug && (
-                    <Link href={`/coaches/${coach.slug}`} className="mt-2 inline-flex text-xs font-black text-[var(--lobb-clay)] hover:underline">
+                    <Link href={`/coaches/${coach.slug}`} className="mt-2 inline-flex text-xs font-medium text-[var(--lobb-clay)] hover:underline">
                       View profile
                     </Link>
                   )}
@@ -228,70 +230,70 @@ export default function BookingDetailPage() {
 
               {coachPhone ? (
                 <div className="mt-4 grid grid-cols-2 gap-2">
-                  <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)]">
+                  <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-xs font-medium text-[var(--lobb-text-inverse)]">
                     <Phone className="size-4 text-[var(--lobb-clay)]" /> Call
                   </a>
-                  <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-black">
+                  <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-medium">
                     <MessageCircle className="size-4 text-[var(--lobb-clay)]" /> WhatsApp
                   </a>
                 </div>
               ) : null}
             </section>
 
-            <section className="lobb-app-card mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+            <section className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
               <InfoRow icon={MapPin} label="Location" value={booking.location || "Location not specified"} />
               {booking.player_notes && (
                 <div className="mt-4 border-t border-[var(--lobb-border-subtle)] pt-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Note to coach</p>
-                  <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
+                  <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Note to coach</p>
+                  <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
                 </div>
               )}
             </section>
           </div>
 
-          <aside className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 lg:sticky lg:top-6">
+          <aside className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 lg:sticky lg:top-6">
         <DetailSection title="Payment" compact>
-          <p className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+          <p className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
             <CreditCard className="size-4 text-[var(--lobb-clay)]" />
             {payment?.status ?? "pending"}
           </p>
           <PaymentRow amount={booking.hourly_rate_ngn} label="Session fee" />
           <PaymentRow amount={booking.convenience_fee_ngn ?? booking.platform_fee_ngn} label="Convenience fee" />
           <PaymentRow amount={booking.total_amount_ngn} label="Total paid" strong />
-          <p className="mt-3 break-all rounded-[14px] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold text-[var(--lobb-text-secondary)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
+          <p className="mt-3 break-all rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold text-[var(--lobb-text-secondary)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
         </DetailSection>
 
         <DetailSection title="Cancellation policy">
-          <div className={`rounded-[16px] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10"}`}>
-            <p className="flex items-start gap-2 text-sm font-black">
+          <div className={`rounded-[var(--lobb-radius-lg)] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10"}`}>
+            <p className="flex items-start gap-2 text-sm font-medium">
               <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
               {fullRefund ? `Free cancellation until ${cancelDeadline}` : policy.label}
             </p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">{policyNote}</p>
+            <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{policyNote}</p>
           </div>
         </DetailSection>
 
         {/* Session protection — report an issue / dispute status */}
         {dispute ? (
-          <div className={`mt-6 rounded-[16px] border p-4 ${dispute.status === "open" ? "border-[var(--lobb-warning)]/30 bg-[var(--lobb-warning)]/8" : "border-[var(--lobb-success)]/25 bg-[var(--lobb-success-soft)]"}`}>
+          <div className={`mt-6 rounded-[var(--lobb-radius-lg)] border p-4 ${dispute.status === "open" ? "border-[var(--lobb-warning)]/30 bg-[var(--lobb-warning)]/8" : "border-[var(--lobb-success)]/25 bg-[var(--lobb-success-soft)]"}`}>
             {dispute.status === "open" ? (
               <>
-                <p className="flex items-center gap-2 text-sm font-black">
+                <p className="flex items-center gap-2 text-sm font-medium">
                   <Flag className="size-4 text-[var(--lobb-warning)]" />
                   We&apos;re reviewing your report
                 </p>
-                <p className="mt-1.5 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
                   The coach&apos;s payout is on hold until this is resolved. You&apos;ll hear from us
                   within 48 hours — your money is protected.
                 </p>
               </>
             ) : (
               <>
-                <p className="flex items-center gap-2 text-sm font-black">
+                <p className="flex items-center gap-2 text-sm font-medium">
                   <CheckCircle2 className="size-4 text-[var(--lobb-success)]" />
                   Issue resolved
                 </p>
-                <p className="mt-1.5 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+                <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
                   {dispute.resolution === "refund_player"
                     ? "Resolved in your favour — your refund is on its way to your payment method."
                     : dispute.resolution === "split" && (dispute.player_refund_percent ?? 0) > 0
@@ -302,22 +304,22 @@ export default function BookingDetailPage() {
             )}
           </div>
         ) : (booking.status === "confirmed" || booking.status === "completed") && payment?.status === "paid" ? (
-          <button
+          <LobbButton variant="unstyled"
             onClick={() => setShowReport(true)}
-            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-black text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-warning)]/40 hover:text-[var(--lobb-text-primary)]"
+            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-medium text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-warning)]/40 hover:text-[var(--lobb-text-primary)]"
           >
             <Flag className="size-4 text-[var(--lobb-warning)]" />
             Something wrong? Report this session
-          </button>
+          </LobbButton>
         ) : null}
 
         {isUpcoming && (
-          <button onClick={() => setShowCancel(true)} className="mt-3 h-12 w-full rounded-[12px] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-black text-[var(--lobb-error)]">
+          <LobbButton variant="unstyled" onClick={() => setShowCancel(true)} className="mt-3 h-12 w-full rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-semibold text-[var(--lobb-error)]">
             Cancel booking
-          </button>
+          </LobbButton>
         )}
 
-        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-black">
+        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-medium">
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
           View receipt
         </Link>
@@ -332,49 +334,49 @@ export default function BookingDetailPage() {
         <Dialog.Portal>
           <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
           <Dialog.Popup aria-labelledby="report-session-title" className="fixed inset-x-0 bottom-0 z-[70] p-4">
-            <div className="mx-auto w-full max-w-md rounded-[18px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
+            <div className="mx-auto w-full max-w-md rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
               <div className="flex items-start justify-between gap-4">
-                <h2 id="report-session-title" className="text-lg font-black">What went wrong?</h2>
+                <h2 id="report-session-title" className="text-lg font-semibold">What went wrong?</h2>
                 <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
               </div>
-              <p className="mt-1 text-[13px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]">
+              <p className="mt-1 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
                 Reporting instantly puts the coach&apos;s payout on hold. We review every report within 48 hours.
               </p>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {REPORT_CATEGORIES.map((category) => (
-                  <button
+                  <LobbButton variant="unstyled"
                     key={category.value}
                     type="button"
                     onClick={() => setReportCategory(category.value)}
-                    className={`rounded-[12px] border px-3 py-2.5 text-left text-[12px] font-black leading-tight transition ${
+                    className={`rounded-[var(--lobb-radius-md)] border px-3 py-2.5 text-left text-[12px] font-medium leading-tight transition ${
                       reportCategory === category.value
                         ? "border-[var(--lobb-clay)]/50 bg-[var(--lobb-clay)]/8 text-[var(--lobb-clay)]"
                         : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]"
                     }`}
                   >
                     {category.label}
-                  </button>
+                  </LobbButton>
                 ))}
               </div>
 
-              <textarea
+              <LobbTextarea
                 value={reportText}
                 onChange={(event) => setReportText(event.target.value)}
                 placeholder="Tell us what happened (required)…"
                 rows={3}
-                className="mt-3 w-full rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[13px] font-semibold text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]/50"
+                className="mt-3 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[13px] font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]/50"
               />
 
-              <button
+              <LobbButton variant="unstyled"
                 type="button"
                 disabled={reporting || !reportCategory || reportText.trim().length < 10}
                 onClick={submitReport}
-                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)] disabled:opacity-45"
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)] disabled:opacity-45"
               >
                 {reporting ? <Loader2 className="size-4 animate-spin" /> : "Send report & hold payout"}
-              </button>
-              <p className="mt-2 text-center text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+              </LobbButton>
+              <p className="mt-2 text-center text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
                 False reports may lead to account review.
               </p>
             </div>
@@ -391,7 +393,7 @@ export default function BookingDetailPage() {
           >
             <div className="mx-auto w-full max-w-md border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
               <div className="flex items-start justify-between gap-4">
-                <h2 id="cancel-booking-title" className="text-lg font-black">Cancel this booking?</h2>
+                <h2 id="cancel-booking-title" className="text-lg font-semibold">Cancel this booking?</h2>
                 <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
               </div>
               <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
@@ -402,12 +404,12 @@ export default function BookingDetailPage() {
                 )}
               </p>
               <div className="mt-6 grid grid-cols-2 gap-3">
-                <Dialog.Close className="h-12 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-sm font-black text-[var(--lobb-text-inverse)]">
+                <Dialog.Close className="h-12 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]">
                   Keep booking
                 </Dialog.Close>
-                <button type="button" disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-[12px] border border-[var(--lobb-error)]/35 text-sm font-black text-[var(--lobb-error)] disabled:opacity-60">
+                <LobbButton variant="unstyled" type="button" disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/35 text-sm font-semibold text-[var(--lobb-error)] disabled:opacity-60">
                   {cancelling ? "Cancelling" : "Cancel booking"}
-                </button>
+                </LobbButton>
               </div>
             </div>
           </Dialog.Popup>
@@ -421,7 +423,7 @@ function DetailSection({ title, children, compact }: { title: string; children: 
   return (
     <section className={compact ? "" : "mt-7"}>
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</span>
+        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</span>
         <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
       </div>
       {children}
@@ -432,12 +434,12 @@ function DetailSection({ title, children, compact }: { title: string; children: 
 function InfoRow({ icon: Icon, label, value }: { icon: typeof MapPin; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-[14px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
         <Icon className="size-4" />
       </span>
       <span>
-        <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">{label}</span>
-        <span className="mt-1 block text-sm font-black leading-6">{value}</span>
+        <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">{label}</span>
+        <span className="mt-1 block text-sm font-medium leading-6">{value}</span>
       </span>
     </div>
   );
@@ -445,9 +447,9 @@ function InfoRow({ icon: Icon, label, value }: { icon: typeof MapPin; label: str
 
 function PaymentRow({ amount, label, strong }: { amount: number; label: string; strong?: boolean }) {
   return (
-    <p className={`flex items-center justify-between gap-5 py-1.5 text-sm ${strong ? "font-black text-[var(--lobb-text-primary)]" : "font-semibold text-[var(--lobb-text-secondary)]"}`}>
+    <p className={`flex items-center justify-between gap-5 py-1.5 text-sm ${strong ? "font-medium text-[var(--lobb-text-primary)]" : "font-medium text-[var(--lobb-text-secondary)]"}`}>
       <span>{label}</span>
-      <span className="font-black text-[var(--lobb-text-primary)]">{money(amount)}</span>
+      <span className="font-medium text-[var(--lobb-text-primary)]">{money(amount)}</span>
     </p>
   );
 }

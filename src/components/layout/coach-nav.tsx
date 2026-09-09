@@ -40,7 +40,7 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
                 strokeWidth={isActive ? 2.5 : 1.85}
               />
               <span className={cn(
-                "text-[9px] font-black tracking-wider uppercase leading-none",
+                "text-[9px] font-medium tracking-wider uppercase leading-none",
                 isActive ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-tertiary)]"
               )}>
                 {item.label}
@@ -67,7 +67,7 @@ export function CoachDesktopNav({ active }: { active: ActiveTab }) {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "inline-flex h-10 items-center gap-2 px-4 text-sm font-black transition",
+              "inline-flex h-10 items-center gap-2 px-4 text-sm font-medium transition",
               isActive
                 ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
                 : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"

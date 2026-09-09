@@ -4,10 +4,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-[var(--lobb-border-focus)] focus-visible:ring-2 focus-visible:ring-[var(--lobb-clay)]/20 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:opacity-100 aria-invalid:border-[var(--lobb-border-error)] aria-invalid:ring-2 aria-invalid:ring-[var(--lobb-error)]/15 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-colors duration-150 outline-none select-none focus-visible:border-[var(--lobb-border-focus)] focus-visible:ring-2 focus-visible:ring-[var(--lobb-clay)]/20 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] disabled:opacity-100 aria-invalid:border-[var(--lobb-border-error)] aria-invalid:ring-2 aria-invalid:ring-[var(--lobb-error)]/15 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
+        unstyled: "bg-transparent text-inherit",
         default: "bg-[var(--lobb-clay)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-clay-dark)]",
         dark: "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-text-primary)]",
         outline: "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] hover:bg-[var(--lobb-bg-secondary)]",

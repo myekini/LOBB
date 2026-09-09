@@ -16,7 +16,7 @@ export default function CoachDashboardLoading() {
             </div>
             <div className="grid grid-cols-3 gap-2 sm:w-[340px]">
               {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonBlock key={i} className="h-[60px] rounded-[12px] bg-white/10" />
+                <SkeletonBlock key={i} className="h-[60px] rounded-[var(--lobb-radius-md)] bg-white/10" />
               ))}
             </div>
           </div>
@@ -24,7 +24,7 @@ export default function CoachDashboardLoading() {
 
         <div className="grid gap-5 xl:grid-cols-[330px_minmax(0,1fr)] xl:items-start">
           <aside className="space-y-4">
-            <SkeletonBlock className="h-[150px] rounded-[18px]" />
+            <SkeletonBlock className="h-[150px] rounded-[var(--lobb-radius-lg)]" />
             <CoachSurface className="p-4">
               <SkeletonBlock className="h-4 w-28" />
               <div className="mt-5 flex items-center gap-3">
@@ -40,11 +40,11 @@ export default function CoachDashboardLoading() {
           <section className="min-w-0 space-y-4">
             <div className="grid gap-3 sm:grid-cols-3">
               {Array.from({ length: 3 }).map((_, index) => (
-                <SkeletonBlock key={index} className="h-[150px] rounded-[18px]" />
+                <SkeletonBlock key={index} className="h-[150px] rounded-[var(--lobb-radius-lg)]" />
               ))}
             </div>
 
-            <section className="lobb-app-card bg-[var(--lobb-bg-elevated)] p-4">
+            <section className="lobb-surface-outlined bg-[var(--lobb-bg-elevated)] p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <SkeletonBlock className="h-4 w-28" />
@@ -54,7 +54,7 @@ export default function CoachDashboardLoading() {
               </div>
               <div className="mt-4 grid gap-3">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <SkeletonBlock key={index} className="h-14 rounded-[12px]" />
+                  <SkeletonBlock key={index} className="h-14 rounded-[var(--lobb-radius-md)]" />
                 ))}
               </div>
             </section>

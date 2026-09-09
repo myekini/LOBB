@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { Gavel, Loader2, Send } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
@@ -102,10 +103,10 @@ export default function AdminBookingsPage() {
     <AdminShell active="All Bookings">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black text-[var(--lobb-clay)]">Master ledger</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight">Bookings</h1>
+          <p className="text-xs font-medium text-[var(--lobb-clay)]">Master ledger</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Bookings</h1>
         </div>
-        <p className="text-sm font-black text-[var(--lobb-muted)]">{bookings.length} records</p>
+        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{bookings.length} records</p>
       </div>
 
       <section className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -116,9 +117,9 @@ export default function AdminBookingsPage() {
 
       <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
         {filters.map((item) => (
-          <button key={item} onClick={() => setFilter(item)} className={`h-10 shrink-0 rounded-[12px] px-4 text-sm font-black capitalize ${filter === item ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]" : "border border-[var(--lobb-border)] bg-[var(--lobb-surface)] text-[var(--lobb-muted)]"}`}>
+          <LobbButton variant="unstyled" key={item} onClick={() => setFilter(item)} className={`h-10 shrink-0 rounded-[var(--lobb-radius-md)] px-4 text-sm font-semibold capitalize ${filter === item ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]" : "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)]"}`}>
             {item === "all" ? "All" : item}
-          </button>
+          </LobbButton>
         ))}
       </div>
 
@@ -130,52 +131,52 @@ export default function AdminBookingsPage() {
         ) : bookings.length ? bookings.map((booking) => {
           const payable = isPayable(booking);
           return (
-          <article key={booking.id} className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 md:grid md:grid-cols-[150px_minmax(0,1fr)_auto] md:items-center md:gap-5">
+          <article key={booking.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 md:grid md:grid-cols-[150px_minmax(0,1fr)_auto] md:items-center md:gap-5">
             <div>
-              <p className="truncate font-mono text-xs font-black text-[var(--lobb-muted)]">#{booking.id.slice(0, 8)}</p>
-              <p className="mt-1 text-sm font-black">{formatBookingDate(booking.starts_at)}</p>
+              <p className="truncate font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">#{booking.id.slice(0, 8)}</p>
+              <p className="mt-1 text-sm font-medium">{formatBookingDate(booking.starts_at)}</p>
             </div>
-            <div className="mt-3 min-w-0 rounded-[12px] bg-[var(--lobb-bg)] px-3 py-2 md:mt-0">
-              <p className="truncate text-sm font-black">
+            <div className="mt-3 min-w-0 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 py-2 md:mt-0">
+              <p className="truncate text-sm font-medium">
                 {firstJoin(booking.coaches)?.full_name ?? "Coach"} to {firstJoin(booking.players)?.full_name ?? "Player"}
               </p>
-              <p className="mt-1 truncate text-xs font-semibold text-[var(--lobb-muted)]">
+              <p className="mt-1 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">
                 Payout {money(booking.coach_payout_ngn)}, ref {booking.paystack_reference ?? "not assigned"}
               </p>
             </div>
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 md:mt-0 md:justify-end">
               <StatusBadge status={booking.status} />
               <PayoutState booking={booking} />
-              <p className="font-black">{money(booking.total_amount_ngn)}</p>
+              <p className="font-medium">{money(booking.total_amount_ngn)}</p>
               {payable && (
-                <button
+                <LobbButton variant="unstyled"
                   type="button"
                   disabled={payoutBusyId === booking.id}
                   onClick={() => triggerPayout(booking)}
-                  className="inline-flex h-10 items-center gap-2 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-60"
+                  className="inline-flex h-10 items-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
                 >
                   {payoutBusyId === booking.id ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
                   Pay out
-                </button>
+                </LobbButton>
               )}
               {["confirmed", "completed"].includes(booking.status) && (
-                <button
+                <LobbButton variant="unstyled"
                   type="button"
                   disabled={disputeBusyId === booking.id}
                   onClick={() => openDispute(booking)}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-[12px] border border-[var(--lobb-error)]/30 px-3 text-xs font-black text-[var(--lobb-error)] transition hover:bg-[var(--lobb-error)]/8 disabled:opacity-60"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/30 px-3 text-xs font-medium text-[var(--lobb-error)] transition hover:bg-[var(--lobb-error)]/8 disabled:opacity-60"
                 >
                   {disputeBusyId === booking.id ? <Loader2 className="size-4 animate-spin" /> : <Gavel className="size-3.5" />}
                   Dispute
-                </button>
+                </LobbButton>
               )}
             </div>
           </article>
           );
         }) : (
-          <div className="border border-dashed border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center xl:col-span-2">
-            <p className="text-lg font-black">No booking records</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm font-semibold leading-6 text-[var(--lobb-muted)]">Try another status filter, or wait for new paid sessions to arrive.</p>
+          <div className="border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center xl:col-span-2">
+            <p className="text-lg font-medium">No booking records</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">Try another status filter, or wait for new paid sessions to arrive.</p>
           </div>
         )}
       </section>
@@ -185,8 +186,8 @@ export default function AdminBookingsPage() {
 
 function LedgerMetric({ label, value, urgent }: { label: string; value: string; urgent?: boolean }) {
   return (
-    <div className={`lobb-app-card border p-4 ${urgent ? "border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"}`}>
-      <p className="text-xl font-black leading-none">{value}</p>
+    <div className={`lobb-surface-outlined border p-4 ${urgent ? "border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"}`}>
+      <p className="text-xl font-semibold leading-none">{value}</p>
       <p className="mt-1 text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
     </div>
   );
@@ -204,7 +205,7 @@ function PayoutState({ booking }: { booking: DashboardBooking }) {
     ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]"
     : payable
       ? "bg-[var(--lobb-warning)]/14 text-[var(--lobb-text-primary)]"
-      : "bg-[var(--lobb-bg)] text-[var(--lobb-muted)]";
+      : "bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]";
 
-  return <span className={`inline-flex rounded-[8px] px-2.5 py-1 text-xs font-black ${className}`}>{label}</span>;
+  return <span className={`inline-flex rounded-[var(--lobb-radius-sm)] px-2.5 py-1 text-xs font-medium ${className}`}>{label}</span>;
 }

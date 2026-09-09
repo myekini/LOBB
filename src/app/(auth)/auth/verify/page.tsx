@@ -1,13 +1,14 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
-import { GraduationCap, Loader2, Trophy } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { OnboardingShell } from "@/features/auth/onboarding-shell";
 import { clearPendingAuth, getPendingAuth, setPendingAuth } from "@/lib/auth-flow";
-import { showLobbToast } from "@/providers/lobb-global-state";
 import { track } from "@/lib/analytics";
 
 // Must match the "Email OTP Length" setting in Supabase Auth (standard: 6).
@@ -50,8 +51,7 @@ export default function VerifyPage() {
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
   const pendingAuth = useMemo(() => (typeof window === "undefined" ? null : getPendingAuth()), []);
   const code = digits.join("");
-  const roleLabel = pendingAuth?.role === "coach" ? "Coach signup" : pendingAuth?.role === "admin" ? "Admin access" : "Player sign in";
-  const RoleIcon = pendingAuth?.role === "coach" ? GraduationCap : Trophy;
+  const [resendMessage, setResendMessage] = useState("");
 
   useEffect(() => {
     if (!pendingAuth) {
@@ -157,11 +157,23 @@ export default function VerifyPage() {
       .eq("id", userId)
       .maybeSingle();
 
+    // After a signup verification, send the user through /auth/secure once so
+    // they can set a password (and optionally a passkey). It short-circuits to
+    // `next` if they already have a password, so it's a no-op for returning
+    // users who re-verified by email.
+    const routeAfterAuth = (path: string) => {
+      if (pendingAuth.mode === "signup" && !path.startsWith("/auth/secure")) {
+        router.replace(`/auth/secure?next=${encodeURIComponent(path)}`);
+      } else {
+        router.replace(path);
+      }
+    };
+
     const safeNextPath = getSafeNextPath(pendingAuth.nextPath, profile?.role);
 
     if (safeNextPath && profile?.role && profile.full_name) {
       track("User Signed In", { role: profile.role });
-      router.replace(safeNextPath);
+      routeAfterAuth(safeNextPath);
       return;
     }
 
@@ -169,13 +181,13 @@ export default function VerifyPage() {
 
     if (profile?.role === "coach") {
       track("User Signed In", { role: "coach" });
-      router.replace(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
+      routeAfterAuth(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
       return;
     }
 
     if (profile?.role === "admin") {
       track("User Signed In", { role: "admin" });
-      router.replace("/admin");
+      routeAfterAuth("/admin");
       return;
     }
 
@@ -189,11 +201,11 @@ export default function VerifyPage() {
           .update({ role: "coach" })
           .eq("id", userId);
         track("User Signed In", { role: "coach" });
-        router.replace("/auth/setup/coach/1");
+        routeAfterAuth("/auth/setup/coach/1");
         return;
       }
       track("User Signed In", { role: "player" });
-      router.replace(profile.full_name ? "/home" : "/auth/setup/player");
+      routeAfterAuth(profile.full_name ? "/home" : "/auth/setup/player");
       return;
     }
 
@@ -204,12 +216,12 @@ export default function VerifyPage() {
         { onConflict: "id" }
       );
       track("User Signed In", { role: intendedRole });
-      router.replace(intendedRole === "coach" ? "/auth/setup/coach/1" : "/auth/setup/player");
+      routeAfterAuth(intendedRole === "coach" ? "/auth/setup/coach/1" : "/auth/setup/player");
       return;
     }
 
     // No role, no intent — show the picker
-    router.replace("/auth/role");
+    routeAfterAuth("/auth/role");
   };
 
   const fillAllDigits = (value: string) => {
@@ -268,7 +280,6 @@ export default function VerifyPage() {
 
     if (!response.ok) {
       fail(result?.error || "Could not resend code. Try again.");
-      showLobbToast({ type: "error", message: "Could not resend code. Try again." });
       return;
     }
 
@@ -277,8 +288,8 @@ export default function VerifyPage() {
     setSeconds(60);
     setDigits(Array(OTP_LENGTH).fill(""));
     setError("");
+    setResendMessage("A new verification code was sent.");
     inputs.current[0]?.focus();
-    showLobbToast({ type: "success", message: "New code sent." });
   };
 
   return (
@@ -288,37 +299,26 @@ export default function VerifyPage() {
         {/* ── Wordmark hero strip ───────────────────────────────────────── */}
         <div className="pt-1 pb-5">
           <div className="flex items-end gap-3">
-            <span className="text-[58px] font-black leading-none tracking-[-0.03em] text-[var(--lobb-black)] sm:text-[68px]">
+            <span className="text-[58px] font-semibold leading-none tracking-[-0.03em] text-[var(--lobb-bg-inverse)] sm:text-[68px]">
               LOBB
             </span>
             <span className="mb-2 text-[9px] font-bold uppercase tracking-[0.28em] text-[var(--lobb-text-tertiary)]">
               Find · Book · Play
             </span>
           </div>
-          <div className="mt-3 h-px bg-[var(--lobb-border)]" />
+          <div className="mt-3 h-px bg-[var(--lobb-border-subtle)]" />
         </div>
 
-        {/* ── Title + step badge ────────────────────────────────────────── */}
         <div className="mt-4 flex items-start justify-between gap-3">
-          <h1 className="text-[34px] font-black leading-[1.04] tracking-tight text-[var(--lobb-black)] sm:text-[40px]">
-            Check your
-            <br />
-            {pendingAuth?.email ? "email" : "phone"}
+          <h1 className="text-[34px] font-semibold leading-[1.04] tracking-tight text-[var(--lobb-bg-inverse)] sm:text-[40px]">
+            Verify your email
           </h1>
-          {pendingAuth?.mode === "signup" && (
-            <div className="mt-1.5 shrink-0 rounded-full border border-[var(--lobb-clay)]/25 bg-[var(--lobb-clay)]/8 px-3 py-1.5">
-              <span className="text-[9px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
-                Step 2 / 2
-              </span>
-            </div>
-          )}
         </div>
 
         {/* ── Info pill ────────────────────────────────────────────────── */}
-        <div className="mt-3 flex items-center gap-2.5 rounded-[10px] border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay)]/6 px-3.5 py-2.5">
-          <RoleIcon className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
-          <span className="text-[12px] font-semibold leading-snug text-[var(--lobb-text-secondary)]">
-            Code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"} · {roleLabel}
+        <div className="mt-3 flex items-center gap-2.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/15 bg-[var(--lobb-clay)]/6 px-3.5 py-2.5">
+          <span className="text-[12px] font-medium leading-snug text-[var(--lobb-text-secondary)]">
+            Enter the six-digit code sent to {pendingAuth ? displayIdentifier(pendingAuth) : "your email"}.
           </span>
         </div>
 
@@ -329,7 +329,7 @@ export default function VerifyPage() {
             style={{ gridTemplateColumns: `repeat(${OTP_LENGTH}, minmax(0, 1fr))` }}
           >
             {digits.map((digit, index) => (
-              <input
+              <LobbInput
                 key={index}
                 ref={(element) => { inputs.current[index] = element; }}
                 aria-label={`Digit ${index + 1}`}
@@ -343,32 +343,33 @@ export default function VerifyPage() {
                     inputs.current[index - 1]?.focus();
                   }
                 }}
-                className={`h-[60px] rounded-[16px] border bg-[var(--lobb-surface-2)] text-[var(--lobb-text-primary)] text-center text-[22px] font-black shadow-[0_4px_24px_rgba(0,0,0,0.06)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[var(--lobb-clay)] focus:bg-[var(--lobb-surface)] focus:shadow-[0_8px_32px_rgba(196,98,45,0.15)] ${
+                className={`h-[60px] rounded-[var(--lobb-radius-lg)] border bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] text-center text-[22px] font-semibold shadow-[0_4px_24px_rgba(0,0,0,0.06)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[var(--lobb-clay)] focus:bg-[var(--lobb-bg-elevated)] focus:shadow-[0_8px_32px_rgba(196,98,45,0.15)] ${
                   error
                     ? "border-[var(--lobb-border-error)]/50 text-[var(--lobb-border-error)] focus:border-[var(--lobb-border-error)] focus:shadow-[0_8px_32px_rgba(214,64,69,0.15)]"
-                    : "border-[var(--lobb-border)]"
+                    : "border-[var(--lobb-border-subtle)]"
                 }`}
               />
             ))}
           </div>
           {error && <FormAlert className="mt-4">{error}</FormAlert>}
+          {resendMessage && <FormAlert className="mt-4" variant="success">{resendMessage}</FormAlert>}
         </div>
 
         {/* ── Resend ───────────────────────────────────────────────────── */}
-        <p className="mt-5 text-center text-[11px] font-semibold text-[var(--lobb-text-tertiary)]">
+        <p className="mt-5 text-center text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
           Not seeing the email? Check your spam or junk folder.
         </p>
 
-        <button
+        <LobbButton variant="unstyled"
           type="button"
           disabled={seconds > 0}
           onClick={resend}
-          className="mt-7 mx-auto w-fit flex rounded-full border border-transparent px-6 py-2.5 text-[12px] font-bold tracking-wide text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-border)] hover:bg-[var(--lobb-surface-2)] hover:text-[var(--lobb-text-primary)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)]/40 disabled:hover:border-transparent disabled:hover:bg-transparent"
+          className="mt-7 mx-auto w-fit flex rounded-[var(--lobb-radius-lg)] border border-transparent px-6 py-2.5 text-[12px] font-bold tracking-wide text-[var(--lobb-text-secondary)] transition-all hover:border-[var(--lobb-border-subtle)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)] disabled:cursor-default disabled:text-[var(--lobb-text-tertiary)]/40 disabled:hover:border-transparent disabled:hover:bg-transparent"
         >
           {seconds > 0
             ? `Resend code (0:${String(seconds).padStart(2, "0")})`
             : "Resend code"}
-        </button>
+        </LobbButton>
 
         <div className="mt-auto pb-8 pt-10 text-center">
           <p className="inline-flex items-center justify-center gap-2 text-[13px] font-medium text-[var(--lobb-text-secondary)]">

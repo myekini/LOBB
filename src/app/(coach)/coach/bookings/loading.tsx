@@ -16,7 +16,7 @@ export default function CoachBookingsLoading() {
             </div>
           ))}
         </CoachSurface>
-        <div className="mt-6 h-14 rounded-[18px] lobb-skeleton" />
+        <div className="mt-6 h-14 rounded-[var(--lobb-radius-lg)] lobb-skeleton" />
         <section className="mt-6 grid gap-4 lg:grid-cols-2">
           {Array.from({ length: 3 }).map((_, index) => (
             <BookingCardSkeleton key={index} />

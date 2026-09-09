@@ -10,14 +10,14 @@ export default function ContactPage() {
       <div className="grid gap-3 sm:grid-cols-2">
         <a
           href={`https://wa.me/${supportPhone.replace(/\D/g, "")}`}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] px-5 text-sm font-black text-white"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white"
         >
           <MessageCircle className="size-4" />
           WhatsApp Support
         </a>
         <a
           href={`mailto:${supportEmail}`}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--lobb-border)] bg-white px-5 text-sm font-black text-[var(--lobb-black)]"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-white px-5 text-sm font-medium text-[var(--lobb-bg-inverse)]"
         >
           <Mail className="size-4" />
           Email Support

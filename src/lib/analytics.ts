@@ -17,8 +17,10 @@ import posthog from "posthog-js";
 
 type EventMap = {
   // Auth & onboarding
-  "User Signed In":                   { role: string };
+  "User Signed In":                   { role: string; method?: "otp" | "password" | "passkey" };
   "User Signed Out":                  Record<string, never>;
+  "Password Set":                     Record<string, never>;
+  "Passkey Registered":               Record<string, never>;
   "Player Profile Created":           Record<string, never>;
   "Coach Profile Submitted":          Record<string, never>;
   "Coach Onboarding Step Completed":  { step: number };

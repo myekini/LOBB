@@ -1,15 +1,16 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
+import { Input as LobbInput } from "@/components/ui/input";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, CalendarDays, Check, MapPin, Moon, Search, Star, Sun, Sunrise } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin, Moon, Search, Star, Sun, Sunrise } from "lucide-react";
 import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/common/lobb-skeleton";
-import { ThemeToggle } from "@/components/common/theme-toggle";
 
 function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: string }) {
   return (
@@ -52,7 +53,7 @@ function getTimeMood() {
     period: "Evening",
     prompt: "Line up a calm evening lesson.",
     detail: "Book ahead, keep the court details clear, and arrive with the plan already settled.",
-    accent: "from-indigo-400/28",
+      accent: "from-[var(--lobb-clay)]/18",
   };
 }
 
@@ -169,12 +170,12 @@ export default function Home() {
   if (loadingProfile) {
     return (
     <main className="lobb-app-page min-h-screen pb-28">
-        <header className="lobb-app-header flex h-16 items-center justify-between border-b border-[var(--lobb-border)] px-5">
+        <header className="lobb-app-header flex h-16 items-center justify-between border-b border-[var(--lobb-border-subtle)] px-5">
           <SkeletonBlock className="h-7 w-20 rounded-full" />
           <SkeletonBlock className="size-9 rounded-full" />
         </header>
         <div className="px-5 pt-4">
-          <SkeletonBlock className="h-[220px] rounded-[14px]" />
+          <SkeletonBlock className="h-[220px] rounded-[var(--lobb-radius-lg)]" />
         </div>
         <section className="mt-10 px-5">
           <div className="mb-3 flex items-center justify-between">
@@ -203,13 +204,13 @@ export default function Home() {
             <div className={`absolute inset-0 bg-gradient-to-br ${mood.accent} via-transparent to-[var(--lobb-clay)]/8`} aria-hidden="true" />
             <div className="absolute right-0 top-0 h-full w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent_60%)]" aria-hidden="true" />
             <div className="relative">
-              <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[12px] border px-3 py-2">
+              <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[var(--lobb-radius-md)] border px-3 py-2">
                 <MoodIcon className="size-4 text-[var(--lobb-clay)]" />
-                <span className="truncate text-[11px] font-black uppercase tracking-[0.18em]">
+                <span className="truncate text-[11px] font-medium uppercase tracking-[0.18em]">
                   {getGreeting()}, {firstName}
                 </span>
               </div>
-              <h1 className="mt-4 text-[28px] font-black leading-[1.08] tracking-tight sm:text-[38px] text-balance">
+              <h1 className="mt-4 text-[28px] font-semibold leading-[1.08] tracking-tight sm:text-[38px] text-balance">
                 {mood.prompt}
               </h1>
               <p className="lobb-hero-muted mt-2 max-w-lg text-[14px] font-normal leading-[1.6]">
@@ -217,7 +218,7 @@ export default function Home() {
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 {liveCoaches.length > 0 && (
-                  <span className="lobb-hero-muted text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  <span className="lobb-hero-muted text-[11px] font-medium uppercase tracking-[0.14em]">
                     {liveCoaches.length} coaches available
                   </span>
                 )}
@@ -229,28 +230,28 @@ export default function Home() {
         <section className="sticky top-16 z-30 mt-4 border-y border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 py-3 backdrop-blur-xl">
           <div className="mx-auto max-w-6xl px-5">
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-              <label className="flex h-12 items-center gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 shadow-[var(--lobb-shadow-card)] transition focus-within:border-[var(--lobb-clay)]/45">
+              <label className="flex h-12 items-center gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 shadow-[var(--lobb-shadow-card)] transition focus-within:border-[var(--lobb-clay)]/45">
                 <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-                <input
+                <LobbInput
                   value={coachQuery}
                   onChange={(e) => setCoachQuery(e.target.value)}
                   placeholder="Search by coach, area, skill"
-                  className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-semibold outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
+                  className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-[15px] font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
                 />
               </label>
               <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] lg:max-w-[440px]">
                 {locationChips.map((loc) => (
-                  <button
+                  <LobbButton variant="unstyled"
                     key={loc}
                     onClick={() => setCoachLocation(loc)}
-                    className={`h-10 shrink-0 rounded-[12px] px-4 text-[12px] font-black transition duration-200 active:scale-[0.97] ${
+                    className={`h-10 shrink-0 rounded-[var(--lobb-radius-md)] px-4 text-[12px] font-medium transition duration-200 active:scale-[0.97] ${
                       coachLocation === loc
                         ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
                         : "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-text-primary)]"
                     }`}
                   >
                     {loc}
-                  </button>
+                  </LobbButton>
                 ))}
               </div>
             </div>
@@ -260,18 +261,18 @@ export default function Home() {
         <section className="mx-auto mt-7 max-w-6xl px-5 animate-in fade-in-0 duration-500 delay-200 fill-mode-both">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <p className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+              <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
                 <MapPin className="size-3.5" />
                 {coachLocation === "All" ? "Lagos" : coachLocation}
               </p>
-              <h2 className="mt-1 text-[22px] font-black leading-tight tracking-tight">Recommended coaches</h2>
-              <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+              <h2 className="mt-1 text-[22px] font-semibold leading-tight tracking-tight">Recommended coaches</h2>
+              <p className="mt-1 text-sm font-medium text-[var(--lobb-text-secondary)]">
                 {!loadingCoaches && filteredCoaches.length > 0
                   ? `${filteredCoaches.length} ${filteredCoaches.length === 1 ? "coach" : "coaches"} ready to review`
                   : "Verified coaches, clear rates, real availability."}
               </p>
             </div>
-            <Link href="/coaches" className="group hidden h-11 shrink-0 items-center gap-2 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-[12px] font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:inline-flex">
+            <Link href="/coaches" className="group hidden h-11 shrink-0 items-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-[12px] font-medium text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:inline-flex">
               See all
               <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
             </Link>
@@ -280,40 +281,40 @@ export default function Home() {
           {loadingCoaches ? (
             <div>
               <div className="grid gap-4 md:grid-cols-2">
-                {Array.from({ length: 2 }).map((_, i) => <SkeletonBlock key={i} className="h-[220px] rounded-[16px]" />)}
+                {Array.from({ length: 2 }).map((_, i) => <SkeletonBlock key={i} className="h-[220px] rounded-[var(--lobb-radius-lg)]" />)}
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => <SmallCoachCardSkeleton key={i} />)}
               </div>
             </div>
           ) : liveCoaches.length === 0 ? (
-            <div className="lobb-app-card border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-8 text-center">
-              <p className="font-black">Coaches are being verified</p>
-              <p className="mt-1.5 text-sm text-[var(--lobb-muted)]">We are onboarding Lagos coaches now. Check back soon.</p>
+            <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center">
+              <p className="font-medium">Coaches are being verified</p>
+              <p className="mt-1.5 text-sm text-[var(--lobb-text-secondary)]">We are onboarding Lagos coaches now. Check back soon.</p>
               <Link
                 href="/auth/signup/coach"
-                className="mt-5 inline-flex h-10 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-black text-[var(--lobb-text-inverse)]"
+                className="mt-5 inline-flex h-10 items-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)]"
               >
                 Apply as a coach
               </Link>
             </div>
           ) : filteredCoaches.length === 0 ? (
-            <div className="lobb-app-card border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-5">
-              <p className="font-black">No coaches match that search.</p>
-              <p className="mt-1 text-sm text-[var(--lobb-muted)]">Try another area or clear your filter.</p>
-              <button
+            <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+              <p className="font-medium">No coaches match that search.</p>
+              <p className="mt-1 text-sm text-[var(--lobb-text-secondary)]">Try another area or clear your filter.</p>
+              <LobbButton variant="unstyled"
                 onClick={() => { setCoachQuery(""); setCoachLocation("All"); }}
-                className="mt-4 inline-flex h-10 items-center rounded-[12px] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-black text-[var(--lobb-text-inverse)]"
+                className="mt-4 inline-flex h-10 items-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)]"
               >
                 Clear search
-              </button>
+              </LobbButton>
             </div>
           ) : (
             <div>
               <div className="grid gap-4 md:grid-cols-2">
                 {filteredCoaches.map((coach) => <FeaturedCoachCard key={coach.id} coach={coach} />)}
               </div>
-              <Link href="/coaches" className="mt-6 flex h-12 items-center justify-center rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-sm font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:hidden">
+              <Link href="/coaches" className="mt-6 flex h-12 items-center justify-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-sm font-medium text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)] sm:hidden">
                 See all coaches
               </Link>
             </div>
@@ -368,7 +369,7 @@ function BookingLifecycle() {
         : "lobb-dot-pulse bg-[var(--lobb-success)]";
 
   return (
-    <p key={phase} className="lobb-booking-kicker flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.16em] animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
+    <p key={phase} className="lobb-booking-kicker flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.16em] animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
       <span className={`size-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
       <span className="tabular-nums">{label}</span>
     </p>
@@ -402,10 +403,10 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
     .join(" · ");
 
   return (
-    <article className="group overflow-hidden rounded-[16px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
+    <article className="group overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
       <div className="grid min-h-[214px] grid-cols-[38%_minmax(0,1fr)]">
         <Link href={profileHref} className="relative block overflow-hidden bg-[var(--lobb-bg-secondary)]">
-          <div className="absolute inset-0 flex items-center justify-center text-5xl font-black text-[var(--lobb-text-tertiary)]/35">
+          <div className="absolute inset-0 flex items-center justify-center text-5xl font-semibold text-[var(--lobb-text-tertiary)]/35">
             {coach.full_name.charAt(0)}
           </div>
           {coach.profile_photo_url && (
@@ -418,7 +419,7 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
             />
           )}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/58 to-transparent" />
-          <span className="absolute bottom-3 left-3 rounded-[10px] bg-[#0d0d0d]/78 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
+          <span className="absolute bottom-3 left-3 rounded-[var(--lobb-radius-md)] bg-[#0d0d0d]/78 px-2.5 py-1.5 text-[11px] font-medium text-white backdrop-blur">
             {coachRate(coach.hourly_rate_ngn)}
           </span>
         </Link>
@@ -426,18 +427,18 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
         <div className="flex min-w-0 flex-col justify-between p-4 sm:p-5">
           <div>
             <div className="flex items-center justify-between gap-3">
-              <span className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
+              <span className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-clay)]">
                 {primarySkill}
               </span>
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-[10px] bg-[var(--lobb-bg-secondary)] px-2 py-1 text-[11px] font-black text-[var(--lobb-text-primary)]">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)] px-2 py-1 text-[11px] font-medium text-[var(--lobb-text-primary)]">
                 <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
                 {ratingLabel}
               </span>
             </div>
-            <Link href={profileHref} className="mt-3 block truncate text-xl font-black leading-tight tracking-tight transition hover:text-[var(--lobb-clay)]">
+            <Link href={profileHref} className="mt-3 block truncate text-xl font-semibold leading-tight tracking-tight transition hover:text-[var(--lobb-clay)]">
               {coach.full_name}
             </Link>
-            <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-[var(--lobb-text-secondary)]">
+            <p className="mt-2 line-clamp-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
               {headline}
             </p>
             <p className="mt-3 flex items-center gap-1.5 text-xs font-bold text-[var(--lobb-text-tertiary)]">
@@ -450,7 +451,7 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
             <Link
               href={bookingHref}
               aria-disabled={!coach.slug}
-              className={`flex h-10 flex-1 items-center justify-center rounded-[12px] text-xs font-black transition active:scale-[0.97] ${
+              className={`flex h-10 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] text-xs font-medium transition active:scale-[0.97] ${
                 coach.slug
                   ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] hover:bg-[var(--lobb-clay-dark)]"
                   : "pointer-events-none bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]"
@@ -458,7 +459,7 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
             >
               Book
             </Link>
-            <Link href={profileHref} className="flex h-10 items-center justify-center rounded-[12px] border border-[var(--lobb-border-subtle)] px-3 text-xs font-black text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)]">
+            <Link href={profileHref} className="flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-3 text-xs font-medium text-[var(--lobb-text-primary)] transition hover:border-[var(--lobb-clay)]/35 hover:text-[var(--lobb-clay)]">
               Profile
             </Link>
           </div>
@@ -571,84 +572,81 @@ function LandingSplash() {
   const heroTotal = heroCoach?.hourly_rate_ngn != null ? Math.round(heroCoach.hourly_rate_ngn * 1.05) : 22500;
 
   return (
-    <main className="lobb-landing relative min-h-[100dvh] overflow-x-hidden bg-[var(--lobb-bg)] text-[var(--lobb-black)]">
+    <main id="main-content" className="lobb-landing relative min-h-[100dvh] overflow-x-hidden bg-[var(--lobb-bg-primary)] text-[var(--lobb-bg-inverse)]">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="lobb-landing-top-gradient absolute inset-x-0 top-0 h-[620px] bg-[linear-gradient(180deg,var(--lobb-bg-secondary),transparent)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_srgb,var(--lobb-black)_4%,transparent)_1px,transparent_1px),linear-gradient(0deg,color-mix(in_srgb,var(--lobb-black)_3%,transparent)_1px,transparent_1px)] bg-[length:88px_88px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_srgb,var(--lobb-bg-inverse)_4%,transparent)_1px,transparent_1px),linear-gradient(0deg,color-mix(in_srgb,var(--lobb-bg-inverse)_3%,transparent)_1px,transparent_1px)] bg-[length:88px_88px]" />
         <div
           className="lobb-landing-court-texture absolute inset-x-0 top-0 h-[720px] opacity-[0.09] mix-blend-multiply"
           style={{ backgroundImage: `url(${courtImage})`, backgroundSize: "cover", backgroundPosition: "center top" }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--lobb-bg)_38%,transparent),var(--lobb-bg)_710px),linear-gradient(90deg,var(--lobb-bg)_0%,color-mix(in_srgb,var(--lobb-bg)_54%,transparent)_48%,var(--lobb-bg)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--lobb-bg-primary)_38%,transparent),var(--lobb-bg-primary)_710px),linear-gradient(90deg,var(--lobb-bg-primary)_0%,color-mix(in_srgb,var(--lobb-bg-primary)_54%,transparent)_48%,var(--lobb-bg-primary)_100%)]" />
       </div>
 
-      <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border)] bg-[var(--lobb-bg)]/78 backdrop-blur-xl">
+      <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/78 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr] lg:px-8">
           <Link href="/" className="group flex min-w-0 items-center gap-2.5 md:justify-self-start">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">
               <LobbMark size={18} />
             </span>
-            <span className="text-[13px] font-black uppercase tracking-[0.18em] text-[var(--lobb-black)]">LOBB</span>
+            <span className="text-[13px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-bg-inverse)]">LOBB</span>
           </Link>
 
-          <nav className="hidden items-center gap-7 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)] md:flex md:justify-self-center">
-            <Link href="/coaches" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Coaches</Link>
-            <Link href="/how-it-works" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">How it works</Link>
-            <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">About</Link>
+          <nav aria-label="Main navigation" className="hidden items-center gap-7 text-sm font-medium text-[var(--lobb-text-secondary)] md:flex md:justify-self-center">
+            <Link href="/coaches" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">Coaches</Link>
+            <Link href="/how-it-works" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">How it works</Link>
+            <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">About</Link>
           </nav>
 
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-3 md:justify-self-end">
-            <Link href="/auth/login" className="inline-flex h-10 items-center justify-center rounded-full px-3 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--lobb-muted)] transition hover:text-[var(--lobb-black)] sm:px-4">
-              Log in
+            <Link href="/auth/login" className="inline-flex h-10 items-center justify-center rounded-[var(--lobb-radius-lg)] px-3 text-sm font-medium text-[var(--lobb-text-secondary)] transition hover:text-[var(--lobb-bg-inverse)] sm:px-4">
+              Sign in
             </Link>
-            <ThemeToggle />
-            <Link href="/auth/signup/player" className="lobb-cta-sheen inline-flex h-10 items-center justify-center rounded-[12px] bg-[var(--lobb-black)] px-4 text-[11px] font-black uppercase tracking-[0.12em] text-white transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98] sm:px-5">
-              Sign up
+            <Link href="/coaches" className="lobb-cta-sheen inline-flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-medium text-white transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98] sm:px-5">
+              Find a coach
             </Link>
           </div>
         </div>
+        <nav aria-label="Mobile navigation" className="mx-auto flex h-10 max-w-7xl items-center gap-5 border-t border-[var(--lobb-border-subtle)] px-4 text-xs font-medium text-[var(--lobb-text-secondary)] md:hidden">
+          <Link href="/coaches" className="transition hover:text-[var(--lobb-bg-inverse)]">Browse coaches</Link>
+          <Link href="/how-it-works" className="transition hover:text-[var(--lobb-bg-inverse)]">How it works</Link>
+          <Link href="/about" className="transition hover:text-[var(--lobb-bg-inverse)]">About LOBB</Link>
+        </nav>
       </header>
 
       <section className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:px-8 lg:py-12">
         <div className="max-w-3xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
-          <div className="mb-5 inline-flex items-center gap-2 border border-[var(--lobb-border)] bg-[var(--lobb-surface)]/88 px-3.5 py-2">
+          <div className="mb-5 inline-flex items-center gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/88 px-3.5 py-2">
             <span className="relative flex size-2">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-[var(--lobb-clay)] opacity-70" />
               <span className="relative inline-flex size-2 rounded-full bg-[var(--lobb-clay)]" />
             </span>
-            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-muted)]">
-              Verified tennis coaching across Lagos
+            <span className="text-xs font-medium text-[var(--lobb-text-secondary)]">
+              Verified tennis coaches across Lagos
             </span>
           </div>
 
-          <h1 className="max-w-3xl text-[44px] font-black leading-[0.96] tracking-tight text-[var(--lobb-black)] sm:text-[68px] lg:text-[88px] text-balance">
-            Book a coach. Not a favor.
+          <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.96] tracking-tight text-[var(--lobb-bg-inverse)] sm:text-[68px] lg:text-[88px] text-balance">
+            Find the right tennis coach. Pick a time. Play.
           </h1>
-          <p className="mt-6 max-w-xl text-[16px] leading-[1.7] text-[var(--lobb-muted)] sm:text-[18px] text-pretty">
-            Lagos&apos;s verified tennis coaches. Available now. No WhatsApp required.
+          <p className="mt-6 max-w-xl text-[16px] leading-[1.7] text-[var(--lobb-text-secondary)] sm:text-[18px] text-pretty">
+            Compare verified Lagos coaches, see their rates and book securely—without chasing referrals on WhatsApp.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
               Find a coach
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
-            <Link href="/auth/signup/coach" className="inline-flex h-14 items-center justify-center border border-[var(--lobb-border)] bg-[var(--lobb-surface)] px-7 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-black)] transition duration-300 hover:border-[var(--lobb-clay)]/45 hover:text-[var(--lobb-clay)] active:scale-[0.98]">
-              Join as a coach
+            <Link href="/auth/signup/coach" className="inline-flex h-14 items-center justify-center px-3 text-sm font-semibold text-[var(--lobb-bg-inverse)] underline decoration-[var(--lobb-border-strong)] underline-offset-8 transition hover:text-[var(--lobb-clay)] hover:decoration-[var(--lobb-clay)]">
+              I&apos;m a tennis coach
             </Link>
           </div>
 
-          <div className={`mt-9 grid max-w-xl border-y border-[var(--lobb-border)] ${coachCount != null ? "grid-cols-3" : "grid-cols-2"}`}>
-            {([
-              ...(coachCount != null ? [[coachCount, "verified Lagos coaches"]] : []),
-              [areas.length, "Lagos areas"],
-              [10, "minute slot hold"],
-            ] as [number, string][]).map(([value, label]) => (
-              <div key={label} className="border-r border-[var(--lobb-border)] px-3 py-4 first:pl-0 last:border-r-0 last:pr-0 sm:px-5">
-                <p className="text-[28px] font-black tabular-nums tracking-tight text-[var(--lobb-black)] sm:text-[38px]"><StatValue value={value} /></p>
-                <p className="mt-1 text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">{label}</p>
-              </div>
-            ))}
+          <div className="mt-9 flex max-w-xl flex-wrap gap-x-6 gap-y-3 border-y border-[var(--lobb-border-subtle)] py-4 text-sm text-[var(--lobb-text-secondary)]">
+            {coachCount != null && <span><strong className="font-semibold text-[var(--lobb-bg-inverse)]">{coachCount}</strong> verified coaches</span>}
+            <span><strong className="font-semibold text-[var(--lobb-bg-inverse)]">{areas.length}</strong> Lagos areas</span>
+            <span><strong className="font-semibold text-[var(--lobb-bg-inverse)]">Upfront</strong> rates</span>
           </div>
         </div>
 
@@ -666,7 +664,7 @@ function LandingSplash() {
                 <div className="lobb-booking-head flex items-center justify-between pb-4">
                   <div>
                     <BookingLifecycle />
-                    <p className="lobb-booking-title mt-1 text-lg font-black">Private lesson</p>
+                    <p className="lobb-booking-title mt-1 text-lg font-medium">Private lesson</p>
                   </div>
                   <span className="lobb-booking-icon flex size-10 items-center justify-center">
                     <CalendarDays className="size-5" />
@@ -675,31 +673,31 @@ function LandingSplash() {
                 <div className="mt-4 grid grid-cols-2 gap-2.5">
                   <div className="lobb-booking-tile p-3">
                     <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Coach</p>
-                    <p className="lobb-booking-value mt-1 truncate text-sm font-black">{heroCoachName}</p>
+                    <p className="lobb-booking-value mt-1 truncate text-sm font-medium">{heroCoachName}</p>
                   </div>
                   <div className="lobb-booking-tile p-3">
                     <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Time</p>
-                    <p className="lobb-booking-value mt-1 text-sm font-black">7:30 AM</p>
+                    <p className="lobb-booking-value mt-1 text-sm font-medium">7:30 AM</p>
                   </div>
                 </div>
                 <div className="lobb-booking-tile mt-2.5 flex items-center gap-2 p-3">
                   <MapPin className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-                  <span className="lobb-booking-location truncate text-sm font-semibold">{heroCourt}</span>
+                  <span className="lobb-booking-location truncate text-sm font-medium">{heroCourt}</span>
                 </div>
                 <div className="lobb-booking-total mt-4 grid grid-cols-[1fr_auto] items-center gap-3 pt-4">
                   <div>
                     <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Session total</p>
-                    <p className="lobb-booking-price mt-1 text-2xl font-black">₦{heroTotal.toLocaleString("en-NG")}</p>
+                    <p className="lobb-booking-price mt-1 text-2xl font-semibold">₦{heroTotal.toLocaleString("en-NG")}</p>
                   </div>
-                  <span className="lobb-booking-paymark px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em]">
+                  <span className="lobb-booking-paymark px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em]">
                     Paystack
                   </span>
                 </div>
               </div>
 
               <div className="max-w-[430px] text-white">
-                <h2 className="text-[30px] font-black leading-[0.98] tracking-tight sm:text-[46px] text-balance">
-                  Coach, court, time, payment in one clean flow.
+                <h2 className="text-[30px] font-semibold leading-[0.98] tracking-tight sm:text-[46px] text-balance">
+                  Your coach, time and payment—settled before you reach the court.
                 </h2>
               </div>
             </div>
@@ -707,151 +705,104 @@ function LandingSplash() {
         </div>
       </section>
 
-      {coaches.length > 0 && (
-        <section className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-14 sm:px-6 lg:px-8">
+      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-14 sm:px-6 lg:px-8">
           <div data-reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <DotLabel>Coaches on LOBB</DotLabel>
-              <h2 className="mt-3 text-[28px] font-black leading-[1.04] tracking-tight sm:text-[38px] text-balance">
-                Real coaches, real rates.
+              <DotLabel>Browse coaches</DotLabel>
+              <h2 className="mt-3 text-[28px] font-semibold leading-[1.04] tracking-tight sm:text-[38px] text-balance">
+                Start with the coach, not a sales pitch.
               </h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--lobb-text-secondary)]">
+                Compare coaching style, location, experience and price before you choose.
+              </p>
             </div>
-            <Link href="/coaches" className="group inline-flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.12em] text-[var(--lobb-black)] transition hover:text-[var(--lobb-clay)]">
-              See all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+            <Link href="/coaches" className="group inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-bg-inverse)] transition hover:text-[var(--lobb-clay)]">
+              Browse all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
-          <div className="lobb-rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 [scrollbar-width:none]">
-            {coaches.map((coach, i) => (
-              <LandingCoachCard key={coach.id} coach={coach} index={i} />
-            ))}
-          </div>
+          {coaches.length > 0 ? (
+            <div className="lobb-rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 [scrollbar-width:none]">
+              {coaches.map((coach, i) => <LandingCoachCard key={coach.id} coach={coach} index={i} />)}
+            </div>
+          ) : (
+            <div className="lobb-landing-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-7">
+              <p className="font-semibold">New coaches are being verified.</p>
+              <p className="mt-2 text-sm text-[var(--lobb-text-secondary)]">Check back soon or apply to coach on LOBB.</p>
+            </div>
+          )}
         </section>
-      )}
-
-      <div className="lobb-marquee relative z-10 mt-10 border-y border-[var(--lobb-border)] bg-[var(--lobb-surface)]/58 py-3.5" aria-hidden="true">
-        <div className="lobb-marquee-track">
-          {[...areas, ...areas].map((area, i) => (
-            <span key={`${area}-${i}`} className="flex shrink-0 items-center gap-5 pr-5 text-[12px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">
-              {area}
-              <span className="size-1.5 rounded-full bg-[var(--lobb-clay)]" />
-            </span>
-          ))}
-        </div>
-      </div>
 
       <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
         <div data-reveal className="lg:sticky lg:top-24 lg:self-start">
           <DotLabel>How booking works</DotLabel>
-          <h2 className="mt-3 max-w-md text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
-            From open slot to paid session.
+          <h2 className="mt-3 max-w-md text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[44px] text-balance">
+            Three steps from search to court.
           </h2>
-          <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--lobb-muted)]">
-            The whole flow is built so neither side has to trust a stranger: the calendar is real, the slot is held, and the money waits until the lesson happens.
+          <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--lobb-text-secondary)]">
+            No referral chase, price negotiation or back-and-forth scheduling.
           </p>
         </div>
         <div>
           {([
-            ["A real calendar", "Coaches publish actual availability. The slot you see is a slot that exists, not the start of a negotiation."],
-            ["A 10-minute hold", "Checkout locks your slot while you pay. Nobody can take it from under you mid-payment."],
-            ["LOBB holds, then pays", "You never pay into a stranger's account. LOBB holds the coach's payout until after your session, then releases it automatically."],
-            ["Paid after play", "The coach is paid out after the session happens. Every incentive points at the court."],
+            ["Choose a coach", "Compare experience, coaching style, location and price before you decide."],
+            ["Pick a time and pay", "Select an open slot. We hold it while you complete secure payment."],
+            ["Meet on court", "Your booking, location and session details stay together in one place."],
           ] as const).map(([title, body], i) => (
             <div
               key={title}
               data-reveal
               style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
-              className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 border-t border-[var(--lobb-border)] py-7 transition duration-300 last:border-b sm:grid-cols-[88px_minmax(0,1fr)]"
+              className="group grid grid-cols-[64px_minmax(0,1fr)] gap-4 border-t border-[var(--lobb-border-subtle)] py-7 transition duration-300 last:border-b sm:grid-cols-[88px_minmax(0,1fr)]"
             >
-              <span className="text-[30px] font-black leading-none tracking-tight text-[var(--lobb-text-tertiary)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)] sm:text-[40px]">
+              <span className="text-[30px] font-semibold leading-none tracking-tight text-[var(--lobb-text-tertiary)] transition-colors duration-300 group-hover:text-[var(--lobb-clay)] sm:text-[40px]">
                 0{i + 1}
               </span>
               <div className="transition-transform duration-300 group-hover:translate-x-1">
-                <p className="text-xl font-black tracking-tight">{title}</p>
-                <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--lobb-muted)]">{body}</p>
+                <p className="text-xl font-semibold tracking-tight">{title}</p>
+                <p className="mt-2 max-w-lg text-sm leading-6 text-[var(--lobb-text-secondary)]">{body}</p>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto grid max-w-7xl gap-8 px-4 pb-16 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:px-8 lg:pb-24">
-        <div data-reveal className="lobb-dark-panel border border-[var(--lobb-border)] bg-[#0d0d0d] p-6 text-white sm:p-8 lg:p-10">
-          <DotLabel light>For players</DotLabel>
-          <h2 className="mt-3 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
-            Choose with enough context to feel confident.
-          </h2>
-          <div className="mt-8 border border-white/[0.10] bg-white/[0.05] p-4 sm:p-5">
-            <div className="flex h-11 items-center gap-3 border border-white/[0.12] bg-white/[0.07] px-4">
-              <Search className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-              <span className="truncate text-sm font-semibold text-white/75">Lekki, intermediate, backhand</span>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["Lekki", "Intermediate", "Morning slots"].map((chip) => (
-                <span key={chip} className="border border-[var(--lobb-clay)]/45 bg-[var(--lobb-clay)]/15 px-3 py-1.5 text-[11px] font-black text-[#e8a075]">
-                  {chip}
-                </span>
-              ))}
-            </div>
-            <div className="mt-4 flex items-center gap-3 border border-white/[0.10] bg-white/[0.06] p-3">
-              {coaches[0]?.profile_photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={coaches[0].profile_photo_url} alt="" className="size-10 shrink-0 rounded-full object-cover" />
-              ) : (
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-black text-[var(--lobb-clay)]">
-                  {(coaches[0]?.full_name ?? "Tunde A.").charAt(0)}
-                </span>
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-black">{coaches[0]?.full_name ?? "Tunde A."}</p>
-                <p className="truncate text-xs font-semibold text-white/75">{coaches[0]?.primary_location ?? "Lagos Lawn Tennis Club"}</p>
-              </div>
-              {(coaches[0]?.hourly_rate_ngn ?? 20000) > 0 && (
-                <span className="shrink-0 text-sm font-black text-white">₦{(coaches[0]?.hourly_rate_ngn ?? 20000).toLocaleString("en-NG")}<span className="text-[10px] font-bold text-white/75">/hr</span></span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div data-reveal style={{ "--reveal-delay": "100ms" } as React.CSSProperties} className="lobb-landing-panel border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-8 lg:p-10">
-          <DotLabel>For coaches</DotLabel>
-          <h2 className="mt-3 max-w-lg text-[32px] font-black leading-[1.02] tracking-tight sm:text-[44px] text-balance">
-            A cleaner front desk for independent tennis coaches.
-          </h2>
-          <div className="mt-8 grid gap-3">
-            {[
-              "A public profile players can evaluate quickly.",
-              "Service areas, skill levels, and session expectations in one place.",
-              "Bookings arrive pre-paid, with your payout released automatically after the session.",
-            ].map((item) => (
-              <div key={item} className="flex items-start gap-3 border-b border-[var(--lobb-border)] pb-3 last:border-b-0 last:pb-0">
-                <Check className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-                <p className="text-sm font-bold leading-6 text-[var(--lobb-black)]">{item}</p>
-              </div>
-            ))}
-          </div>
-          <Link href="/auth/signup/coach" className="lobb-cta-sheen group mt-8 inline-flex h-12 items-center justify-center gap-2 bg-[var(--lobb-black)] px-5 text-[12px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
-            Apply as a coach
-            <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Link>
-        </div>
-      </section>
-
-      <section className="lobb-landing-band relative z-10 border-y border-[var(--lobb-border)] bg-[var(--lobb-surface)]/58 px-4 py-12 backdrop-blur sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl md:grid-cols-2">
+      <section className="lobb-landing-band relative z-10 border-y border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/58 px-4 py-12 backdrop-blur sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl md:grid-cols-3">
           {([
-            ["The price is the price", "The coach's hourly rate plus a 5% convenience fee, shown in full before you pay."],
-            ["Plans change, fine", "Cancel at least 24 hours ahead for a full refund. Cancel within 24 hours and you get 50% back."],
+            ["Verified profiles", "Review coaching experience, location and player feedback before you book."],
+            ["The full price upfront", "See the coach's rate and LOBB's 5% convenience fee before you pay."],
+            ["Clear cancellation terms", "Cancel at least 24 hours ahead for a full refund. Later cancellations receive 50%."],
           ] as const).map(([title, body], i) => (
             <div
               key={title}
               data-reveal
               style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
-              className="border-b border-[var(--lobb-border)] py-6 last:border-b-0 md:border-b-0 md:border-r md:px-8 md:py-2 md:first:pl-0 md:last:border-r-0"
+              className="border-b border-[var(--lobb-border-subtle)] py-6 last:border-b-0 md:border-b-0 md:border-r md:px-8 md:py-2 md:first:pl-0 md:last:border-r-0"
             >
-              <p className="text-lg font-black tracking-tight">{title}</p>
-              <p className="mt-2 max-w-md text-sm leading-6 text-[var(--lobb-muted)]">{body}</p>
+              <p className="text-lg font-medium tracking-tight">{title}</p>
+              <p className="mt-2 max-w-md text-sm leading-6 text-[var(--lobb-text-secondary)]">{body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div data-reveal className="lobb-landing-panel grid gap-8 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end lg:p-12">
+          <div>
+            <DotLabel>For coaches</DotLabel>
+            <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[44px] text-balance">
+              Spend less time arranging lessons.
+            </h2>
+            <p className="mt-5 max-w-xl text-sm leading-6 text-[var(--lobb-text-secondary)]">
+              Publish your profile and availability, receive prepaid bookings and manage each session from one place.
+            </p>
+          </div>
+          <div className="lg:text-right">
+            <Link href="/auth/signup/coach" className="lobb-cta-sheen group inline-flex h-12 items-center justify-center gap-2 bg-[var(--lobb-bg-inverse)] px-6 text-sm font-semibold text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
+              Apply to coach on LOBB
+              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -863,38 +814,35 @@ function LandingSplash() {
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(196,98,45,0.28),transparent_60%),linear-gradient(180deg,rgba(13,13,13,0.65),rgba(13,13,13,0.35))]" aria-hidden="true" />
         <div data-reveal className="relative mx-auto max-w-3xl text-center">
-          <h2 className="text-[40px] font-black leading-[0.98] tracking-tight sm:text-[60px] text-balance">
-            Your next lesson, on the calendar.
+          <h2 className="text-[40px] font-semibold leading-[0.98] tracking-tight sm:text-[60px] text-balance">
+            Your next tennis session starts here.
           </h2>
           <p className="mx-auto mt-5 max-w-md text-[15px] leading-[1.7] text-white/75">
-            Pick a coach, hold a slot, pay once. The rest happens on court.
+            Browse verified coaches available across Lagos.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-8 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
               Find a coach
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-            <Link href="/auth/signup/coach" className="inline-flex h-14 w-full items-center justify-center border border-white/20 px-8 text-[12px] font-black uppercase tracking-[0.14em] text-white transition duration-300 hover:border-white/55 active:scale-[0.98] sm:w-auto">
-              Join as a coach
             </Link>
           </div>
         </div>
       </section>
 
-      <footer className="lobb-landing-header relative z-10 border-t border-[var(--lobb-border)] bg-[var(--lobb-bg)]/88 px-4 py-7 backdrop-blur sm:px-6 lg:px-8">
+      <footer className="lobb-landing-header relative z-10 border-t border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 px-4 py-7 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2.5">
             <LobbMark size={18} />
-            <span className="text-[12px] font-black uppercase tracking-[0.18em]">LOBB</span>
-            <span className="text-[12px] font-semibold text-[var(--lobb-muted)]">&copy; {new Date().getFullYear()}</span>
+            <span className="text-[12px] font-medium uppercase tracking-[0.18em]">LOBB</span>
+            <span className="text-[12px] font-medium text-[var(--lobb-text-secondary)]">&copy; {new Date().getFullYear()}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)]">
-            <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">About</Link>
-            <Link href="/faq" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">FAQ</Link>
-            <Link href="/terms" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Terms</Link>
-            <Link href="/privacy" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Privacy</Link>
-            <Link href="/cancellation-policy" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Cancellation</Link>
-            <Link href="/contact" className="lobb-nav-link transition hover:text-[var(--lobb-black)]">Contact</Link>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">
+            <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">About</Link>
+            <Link href="/faq" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">FAQ</Link>
+            <Link href="/terms" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">Terms</Link>
+            <Link href="/privacy" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">Privacy</Link>
+            <Link href="/cancellation-policy" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">Cancellation</Link>
+            <Link href="/contact" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">Contact</Link>
           </div>
         </div>
       </footer>
@@ -906,7 +854,7 @@ function LandingSplash() {
 
 function DotLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (
-    <p className={`flex items-center gap-2.5 text-[13px] font-black ${light ? "text-white/75" : "text-[var(--lobb-muted)]"}`}>
+    <p className={`flex items-center gap-2.5 text-[13px] font-medium ${light ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>
       <span className="size-1.5 shrink-0 bg-[var(--lobb-clay)]" aria-hidden="true" />
       {children}
     </p>
@@ -920,7 +868,8 @@ function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: 
       href={href}
       data-reveal
       style={{ "--reveal-delay": `${Math.min(index, 6) * 70}ms` } as React.CSSProperties}
-      className="lobb-landing-panel group/coach w-[230px] shrink-0 snap-start border border-[var(--lobb-border)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-1 hover:border-[var(--lobb-clay)]/40"
+      className="lobb-landing-panel group/coach w-[230px] shrink-0 snap-start border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-1 hover:border-[var(--lobb-clay)]/40"
+      aria-label={`View ${coach.full_name}'s coaching profile`}
     >
       <div className="relative h-[160px] overflow-hidden bg-[var(--lobb-bg-secondary)]">
         {coach.profile_photo_url ? (
@@ -931,67 +880,36 @@ function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: 
             className="size-full object-cover transition-transform duration-500 group-hover/coach:scale-105"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-[40px] font-black text-[var(--lobb-text-tertiary)]">
+          <div className="flex size-full items-center justify-center text-[40px] font-semibold text-[var(--lobb-text-tertiary)]">
             {coach.full_name.charAt(0)}
           </div>
         )}
         {coach.hourly_rate_ngn != null && (
-          <span className="absolute bottom-2 left-2 bg-[#0d0d0d]/85 px-2.5 py-1.5 text-[11px] font-black text-white backdrop-blur">
+          <span className="absolute bottom-2 left-2 bg-[#0d0d0d]/85 px-2.5 py-1.5 text-[11px] font-medium text-white backdrop-blur">
             ₦{coach.hourly_rate_ngn.toLocaleString("en-NG")}<span className="font-bold text-white/75">/hr</span>
           </span>
         )}
       </div>
       <div className="p-4">
         <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-[15px] font-black">{coach.full_name}</p>
-          <span className="flex shrink-0 items-center gap-1 text-xs font-black">
+          <p className="truncate text-[15px] font-medium">{coach.full_name}</p>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-medium">
             <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
             {coach.avg_rating ?? "New"}
           </span>
         </div>
-        <p className="mt-1 truncate text-xs font-semibold text-[var(--lobb-muted)]">{coach.headline ?? "Tennis coach"}</p>
+        <p className="mt-1 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">{coach.headline ?? "Tennis coach"}</p>
         {coach.primary_location && (
-          <p className="mt-2.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--lobb-text-secondary)]">
+          <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
             <MapPin className="size-3 shrink-0 text-[var(--lobb-clay)]" />
             <span className="truncate">{coach.primary_location}</span>
           </p>
         )}
+        <span className="mt-4 flex items-center justify-between border-t border-[var(--lobb-border-subtle)] pt-3 text-xs font-semibold text-[var(--lobb-bg-inverse)]">
+          View profile
+          <ArrowRight className="size-3.5 transition-transform duration-300 group-hover/coach:translate-x-1" />
+        </span>
       </div>
     </Link>
   );
-}
-
-function StatValue({ value }: { value: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [display, setDisplay] = useState(value);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let raf = 0;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        io.disconnect();
-        const start = performance.now();
-        const duration = 1100;
-        const tick = (now: number) => {
-          const t = Math.min((now - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - t, 4);
-          setDisplay(Math.round(value * eased));
-          if (t < 1) raf = requestAnimationFrame(tick);
-        };
-        setDisplay(0);
-        raf = requestAnimationFrame(tick);
-      },
-      { threshold: 0.6 },
-    );
-    io.observe(el);
-    return () => {
-      io.disconnect();
-      cancelAnimationFrame(raf);
-    };
-  }, [value]);
-
-  return <span ref={ref}>{display}</span>;
 }

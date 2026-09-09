@@ -13,7 +13,7 @@ export function BackLink({
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-11 items-center gap-2 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-black text-[var(--lobb-text-primary)] transition hover:bg-[var(--lobb-bg-secondary)] ${className}`}
+      className={`inline-flex min-h-11 items-center gap-2 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-medium text-[var(--lobb-text-primary)] transition hover:bg-[var(--lobb-bg-secondary)] ${className}`}
       aria-label={label}
     >
       <ArrowLeft className="size-4" />

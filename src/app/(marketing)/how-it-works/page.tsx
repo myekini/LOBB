@@ -38,45 +38,45 @@ const QA_ITEMS = [
 
 export default function HowItWorksPage() {
   return (
-    <main className="min-h-screen bg-[var(--lobb-bg)] px-5 py-10 text-[var(--lobb-black)]">
+    <main className="min-h-screen bg-[var(--lobb-bg-primary)] px-5 py-10 text-[var(--lobb-bg-inverse)]">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--lobb-muted)] transition hover:text-[var(--lobb-black)]"
+          className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)] transition hover:text-[var(--lobb-bg-inverse)]"
         >
           ← Back
         </Link>
 
         <div className="mt-8">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
+          <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
             How it works
           </p>
-          <h1 className="mt-2 text-[32px] font-black leading-[1.04] tracking-tight sm:text-[40px]">
+          <h1 className="mt-2 text-[32px] font-semibold leading-[1.04] tracking-tight sm:text-[40px]">
             Everything you need to know before you book.
           </h1>
-          <p className="mt-3 text-[15px] leading-[1.7] text-[var(--lobb-muted)]">
+          <p className="mt-3 text-[15px] leading-[1.7] text-[var(--lobb-text-secondary)]">
             Eight questions Lagos players ask before trusting a new platform with their money and their Saturday morning.
           </p>
         </div>
 
-        <div className="mt-10 divide-y divide-[var(--lobb-border)] border-y border-[var(--lobb-border)]">
+        <div className="mt-10 divide-y divide-[var(--lobb-border-subtle)] border-y border-[var(--lobb-border-subtle)]">
           {QA_ITEMS.map(({ q, a }) => (
             <div key={q} className="py-7">
-              <p className="text-[17px] font-black leading-[1.3] tracking-tight text-[var(--lobb-black)]">
+              <p className="text-[17px] font-medium leading-[1.3] tracking-tight text-[var(--lobb-bg-inverse)]">
                 {q}
               </p>
-              <p className="mt-3 text-[15px] leading-[1.75] text-[var(--lobb-muted)]">{a}</p>
+              <p className="mt-3 text-[15px] leading-[1.75] text-[var(--lobb-text-secondary)]">{a}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-8 flex items-start gap-3 rounded-[14px] border border-[var(--lobb-success)]/25 bg-[var(--lobb-success-soft)] p-5">
+        <div className="mt-8 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/25 bg-[var(--lobb-success-soft)] p-5">
           <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
           <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--lobb-success)]">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-success)]">
               LOBB Verified
             </p>
-            <p className="mt-2 text-[14px] leading-[1.7] text-[var(--lobb-muted)]">
+            <p className="mt-2 text-[14px] leading-[1.7] text-[var(--lobb-text-secondary)]">
               A LOBB Verified coach has submitted a coaching demo video reviewed by the LOBB team,
               completed a profile approved by LOBB, connected a verified Nigerian bank account, and
               maintained a clean account with no unresolved complaints. We would rather launch with
@@ -85,14 +85,14 @@ export default function HowItWorksPage() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-[var(--lobb-border)] pt-6">
-          <p className="text-[13px] font-semibold leading-6 text-[var(--lobb-muted)]">
+        <div className="mt-8 border-t border-[var(--lobb-border-subtle)] pt-6">
+          <p className="text-[13px] font-medium leading-6 text-[var(--lobb-text-secondary)]">
             Still have questions?{" "}
-            <Link href="/faq" className="font-black text-[var(--lobb-black)] underline underline-offset-2 transition hover:text-[var(--lobb-clay)]">
+            <Link href="/faq" className="font-medium text-[var(--lobb-bg-inverse)] underline underline-offset-2 transition hover:text-[var(--lobb-clay)]">
               Read the FAQ
             </Link>{" "}
             or{" "}
-            <Link href="/contact" className="font-black text-[var(--lobb-black)] underline underline-offset-2 transition hover:text-[var(--lobb-clay)]">
+            <Link href="/contact" className="font-medium text-[var(--lobb-bg-inverse)] underline underline-offset-2 transition hover:text-[var(--lobb-clay)]">
               contact us
             </Link>
             .

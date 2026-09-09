@@ -17,7 +17,7 @@ export function Checkbox({
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-[6px] border-[1.5px] border-[var(--lobb-text-tertiary)]/45 bg-[var(--lobb-surface)] transition-all duration-150",
+        "flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-[var(--lobb-radius-sm)] border-[1.5px] border-[var(--lobb-text-tertiary)]/45 bg-[var(--lobb-bg-elevated)] transition-all duration-150",
         "data-[checked]:border-[var(--lobb-clay)] data-[checked]:bg-[var(--lobb-clay)]",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--lobb-clay)]/40 focus-visible:ring-offset-1",
         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",

@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, UserCheck, WalletCards } from "lucide-react";
@@ -68,9 +69,9 @@ export default function AdminDashboardPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-xs font-bold text-white/75">LOBB headquarters</p>
-                <h1 className="mt-2 text-[32px] font-black leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
+                <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
               </div>
-              <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-[var(--lobb-clay)] px-5 text-sm font-black text-white">
+              <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white">
                 <UserCheck className="size-4" />
                 Review applications
               </Link>
@@ -82,13 +83,13 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-            <p className="text-xs font-bold text-[var(--lobb-muted)]">Priority</p>
-            <h2 className="mt-2 text-xl font-black leading-tight">{approvalCopy}</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">
+          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
+            <p className="text-xs font-bold text-[var(--lobb-text-secondary)]">Priority</p>
+            <h2 className="mt-2 text-xl font-semibold leading-tight">{approvalCopy}</h2>
+            <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
               Review submitted coach profiles so players only see verified, ready-to-book coaches.
             </p>
-            <Link href="/admin/coaches" className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[12px] border border-[var(--lobb-border)] px-4 text-sm font-black transition-colors hover:border-[var(--lobb-clay)]/35">
+            <Link href="/admin/coaches" className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-sm font-medium transition-colors hover:border-[var(--lobb-clay)]/35">
               Open approvals
               <ArrowUpRight className="size-4" />
             </Link>
@@ -108,7 +109,7 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
               <SectionTitle title="Recent bookings" href="/admin/bookings" />
               {loading ? (
                 <TableRowsSkeleton />
@@ -121,7 +122,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <aside className="space-y-4">
-            <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
               <SectionTitle title="Applications" href="/admin/coaches" />
               {loading ? (
                 <TableRowsSkeleton rows={4} />
@@ -139,13 +140,13 @@ export default function AdminDashboardPage() {
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[var(--lobb-warning)]" />
                   <div className="min-w-0">
-                    <p className="text-sm font-black text-[var(--lobb-text-primary)]">
+                    <p className="text-sm font-medium text-[var(--lobb-text-primary)]">
                       {stuckPayouts} stuck payout{stuckPayouts !== 1 ? "s" : ""}
                     </p>
-                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                    <p className="mt-1 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
                       Completed sessions with no Paystack transfer.
                     </p>
-                    <button
+                    <LobbButton variant="unstyled"
                       disabled={retrying}
                       onClick={async () => {
                         setRetrying(true);
@@ -162,19 +163,19 @@ export default function AdminDashboardPage() {
                           setRetrying(false);
                         }
                       }}
-                      className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-60"
+                      className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
                     >
                       {retrying ? "Retrying" : "Retry stuck payouts"}
-                    </button>
+                    </LobbButton>
                   </div>
                 </div>
               </section>
             )}
 
-            <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-black">Revenue</h2>
-                <Link href="/admin/earnings" className="flex size-8 items-center justify-center rounded-[10px] bg-[var(--lobb-bg)] text-[var(--lobb-muted)]" aria-label="Open earnings">
+                <h2 className="text-sm font-semibold">Revenue</h2>
+                <Link href="/admin/earnings" className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]" aria-label="Open earnings">
                   <ArrowUpRight className="size-4" />
                 </Link>
               </div>
@@ -183,7 +184,7 @@ export default function AdminDashboardPage() {
                 <RevenueRow label="Platform fees earned" value={money(metrics?.lobb_earnings_ngn ?? 0)} strong />
                 <RevenueRow label="Bookings created" value={String(metrics?.total_bookings ?? 0)} />
               </div>
-              <div className="mt-4 rounded-[12px] bg-[var(--lobb-bg)] p-3 text-xs font-semibold leading-5 text-[var(--lobb-muted)]">
+              <div className="mt-4 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] p-3 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
                 Finance detail lives in Earnings. Keep this card for a quick revenue check only.
               </div>
             </section>
@@ -196,7 +197,7 @@ export default function AdminDashboardPage() {
 
 function Pill({ label, value }: { label: string; value: string }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs font-black text-white/84">
+    <span className="inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] bg-white/10 px-3 py-2 text-xs font-medium text-white/84">
       <span className="text-white/75">{label}</span>
       {value}
     </span>
@@ -204,16 +205,16 @@ function Pill({ label, value }: { label: string; value: string }) {
 }
 
 function Stat({ icon, value, label, hint, tone }: { icon: React.ReactNode; value: string; label: string; hint: string; tone: "success" | "clay" | "neutral" }) {
-  const toneClass = tone === "success" ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : tone === "clay" ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)]" : "bg-[var(--lobb-bg)] text-[var(--lobb-muted)]";
+  const toneClass = tone === "success" ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : tone === "clay" ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)]" : "bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]";
 
   return (
-    <div className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+    <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
       <div className="flex items-start justify-between gap-3">
-        <span className={`flex size-8 items-center justify-center rounded-[10px] ${toneClass}`}>{icon}</span>
+        <span className={`flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] ${toneClass}`}>{icon}</span>
       </div>
-      <p className="mt-5 text-2xl font-black leading-none">{value}</p>
-      <p className="mt-3 text-sm font-black">{label}</p>
-      <p className="mt-1 text-xs font-semibold text-[var(--lobb-muted)]">{hint}</p>
+      <p className="mt-5 text-2xl font-semibold leading-none">{value}</p>
+      <p className="mt-3 text-sm font-medium">{label}</p>
+      <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{hint}</p>
     </div>
   );
 }
@@ -221,9 +222,9 @@ function Stat({ icon, value, label, hint, tone }: { icon: React.ReactNode; value
 function SectionTitle({ title, href }: { title: string; href?: string }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
-      <span className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--lobb-muted)]">{title}</span>
+      <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-secondary)]">{title}</span>
       {href && (
-        <Link href={href} className="flex size-8 items-center justify-center rounded-[10px] bg-[var(--lobb-bg)] text-[var(--lobb-muted)]" aria-label={`Open ${title}`}>
+        <Link href={href} className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]" aria-label={`Open ${title}`}>
           <ArrowUpRight className="size-4" />
         </Link>
       )}
@@ -235,7 +236,7 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
 // sideways scrolling, and player/coach names don't fight for space.
 function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
   return (
-    <div className="divide-y divide-[var(--lobb-border)]">
+    <div className="divide-y divide-[var(--lobb-border-subtle)]">
       {bookings.map((booking) => {
         const coach = firstJoin(booking.coaches);
         const player = firstJoin(booking.players);
@@ -246,19 +247,19 @@ function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
           <div key={booking.id} className="flex items-center gap-3 py-3">
             <Avatar name={playerName} imageUrl={player?.avatar_url ?? null} size="md" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-black leading-tight">
+              <p className="truncate text-sm font-medium leading-tight">
                 {playerName}
                 <span className="mx-1.5 font-bold text-[var(--lobb-text-tertiary)]">with</span>
                 {coachName}
               </p>
-              <p className="mt-0.5 truncate text-[11px] font-semibold text-[var(--lobb-muted)]">
+              <p className="mt-0.5 truncate text-[11px] font-medium text-[var(--lobb-text-secondary)]">
                 {formatBookingDate(booking.starts_at)}
                 <span className="mx-1.5">·</span>
                 <span className="font-mono">{booking.paystack_reference ?? `#${booking.id.slice(0, 6)}`}</span>
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
-              <span className="text-sm font-black">{money(booking.total_amount_ngn)}</span>
+              <span className="text-sm font-medium">{money(booking.total_amount_ngn)}</span>
               <StatusBadge status={booking.status} />
             </div>
           </div>
@@ -279,7 +280,7 @@ function Avatar({ name, imageUrl, size = "md" }: { name: string; imageUrl?: stri
   const sizeClass = size === "sm" ? "size-7 text-[10px]" : "size-9 text-xs";
 
   return (
-    <span className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-bg)] font-black text-[var(--lobb-clay)] ${sizeClass}`}>
+    <span className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-bg-primary)] font-medium text-[var(--lobb-clay)] ${sizeClass}`}>
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={imageUrl} alt="" className="size-full object-cover" />
@@ -293,7 +294,7 @@ function Avatar({ name, imageUrl, size = "md" }: { name: string; imageUrl?: stri
 function CoachReviewRow({ coach }: { coach: NonNullable<AdminDashboardPayload["pending_coach_approvals"]>[number] }) {
   return (
     <Link href="/admin/coaches" className="flex items-center gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-bg)]">
+      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-bg-primary)]">
         {coach.profile_photo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
@@ -302,29 +303,29 @@ function CoachReviewRow({ coach }: { coach: NonNullable<AdminDashboardPayload["p
         )}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-black">{coach.full_name}</span>
-        <span className="block truncate text-xs font-semibold text-[var(--lobb-muted)]">{coach.primary_location ?? coach.headline ?? "Coach profile"}</span>
+        <span className="block truncate text-sm font-medium">{coach.full_name}</span>
+        <span className="block truncate text-xs font-medium text-[var(--lobb-text-secondary)]">{coach.primary_location ?? coach.headline ?? "Coach profile"}</span>
       </span>
-      <span className="rounded-[10px] border border-[var(--lobb-border)] px-3 py-2 text-xs font-black text-[var(--lobb-muted)]">Open</span>
+      <span className="rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-3 py-2 text-xs font-medium text-[var(--lobb-text-secondary)]">Open</span>
     </Link>
   );
 }
 
 function RevenueRow({ value, label, strong }: { value: string; label: string; strong?: boolean }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[var(--lobb-border)] pb-3 last:border-b-0 last:pb-0">
-      <p className="text-xs font-bold text-[var(--lobb-muted)]">{label}</p>
-      <p className={`shrink-0 text-sm font-black ${strong ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-black)]"}`}>{value}</p>
+    <div className="flex items-center justify-between gap-4 border-b border-[var(--lobb-border-subtle)] pb-3 last:border-b-0 last:pb-0">
+      <p className="text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
+      <p className={`shrink-0 text-sm font-medium ${strong ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-bg-inverse)]"}`}>{value}</p>
     </div>
   );
 }
 
 function EmptyPanel({ title, body, compact }: { title: string; body: string; compact?: boolean }) {
   return (
-    <div className={`rounded-[12px] border border-dashed border-[var(--lobb-border)] bg-[var(--lobb-bg)] ${compact ? "p-4" : "p-6"}`}>
-      <AlertTriangle className="size-4 text-[var(--lobb-muted)]" />
-      <p className="font-black">{title}</p>
-      <p className="mt-2 text-sm font-semibold leading-6 text-[var(--lobb-muted)]">{body}</p>
+    <div className={`rounded-[var(--lobb-radius-md)] border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] ${compact ? "p-4" : "p-6"}`}>
+      <AlertTriangle className="size-4 text-[var(--lobb-text-secondary)]" />
+      <p className="font-medium">{title}</p>
+      <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{body}</p>
     </div>
   );
 }

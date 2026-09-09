@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { normalizeEmail } from "@/lib/email";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 function getAnonClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,12 +19,28 @@ function getRequestedRole(role: string | undefined): "coach" | "player" {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { email?: string; role?: string };
+    const body = (await request.json()) as {
+      email?: string;
+      role?: string;
+      turnstileToken?: string;
+    };
     const email = normalizeEmail(body.email);
     const isSignup = Boolean(body.role);
 
     if (!email) {
       return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+    }
+
+    // Bot protection on signup — the only place we send a fresh code to a new address.
+    // Fail-open when Turnstile isn't configured (see @/lib/turnstile).
+    if (isSignup) {
+      const humanVerified = await verifyTurnstile(body.turnstileToken, clientIp(request));
+      if (!humanVerified) {
+        return NextResponse.json(
+          { error: "Verification failed. Refresh the page and try again." },
+          { status: 400 },
+        );
+      }
     }
 
     // App-level throttle on top of Supabase's own OTP limits: per IP and per email

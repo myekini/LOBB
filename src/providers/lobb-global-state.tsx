@@ -70,11 +70,11 @@ export function OfflineState() {
   if (!offline) return null;
 
   return (
-    <div role="status" aria-live="polite" className="fixed inset-x-3 top-3 z-[90] mx-auto grid min-h-11 max-w-md grid-cols-[auto_1fr] items-center gap-3 rounded-[14px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-inverse)] px-4 py-3 text-sm font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)]">
+    <div role="status" aria-live="polite" className="fixed inset-x-3 top-3 z-[90] mx-auto grid min-h-11 max-w-md grid-cols-[auto_1fr] items-center gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-inverse)] px-4 py-3 text-sm font-medium text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)]">
       <CloudOff className="size-4 shrink-0 text-[var(--lobb-clay)]" />
       <span>
         <span className="block">Offline mode</span>
-        <span className="block text-xs font-semibold opacity-70">Showing cached data where available.</span>
+        <span className="block text-xs font-medium opacity-70">Showing cached data where available.</span>
       </span>
     </div>
   );

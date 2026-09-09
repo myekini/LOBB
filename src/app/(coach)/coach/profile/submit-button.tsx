@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Send } from "lucide-react";
@@ -28,10 +29,10 @@ export function SubmitForReviewButton() {
   };
 
   return (
-    <button
+    <LobbButton variant="unstyled"
       onClick={handleSubmit}
       disabled={loading}
-      className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[var(--lobb-clay)] text-sm font-black text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)] disabled:opacity-60"
+      className="mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay)] text-sm font-medium text-white shadow-[0_14px_30px_rgba(184,95,47,0.22)] disabled:opacity-60"
     >
       {loading ? (
         <Loader2 className="size-4 animate-spin" />
@@ -41,6 +42,6 @@ export function SubmitForReviewButton() {
           <Send className="size-4" />
         </>
       )}
-    </button>
+    </LobbButton>
   );
 }

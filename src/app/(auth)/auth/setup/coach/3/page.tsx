@@ -1,5 +1,7 @@
 "use client";
 
+import { Input as LobbInput } from "@/components/ui/input";
+import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -56,7 +58,7 @@ export default function CoachSetupStep3Page() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Session expired. Please log in again.");
+      setError("Your session expired. Please sign in again.");
       return;
     }
 
@@ -106,8 +108,8 @@ export default function CoachSetupStep3Page() {
             <span className="mt-2 block text-[12px] font-medium text-[var(--lobb-text-secondary)]/70 leading-relaxed">
               Minimum 50 characters. Aim for your coaching style, ideal player, and session structure.
             </span>
-            <div className="mt-3 relative flex overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] p-1 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <textarea
+            <div className="mt-3 relative flex overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-1 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbTextarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="I'm an ITF-certified coach based in Lekki. I focus on adult beginners and intermediates — structured sessions, clear drills, and proper footwork from day one."
@@ -127,8 +129,8 @@ export default function CoachSetupStep3Page() {
 
           <label className="block group">
             <OnboardingFieldLabel required>Years coaching tennis</OnboardingFieldLabel>
-            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[16px] border border-[var(--lobb-border)] bg-[var(--lobb-surface-2)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-surface)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
-              <input
+            <div className="mt-2 relative flex h-16 items-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 transition-all focus-within:border-[var(--lobb-clay)]/50 focus-within:bg-[var(--lobb-bg-elevated)] focus-within:shadow-[0_0_24px_rgba(196,98,45,0.12)]">
+              <LobbInput
                 type="number"
                 inputMode="numeric"
                 min={0}

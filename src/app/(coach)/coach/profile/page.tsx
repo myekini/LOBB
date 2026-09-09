@@ -155,10 +155,10 @@ export default async function CoachProfilePage() {
           <aside className="space-y-4">
 
             {/* Profile identity card */}
-            <section className="lobb-app-card overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+            <section className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
               <div className="p-4 sm:p-5">
                 <div className="flex items-start gap-4">
-                  <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[var(--lobb-bg-secondary)] ring-1 ring-[var(--lobb-border-subtle)]">
+                  <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)] ring-1 ring-[var(--lobb-border-subtle)]">
                     {coach.profile_photo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={coach.profile_photo_url} alt="" className="h-full w-full object-cover" />
@@ -170,68 +170,68 @@ export default async function CoachProfilePage() {
                     {/* Status inline — single source of truth */}
                     <div className="flex items-center gap-1.5">
                       <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: statusInfo.color }} />
-                      <span className="text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: statusInfo.color }}>
+                      <span className="text-[11px] font-medium uppercase tracking-[0.14em]" style={{ color: statusInfo.color }}>
                         {statusInfo.label}
                       </span>
                     </div>
-                    <h1 className="mt-2 text-xl font-black leading-tight">{coach.full_name || "Coach profile"}</h1>
-                    <p className="mt-1 line-clamp-2 text-sm font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                    <h1 className="mt-2 text-xl font-semibold leading-tight">{coach.full_name || "Coach profile"}</h1>
+                    <p className="mt-1 line-clamp-2 text-sm font-medium leading-5 text-[var(--lobb-text-secondary)]">
                       {coach.headline || "Add a headline so players know what you teach."}
                     </p>
-                    <p className="mt-2 text-xs font-semibold text-[var(--lobb-text-tertiary)]">{statusInfo.hint}</p>
+                    <p className="mt-2 text-xs font-medium text-[var(--lobb-text-tertiary)]">{statusInfo.hint}</p>
                   </div>
                 </div>
 
                 {/* Completion bar */}
                 <div className="mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-xs font-black text-[var(--lobb-text-secondary)]">Profile completion</p>
-                    <span className="text-sm font-black">{completionPct}%</span>
+                    <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Profile completion</p>
+                    <span className="text-sm font-medium">{completionPct}%</span>
                   </div>
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-[var(--lobb-bg-secondary)]">
                     <div
-                      className="h-full rounded-full transition-all"
+                      className="h-full rounded-[var(--lobb-radius-lg)] transition-all"
                       style={{
                         width: `${completionPct}%`,
                         backgroundColor: completionPct === 100 ? "var(--lobb-success)" : "var(--lobb-clay)",
                       }}
                     />
                   </div>
-                  <p className="mt-2 text-[11px] font-black text-[var(--lobb-text-tertiary)]">{doneCount}/{sections.length} sections complete</p>
+                  <p className="mt-2 text-[11px] font-medium text-[var(--lobb-text-tertiary)]">{doneCount}/{sections.length} sections complete</p>
                 </div>
               </div>
             </section>
 
             {/* QR & share card */}
             {canShare ? (
-              <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+              <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <CoachKicker>Share your profile</CoachKicker>
-                    <h2 className="mt-1 text-base font-black">Booking link & QR</h2>
+                    <h2 className="mt-1 text-base font-semibold">Booking link & QR</h2>
                   </div>
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                     <QrCode className="size-5" />
                   </span>
                 </div>
 
                 <div className="mt-4 flex gap-4">
                   {/* QR code */}
-                  <div className="rounded-[12px] border border-[var(--lobb-border-subtle)] bg-white p-2 shrink-0" data-keep-light>
+                  <div className="rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-white p-2 shrink-0" data-keep-light>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={qrUrl} alt="QR code for booking page" className="size-24 rounded-[8px]" data-keep-light />
+                    <img src={qrUrl} alt="QR code for booking page" className="size-24 rounded-[var(--lobb-radius-sm)]" data-keep-light />
                   </div>
 
                   {/* URL + actions */}
                   <div className="min-w-0 flex-1 space-y-2">
-                    <div className="flex items-center gap-2 rounded-[10px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-3 py-2">
                       <Link2 className="size-3.5 shrink-0 text-[var(--lobb-clay)]" />
                       <p className="truncate text-xs font-bold text-[var(--lobb-text-secondary)]">{publicUrl.replace(/^https?:\/\//, "")}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <Link
                         href="/coach/profile/preview"
-                        className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-black text-[var(--lobb-text-primary)]"
+                        className="inline-flex h-10 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-medium text-[var(--lobb-text-primary)]"
                       >
                         <Eye className="size-3.5 text-[var(--lobb-clay)]" />
                         Preview
@@ -243,23 +243,23 @@ export default async function CoachProfilePage() {
                       disabled={!canShare}
                       profileUrl={publicUrl}
                       triggerLabel="Share"
-                      triggerClassName="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-[12px] bg-[var(--lobb-bg-inverse)] text-xs font-black text-[var(--lobb-text-inverse)] disabled:opacity-45"
+                      triggerClassName="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-45"
                     />
                   </div>
                 </div>
               </section>
             ) : (
-              <section className="lobb-app-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+              <section className="lobb-surface-inset border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                     <QrCode className="size-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black">Sharing unlocks when your profile is live</p>
-                    <p className="mt-1 text-xs font-semibold leading-5 text-[var(--lobb-text-secondary)]">
+                    <p className="text-sm font-medium">Sharing unlocks when your profile is live</p>
+                    <p className="mt-1 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
                       Complete the required details and submit for review first.
                     </p>
-                    <Link href="/coach/profile/preview" className="mt-3 inline-flex items-center gap-1 text-xs font-black text-[var(--lobb-clay)]">
+                    <Link href="/coach/profile/preview" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-[var(--lobb-clay)]">
                       <Eye className="size-3" />
                       Preview current profile
                     </Link>
@@ -270,10 +270,10 @@ export default async function CoachProfilePage() {
 
             {/* Certifications — only if coach has them; otherwise skip (checklist handles it) */}
             {certifications.length > 0 && (
-              <section className="lobb-app-card border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+              <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-3">
                   <CoachKicker>Credentials</CoachKicker>
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                     <Award className="size-4" />
                   </span>
                 </div>
@@ -281,7 +281,7 @@ export default async function CoachProfilePage() {
                   {certifications.map((cert) => (
                     <span
                       key={cert}
-                      className="relative inline-flex min-h-[64px] overflow-hidden rounded-[12px] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[12px] font-black leading-tight"
+                      className="relative inline-flex min-h-[64px] overflow-hidden rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[12px] font-medium leading-tight"
                     >
                       <span className="absolute inset-x-0 top-0 h-0.5 bg-[linear-gradient(90deg,var(--lobb-clay),var(--lobb-star))]" />
                       <span className="flex items-center gap-2.5">
@@ -299,8 +299,8 @@ export default async function CoachProfilePage() {
           <section className="min-w-0">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xs font-black uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Required details</h2>
-                <p className="mt-1 text-sm font-semibold text-[var(--lobb-text-secondary)]">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Required details</h2>
+                <p className="mt-1 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   {allDone
                     ? "Everything needed for review is complete."
                     : `${sections.length - doneCount} item${sections.length - doneCount !== 1 ? "s" : ""} still need attention.`}
@@ -315,8 +315,8 @@ export default async function CoachProfilePage() {
                 return (
                   <CoachSurface key={group} className="overflow-hidden bg-[var(--lobb-bg-elevated)]">
                     <div className="flex items-center justify-between border-b border-[var(--lobb-border-subtle)] px-4 py-3 sm:px-5">
-                      <h3 className="text-sm font-black">{group}</h3>
-                      <span className="text-xs font-black text-[var(--lobb-text-tertiary)]">{groupDone}/{groupSections.length}</span>
+                      <h3 className="text-sm font-semibold">{group}</h3>
+                      <span className="text-xs font-medium text-[var(--lobb-text-tertiary)]">{groupDone}/{groupSections.length}</span>
                     </div>
                     {groupSections.map((section, index) => (
                       <Link
@@ -339,15 +339,15 @@ export default async function CoachProfilePage() {
                             </span>
                           )}
                           <div className="min-w-0">
-                            <p className="text-sm font-black leading-tight">{section.label}</p>
-                            <p className={`mt-1 line-clamp-2 text-xs font-semibold leading-5 ${
+                            <p className="text-sm font-medium leading-tight">{section.label}</p>
+                            <p className={`mt-1 line-clamp-2 text-xs font-medium leading-5 ${
                               section.done ? "text-[var(--lobb-text-secondary)]" : "text-[var(--lobb-clay)]"
                             }`}>
                               {section.detail}
                             </p>
                           </div>
                         </div>
-                        <span className="flex shrink-0 items-center gap-1 text-xs font-black text-[var(--lobb-text-tertiary)]">
+                        <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-[var(--lobb-text-tertiary)]">
                           {section.done ? "Edit" : "Add"}
                           <ChevronRight className="size-4" />
                         </span>
@@ -359,17 +359,17 @@ export default async function CoachProfilePage() {
             </div>
 
             {!allDone && nextIncomplete && (
-              <section className="mt-5 flex flex-col gap-3 rounded-[14px] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:flex-row sm:items-center sm:justify-between">
+              <section className="mt-5 flex flex-col gap-3 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="flex items-center gap-2 font-black">
+                  <p className="flex items-center gap-2 font-medium">
                     <AlertTriangle className="size-4 text-[var(--lobb-clay)]" />
                     Continue profile setup
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-white/75">Next: {nextIncomplete.label}</p>
+                  <p className="mt-1 text-sm font-medium text-white/75">Next: {nextIncomplete.label}</p>
                 </div>
                 <Link
                   href={nextIncomplete.href}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[12px] bg-white px-5 text-sm font-black text-[#0d0d0d]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white px-5 text-sm font-medium text-[#0d0d0d]"
                 >
                   Add {nextIncomplete.label.toLowerCase()}
                   <ChevronRight className="size-4" />
