@@ -88,7 +88,13 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (profile?.email && profile.email_notifications_enabled !== false) {
-    await sendPayoutProcessedEmail(auth.admin, body.coach_id, profile.email, totalAmount, rows.length);
+    // Payout row is already written; don't let a mail failure 500 the request
+    // and prompt a re-trigger.
+    try {
+      await sendPayoutProcessedEmail(auth.admin, body.coach_id, profile.email, totalAmount, rows.length);
+    } catch (err) {
+      console.error("[admin.payout-trigger] notification email failed", err);
+    }
   }
 
   await auth.admin.from("admin_audit_log").insert({

@@ -1056,38 +1056,42 @@ from public.bookings b
 where b.status in ('confirmed', 'completed')
 group by b.coach_id;
 
--- Single-row admin metrics view.
+-- Single-row admin metrics view. Emits exactly the names the admin dashboard and
+-- /api/admin/earnings consume. "lobb_earnings_ngn" matches the per-booking fee
+-- definition used in the earnings route (commission + convenience fee).
 create or replace view public.admin_core_metrics as
 select
-  -- Coaches
-  (select count(*) from public.coaches)                                       as total_coaches,
-  (select count(*) from public.coaches where status = 'active')               as active_coaches,
-  (select count(*) from public.coaches where status = 'pending_review')       as pending_review_coaches,
-  -- Players
-  (select count(*) from public.players)                                       as total_players,
-  -- Bookings
-  (select count(*) from public.bookings)                                      as total_bookings,
-  (select count(*) from public.bookings where status = 'completed')           as completed_bookings,
-  (select count(*) from public.bookings
-   where status in ('pending', 'pending_payment', 'confirmed'))               as active_bookings,
-  -- Revenue
-  coalesce((select sum(total_amount_ngn) from public.bookings
-    where status in ('confirmed', 'completed')), 0)                           as gross_revenue_ngn,
-  coalesce((select sum(platform_fee_ngn) from public.bookings
-    where status in ('confirmed', 'completed')), 0)                           as platform_revenue_ngn,
-  coalesce((select sum(total_amount_ngn) from public.bookings
+  (select count(*) from public.bookings)                                as total_bookings,
+  (select count(*) from public.coaches where status = 'active')         as active_coaches,
+  (select count(*) from public.coaches where status = 'pending_review') as pending_coach_approvals,
+  (select count(distinct player_id) from public.bookings)               as active_players,
+  coalesce((
+    select sum(total_amount_ngn) from public.bookings
     where status in ('confirmed', 'completed')
-      and starts_at >= now() - interval '7 days'), 0)                        as revenue_this_week_ngn,
-  coalesce((select sum(total_amount_ngn) from public.bookings
+  ), 0)                                                                 as gmv_ngn,
+  coalesce((
+    select sum(platform_commission_ngn + convenience_fee_ngn) from public.bookings
     where status in ('confirmed', 'completed')
-      and starts_at >= date_trunc('month', now())), 0)                       as revenue_this_month_ngn,
-  -- Payouts
-  (select count(*) from public.bookings
-   where status = 'completed'
-     and escrow_released_at is not null
-     and paystack_transfer_code is null)                                      as stuck_payouts_count,
-  -- Disputes
-  (select count(*) from public.disputes where status = 'open')               as open_disputes_count;
+  ), 0)                                                                 as lobb_earnings_ngn;
+
+-- Admin player directory — aggregation for /api/admin/players (was done in JS
+-- over full-table scans on every request).
+create or replace view public.admin_player_directory as
+select
+  p.id,
+  p.full_name,
+  p.email,
+  p.phone_number,
+  p.created_at,
+  p.referred_by_coach_id,
+  count(b.id)                                              as booking_count,
+  count(b.id) filter (where b.status = 'completed')        as completed_count,
+  coalesce(sum(b.total_amount_ngn) filter (where b.status = 'completed'), 0) as spend_ngn,
+  max(b.starts_at)                                         as last_session_at
+from public.profiles p
+left join public.bookings b on b.player_id = p.id
+where p.role = 'player'
+group by p.id;
 
 -- ─── Enable RLS on all user-facing tables ─────────────────────────────────────
 

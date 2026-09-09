@@ -1,35 +1,46 @@
 import { NextResponse } from "next/server";
 import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 
-// List all players with booking activity for the admin lookup page.
+// Player directory for the admin lookup page. Aggregation lives in the
+// admin_player_directory view; this route just returns a bounded, ordered page.
+// "spend" is completed sessions only — confirmed-but-not-completed money can
+// still be refunded via a dispute.
 
-export const GET = withRole("admin", async (_request, auth) => {
-  const [{ data: profiles, error }, { data: bookings }] = await Promise.all([
-    auth.admin
-      .from("profiles")
-      .select("id, full_name, email, phone_number, created_at, referred_by_coach_id")
-      .eq("role", "player")
-      .order("created_at", { ascending: false }),
-    auth.admin
-      .from("bookings")
-      .select("player_id, status, total_amount_ngn, starts_at"),
-  ]);
+// MVP-scale cap. The page counts/searches the returned set client-side; revisit
+// with real pagination before the player base approaches this.
+const LIMIT = 500;
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+export const GET = withRole("admin", async (request, auth) => {
+  const q = new URL(request.url).searchParams.get("q")?.trim();
 
-  const stats = new Map<string, { bookings: number; completed: number; spend: number; last: string | null }>();
-  for (const b of bookings ?? []) {
-    const entry = stats.get(b.player_id) ?? { bookings: 0, completed: 0, spend: 0, last: null };
-    entry.bookings += 1;
-    if (b.status === "completed") entry.completed += 1;
-    if (b.status === "completed" || b.status === "confirmed") entry.spend += b.total_amount_ngn ?? 0;
-    if (!entry.last || b.starts_at > entry.last) entry.last = b.starts_at;
-    stats.set(b.player_id, entry);
+  let query = auth.admin
+    .from("admin_player_directory")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(LIMIT);
+
+  if (q) {
+    const term = q.replace(/[%,]/g, " ");
+    query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%,phone_number.ilike.%${term}%`);
   }
 
-  const players = (profiles ?? []).map((p) => ({
-    ...p,
-    stats: stats.get(p.id) ?? { bookings: 0, completed: 0, spend: 0, last: null },
+  const { data, error } = await query;
+  if (error) return internalError(error);
+
+  const players = (data ?? []).map((p) => ({
+    id: p.id,
+    full_name: p.full_name,
+    email: p.email,
+    phone_number: p.phone_number,
+    created_at: p.created_at,
+    referred_by_coach_id: p.referred_by_coach_id,
+    stats: {
+      bookings: p.booking_count ?? 0,
+      completed: p.completed_count ?? 0,
+      spend: p.spend_ngn ?? 0,
+      last: p.last_session_at ?? null,
+    },
   }));
 
   return NextResponse.json({ players });

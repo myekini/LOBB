@@ -4,9 +4,8 @@ import { Button as LobbButton } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Loader2, RefreshCw, WalletCards } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
-import { firstJoin, formatBookingDate, money } from "@/lib/dashboard-client-types";
+import { formatBookingDate, money, sessionParties } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
-import { fetchWithCache } from "@/lib/offline-cache";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
 type Metrics = {
@@ -40,9 +39,12 @@ export default function AdminEarningsPage() {
 
   useEffect(() => {
     let alive = true;
-    fetchWithCache<EarningsPayload>("lobb.admin.earnings", "/api/admin/earnings")
+    fetch("/api/admin/earnings")
+      .then((r) => r.json() as Promise<EarningsPayload & { error?: string }>)
       .then((payload) => {
-        if (alive) setData(payload);
+        if (!alive) return;
+        if (payload.error) throw new Error(payload.error);
+        setData(payload);
       })
       .catch((error) => {
         showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load earnings" });
@@ -66,10 +68,14 @@ export default function AdminEarningsPage() {
       const res = await fetch("/api/admin/payouts/retry-stuck", { method: "POST" });
       const json = await res.json() as { retried?: number; succeeded?: number; failed?: number; error?: string };
       if (!res.ok) throw new Error(json.error ?? "Unable to retry payouts");
-      showLobbToast({
-        type: json.failed ? "error" : "success",
-        message: `${json.succeeded ?? 0} transferred, ${json.failed ?? 0} failed`,
-      });
+      showLobbToast(
+        (json.retried ?? 0) === 0
+          ? { type: "success", message: "No stuck payouts to retry" }
+          : {
+              type: json.failed ? "error" : "success",
+              message: `${json.succeeded ?? 0} transferred, ${json.failed ?? 0} failed`,
+            }
+      );
     } catch (error) {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to retry payouts" });
     } finally {
@@ -78,7 +84,7 @@ export default function AdminEarningsPage() {
   };
 
   return (
-    <AdminShell active="Platform Earnings">
+    <AdminShell>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="inline-flex items-center gap-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
@@ -87,7 +93,7 @@ export default function AdminEarningsPage() {
           </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">Earnings</h1>
         </div>
-        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">Real booking revenue</p>
+        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">Booking revenue</p>
       </div>
 
       <section className="mt-6 border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-6 text-[var(--lobb-text-inverse)] sm:p-8">
@@ -151,7 +157,7 @@ export default function AdminEarningsPage() {
                 <div>
                   <p className="font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">#{booking.id.slice(0, 8)}</p>
                   <p className="mt-1 text-sm font-medium">
-                    {firstJoin(booking.coaches)?.full_name ?? "Coach"} to {firstJoin(booking.players)?.full_name ?? "Player"}
+                    {sessionParties(booking).player} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {sessionParties(booking).coach}
                   </p>
                   <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
                 </div>

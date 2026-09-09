@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 import { initiateRefund } from "@/lib/paystack";
 import { sendDisputeResolvedEmails } from "@/lib/email-notifications";
 
@@ -8,11 +9,14 @@ type Resolution = "refund_player" | "release_to_coach" | "split";
 /**
  * Resolve a dispute. Money consequences:
  * - refund_player:    full refund via Paystack; booking → cancelled.
- * - release_to_coach: booking → confirmed so the escrow cron completes it and
- *                     pays the coach on its next run.
- * - split:            refund player_refund_percent to the player, scale
- *                     coach_payout_ngn by coach_release_percent, then
- *                     booking → confirmed for the cron to pay out.
+ * - release_to_coach: booking → completed with escrow_released_at stamped, so the
+ *                     escrow cron (or the admin "retry stuck payouts" action)
+ *                     transfers coach_payout_ngn on the next run.
+ * - split:            refund player_refund_percent of total_amount_ngn to the
+ *                     player, scale coach_payout_ngn by coach_release_percent,
+ *                     then release to the coach as above. LOBB keeps its
+ *                     commission and convenience fee — this is surfaced in the
+ *                     admin UI preview.
  */
 export const POST = withRole("admin", async (request, auth, context) => {
   const { id } = context.params as { id: string };
@@ -81,9 +85,13 @@ export const POST = withRole("admin", async (request, auth, context) => {
   // ── Coach payout leg ──────────────────────────────────────────────────────
   const bookingUpdate: Record<string, unknown> = {};
   if (releasePercent > 0) {
-    // Hand the booking back to the escrow cron: it transitions
-    // confirmed → completed and transfers coach_payout_ngn.
-    bookingUpdate.status = "confirmed";
+    // Mark the booking payable directly. The escrow cron's transfer pass and the
+    // admin "retry stuck payouts" action both key on
+    // status='completed' AND escrow_released_at IS NOT NULL AND paystack_transfer_code IS NULL,
+    // so this hands the payout to existing machinery without a completed→confirmed
+    // regression. Preserve the original release timestamp if one exists.
+    bookingUpdate.status = "completed";
+    bookingUpdate.escrow_released_at = booking.escrow_released_at ?? new Date().toISOString();
     if (releasePercent < 100) {
       bookingUpdate.coach_payout_ngn = Math.round(((booking.coach_payout_ngn ?? 0) * releasePercent) / 100);
     }
@@ -109,7 +117,7 @@ export const POST = withRole("admin", async (request, auth, context) => {
     })
     .eq("id", id);
 
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  if (updateError) return internalError(updateError);
 
   await auth.admin.from("admin_audit_log").insert({
     admin_id: auth.user.id,

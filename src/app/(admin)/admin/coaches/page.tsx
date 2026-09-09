@@ -22,8 +22,7 @@ type CoachApproval = {
   certifications: string[];
   demo_video_url: string | null;
   profile_photo_url: string | null;
-  paystack_recipient_code: string | null;
-  bank_account_number: string | null;
+  bank_connected: boolean;
   slug: string | null;
   created_at: string;
 };
@@ -45,7 +44,7 @@ function qualityChecks(coach: CoachApproval) {
     { label: "Rate ₦5k–₦80k", pass: coach.hourly_rate_ngn >= 5_000 && coach.hourly_rate_ngn <= 80_000 },
     { label: "Certification listed", pass: coach.certifications.some((c) => c.trim().length > 3) },
     { label: "Demo video", pass: Boolean(coach.demo_video_url) },
-    { label: "Bank connected", pass: Boolean(coach.paystack_recipient_code ?? coach.bank_account_number) },
+    { label: "Bank connected", pass: coach.bank_connected },
   ];
 }
 
@@ -94,7 +93,7 @@ export default function AdminCoachApprovalsPage() {
   };
 
   return (
-    <AdminShell active="Coach Approvals">
+    <AdminShell>
       <AdminBackHeader title="Coach Approvals" />
       <div className="mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -103,7 +102,7 @@ export default function AdminCoachApprovalsPage() {
             <h1 className="mt-1 text-2xl font-semibold tracking-tight">{coaches.length} pending</h1>
           </div>
           <p className="max-w-md text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-            Every profile must pass all 8 launch standard checks before approval. Green = pass, red = fail.
+            Approve turns solid green once all 8 launch checks pass. You can still override and approve with gaps &mdash; only do it when you can defend the call.
           </p>
         </div>
       </div>
@@ -113,7 +112,10 @@ export default function AdminCoachApprovalsPage() {
           <>
             {Array.from({ length: 4 }).map((_, index) => <CoachCardSkeleton key={index} />)}
           </>
-        ) : coaches.length ? coaches.map((coach) => (
+        ) : coaches.length ? coaches.map((coach) => {
+          const checks = qualityChecks(coach);
+          const failing = checks.filter((c) => !c.pass).length;
+          return (
           <article key={coach.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
             <div className="flex gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -137,7 +139,7 @@ export default function AdminCoachApprovalsPage() {
             <div className="mt-5">
               <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Launch standard</p>
               <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                {qualityChecks(coach).map(({ label, pass }) => (
+                {checks.map(({ label, pass }) => (
                   <div key={label} className={`flex items-center gap-1.5 rounded-[var(--lobb-radius-sm)] px-2 py-1.5 text-[11px] font-medium ${pass ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"}`}>
                     {pass ? <Check className="size-3 shrink-0" /> : <X className="size-3 shrink-0" />}
                     {label}
@@ -157,9 +159,18 @@ export default function AdminCoachApprovalsPage() {
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <LobbButton variant="unstyled" disabled={busyId === coach.id} onClick={() => decide(coach, "approve")} className="flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-success)] text-sm font-semibold text-white disabled:opacity-60">
+              <LobbButton
+                variant="unstyled"
+                disabled={busyId === coach.id}
+                onClick={() => decide(coach, "approve")}
+                className={`flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] text-sm font-semibold disabled:opacity-60 ${
+                  failing === 0
+                    ? "bg-[var(--lobb-success)] text-white"
+                    : "border border-[var(--lobb-success)]/45 text-[var(--lobb-success)]"
+                }`}
+              >
                 {busyId === coach.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-                {busyId === coach.id ? "Working" : "Approve"}
+                {busyId === coach.id ? "Working" : failing === 0 ? "Approve" : `Approve anyway (${failing} failing)`}
               </LobbButton>
               <LobbButton variant="unstyled" disabled={busyId === coach.id} onClick={() => setRejecting(coach)} className="flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/35 text-sm font-semibold text-[var(--lobb-error)] disabled:opacity-60">
                 <X className="size-4" />
@@ -167,7 +178,8 @@ export default function AdminCoachApprovalsPage() {
               </LobbButton>
             </div>
           </article>
-        )) : (
+          );
+        }) : (
           <div className="border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center xl:col-span-2">
             <UserCheck className="mx-auto size-5 text-[var(--lobb-clay)]" />
             <p className="text-lg font-medium">No coaches waiting</p>
@@ -190,7 +202,7 @@ export default function AdminCoachApprovalsPage() {
             <LobbTextarea
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Tell the coach what they need to fix."
+              placeholder="e.g. Headline is too short, add a certification, and re-upload a clearer profile photo."
               className="mt-4 h-28 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)]"
             />
             <LobbButton variant="unstyled" disabled={!reason.trim() || busyId === rejecting.id} onClick={() => decide(rejecting, "reject")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-semibold text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]">

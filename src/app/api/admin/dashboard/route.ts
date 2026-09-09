@@ -5,7 +5,12 @@ import { internalError } from "@/lib/api-response";
 export const GET = withRole("admin", async (_request, auth) => {
   const [metrics, coaches, bookings, stuckTransfers] = await Promise.all([
     auth.admin.from("admin_core_metrics").select("*").maybeSingle(),
-    auth.admin.from("coaches").select("*").eq("status", "pending_review").order("created_at").limit(5),
+    auth.admin
+      .from("coaches")
+      .select("id, full_name, headline, primary_location, profile_photo_url, hourly_rate_ngn")
+      .eq("status", "pending_review")
+      .order("created_at")
+      .limit(5),
     auth.admin
       .from("bookings")
       .select("*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url), players!bookings_player_id_fkey(id, full_name), payments(status, paystack_reference)")

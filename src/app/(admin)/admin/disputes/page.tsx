@@ -9,6 +9,7 @@ import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
 import { FormAlert } from "@/components/ui/form-alert";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { firstJoin, formatDate, money } from "@/lib/dashboard-client-types";
 
 type Party = { full_name: string | null } | { full_name: string | null }[] | null;
 
@@ -40,22 +41,10 @@ type Dispute = {
 
 type Resolution = "refund_player" | "release_to_coach" | "split";
 
-function first<T>(value: T | T[] | null): T | null {
-  return Array.isArray(value) ? value[0] ?? null : value;
-}
-
-function money(value: number) {
-  return `₦${(value ?? 0).toLocaleString("en-NG")}`;
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
-}
-
 const RESOLUTION_OPTIONS: Array<{ value: Resolution; label: string; description: string }> = [
   { value: "refund_player", label: "Refund player", description: "Full refund via Paystack; booking cancelled, coach gets nothing." },
   { value: "release_to_coach", label: "Release to coach", description: "Coach is paid in full on the next payout run; no refund." },
-  { value: "split", label: "Split", description: "Refund part to the player and release part to the coach." },
+  { value: "split", label: "Split", description: "Refund part to the player, release part to the coach. LOBB keeps its commission and convenience fee." },
 ];
 
 export default function AdminDisputesPage() {
@@ -124,7 +113,7 @@ export default function AdminDisputesPage() {
   const resolved = disputes.filter((d) => d.status === "resolved");
 
   return (
-    <AdminShell active="Disputes">
+    <AdminShell>
       <AdminBackHeader title="Disputes" />
 
       {loading ? (
@@ -151,9 +140,9 @@ export default function AdminDisputesPage() {
               </h2>
               <div className="space-y-4">
                 {open.map((dispute) => {
-                  const booking = first(dispute.bookings);
-                  const coach = first(booking?.coaches ?? null);
-                  const player = first(booking?.players ?? null);
+                  const booking = firstJoin(dispute.bookings);
+                  const coach = firstJoin(booking?.coaches ?? null);
+                  const player = firstJoin(booking?.players ?? null);
                   const isResolving = resolvingId === dispute.id;
                   return (
                     <article key={dispute.id} className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-error)]/25 bg-[var(--lobb-bg-elevated)] p-5">
@@ -163,7 +152,7 @@ export default function AdminDisputesPage() {
                             Open dispute · {formatDate(dispute.created_at)}
                           </p>
                           <p className="mt-1.5 text-[15px] font-medium">
-                            {player?.full_name ?? "Player"} vs {coach?.full_name ?? "Coach"}
+                            {player?.full_name ?? "Player"} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {coach?.full_name ?? "Coach"}
                           </p>
                           <p className="mt-0.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
                             {booking?.booking_ref ?? booking?.id.slice(0, 8)} · {booking ? formatDate(booking.starts_at) : ""} · {money(booking?.total_amount_ngn ?? 0)}
@@ -219,10 +208,19 @@ export default function AdminDisputesPage() {
                                 onChange={(e) => setRefundPercent(Number(e.target.value))}
                                 className="mt-3 w-full accent-[var(--lobb-clay)]"
                               />
-                              <p className="mt-2 text-[11px] font-medium text-[var(--lobb-text-secondary)]">
-                                Player gets {money(Math.round(((booking?.total_amount_ngn ?? 0) * refundPercent) / 100))} back ·
-                                Coach receives {money(Math.round(((booking?.coach_payout_ngn ?? 0) * (100 - refundPercent)) / 100))}
-                              </p>
+                              {(() => {
+                                const total = booking?.total_amount_ngn ?? 0;
+                                const playerBack = Math.round((total * refundPercent) / 100);
+                                const coachGets = Math.round(((booking?.coach_payout_ngn ?? 0) * (100 - refundPercent)) / 100);
+                                const lobbKeeps = total - playerBack - coachGets;
+                                return (
+                                  <div className="mt-2 space-y-0.5 text-[11px] font-medium text-[var(--lobb-text-secondary)]">
+                                    <p>Player refunded {money(playerBack)}</p>
+                                    <p>Coach receives {money(coachGets)}</p>
+                                    <p>LOBB keeps {money(lobbKeeps)} (commission + fee)</p>
+                                  </div>
+                                );
+                              })()}
                             </div>
                           )}
 
@@ -272,9 +270,9 @@ export default function AdminDisputesPage() {
               </h2>
               <div className="space-y-3">
                 {resolved.map((dispute) => {
-                  const booking = first(dispute.bookings);
-                  const coach = first(booking?.coaches ?? null);
-                  const player = first(booking?.players ?? null);
+                  const booking = firstJoin(dispute.bookings);
+                  const coach = firstJoin(booking?.coaches ?? null);
+                  const player = firstJoin(booking?.players ?? null);
                   return (
                     <article key={dispute.id} className="flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                       <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--lobb-success)]" />

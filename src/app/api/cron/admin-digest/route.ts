@@ -43,7 +43,7 @@ export async function GET(request: Request) {
   ] = await Promise.all([
     admin.from("coaches").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     admin.from("bookings").select("id", { count: "exact", head: true }).gte("created_at", previousMonthStartIso).lt("created_at", currentMonthStartIso),
-    admin.from("bookings").select("hourly_rate_ngn").eq("status", "completed").gte("escrow_released_at", previousMonthStartIso).lt("escrow_released_at", currentMonthStartIso),
+    admin.from("bookings").select("total_amount_ngn").eq("status", "completed").gte("escrow_released_at", previousMonthStartIso).lt("escrow_released_at", currentMonthStartIso),
     admin.from("bookings").select("id", { count: "exact", head: true })
       .eq("status", "completed")
       .not("escrow_released_at", "is", null)
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ sent: false, reason: "no admin emails configured" });
   }
 
-  const monthlyGmv = (monthlyRevenue ?? []).reduce((sum, b) => sum + (b.hourly_rate_ngn ?? 0), 0);
+  const monthlyGmv = (monthlyRevenue ?? []).reduce((sum, b) => sum + (b.total_amount_ngn ?? 0), 0);
   const hasAlerts = (failedTransfers ?? 0) > 0 || (stuckSessions ?? 0) > 0;
 
   const subject = `LOBB monthly summary: ${monthName}${hasAlerts ? " — action needed" : ""}`;
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
   const alertBlock = hasAlerts
     ? `<div style="margin-top:18px;background:#fff8f6;border:1px solid #f4c4b0;border-radius:10px;padding:16px 18px;">
         <p style="margin:0;font:900 12px/1 Arial,Helvetica,sans-serif;color:#c4622d;text-transform:uppercase;letter-spacing:0.08em;">Action needed</p>
-        ${(failedTransfers ?? 0) > 0 ? `<p style="margin:10px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#42392f;"><strong>${failedTransfers} failed payout${(failedTransfers ?? 0) === 1 ? "" : "s"}</strong> - coach transfers completed but Paystack transfer failed. <a href="${appBase}/admin/payouts" style="color:#c4622d;font-weight:900;text-decoration:none;">Review</a></p>` : ""}
+        ${(failedTransfers ?? 0) > 0 ? `<p style="margin:10px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#42392f;"><strong>${failedTransfers} failed payout${(failedTransfers ?? 0) === 1 ? "" : "s"}</strong> - coach transfers completed but Paystack transfer failed. <a href="${appBase}/admin/earnings" style="color:#c4622d;font-weight:900;text-decoration:none;">Review</a></p>` : ""}
         ${(stuckSessions ?? 0) > 0 ? `<p style="margin:10px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#42392f;"><strong>${stuckSessions} stuck session${(stuckSessions ?? 0) === 1 ? "" : "s"}</strong> - confirmed bookings whose session ended 3+ hours ago without escrow release. <a href="${appBase}/admin/bookings" style="color:#c4622d;font-weight:900;text-decoration:none;">Review</a></p>` : ""}
       </div>`
     : "";
@@ -101,7 +101,7 @@ export async function GET(request: Request) {
       ? [
           "",
           "ACTION NEEDED:",
-          ...(( failedTransfers ?? 0) > 0 ? [`- ${failedTransfers} failed coach payout(s) - ${appBase}/admin/payouts`] : []),
+          ...(( failedTransfers ?? 0) > 0 ? [`- ${failedTransfers} failed coach payout(s) - ${appBase}/admin/earnings`] : []),
           ...((stuckSessions ?? 0) > 0 ? [`- ${stuckSessions} stuck confirmed booking(s) - ${appBase}/admin/bookings`] : []),
         ]
       : []),

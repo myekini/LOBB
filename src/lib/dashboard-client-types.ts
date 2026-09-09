@@ -81,6 +81,18 @@ export function firstJoin<T>(value: T | T[] | null | undefined): T | null {
   return value ?? null;
 }
 
+// Canonical "who was in this session" phrasing for admin/dashboard surfaces.
+// Render as: `{player} · coached by {coach}`.
+export function sessionParties(booking: {
+  coaches: { full_name: string | null } | { full_name: string | null }[] | null;
+  players: { full_name: string | null } | { full_name: string | null }[] | null;
+}) {
+  return {
+    coach: firstJoin(booking.coaches)?.full_name ?? "Coach",
+    player: firstJoin(booking.players)?.full_name ?? "Player",
+  };
+}
+
 export function formatBookingDate(iso: string) {
   return new Date(iso).toLocaleString("en-NG", {
     weekday: "short",
@@ -93,8 +105,13 @@ export function formatBookingDate(iso: string) {
   });
 }
 
+export function formatDate(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
+}
+
 export function money(amount: number) {
-  return `₦${amount.toLocaleString("en-NG")}`;
+  return `₦${(amount ?? 0).toLocaleString("en-NG")}`;
 }
 
 export function durationMinutes(startsAt: string, endsAt: string) {

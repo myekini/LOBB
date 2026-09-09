@@ -6,6 +6,7 @@ import { Search, Users } from "lucide-react";
 import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { formatDate, money } from "@/lib/dashboard-client-types";
 
 type PlayerRow = {
   id: string;
@@ -16,15 +17,6 @@ type PlayerRow = {
   referred_by_coach_id: string | null;
   stats: { bookings: number; completed: number; spend: number; last: string | null };
 };
-
-function money(value: number) {
-  return `₦${(value ?? 0).toLocaleString("en-NG")}`;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
-}
 
 export default function AdminPlayersPage() {
   const [players, setPlayers] = useState<PlayerRow[]>([]);
@@ -55,7 +47,7 @@ export default function AdminPlayersPage() {
   const totalSpend = filtered.reduce((sum, p) => sum + p.stats.spend, 0);
 
   return (
-    <AdminShell active="Players">
+    <AdminShell>
       <AdminBackHeader title="Players" />
 
       <div className="mx-auto max-w-4xl">

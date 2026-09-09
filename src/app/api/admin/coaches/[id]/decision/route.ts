@@ -121,7 +121,13 @@ export const POST = withRole("admin", async (request, auth, context) => {
     .maybeSingle();
 
   if ((action === "approve" || action === "reject") && profile?.email && profile.email_notifications_enabled !== false) {
-    await sendCoachDecisionEmail(auth.admin, id, profile.email, action, reason, needsDirectContact);
+    // The decision is already committed; a mail failure must not 500 the request
+    // (that makes admins re-click and double-log the action).
+    try {
+      await sendCoachDecisionEmail(auth.admin, id, profile.email, action, reason, needsDirectContact);
+    } catch (err) {
+      console.error("[admin.coach-decision] notification email failed", err);
+    }
   }
 
   return NextResponse.json({ ok: true, coach, needs_direct_contact: needsDirectContact });

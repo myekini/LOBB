@@ -7,7 +7,6 @@ import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, UserCh
 import { AdminShell } from "@/features/admin/admin-shell";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
-import { fetchWithCache } from "@/lib/offline-cache";
 import { MetricGridSkeleton, TableRowsSkeleton } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -39,9 +38,12 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     let alive = true;
-    fetchWithCache<AdminDashboardPayload>("lobb.admin.dashboard", "/api/admin/dashboard")
+    fetch("/api/admin/dashboard")
+      .then((r) => r.json() as Promise<AdminDashboardPayload & { error?: string }>)
       .then((payload) => {
-        if (alive) setData(payload);
+        if (!alive) return;
+        if (payload.error) throw new Error(payload.error);
+        setData(payload);
       })
       .catch((error) => {
         showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load admin dashboard" });
@@ -62,7 +64,7 @@ export default function AdminDashboardPage() {
   const approvalCopy = (metrics?.pending_coach_approvals ?? 0) > 0 ? "Coach applications are waiting" : "Coach approvals are clear";
 
   return (
-    <AdminShell active="Dashboard">
+    <AdminShell>
       <section className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
           <div className="flex min-h-[132px] flex-col justify-center border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
@@ -147,11 +149,15 @@ export default function AdminDashboardPage() {
                         setRetrying(true);
                         try {
                           const res = await fetch("/api/admin/payouts/retry-stuck", { method: "POST" });
-                          const json = await res.json() as { succeeded?: number; failed?: number };
-                          showLobbToast({
-                            type: json.failed ? "error" : "success",
-                            message: `${json.succeeded ?? 0} transferred, ${json.failed ?? 0} failed`,
-                          });
+                          const json = await res.json() as { retried?: number; succeeded?: number; failed?: number };
+                          showLobbToast(
+                            (json.retried ?? 0) === 0
+                              ? { type: "success", message: "No stuck payouts to retry" }
+                              : {
+                                  type: json.failed ? "error" : "success",
+                                  message: `${json.succeeded ?? 0} transferred, ${json.failed ?? 0} failed`,
+                                }
+                          );
                         } catch {
                           showLobbToast({ type: "error", message: "Retry failed. Check server logs." });
                         } finally {
@@ -232,7 +238,7 @@ function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium leading-tight">
                 {playerName}
-                <span className="mx-1.5 font-bold text-[var(--lobb-text-tertiary)]">with</span>
+                <span className="mx-1.5 font-normal text-[var(--lobb-text-tertiary)]">· coached by</span>
                 {coachName}
               </p>
               <p className="mt-0.5 truncate text-[11px] font-medium text-[var(--lobb-text-secondary)]">
