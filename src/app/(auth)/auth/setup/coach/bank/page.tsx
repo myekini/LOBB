@@ -14,6 +14,7 @@ import {
   OnboardingShell,
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
+import { createClient } from "@/lib/supabase/client";
 
 type Bank = { name: string; code: string };
 
@@ -34,6 +35,24 @@ export default function CoachSetupBankPage() {
       .then((r) => r.json() as Promise<{ banks?: Bank[]; error?: string }>)
       .then((data) => { if (data.banks) setBanks(data.banks); })
       .catch(() => {});
+  }, []);
+
+  // Prefill from a previously-saved bank on file (e.g. revisiting to update
+  // payout details) so this step is never a blank slate.
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      const { data: coach } = await supabase
+        .from("coaches")
+        .select("bank_account_number, bank_code, bank_name")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (!coach?.bank_account_number) return;
+      setAccountNumber((current) => current || coach.bank_account_number || "");
+      setBankCode((current) => current || coach.bank_code || "");
+      setBankName((current) => current || coach.bank_name || "");
+    });
   }, []);
 
   // Auto-resolve account name once 10 digits + bank are selected
@@ -186,12 +205,13 @@ export default function CoachSetupBankPage() {
             <FormAlert className="mb-4">
               {error}
               {/mismatch/i.test(error) && (
-                <a
-                  href="/auth/setup/coach/1"
+                <button
+                  type="button"
+                  onClick={() => router.push("/auth/setup/coach/1?return=bank")}
                   className="mt-1.5 block font-medium text-[var(--lobb-clay)] underline-offset-2 hover:underline"
                 >
                   Edit your profile name →
-                </a>
+                </button>
               )}
             </FormAlert>
           )}

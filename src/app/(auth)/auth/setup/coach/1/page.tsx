@@ -1,9 +1,9 @@
 "use client";
 
 import { Input as LobbInput } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { track } from "@/lib/analytics";
 import { ArrowRight, Plus, User } from "lucide-react";
 import {
@@ -18,7 +18,17 @@ import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 
 export default function CoachSetupStepOnePage() {
+  return (
+    <Suspense fallback={null}>
+      <CoachSetupStepOneForm />
+    </Suspense>
+  );
+}
+
+function CoachSetupStepOneForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("return") === "bank" ? "/auth/setup/coach/bank" : "/auth/setup/coach/2";
   const [fullName, setFullName] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [headline, setHeadline] = useState("");
@@ -106,7 +116,7 @@ export default function CoachSetupStepOnePage() {
       }
 
       track("Coach Onboarding Step Completed", { step: 1 });
-      router.push("/auth/setup/coach/2");
+      router.push(returnTo);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Could not save your coach profile.");
     } finally {

@@ -65,7 +65,7 @@ export default function CoachSetupStep2Page() {
           </OnboardingTitle>
           <OnboardingCopy>
             LOBB moves real money to coaches. We&apos;re required to verify who you are before enabling payouts.
-            Your NIN and BVN are never shared or stored in plain text.
+            Your NIN and BVN are used only for identity and payout verification, and are never shared outside LOBB and our verification partners.
           </OnboardingCopy>
         </section>
 
