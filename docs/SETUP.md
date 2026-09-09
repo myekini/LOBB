@@ -89,6 +89,28 @@ brand-new address). Verification **fails open** when unset.
 - [ ] Add the app domains to the widget's hostname allowlist
 - [ ] Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` in Vercel
 
+## 4f. KYC field encryption (NIN/BVN)
+
+Per environment, **before** deploying the code that reads/writes
+`nin_encrypted`/`bvn_encrypted`:
+
+- [ ] Generate a key: `openssl rand -base64 32`
+- [ ] Set `KYC_ENCRYPTION_KEY` in Vercel for that environment — **a different
+      key for staging and prod**. Losing this key makes existing encrypted
+      NIN/BVN permanently unreadable; back it up in your password manager,
+      not just Vercel.
+- [ ] Run the migration `20260909000001_encrypt_kyc_fields.sql` (adds the new
+      columns; does not touch the old plaintext ones).
+- [ ] Deploy the app.
+- [ ] Run the backfill once per environment:
+      `NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... KYC_ENCRYPTION_KEY=... npx tsx scripts/backfill-kyc-encryption.ts`
+- [ ] Spot-check: submit a test coach's KYC, then bank details, and confirm
+      the Paystack customer-validation call still succeeds (proves
+      decrypt → Paystack round-trips).
+- [ ] Only after the above is confirmed in an environment: drop the old
+      `coaches.nin` / `coaches.bvn` plaintext columns there (a short follow-up
+      migration — commented at the bottom of `20260909000001_encrypt_kyc_fields.sql`).
+
 ## 5. Database → Extensions
 
 - [ ] `pgcrypto` enabled (used for `gen_random_uuid()`/`gen_random_bytes()` in

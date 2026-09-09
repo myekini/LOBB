@@ -17,7 +17,7 @@ type Bank = { name: string; code: string };
 type CoachBankData = {
   bank_name: string | null;
   bank_account_number: string | null;
-  bvn: string | null;
+  has_bvn: boolean;
   dva_account_number: string | null;
   dva_bank_name: string | null;
 };
@@ -47,18 +47,17 @@ export default function CoachBankSetupPage() {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
-      supabase.from("coaches")
-        .select("bank_name, bank_account_number, bvn, dva_account_number, dva_bank_name")
-        .eq("id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          setCoachData(data as CoachBankData | null);
+      fetch("/api/coaches/kyc-status")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: CoachBankData | null) => {
+          setCoachData(data);
           setLoadingCoach(false);
-        });
+        })
+        .catch(() => setLoadingCoach(false));
     });
   }, [router]);
 
-  const hasKyc = Boolean(coachData?.bvn);
+  const hasKyc = Boolean(coachData?.has_bvn);
   const existing = coachData?.bank_account_number
     ? { bankName: coachData.bank_name, lastFour: coachData.bank_account_number.slice(-4) }
     : null;

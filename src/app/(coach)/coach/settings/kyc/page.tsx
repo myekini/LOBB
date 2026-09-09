@@ -70,24 +70,13 @@ export default function CoachKycPage() {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.replace("/auth/login"); return; }
-      supabase
-        .from("coaches")
-        .select("kyc_status, kyc_nin_verified, kyc_bvn_verified, kyc_failed_reason, nin, bvn")
-        .eq("id", user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            setKycState({
-              kyc_status: (data.kyc_status as KycStatus) ?? "pending",
-              kyc_nin_verified: data.kyc_nin_verified ?? false,
-              kyc_bvn_verified: data.kyc_bvn_verified ?? false,
-              kyc_failed_reason: data.kyc_failed_reason ?? null,
-              has_nin: Boolean(data.nin),
-              has_bvn: Boolean(data.bvn),
-            });
-          }
+      fetch("/api/coaches/kyc-status")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: KycState | null) => {
+          if (data) setKycState(data);
           setLoading(false);
-        });
+        })
+        .catch(() => setLoading(false));
     });
   }, [router]);
 
