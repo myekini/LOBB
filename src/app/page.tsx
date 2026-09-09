@@ -2,7 +2,7 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import { Input as LobbInput } from "@/components/ui/input";
-import { AvatarCircles } from "@/components/ui/avatar-circles";
+import { CoachAvatarGroup } from "@/components/ui/coach-avatar-group";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -707,45 +707,48 @@ function LandingSplash() {
       </section>
 
       <section className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-14 sm:px-6 lg:px-8">
-          <div data-reveal className="mb-6 flex flex-wrap items-end justify-between gap-4">
-            <div>
+        <div data-reveal className="lobb-landing-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-xl">
               <DotLabel>Browse coaches</DotLabel>
               <h2 className="mt-3 text-[28px] font-semibold leading-[1.04] tracking-tight sm:text-[38px] text-balance">
                 Start with the coach, not a sales pitch.
               </h2>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--lobb-text-secondary)]">
-                Compare coaching style, location, experience and price before you choose.
+              <p className="mt-3 text-sm leading-6 text-[var(--lobb-text-secondary)]">
+                Hover over any verified coach to view their rate, rating, specializations and location. Pick a time and book instantly without WhatsApp back-and-forth.
               </p>
-              {coaches.length > 0 && (
-                <div className="mt-5 flex items-center gap-3">
-                  <AvatarCircles
-                    avatars={coaches
-                      .slice(0, 5)
-                      .map((coach) => ({ src: coach.profile_photo_url, alt: coach.full_name ?? "" }))}
+            </div>
+
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-end">
+              {coaches.length > 0 ? (
+                <div className="flex flex-col items-start sm:items-center lg:items-end gap-2">
+                  <CoachAvatarGroup
+                    coaches={coaches}
                     total={coachCount ?? coaches.length}
+                    maxShown={6}
+                    size="xl"
                   />
                   <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">
                     {coachCount != null ? <strong className="font-semibold text-[var(--lobb-bg-inverse)]">{coachCount}</strong> : null}{" "}
-                    verified coaches, ready to book
+                    verified coaches ready to book · Hover to preview
                   </p>
                 </div>
+              ) : (
+                <p className="text-sm text-[var(--lobb-text-secondary)]">
+                  New coaches are being verified across Lagos.
+                </p>
               )}
+
+              <Link
+                href="/coaches"
+                className="group inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-bg-inverse)] transition hover:text-[var(--lobb-clay)]"
+              >
+                Browse all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
             </div>
-            <Link href="/coaches" className="group inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-bg-inverse)] transition hover:text-[var(--lobb-clay)]">
-              Browse all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
           </div>
-          {coaches.length > 0 ? (
-            <div className="lobb-rail -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 [scrollbar-width:none]">
-              {coaches.map((coach, i) => <LandingCoachCard key={coach.id} coach={coach} index={i} />)}
-            </div>
-          ) : (
-            <div className="lobb-landing-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-7">
-              <p className="font-semibold">New coaches are being verified.</p>
-              <p className="mt-2 text-sm text-[var(--lobb-text-secondary)]">Check back soon or apply to coach on LOBB.</p>
-            </div>
-          )}
-        </section>
+        </div>
+      </section>
 
       <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
         <div data-reveal className="lg:sticky lg:top-24 lg:self-start">
@@ -876,55 +879,3 @@ function DotLabel({ children, light = false }: { children: React.ReactNode; ligh
   );
 }
 
-function LandingCoachCard({ coach, index }: { coach: CoachPublicProfile; index: number }) {
-  const href = `/coaches/${coach.slug ?? coach.id}`;
-  return (
-    <Link
-      href={href}
-      data-reveal
-      style={{ "--reveal-delay": `${Math.min(index, 6) * 70}ms` } as React.CSSProperties}
-      className="lobb-landing-panel group/coach w-[230px] shrink-0 snap-start border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-1 hover:border-[var(--lobb-clay)]/40"
-      aria-label={`View ${coach.full_name}'s coaching profile`}
-    >
-      <div className="relative h-[160px] overflow-hidden bg-[var(--lobb-bg-secondary)]">
-        {coach.profile_photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coach.profile_photo_url}
-            alt={coach.full_name}
-            className="size-full object-cover transition-transform duration-500 group-hover/coach:scale-105"
-          />
-        ) : (
-          <div className="flex size-full items-center justify-center text-[40px] font-semibold text-[var(--lobb-text-tertiary)]">
-            {coach.full_name.charAt(0)}
-          </div>
-        )}
-        {coach.hourly_rate_ngn != null && (
-          <span className="absolute bottom-2 left-2 bg-[#0d0d0d]/85 px-2.5 py-1.5 text-[11px] font-medium text-white backdrop-blur">
-            ₦{coach.hourly_rate_ngn.toLocaleString("en-NG")}<span className="font-bold text-white/75">/hr</span>
-          </span>
-        )}
-      </div>
-      <div className="p-4">
-        <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-[15px] font-medium">{coach.full_name}</p>
-          <span className="flex shrink-0 items-center gap-1 text-xs font-medium">
-            <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
-            {coach.avg_rating ?? "New"}
-          </span>
-        </div>
-        <p className="mt-1 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">{coach.headline ?? "Tennis coach"}</p>
-        {coach.primary_location && (
-          <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
-            <MapPin className="size-3 shrink-0 text-[var(--lobb-clay)]" />
-            <span className="truncate">{coach.primary_location}</span>
-          </p>
-        )}
-        <span className="mt-4 flex items-center justify-between border-t border-[var(--lobb-border-subtle)] pt-3 text-xs font-semibold text-[var(--lobb-bg-inverse)]">
-          View profile
-          <ArrowRight className="size-3.5 transition-transform duration-300 group-hover/coach:translate-x-1" />
-        </span>
-      </div>
-    </Link>
-  );
-}

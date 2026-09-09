@@ -45,6 +45,7 @@ one-off styled native control. Two locations, two different jobs:
 | `LobbVerifiedBadge` | `common/lobb-badge` | Coach verification only | Verified / not |
 | `Tabs` | `ui/tabs` | Segmented view switching | Selected, hover, keyboard focus |
 | `Card` | `ui/card` | `surface`, `outlined`, `interactive`, or `inset` content containers | Hover for interactive cards only |
+| `Avatar`, `AvatarGroup`, `CoachAvatarGroup` | `ui/avatar`, `ui/coach-avatar-group` | User profile avatars, stacked groups, and hover preview cards | Sizes, image fallback, overflow count, hover popover |
 | `FormAlert` | `ui/form-alert` | Inline success, information, warning, and error feedback | Accessible `alert`/`status` roles |
 | `SkeletonBlock` + friends, `LobbBrandLoader`, `InlineActionLoader` | `common/lobb-skeleton` | Content and page loading | Motion honours reduced-motion preferences |
 | `LobbEmptyState` | `common/lobb-empty-state` | No-results / nothing-here states | Optional action support |
