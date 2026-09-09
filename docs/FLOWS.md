@@ -174,9 +174,9 @@ Two sections, one page, no view-toggle.
 
 | File | Purpose |
 | --- | --- |
-| [src/app/coach/availability/page.tsx](src/app/coach/availability/page.tsx) | Full availability UI |
+| [src/app/(coach)/coach/availability/page.tsx](src/app/(coach)/coach/availability/page.tsx) | Full availability UI |
 | [src/app/api/coaches/me/availability/route.ts](src/app/api/coaches/me/availability/route.ts) | GET (load) + PUT (full replace save) |
-| [supabase/migrations/20260529000001_slots_exclude_active_locks.sql](supabase/migrations/20260529000001_slots_exclude_active_locks.sql) | Latest `get_coach_available_slots` RPC |
+| [supabase/migrations/20260711000001_fix_available_slots_ambiguity.sql](supabase/migrations/20260711000001_fix_available_slots_ambiguity.sql) | Latest `get_coach_available_slots` RPC |
 
 
 ---
@@ -303,7 +303,7 @@ Money routes directly to the coach's bank account via Paystack's split payment f
 | [src/app/book/[coachSlug]/step-1/page.tsx](src/app/book/[coachSlug]/step-1/page.tsx) | Slot picker UI |
 | [src/app/book/[coachSlug]/step-2/page.tsx](src/app/book/[coachSlug]/step-2/page.tsx) | Court picker UI, countdown timer |
 | [src/app/book/[coachSlug]/step-3/page.tsx](src/app/book/[coachSlug]/step-3/page.tsx) | Review, fee summary, payment trigger |
-| [src/app/book/confirm/page.tsx](src/app/book/confirm/page.tsx) | Post-payment confirmation page |
+| [src/app/(player)/book/confirm/page.tsx](src/app/(player)/book/confirm/page.tsx) | Post-payment confirmation page |
 | [src/app/api/bookings/lock/route.ts](src/app/api/bookings/lock/route.ts) | Slot lock API |
 | [src/app/api/bookings/route.ts](src/app/api/bookings/route.ts) | Booking creation + Paystack init |
 | [src/app/api/payments/verify/route.ts](src/app/api/payments/verify/route.ts) | Payment verification + confirmation logic |

@@ -26,22 +26,32 @@ LOBB should feel like a calm, trustworthy operations product: warm enough to fee
 
 ## Component contract
 
-All new product UI must use `src/components/ui` primitives.
+All new product UI must use the shared components below — never a
+one-off styled native control. Two locations, two different jobs:
 
-| Primitive | Use | States included |
-| --- | --- | --- |
-| `Button` / icon sizes | Clay primary, dark, quiet secondary, ghost, destructive actions | Hover, pressed, focus, disabled, invalid; loading content is supplied with `InlineActionLoader` |
-| `Input`, `Textarea`, `Field` | Every ordinary form control and its label, hint, or error | Focus, invalid, disabled |
-| `Select`, `SearchableSelect`, `SearchInput` | Controlled options, long searchable lists, and free-text search | Hover, focus, open, invalid, disabled, empty |
-| `Checkbox` | Consent and boolean preferences | Hover, checked, focus, disabled |
-| `StatusBadge`, `VerifiedBadge` | Semantic status and verification only | Success, warning, error, neutral |
-| `Tabs` | Segmented view switching | Selected, hover, keyboard focus |
-| `Card` | `surface`, `outlined`, `interactive`, or `inset` content containers | Hover for interactive cards only |
-| `FormAlert` | Inline success, information, warning, and error feedback | Accessible `alert`/`status` roles |
-| `Skeleton`, `LobbBrandLoader` | Content and page loading | Motion honours reduced-motion preferences |
-| `LobbEmptyState`, `LobbErrorBanner`, `LobbEmptyErrorState` | No-results, failure, and recovery flows | Optional retry/action support |
+- `src/components/ui` — plain primitives (inputs, buttons, cards). No LOBB
+  branding baked in beyond the design tokens.
+- `src/components/common` — LOBB-specific composites built on those
+  primitives (skeletons, empty/error states, the verified badge). Import
+  from here when the primitive alone isn't the whole UI pattern.
 
-Avoid native controls styled per page. Existing native controls should migrate to these primitives as their containing screen is touched.
+| Component | Where | Use | States included |
+| --- | --- | --- | --- |
+| `Button` / icon sizes | `ui/button` | Clay primary, dark, quiet secondary, ghost, destructive actions | Hover, pressed, focus, disabled, invalid |
+| `Input`, `Textarea`, `Field` | `ui/input`, `ui/textarea`, `ui/field` | Every ordinary form control and its label, hint, or error | Focus, invalid, disabled |
+| `Select`, `SearchableSelect`, `SearchInput` | `ui/select`, `ui/searchable-select`, `ui/search-input` | Controlled options, long searchable lists, and free-text search | Hover, focus, open, invalid, disabled, empty |
+| `Checkbox`, `ConsentCheckbox` | `ui/checkbox`, `ui/consent-checkbox` | Boolean preferences; `ConsentCheckbox` specifically for legal/consent copy — see FLOWS.md's Checkboxes & consent section for when to add a new one | Hover, checked, focus, disabled |
+| `StatusBadge` | `ui/status-badge` | Semantic status only | Success, warning, error, neutral |
+| `LobbVerifiedBadge` | `common/lobb-badge` | Coach verification only | Verified / not |
+| `Tabs` | `ui/tabs` | Segmented view switching | Selected, hover, keyboard focus |
+| `Card` | `ui/card` | `surface`, `outlined`, `interactive`, or `inset` content containers | Hover for interactive cards only |
+| `FormAlert` | `ui/form-alert` | Inline success, information, warning, and error feedback | Accessible `alert`/`status` roles |
+| `SkeletonBlock` + friends, `LobbBrandLoader`, `InlineActionLoader` | `common/lobb-skeleton` | Content and page loading | Motion honours reduced-motion preferences |
+| `LobbEmptyState` | `common/lobb-empty-state` | No-results / nothing-here states | Optional action support |
+| `LobbErrorBanner`, `LobbEmptyErrorState`, `LobbFieldError` | `common/lobb-error` | Failure and recovery flows | Optional retry/action support |
+
+Existing native controls should migrate to these as their containing screen
+is touched — not as a standalone sweep.
 
 ## Surface rules
 

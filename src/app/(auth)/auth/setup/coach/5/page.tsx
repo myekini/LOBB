@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
-import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
+import { ConsentGroup, ConsentLink, ConsentRow } from "@/components/ui/consent-checkbox";
 import { track } from "@/lib/analytics";
 import {
   OnboardingButton,
@@ -254,22 +254,22 @@ export default function CoachSetupStep5Page() {
           </label>
         </div>
 
-        <div className="mt-8 space-y-2.5">
-          <ConsentCheckbox
+        <ConsentGroup className="mt-8" label="Before you submit">
+          <ConsentRow
             checked={acceptedCoachAgreement}
             onChange={setAcceptedCoachAgreement}
             hint="Covers the 15% commission, payout terms, and how we expect coaches to conduct themselves on LOBB."
           >
             I agree to the <ConsentLink href="/coach-agreement">LOBB Coach Agreement</ConsentLink>.
-          </ConsentCheckbox>
-          <ConsentCheckbox
+          </ConsentRow>
+          <ConsentRow
             checked={confirmedProfileAccuracy}
             onChange={setConfirmedProfileAccuracy}
             hint="False information may result in immediate account suspension."
           >
             Everything in my profile is accurate.
-          </ConsentCheckbox>
-        </div>
+          </ConsentRow>
+        </ConsentGroup>
 
         <div className="mt-10 pb-10">
           {error && <FormAlert className="mb-4">{error}</FormAlert>}

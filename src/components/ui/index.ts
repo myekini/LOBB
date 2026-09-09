@@ -1,5 +1,6 @@
 export * from "./button";
 export * from "./avatar";
+export * from "./avatar-circles";
 export * from "./badge";
 export * from "./calendar";
 export * from "./card";

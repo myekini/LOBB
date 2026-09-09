@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
 
 /**
  * Shared consent/agreement checkbox used across signup, booking checkout,
@@ -37,6 +38,72 @@ export function ConsentCheckbox({
         onCheckedChange={(value) => onChange(Boolean(value))}
         className="mt-0.5"
       />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[12px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
+          {children}
+        </span>
+        {hint && (
+          <span className="mt-1 block text-[11px] font-medium leading-relaxed text-[var(--lobb-text-tertiary)]">
+            {hint}
+          </span>
+        )}
+      </span>
+    </label>
+  );
+}
+
+/**
+ * Container for two or more related consent checkboxes. Renders them as
+ * rows inside one card with hairline dividers, instead of each checkbox
+ * being its own bordered box — stacking several `ConsentCheckbox`es reads
+ * as a wall of near-identical cards; this reads as one decision with a
+ * couple of parts. Use `ConsentRow` (not `ConsentCheckbox`) for children.
+ */
+export function ConsentGroup({
+  label,
+  children,
+  className = "",
+}: {
+  label?: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]",
+        className,
+      )}
+    >
+      {label && (
+        <p className="border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+          {label}
+        </p>
+      )}
+      <div className="divide-y divide-[var(--lobb-border-subtle)]">{children}</div>
+    </div>
+  );
+}
+
+/** One row inside a `ConsentGroup` — same shape as `ConsentCheckbox`, no border of its own. */
+export function ConsentRow({
+  checked,
+  onChange,
+  children,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  children: ReactNode;
+  hint?: ReactNode;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-start gap-3.5 p-4 text-left transition-colors duration-150 ${
+        checked ? "bg-[var(--lobb-clay)]/5" : "hover:bg-[var(--lobb-bg-secondary)]/60"
+      }`}
+    >
+      <Checkbox checked={checked} onCheckedChange={(value) => onChange(Boolean(value))} className="mt-0.5" />
       <span className="min-w-0 flex-1">
         <span className="block text-[12px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
           {children}

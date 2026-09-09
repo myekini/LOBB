@@ -2,6 +2,7 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import { Input as LobbInput } from "@/components/ui/input";
+import { AvatarCircles } from "@/components/ui/avatar-circles";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -715,6 +716,20 @@ function LandingSplash() {
               <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--lobb-text-secondary)]">
                 Compare coaching style, location, experience and price before you choose.
               </p>
+              {coaches.length > 0 && (
+                <div className="mt-5 flex items-center gap-3">
+                  <AvatarCircles
+                    avatars={coaches
+                      .slice(0, 5)
+                      .map((coach) => ({ src: coach.profile_photo_url, alt: coach.full_name ?? "" }))}
+                    total={coachCount ?? coaches.length}
+                  />
+                  <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">
+                    {coachCount != null ? <strong className="font-semibold text-[var(--lobb-bg-inverse)]">{coachCount}</strong> : null}{" "}
+                    verified coaches, ready to book
+                  </p>
+                </div>
+              )}
             </div>
             <Link href="/coaches" className="group inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-bg-inverse)] transition hover:text-[var(--lobb-clay)]">
               Browse all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
