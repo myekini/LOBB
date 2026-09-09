@@ -86,44 +86,17 @@ const BRAND = {
   success: "#2D6A4F",
 };
 
-const SOCIAL_LINKS = [
-  {
-    label: "Instagram",
-    href: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://instagram.com/lobb.ng",
-    iconPath: "/email/social-instagram.png",
-  },
-  {
-    label: "X / Twitter",
-    href: process.env.NEXT_PUBLIC_X_URL || "https://x.com/lobb_ng",
-    iconPath: "/email/social-x.png",
-  },
-  {
-    label: "lobb.ng",
-    href: emailAppUrl("/"),
-    iconPath: "/email/social-web.png",
-  },
-];
-
 export function emailShell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
   const logoUrl = emailAssetUrl("/email/lobb-lockup.png");
   const ctaHtml = cta
     ? `<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:28px;border-collapse:collapse;">
         <tr>
           <td style="border-radius:10px;background:${BRAND.ink};">
-            <a href="${emailEscapeHtml(cta.href)}" style="display:inline-block;color:#ffffff;font:800 13px Arial,Helvetica,sans-serif;text-decoration:none;padding:14px 24px;">${emailEscapeHtml(cta.label)}</a>
+            <a href="${emailEscapeHtml(cta.href)}" style="display:inline-block;color:#ffffff;font:700 14px Arial,Helvetica,sans-serif;text-decoration:none;padding:14px 22px;">${emailEscapeHtml(cta.label)}</a>
           </td>
         </tr>
       </table>`
     : "";
-  const socialHtml = SOCIAL_LINKS.map(
-    (item) => `
-      <td style="padding-right:8px;">
-        <a href="${emailEscapeHtml(item.href)}" style="display:inline-block;border:1px solid ${BRAND.line};border-radius:999px;background:${BRAND.bg};padding:8px;text-decoration:none;">
-          <img src="${emailAssetUrl(item.iconPath)}" width="18" height="18" alt="${emailEscapeHtml(item.label)}" style="display:block;width:18px;height:18px;border:0;" />
-        </a>
-      </td>`
-  ).join("");
-
   return `<!doctype html>
 <html>
   <head>
@@ -136,33 +109,22 @@ export function emailShell(title: string, preview: string, body: string, cta?: {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:${BRAND.bg};border-collapse:collapse;">
       <tr>
         <td align="center" style="padding:28px 14px;">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;border-collapse:collapse;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border-collapse:collapse;">
             <tr>
-              <td style="background:${BRAND.ink};padding:24px 30px 24px;border-radius:14px 14px 0 0;">
-                <img src="${logoUrl}" width="132" height="32" alt="LOBB" style="display:block;width:132px;max-width:100%;height:auto;border:0;" />
-                <h1 style="margin:24px 0 0;color:#ffffff;font:900 26px/1.16 Arial,Helvetica,sans-serif;">${emailEscapeHtml(title)}</h1>
+              <td style="background:${BRAND.ink};padding:22px 26px;border-radius:14px 14px 0 0;">
+                <img src="${logoUrl}" width="112" height="27" alt="LOBB" style="display:block;width:112px;max-width:100%;height:auto;border:0;" />
+                <h1 style="margin:20px 0 0;color:#ffffff;font:700 24px/1.2 Arial,Helvetica,sans-serif;">${emailEscapeHtml(title)}</h1>
               </td>
             </tr>
             <tr>
-              <td style="background:${BRAND.surface};border-right:1px solid ${BRAND.line};border-left:1px solid ${BRAND.line};padding:28px 30px 34px;">
+              <td style="background:${BRAND.surface};border-right:1px solid ${BRAND.line};border-left:1px solid ${BRAND.line};padding:26px;">
                 ${body}
                 ${ctaHtml}
               </td>
             </tr>
             <tr>
-              <td style="background:${BRAND.surface};border:1px solid ${BRAND.line};border-top:0;border-radius:0 0 14px 14px;padding:20px 30px 24px;">
-                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-                  <tr>
-                    <td style="vertical-align:middle;">
-                      <p style="margin:0;color:${BRAND.muted};font:700 12px/1.7 Arial,Helvetica,sans-serif;">Need help? <a href="mailto:support@lobb.ng" style="color:${BRAND.ink};text-decoration:none;font-weight:900;">support@lobb.ng</a></p>
-                    </td>
-                    <td align="right" style="vertical-align:middle;">
-                      <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
-                        <tr>${socialHtml}</tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
+              <td style="background:${BRAND.surface};border:1px solid ${BRAND.line};border-top:0;border-radius:0 0 14px 14px;padding:18px 26px 22px;">
+                <p style="margin:0;color:${BRAND.muted};font:600 12px/1.6 Arial,Helvetica,sans-serif;">Questions? Reply to this email or contact <a href="mailto:support@lobb.ng" style="color:${BRAND.ink};text-decoration:none;font-weight:700;">support@lobb.ng</a>.</p>
               </td>
             </tr>
           </table>
@@ -181,8 +143,8 @@ function detailRows(rows: Array<[string, string | null | undefined]>) {
     .map(
       ([label, value]) => `
         <tr>
-          <td style="padding:13px 14px 13px 0;color:${BRAND.muted};font:800 11px Arial,Helvetica,sans-serif;text-transform:uppercase;letter-spacing:0.08em;vertical-align:top;width:34%;">${escapeHtml(label)}</td>
-          <td style="padding:13px 0;color:${BRAND.ink};font:900 14px/1.45 Arial,Helvetica,sans-serif;text-align:right;vertical-align:top;word-break:break-word;">${escapeHtml(value)}</td>
+          <td style="padding:12px 14px 12px 0;color:${BRAND.muted};font:600 12px Arial,Helvetica,sans-serif;vertical-align:top;width:34%;">${escapeHtml(label)}</td>
+          <td style="padding:12px 0;color:${BRAND.ink};font:700 14px/1.45 Arial,Helvetica,sans-serif;text-align:right;vertical-align:top;word-break:break-word;">${escapeHtml(value)}</td>
         </tr>`
     )
     .join("");
@@ -223,9 +185,9 @@ function noteCard(title: string, body: string, tone: "default" | "success" | "wa
     ? { bg: BRAND.clayLight, border: "rgba(196,98,45,0.30)", title: BRAND.clay }
     : { bg: BRAND.bg, border: BRAND.line, title: BRAND.ink };
 
-  return `<div style="margin-top:22px;border:1px solid ${colors.border};border-radius:18px;background:${colors.bg};padding:16px 18px;">
-    <p style="margin:0;color:${colors.title};font:900 13px Arial,Helvetica,sans-serif;">${escapeHtml(title)}</p>
-    <p style="margin:6px 0 0;color:${BRAND.muted};font:700 13px/1.6 Arial,Helvetica,sans-serif;">${escapeHtml(body)}</p>
+  return `<div style="margin-top:22px;border:1px solid ${colors.border};border-radius:10px;background:${colors.bg};padding:15px 16px;">
+    <p style="margin:0;color:${colors.title};font:700 13px Arial,Helvetica,sans-serif;">${escapeHtml(title)}</p>
+    <p style="margin:6px 0 0;color:${BRAND.muted};font:600 13px/1.55 Arial,Helvetica,sans-serif;">${escapeHtml(body)}</p>
   </div>`;
 }
 

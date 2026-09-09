@@ -4,10 +4,10 @@ import { Button as LobbButton } from "@/components/ui/button";
 import { Input as LobbInput } from "@/components/ui/input";
 import { CoachAvatarGroup } from "@/components/ui/coach-avatar-group";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, CalendarDays, MapPin, Moon, Search, Star, Sun, Sunrise } from "lucide-react";
+import { ArrowRight, MapPin, Moon, Search, Star, Sun, Sunrise } from "lucide-react";
 import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
@@ -331,58 +331,6 @@ export default function Home() {
   return <LandingSplash />;
 }
 
-// Plays the booking lifecycle in the hero widget's status line: slot hold
-// counting down, payment secured, then confirmed. Under reduced motion (or
-// before hydration) it stays on the confirmed state.
-function BookingLifecycle() {
-  const [phase, setPhase] = useState<"hold" | "paid" | "confirmed">("confirmed");
-  const [secondsLeft, setSecondsLeft] = useState(582);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    let t = 6; // start mid-cycle so the confirmed state shows first
-    const id = window.setInterval(() => {
-      t = (t + 1) % 12;
-      if (t < 5) {
-        setPhase("hold");
-        setSecondsLeft(582 - t);
-      } else if (t < 7) {
-        setPhase("paid");
-      } else {
-        setPhase("confirmed");
-      }
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-
-  const label =
-    phase === "hold"
-      ? `Slot held · ${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}`
-      : phase === "paid"
-        ? "Payment secured"
-        : "Confirmed session";
-
-  const dot =
-    phase === "hold"
-      ? "bg-[var(--lobb-warning)]"
-      : phase === "paid"
-        ? "bg-[var(--lobb-clay)]"
-        : "lobb-dot-pulse bg-[var(--lobb-success)]";
-
-  return (
-    <p key={phase} className="lobb-booking-kicker flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.16em] animate-in fade-in-0 slide-in-from-bottom-1 duration-300">
-      <span className={`size-1.5 shrink-0 rounded-full ${dot}`} aria-hidden="true" />
-      <span className="tabular-nums">{label}</span>
-    </p>
-  );
-}
-
-function shortCoachName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length < 2) return parts[0] ?? "Coach";
-  return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-}
-
 const LANDING_BASE_AREAS = [
   "Lekki", "Ikoyi", "Victoria Island", "Ikeja", "Surulere", "Yaba",
   "Lagos Island", "Ajah", "Gbagada", "Magodo", "Onikan", "National Stadium",
@@ -471,8 +419,6 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
 }
 
 function LandingSplash() {
-  const visualRef = useRef<HTMLDivElement>(null);
-  const widgetRef = useRef<HTMLDivElement>(null);
   const [coaches, setCoaches] = useState<CoachPublicProfile[]>([]);
   const [coachCount, setCoachCount] = useState<number | null>(null);
 
@@ -535,42 +481,7 @@ function LandingSplash() {
     return () => io.disconnect();
   }, [coaches.length]);
 
-  // Pointer tilt on the booking preview card, desktop pointers only.
-  useEffect(() => {
-    const visual = visualRef.current;
-    const widget = widgetRef.current;
-    if (!visual || !widget) return;
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let frame = 0;
-    const onMove = (e: MouseEvent) => {
-      const rect = visual.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        widget.style.transform = `perspective(900px) rotateX(${(-y * 4).toFixed(2)}deg) rotateY(${(x * 5).toFixed(2)}deg) translateY(-2px)`;
-      });
-    };
-    const onLeave = () => {
-      cancelAnimationFrame(frame);
-      widget.style.transform = "";
-    };
-    visual.addEventListener("mousemove", onMove);
-    visual.addEventListener("mouseleave", onLeave);
-    return () => {
-      cancelAnimationFrame(frame);
-      visual.removeEventListener("mousemove", onMove);
-      visual.removeEventListener("mouseleave", onLeave);
-    };
-  }, []);
-
-  // Hero booking widget mirrors the top live coach; static fallback until data lands.
   const heroCoach = coaches[0] ?? null;
-  const heroCoachName = heroCoach ? shortCoachName(heroCoach.full_name) : "Tunde A.";
-  const heroCourt = heroCoach?.primary_location ?? "Lagos Lawn Tennis Club";
-  const heroTotal = heroCoach?.hourly_rate_ngn != null ? Math.round(heroCoach.hourly_rate_ngn * 1.05) : 22500;
 
   return (
     <main id="main-content" className="lobb-landing relative min-h-[100dvh] overflow-x-hidden bg-[var(--lobb-bg-primary)] text-[var(--lobb-bg-inverse)]">
@@ -652,7 +563,7 @@ function LandingSplash() {
         </div>
 
         <div className="relative animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-150">
-          <div ref={visualRef} className="lobb-hero-visual group relative min-h-[500px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[540px]">
+          <div className="lobb-hero-visual group relative min-h-[500px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[540px]">
             <div
               className="absolute inset-0 scale-105 bg-cover bg-center opacity-[0.88] transition duration-700 group-hover:scale-110"
               style={{ backgroundImage: `url(${courtImage})` }}
@@ -660,46 +571,21 @@ function LandingSplash() {
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,13,13,0.05),rgba(13,13,13,0.9)),linear-gradient(90deg,rgba(13,13,13,0.72),rgba(13,13,13,0.08)_48%,rgba(13,13,13,0.76)),radial-gradient(circle_at_78%_18%,rgba(196,98,45,0.34),transparent_28%)]" aria-hidden="true" />
 
-            <div className="relative grid min-h-[500px] content-between gap-8 p-4 sm:min-h-[540px] sm:p-7">
-              <div ref={widgetRef} className="lobb-booking-widget ml-auto w-full max-w-[390px] p-4 sm:p-5">
-                <div className="lobb-booking-head flex items-center justify-between pb-4">
-                  <div>
-                    <BookingLifecycle />
-                    <p className="lobb-booking-title mt-1 text-lg font-medium">Private lesson</p>
-                  </div>
-                  <span className="lobb-booking-icon flex size-10 items-center justify-center">
-                    <CalendarDays className="size-5" />
-                  </span>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2.5">
-                  <div className="lobb-booking-tile p-3">
-                    <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Coach</p>
-                    <p className="lobb-booking-value mt-1 truncate text-sm font-medium">{heroCoachName}</p>
-                  </div>
-                  <div className="lobb-booking-tile p-3">
-                    <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Time</p>
-                    <p className="lobb-booking-value mt-1 text-sm font-medium">7:30 AM</p>
-                  </div>
-                </div>
-                <div className="lobb-booking-tile mt-2.5 flex items-center gap-2 p-3">
-                  <MapPin className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-                  <span className="lobb-booking-location truncate text-sm font-medium">{heroCourt}</span>
-                </div>
-                <div className="lobb-booking-total mt-4 grid grid-cols-[1fr_auto] items-center gap-3 pt-4">
-                  <div>
-                    <p className="lobb-booking-label text-[10px] uppercase tracking-[0.14em]">Session total</p>
-                    <p className="lobb-booking-price mt-1 text-2xl font-semibold">₦{heroTotal.toLocaleString("en-NG")}</p>
-                  </div>
-                  <span className="lobb-booking-paymark px-3 py-2 text-[10px] font-medium uppercase tracking-[0.14em]">
-                    Paystack
-                  </span>
-                </div>
-              </div>
-
+            <div className="relative grid min-h-[500px] content-end p-4 sm:min-h-[540px] sm:p-7">
               <div className="max-w-[430px] text-white">
-                <h2 className="text-[30px] font-semibold leading-[0.98] tracking-tight sm:text-[46px] text-balance">
-                  Your coach, time and payment—settled before you reach the court.
+                <p className="text-sm font-medium text-white/75">Featured on LOBB</p>
+                <h2 className="mt-2 text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[46px] text-balance">
+                  {heroCoach?.full_name ?? "Verified coaching across Lagos"}
                 </h2>
+                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80">
+                  {heroCoach?.primary_location && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-[var(--lobb-clay)]" />{heroCoach.primary_location}</span>}
+                  {heroCoach?.avg_rating != null && <span className="inline-flex items-center gap-1.5"><Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{Number(heroCoach.avg_rating).toFixed(1)}</span>}
+                  {heroCoach?.hourly_rate_ngn != null && <span>{coachRate(heroCoach.hourly_rate_ngn)}</span>}
+                </div>
+                <Link href={heroCoach ? `/coaches/${heroCoach.slug ?? heroCoach.id}` : "/coaches"} className="mt-6 inline-flex h-12 items-center gap-2 bg-white px-5 text-sm font-semibold text-[#0d0d0d] transition hover:bg-[var(--lobb-clay)] hover:text-white">
+                  {heroCoach ? "View coach profile" : "Browse coaches"}
+                  <ArrowRight className="size-4" />
+                </Link>
               </div>
             </div>
           </div>
@@ -878,4 +764,3 @@ function DotLabel({ children, light = false }: { children: React.ReactNode; ligh
     </p>
   );
 }
-

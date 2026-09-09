@@ -267,8 +267,8 @@ export default function CoachAvailabilityPage() {
           <>
             <section className="mb-5 grid gap-3 sm:grid-cols-3">
               <AvailabilityMetric icon={CalendarCheck2} value={String(activeDays)} label="Active days" />
-              <AvailabilityMetric icon={Clock3} value={String(weeklyWindowCount)} label="Weekly windows" />
-              <AvailabilityMetric icon={CalendarX2} value={String(upcomingClosed.length)} label="Closed dates" />
+              <AvailabilityMetric icon={Clock3} value={String(weeklyWindowCount)} label="Time ranges" />
+              <AvailabilityMetric icon={CalendarX2} value={String(upcomingClosed.length)} label="Date exceptions" />
             </section>
 
             <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
@@ -379,10 +379,10 @@ function WeeklyHoursSection({
 
   return (
     <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Weekly hours</p>
-      <h2 className="mt-1 text-xl font-semibold">When do you coach?</h2>
-      <p className="mt-1 text-sm font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
-        These hours repeat every week. Players see open 60-minute slots up to 14 days ahead.
+      <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Regular schedule</p>
+      <h2 className="mt-1 text-xl font-semibold">Set your weekly hours</h2>
+      <p className="mt-1 text-sm leading-6 text-[var(--lobb-text-secondary)]">
+        Choose the hours you normally coach. LOBB turns them into 60-minute slots for the next 14 days.
       </p>
 
       {/* Quick apply */}
@@ -525,13 +525,10 @@ function DaysOffSection({
 }) {
   return (
     <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Days off</p>
-      <h2 className="mt-1 text-xl font-semibold">Close specific dates</h2>
-      <p className="mt-1 text-sm font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
-        Tap any date to close it. Weekly hours still apply to every other date.
-        A{" "}
-        <span className="inline-block size-1.5 rounded-full bg-[var(--lobb-success)] align-middle" />
-        {" "}green dot means you have hours set for that weekday.
+      <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Date exceptions</p>
+      <h2 className="mt-1 text-xl font-semibold">Block a day you cannot coach</h2>
+      <p className="mt-1 text-sm leading-6 text-[var(--lobb-text-secondary)]">
+        Select a date to make the entire day unavailable. Select it again to reopen it.
       </p>
 
       {/* Month navigation */}
@@ -603,11 +600,16 @@ function DaysOffSection({
         })}
       </div>
 
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-[var(--lobb-text-secondary)]">
+        <span className="inline-flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-[var(--lobb-success)]" />Weekly hours set</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-error)]/15" />Unavailable</span>
+      </div>
+
       {/* Closed dates pills */}
       {upcomingClosed.length > 0 ? (
         <div className="mt-5">
           <p className="mb-2.5 text-[11px] font-medium uppercase tracking-wider text-[var(--lobb-text-secondary)]">
-            Closed dates, tap to reopen
+            Unavailable dates
           </p>
           <div className="flex flex-wrap gap-2">
             {upcomingClosed.map((d) => (
@@ -630,7 +632,7 @@ function DaysOffSection({
         </div>
       ) : (
         <p className="mt-4 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
-          No dates closed. Tap any future date to close it.
+          No date exceptions added.
         </p>
       )}
     </section>

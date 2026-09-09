@@ -3,7 +3,6 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const STEP_LABELS = ["Choose slot", "Location", "Review & pay"] as const;
 
@@ -33,7 +32,7 @@ export function BookingShell({
             <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Step {step} of 3</p>
             <h1 className="truncate text-[15px] font-semibold">Book a session</h1>
           </div>
-          <ThemeToggle className="size-11 rounded-[var(--lobb-radius-md)]" />
+          <div className="size-11" aria-hidden="true" />
         </div>
       </header>
 
@@ -43,8 +42,8 @@ export function BookingShell({
             <div className="flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] bg-white/10 text-[var(--lobb-clay)]">
               <ShieldCheck className="size-5" />
             </div>
-            <p className="mt-4 text-[11px] font-medium uppercase tracking-[0.18em] text-white/75">Secure checkout</p>
-            <h2 className="mt-1 text-xl font-semibold leading-tight">Your court time is protected.</h2>
+            <p className="mt-4 text-xs font-medium text-white/75">Secure booking</p>
+            <h2 className="mt-1 text-xl font-semibold leading-tight">Review before you pay.</h2>
           </div>
           <div className="mt-4 space-y-2">
             {([1, 2, 3] as const).map((s) => {
@@ -64,15 +63,12 @@ export function BookingShell({
                   </span>
                   <span>
                     <span className="block text-sm font-medium">{STEP_LABELS[s - 1]}</span>
-                    <span className="block text-[11px] font-medium text-[var(--lobb-text-secondary)]">{complete ? "Completed" : active ? "In progress" : "Next"}</span>
+                    <span className="block text-xs text-[var(--lobb-text-secondary)]">{complete ? "Done" : active ? "Current step" : "Up next"}</span>
                   </span>
                 </div>
               );
             })}
           </div>
-          <p className="mt-4 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] p-3 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
-            Payment opens in Paystack after review. LOBB keeps the booking record and confirms once payment succeeds.
-          </p>
         </aside>
 
         <div className="lg:hidden">
@@ -81,7 +77,7 @@ export function BookingShell({
               {([1, 2, 3] as const).map((s) => (
                 <div
                   key={s}
-                  className={`flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] text-[10px] font-medium uppercase tracking-[0.08em] transition-colors duration-300 ${
+                  className={`flex min-h-11 min-w-0 items-center justify-center rounded-[var(--lobb-radius-md)] px-1 text-center text-xs font-medium leading-tight transition-colors duration-300 ${
                     s === step
                       ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                       : s < step
@@ -89,8 +85,7 @@ export function BookingShell({
                       : "text-[var(--lobb-text-tertiary)]"
                   }`}
                 >
-                  <span className="hidden sm:inline">{STEP_LABELS[s - 1]}</span>
-                  <span className="sm:hidden">{s}</span>
+                  <span>{STEP_LABELS[s - 1]}</span>
                 </div>
               ))}
             </div>

@@ -65,10 +65,10 @@ export default function AdminDashboardPage() {
     <AdminShell active="Dashboard">
       <section className="space-y-4">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
-          <div className="flex min-h-[132px] flex-col justify-between border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
+          <div className="flex min-h-[132px] flex-col justify-center border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-xs font-bold text-white/75">LOBB headquarters</p>
+                <p className="text-xs font-medium text-white/75">Admin</p>
                 <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
               </div>
               <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white">
@@ -76,18 +76,13 @@ export default function AdminDashboardPage() {
                 Review applications
               </Link>
             </div>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <Pill label="Coach queue" value={String(metrics?.pending_coach_approvals ?? 0)} />
-              <Pill label="Bookings" value={String(metrics?.total_bookings ?? 0)} />
-              <Pill label="Platform fees" value={money(metrics?.lobb_earnings_ngn ?? 0)} />
-            </div>
           </div>
 
           <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-            <p className="text-xs font-bold text-[var(--lobb-text-secondary)]">Priority</p>
+            <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Coach approvals</p>
             <h2 className="mt-2 text-xl font-semibold leading-tight">{approvalCopy}</h2>
             <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-              Review submitted coach profiles so players only see verified, ready-to-book coaches.
+              Review profiles before they appear to players.
             </p>
             <Link href="/admin/coaches" className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-sm font-medium transition-colors hover:border-[var(--lobb-clay)]/35">
               Open approvals
@@ -184,23 +179,11 @@ export default function AdminDashboardPage() {
                 <RevenueRow label="Platform fees earned" value={money(metrics?.lobb_earnings_ngn ?? 0)} strong />
                 <RevenueRow label="Bookings created" value={String(metrics?.total_bookings ?? 0)} />
               </div>
-              <div className="mt-4 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] p-3 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
-                Finance detail lives in Earnings. Keep this card for a quick revenue check only.
-              </div>
             </section>
           </aside>
         </div>
       </section>
     </AdminShell>
-  );
-}
-
-function Pill({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] bg-white/10 px-3 py-2 text-xs font-medium text-white/84">
-      <span className="text-white/75">{label}</span>
-      {value}
-    </span>
   );
 }
 
