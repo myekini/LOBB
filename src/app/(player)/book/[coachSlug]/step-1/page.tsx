@@ -3,7 +3,7 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CalendarDays, ChevronLeft, ChevronRight, Clock3, LockKeyhole, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { CoachCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
@@ -198,18 +198,18 @@ function BookingStep1Content() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Booking with</p>
+              <p className="text-xs text-[var(--lobb-text-secondary)]">Booking with</p>
               <h2 className="mt-1 truncate text-base font-semibold text-[var(--lobb-text-primary)]">{coach.full_name}</h2>
               <p className="mt-0.5 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">{coach.headline}</p>
               <div className="mt-2 flex items-center gap-3">
                 {coach.avg_rating != null && (
-                  <span className="flex items-center gap-1 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[11px] font-medium text-[var(--lobb-clay)]">
-                    <Star className="size-3 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
+                  <span className="flex items-center gap-1 text-xs font-medium text-[var(--lobb-text-primary)]">
+                    <Star className="size-3 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />
                     {coach.avg_rating}
                   </span>
                 )}
                 {coach.hourly_rate_ngn != null && (
-                  <span className="text-[11px] font-medium text-[var(--lobb-clay)]">
+                  <span className="text-xs font-medium text-[var(--lobb-text-primary)]">
                     ₦{coach.hourly_rate_ngn.toLocaleString()}
                     <span className="font-medium text-[var(--lobb-text-secondary)]">/hr</span>
                   </span>
@@ -225,10 +225,7 @@ function BookingStep1Content() {
       <div className="lobb-surface-outlined mt-4 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
         <div className="flex items-center justify-between gap-3 px-1">
           <div>
-            <p className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">
-              <CalendarDays className="size-3.5 text-[var(--lobb-clay)]" />
-              Available dates
-            </p>
+            <p className="text-xs text-[var(--lobb-text-secondary)]">Choose a date</p>
             <h2 className="mt-1 text-base font-semibold text-[var(--lobb-text-primary)]">{weekLabel}</h2>
           </div>
           <div className="flex items-center gap-1.5">
@@ -254,7 +251,7 @@ function BookingStep1Content() {
         </div>
 
         {/* Day grid */}
-        <div className="mt-5 grid grid-cols-7 gap-2">
+        <div className="-mx-1 mt-5 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
           {visibleGroups.map((item) => {
             const hasSlots    = item.slots.length > 0;
             const hasBookable = item.slots.some((s) => !s.tooSoon);
@@ -267,7 +264,7 @@ function BookingStep1Content() {
                 onClick={() => { setSelectedDate(item.dateStr); setSelectedSlot(""); }}
                 aria-pressed={isSelected}
                 aria-label={`${isSelected ? "Selected" : "Select"} ${item.label}`}
-                className={`relative flex min-h-[82px] flex-col items-center justify-center gap-1 rounded-[var(--lobb-radius-md)] text-xs font-medium transition-all duration-300 active:scale-95 ${
+                className={`relative flex h-[72px] w-[64px] shrink-0 flex-col items-center justify-center gap-1 rounded-[var(--lobb-radius-md)] text-xs font-medium transition-all duration-200 active:scale-95 ${
                   isSelected
                     ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]"
                     : hasBookable
@@ -275,7 +272,7 @@ function BookingStep1Content() {
                     : "cursor-not-allowed border border-transparent bg-[var(--lobb-bg-secondary)]/70 text-[var(--lobb-text-tertiary)] opacity-45"
                 }`}
               >
-                <span className={`text-[9px] font-medium uppercase tracking-wider ${isSelected ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{item.weekday}</span>
+                <span className={`text-xs ${isSelected ? "text-white/75" : "text-[var(--lobb-text-secondary)]"}`}>{item.weekday}</span>
                 <span className="text-xl font-semibold leading-none">{item.day}</span>
                 {hasBookable && (
                   <span className={`mt-0.5 size-1.5 rounded-full ${isSelected ? "bg-white animate-pulse" : "bg-[var(--lobb-clay)]"}`} />
@@ -293,8 +290,8 @@ function BookingStep1Content() {
       {selectedGroup ? (
         <>
           <div className="mt-6 flex items-center justify-between px-1">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--lobb-text-primary)]">Pick a time</h3>
-            <span className="rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-2.5 py-1 text-xs font-bold text-[var(--lobb-clay)]">
+            <h3 className="text-base font-semibold text-[var(--lobb-text-primary)]">Choose a time</h3>
+            <span className="text-xs font-medium text-[var(--lobb-text-secondary)]">
               {selectedGroup.label}
             </span>
           </div>
@@ -310,7 +307,7 @@ function BookingStep1Content() {
                   onClick={() => !isDisabled && setSelectedSlot(slot.iso)}
                   aria-pressed={isActive}
                   title={isDisabled ? "Must be booked at least 24 hours in advance" : undefined}
-                  className={`flex h-16 flex-col items-center justify-center gap-0.5 rounded-[var(--lobb-radius-md)] border text-center transition-all duration-300 ${
+                  className={`flex h-12 items-center justify-center rounded-[var(--lobb-radius-md)] border px-3 text-center text-sm font-medium transition-all duration-200 ${
                     isDisabled
                       ? "cursor-not-allowed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]/60 opacity-40"
                       : isActive
@@ -318,10 +315,7 @@ function BookingStep1Content() {
                       : "active:scale-95 border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] hover:border-[var(--lobb-clay)]/50"
                   }`}
                 >
-                  <span className="text-sm font-medium">{slot.label}</span>
-                  <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? "text-white/80" : "text-[var(--lobb-text-tertiary)]"}`}>
-                    {isDisabled ? "24h advance" : "60 mins"}
-                  </span>
+                  <span>{slot.label}{isDisabled ? " · unavailable" : ""}</span>
                 </LobbButton>
               );
             })}
@@ -349,23 +343,8 @@ function BookingStep1Content() {
         </div>
       )}
 
-      {/* Info strip */}
-      <div className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 text-xs font-medium text-[var(--lobb-text-secondary)]">
-        <p className="flex items-center gap-2">
-          <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" /> Sessions are 60 minutes.
-        </p>
-        {selectedSlot && (
-          <p className="mt-3 flex items-start gap-2 text-[var(--lobb-clay)]">
-            <LockKeyhole className="mt-0.5 size-4 shrink-0 animate-pulse text-[var(--lobb-clay)]" />
-            <span>
-              We will hold this slot for <strong>10 minutes</strong> once you continue.
-            </span>
-          </p>
-        )}
-      </div>
-
       <BookingButton disabled={!selectedSlot || locking} onClick={handleContinue}>
-        {locking ? "Locking slot" : "Continue"}
+        {locking ? "Holding your time" : selectedSlot ? `Continue with ${new Date(selectedSlot).toLocaleTimeString("en-NG", { hour: "numeric", minute: "2-digit", hour12: true })}` : "Choose a time to continue"}
       </BookingButton>
     </BookingShell>
   );

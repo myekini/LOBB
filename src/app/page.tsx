@@ -2,7 +2,6 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import { Input as LobbInput } from "@/components/ui/input";
-import { CoachAvatarGroup } from "@/components/ui/coach-avatar-group";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -331,11 +330,6 @@ export default function Home() {
   return <LandingSplash />;
 }
 
-const LANDING_BASE_AREAS = [
-  "Lekki", "Ikoyi", "Victoria Island", "Ikeja", "Surulere", "Yaba",
-  "Lagos Island", "Ajah", "Gbagada", "Magodo", "Onikan", "National Stadium",
-];
-
 function coachRate(value: number | null) {
   return value == null ? "Rate TBD" : `₦${value.toLocaleString("en-NG")}/hr`;
 }
@@ -420,31 +414,22 @@ function FeaturedCoachCard({ coach }: { coach: CoachPublicProfile }) {
 
 function LandingSplash() {
   const [coaches, setCoaches] = useState<CoachPublicProfile[]>([]);
-  const [coachCount, setCoachCount] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
     const supabase = createClient();
     supabase
       .from("coach_profiles_public")
-      .select("*", { count: "exact" })
+      .select("*")
       .eq("status", "active")
       .order("session_count", { ascending: false })
       .limit(8)
-      .then(({ data, count }) => {
+      .then(({ data }) => {
         if (!alive) return;
         if (data) setCoaches(data as CoachPublicProfile[]);
-        if (count != null) setCoachCount(count);
       });
     return () => { alive = false; };
   }, []);
-
-  const areas = useMemo(() => {
-    const fromCoaches = coaches
-      .flatMap((c) => [c.primary_location, ...c.service_areas])
-      .filter(Boolean) as string[];
-    return Array.from(new Set([...fromCoaches, ...LANDING_BASE_AREAS]));
-  }, [coaches]);
 
   // Scroll reveals. Only elements still below the fold get hidden, so content
   // stays visible when JS or IntersectionObserver never runs. Re-runs when the
@@ -487,12 +472,6 @@ function LandingSplash() {
     <main id="main-content" className="lobb-landing relative min-h-[100dvh] overflow-x-hidden bg-[var(--lobb-bg-primary)] text-[var(--lobb-bg-inverse)]">
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="lobb-landing-top-gradient absolute inset-x-0 top-0 h-[620px] bg-[linear-gradient(180deg,var(--lobb-bg-secondary),transparent)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_srgb,var(--lobb-bg-inverse)_4%,transparent)_1px,transparent_1px),linear-gradient(0deg,color-mix(in_srgb,var(--lobb-bg-inverse)_3%,transparent)_1px,transparent_1px)] bg-[length:88px_88px]" />
-        <div
-          className="lobb-landing-court-texture absolute inset-x-0 top-0 h-[720px] opacity-[0.09] mix-blend-multiply"
-          style={{ backgroundImage: `url(${courtImage})`, backgroundSize: "cover", backgroundPosition: "center top" }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_srgb,var(--lobb-bg-primary)_38%,transparent),var(--lobb-bg-primary)_710px),linear-gradient(90deg,var(--lobb-bg-primary)_0%,color-mix(in_srgb,var(--lobb-bg-primary)_54%,transparent)_48%,var(--lobb-bg-primary)_100%)]" />
       </div>
 
       <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/78 backdrop-blur-xl">
@@ -501,7 +480,7 @@ function LandingSplash() {
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">
               <LobbMark size={18} />
             </span>
-            <span className="text-[13px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-bg-inverse)]">LOBB</span>
+            <span className="hidden text-[13px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-bg-inverse)] sm:inline">LOBB</span>
           </Link>
 
           <nav aria-label="Main navigation" className="hidden items-center gap-7 text-sm font-medium text-[var(--lobb-text-secondary)] md:flex md:justify-self-center">
@@ -519,51 +498,31 @@ function LandingSplash() {
             </Link>
           </div>
         </div>
-        <nav aria-label="Mobile navigation" className="mx-auto flex h-10 max-w-7xl items-center gap-5 border-t border-[var(--lobb-border-subtle)] px-4 text-xs font-medium text-[var(--lobb-text-secondary)] md:hidden">
-          <Link href="/coaches" className="transition hover:text-[var(--lobb-bg-inverse)]">Browse coaches</Link>
-          <Link href="/how-it-works" className="transition hover:text-[var(--lobb-bg-inverse)]">How it works</Link>
-          <Link href="/about" className="transition hover:text-[var(--lobb-bg-inverse)]">About LOBB</Link>
-        </nav>
       </header>
 
-      <section className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:min-h-[calc(100dvh-64px)] lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:px-8 lg:py-12">
+      <section className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] lg:px-8 lg:py-16">
         <div className="max-w-3xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
-          <div className="mb-5 inline-flex items-center gap-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/88 px-3.5 py-2">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-[var(--lobb-clay)] opacity-70" />
-              <span className="relative inline-flex size-2 rounded-full bg-[var(--lobb-clay)]" />
-            </span>
-            <span className="text-xs font-medium text-[var(--lobb-text-secondary)]">
-              Verified tennis coaches across Lagos
-            </span>
-          </div>
+          <p className="mb-5 text-sm font-medium text-[var(--lobb-clay)]">Verified tennis coaching in Lagos</p>
 
-          <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.96] tracking-tight text-[var(--lobb-bg-inverse)] sm:text-[68px] lg:text-[88px] text-balance">
-            Find the right tennis coach. Pick a time. Play.
+          <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight text-[var(--lobb-bg-inverse)] sm:text-[64px] lg:text-[76px] text-balance">
+            Book tennis coaching without the WhatsApp runaround.
           </h1>
-          <p className="mt-6 max-w-xl text-[16px] leading-[1.7] text-[var(--lobb-text-secondary)] sm:text-[18px] text-pretty">
-            Compare verified Lagos coaches, see their rates and book securely—without chasing referrals on WhatsApp.
+          <p className="mt-6 max-w-xl text-[16px] leading-7 text-[var(--lobb-text-secondary)] sm:text-[18px] text-pretty">
+            Compare verified coaches, see upfront rates and reserve a real time—all in one place.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
-              Find a coach
+          <div className="mt-8">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
+              Browse coaches
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-            <Link href="/auth/signup/coach" className="inline-flex h-14 items-center justify-center px-3 text-sm font-semibold text-[var(--lobb-bg-inverse)] underline decoration-[var(--lobb-border-strong)] underline-offset-8 transition hover:text-[var(--lobb-clay)] hover:decoration-[var(--lobb-clay)]">
-              I&apos;m a tennis coach
             </Link>
           </div>
 
-          <div className="mt-9 flex max-w-xl flex-wrap gap-x-6 gap-y-3 border-y border-[var(--lobb-border-subtle)] py-4 text-sm text-[var(--lobb-text-secondary)]">
-            {coachCount != null && <span><strong className="font-semibold text-[var(--lobb-bg-inverse)]">{coachCount}</strong> verified coaches</span>}
-            <span><strong className="font-semibold text-[var(--lobb-bg-inverse)]">{areas.length}</strong> Lagos areas</span>
-            <span><strong className="font-semibold text-[var(--lobb-bg-inverse)]">Upfront</strong> rates</span>
-          </div>
+          <p className="mt-5 text-sm text-[var(--lobb-text-secondary)]">Verified profiles · Upfront pricing · Secure payment</p>
         </div>
 
         <div className="relative animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-150">
-          <div className="lobb-hero-visual group relative min-h-[500px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[540px]">
+          <div className="lobb-hero-visual group relative min-h-[390px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[440px]">
             <div
               className="absolute inset-0 scale-105 bg-cover bg-center opacity-[0.88] transition duration-700 group-hover:scale-110"
               style={{ backgroundImage: `url(${courtImage})` }}
@@ -571,10 +530,10 @@ function LandingSplash() {
             />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,13,13,0.05),rgba(13,13,13,0.9)),linear-gradient(90deg,rgba(13,13,13,0.72),rgba(13,13,13,0.08)_48%,rgba(13,13,13,0.76)),radial-gradient(circle_at_78%_18%,rgba(196,98,45,0.34),transparent_28%)]" aria-hidden="true" />
 
-            <div className="relative grid min-h-[500px] content-end p-4 sm:min-h-[540px] sm:p-7">
+            <div className="relative grid min-h-[390px] content-end p-5 sm:min-h-[440px] sm:p-7">
               <div className="max-w-[430px] text-white">
                 <p className="text-sm font-medium text-white/75">Featured on LOBB</p>
-                <h2 className="mt-2 text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[46px] text-balance">
+                <h2 className="mt-2 text-[30px] font-semibold leading-[1.04] tracking-tight sm:text-[40px] text-balance">
                   {heroCoach?.full_name ?? "Verified coaching across Lagos"}
                 </h2>
                 <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80">
@@ -592,48 +551,22 @@ function LandingSplash() {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-4 pt-14 sm:px-6 lg:px-8">
-        <div data-reveal className="lobb-landing-panel border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-10">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-xl">
-              <DotLabel>Browse coaches</DotLabel>
-              <h2 className="mt-3 text-[28px] font-semibold leading-[1.04] tracking-tight sm:text-[38px] text-balance">
-                Start with the coach, not a sales pitch.
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-[var(--lobb-text-secondary)]">
-                Hover over any verified coach to view their rate, rating, specializations and location. Pick a time and book instantly without WhatsApp back-and-forth.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-end">
-              {coaches.length > 0 ? (
-                <div className="flex flex-col items-start sm:items-center lg:items-end gap-2">
-                  <CoachAvatarGroup
-                    coaches={coaches}
-                    total={coachCount ?? coaches.length}
-                    maxShown={6}
-                    size="xl"
-                  />
-                  <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">
-                    {coachCount != null ? <strong className="font-semibold text-[var(--lobb-bg-inverse)]">{coachCount}</strong> : null}{" "}
-                    verified coaches ready to book · Hover to preview
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-[var(--lobb-text-secondary)]">
-                  New coaches are being verified across Lagos.
-                </p>
-              )}
-
-              <Link
-                href="/coaches"
-                className="group inline-flex items-center gap-2 text-[12px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-bg-inverse)] transition hover:text-[var(--lobb-clay)]"
-              >
-                Browse all coaches <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-            </div>
+      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-12 sm:px-6 lg:px-8 lg:pt-16">
+        <div data-reveal className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <DotLabel>Coaches on LOBB</DotLabel>
+            <h2 className="mt-3 text-[28px] font-semibold leading-[1.04] tracking-tight sm:text-[38px] text-balance">Choose with confidence.</h2>
           </div>
+          <Link href="/coaches" className="group hidden items-center gap-2 text-sm font-semibold transition hover:text-[var(--lobb-clay)] sm:inline-flex">View all <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link>
         </div>
+        {coaches.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {coaches.slice(0, 3).map((coach) => <LandingCoachSummary key={coach.id} coach={coach} />)}
+          </div>
+        ) : (
+          <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-sm text-[var(--lobb-text-secondary)]">New coaches are being verified across Lagos.</div>
+        )}
+        <Link href="/coaches" className="mt-4 flex h-12 items-center justify-center gap-2 border border-[var(--lobb-border-subtle)] text-sm font-semibold sm:hidden">View all coaches <ArrowRight className="size-4" /></Link>
       </section>
 
       <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
@@ -755,6 +688,36 @@ function LandingSplash() {
 }
 
 /* ─────────────────────────────── Helpers ────────────────────────────────── */
+
+function LandingCoachSummary({ coach }: { coach: CoachPublicProfile }) {
+  const href = `/coaches/${coach.slug ?? coach.id}`;
+  return (
+    <Link href={href} className="lobb-landing-panel group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
+      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--lobb-bg-secondary)]">
+        {coach.profile_photo_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={coach.profile_photo_url} alt={coach.full_name} className="size-full object-cover object-top transition duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <div className="flex size-full items-center justify-center text-4xl font-semibold text-[var(--lobb-text-tertiary)]">{coach.full_name.charAt(0)}</div>
+        )}
+        {coach.hourly_rate_ngn != null && <span className="absolute bottom-3 left-3 bg-[#0d0d0d]/82 px-2.5 py-1.5 text-xs font-medium text-white">{coachRate(coach.hourly_rate_ngn)}</span>}
+      </div>
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold">{coach.full_name}</h3>
+            <p className="mt-1 line-clamp-1 text-sm text-[var(--lobb-text-secondary)]">{coach.headline ?? "Tennis coach"}</p>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium"><Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{coach.avg_rating != null ? Number(coach.avg_rating).toFixed(1) : "New"}</span>
+        </div>
+        <div className="mt-4 flex items-center justify-between border-t border-[var(--lobb-border-subtle)] pt-3 text-xs">
+          <span className="inline-flex min-w-0 items-center gap-1.5 text-[var(--lobb-text-secondary)]"><MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" /><span className="truncate">{coach.primary_location ?? "Lagos"}</span></span>
+          <span className="ml-3 inline-flex shrink-0 items-center gap-1 font-semibold">View profile <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" /></span>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 function DotLabel({ children, light = false }: { children: React.ReactNode; light?: boolean }) {
   return (

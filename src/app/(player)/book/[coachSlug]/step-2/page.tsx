@@ -40,20 +40,20 @@ function countdownStyle(seconds: number) {
 function AccessBadge({ rule }: { rule: string }) {
   if (rule === "open") {
     return (
-      <span className="inline-flex items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-success-soft)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--lobb-success)]">
+      <span className="text-xs font-medium text-[var(--lobb-success)]">
         Open access
       </span>
     );
   }
   if (rule === "members_only") {
     return (
-      <span className="inline-flex items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--lobb-clay)]">
+      <span className="text-xs font-medium text-[var(--lobb-text-secondary)]">
         Members only
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-clay-light)] px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-[var(--lobb-clay-dark)]">
+    <span className="text-xs font-medium text-[var(--lobb-text-secondary)]">
       Restricted hours
     </span>
   );
@@ -189,13 +189,13 @@ function BookingStep2Content() {
           <div className="p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Held slot</p>
+                <p className="text-xs text-[var(--lobb-text-secondary)]">Time held for checkout</p>
                 <p className="mt-1 text-base font-medium text-[var(--lobb-text-primary)]">{formatSlotDate(slot)}</p>
                 <p className="mt-0.5 text-sm font-medium text-[var(--lobb-text-secondary)]">
                   {formatSlotTime(slot)} to {formatSlotEndTime(slot)}, 60 min
                 </p>
               </div>
-              <span className={`inline-flex items-center gap-1.5 rounded-[var(--lobb-radius-lg)] px-3 py-2 text-xs font-medium ${countdownStyle(seconds)}`}>
+              <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-[var(--lobb-radius-md)] px-3 py-2 text-xs font-medium tabular-nums ${countdownStyle(seconds)}`}>
                 <Timer className="size-3.5" />
                 {formatCountdown(seconds)}
               </span>
@@ -230,7 +230,7 @@ function BookingStep2Content() {
                 onClick={() => handleSelectCourt(court.id)}
                 className={`w-full rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-all duration-150 active:scale-[0.99] ${
                   selectedCourtId === court.id && !showCustom
-                    ? "border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)]"
+                    ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] ring-1 ring-[var(--lobb-clay)]"
                     : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] hover:border-[var(--lobb-clay)]/40"
                 }`}
               >
@@ -253,7 +253,7 @@ function BookingStep2Content() {
                       </p>
                     )}
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2">
+              <div className="flex max-w-[112px] shrink-0 flex-col items-end gap-2 text-right">
                     <AccessBadge rule={court.accessRule} />
                     {selectedCourtId === court.id && !showCustom && (
                       <CheckCircle2 className="size-5 text-[var(--lobb-clay)]" />
@@ -267,9 +267,9 @@ function BookingStep2Content() {
 
           {/* Other / custom location */}
           {showCustom ? (
-            <div className="rounded-[var(--lobb-radius-lg)] border-2 border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] p-4">
-              <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-clay)]">
-                Custom location
+            <div className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-strong)] bg-[var(--lobb-bg-primary)] p-4">
+              <p className="mb-2 text-sm font-medium text-[var(--lobb-text-primary)]">
+                Enter another location
               </p>
               <LobbTextarea
                 value={customLocation}
@@ -277,7 +277,7 @@ function BookingStep2Content() {
                 placeholder="e.g. Lekki Tennis Club, Lekki Phase 1"
                 rows={2}
                 autoFocus
-                className="w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-sm font-medium outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+                className="w-full resize-none bg-[var(--lobb-bg-elevated)]"
               />
               <LobbButton variant="unstyled"
                 type="button"
@@ -302,21 +302,20 @@ function BookingStep2Content() {
 
       {/* Note to coach */}
       <label className="lobb-surface-outlined mt-4 block border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
-        <span className="text-sm font-medium uppercase tracking-wider text-[var(--lobb-text-primary)]">
-          Note to coach{" "}
-          <span className="text-[10px] font-bold tracking-normal text-[var(--lobb-text-secondary)] lowercase">(optional)</span>
+        <span className="text-sm font-medium text-[var(--lobb-text-primary)]">
+          Note to coach <span className="font-normal text-[var(--lobb-text-secondary)]">(optional)</span>
         </span>
         <LobbTextarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Focus area, injury note, or anything the coach should know"
           rows={3}
-          className="mt-3 h-24 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium outline-none transition-all duration-200 placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)] focus:ring-4 focus:ring-[var(--lobb-clay)]/10"
+          className="mt-3 h-24 resize-none bg-[var(--lobb-bg-primary)]"
         />
       </label>
 
       <BookingButton disabled={!canContinue} onClick={handleContinue}>
-        Review booking
+        Continue to review
       </BookingButton>
     </BookingShell>
   );

@@ -2,7 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { CalendarDays, Clock3, MapPin, ShieldCheck } from "lucide-react";
+import { CalendarDays, MapPin, ShieldCheck } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -155,27 +155,17 @@ function BookingStep3Content() {
         <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Review & pay</p>
-            <h2 className="mt-1 text-xl font-semibold text-[var(--lobb-text-primary)]">Confirm your session</h2>
+            <p className="text-xs text-[var(--lobb-text-secondary)]">Final step</p>
+            <h2 className="mt-1 text-xl font-semibold text-[var(--lobb-text-primary)]">Review your booking</h2>
           </div>
-          <span className={`rounded-[var(--lobb-radius-lg)] px-3 py-2 text-xs font-medium transition-colors duration-500 ${countdownStyle(seconds)}`}>
-            {formatCountdown(seconds)}
+          <span className={`shrink-0 rounded-[var(--lobb-radius-md)] px-3 py-2 text-xs font-medium tabular-nums transition-colors duration-500 ${countdownStyle(seconds)}`}>
+            Held {formatCountdown(seconds)}
           </span>
         </div>
         </div>
       </div>
 
       <section className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
-        <div className="bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)]">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/75">Payment summary</p>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-semibold">{coach ? money(total) : "Loading"}</h2>
-              <p className="mt-1 text-xs font-medium text-white/75">60-minute private coaching session</p>
-            </div>
-            <ShieldCheck className="size-7 text-[var(--lobb-clay)]" />
-          </div>
-        </div>
         <div className="p-4 sm:p-5">
         {/* Coach identity */}
         {coach && (
@@ -191,7 +181,7 @@ function BookingStep3Content() {
               )}
             </div>
             <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Tennis Professional</p>
+              <p className="text-xs text-[var(--lobb-text-secondary)]">Coach</p>
               <p className="text-base font-medium tracking-tight text-[var(--lobb-text-primary)]">{coach.full_name}</p>
             </div>
           </div>
@@ -205,10 +195,6 @@ function BookingStep3Content() {
               <span className="text-[var(--lobb-text-primary)]">{formatSlotShort(slot)} - {formatSlotEnd(slot)}</span>
             </div>
           )}
-          <div className="flex items-center gap-3 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
-            <Clock3 className="size-4 shrink-0 text-[var(--lobb-clay)]" />
-            <span className="text-[var(--lobb-text-primary)]">60 minutes</span>
-          </div>
           {location && (
             <div className="flex items-start gap-3 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3">
               <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
@@ -232,7 +218,7 @@ function BookingStep3Content() {
             </div>
             <div className="pt-2">
               <div className="flex items-center justify-between rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
-                <span className="text-xs font-medium uppercase tracking-wider text-[var(--lobb-text-primary)]">Total</span>
+                <span className="text-sm font-semibold text-[var(--lobb-text-primary)]">Total</span>
                 <span className="text-xl font-semibold text-[var(--lobb-clay)]">{money(total)}</span>
               </div>
             </div>
@@ -247,17 +233,9 @@ function BookingStep3Content() {
         </div>
       </section>
 
-      {/* Payment protection banner */}
-      <div className="mt-4 flex items-start gap-3 border border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)] p-4 text-xs font-medium leading-relaxed text-[var(--lobb-text-primary)]">
-        <ShieldCheck className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-success)]">Protected payment</p>
-          <p className="mt-1 font-medium text-[var(--lobb-text-secondary)]">
-            {coach
-              ? `Your ${money(total)} is held safely and released to ${coach.full_name?.split(" ")[0]} after your session.`
-              : "Your payment is held safely and released to the coach after your session."}
-          </p>
-        </div>
+      <div className="mt-4 flex items-center gap-2 text-xs leading-5 text-[var(--lobb-text-secondary)]">
+        <ShieldCheck className="size-4 shrink-0 text-[var(--lobb-success)]" />
+        Payment is released to the coach after the session.
       </div>
 
       <ConsentCheckbox
@@ -274,8 +252,8 @@ function BookingStep3Content() {
         {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}
       </BookingButton>
 
-      <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[10px] font-medium uppercase tracking-wider text-[var(--lobb-text-secondary)]">
-        Secured by Paystack · Powered by LOBB
+      <p className="mt-4 text-center text-xs text-[var(--lobb-text-secondary)]">
+        Secure payment by Paystack
       </p>
     </BookingShell>
   );
