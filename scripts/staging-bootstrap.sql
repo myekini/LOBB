@@ -1093,6 +1093,24 @@ left join public.bookings b on b.player_id = p.id
 where p.role = 'player'
 group by p.id;
 
+-- Real totals for the current filter/date-range on the admin bookings ledger.
+create or replace function public.admin_bookings_summary(
+  p_status text default null,
+  p_from   timestamptz default null,
+  p_to     timestamptz default null
+)
+returns table (record_count bigint, gross_ngn bigint, payout_ngn bigint)
+language sql stable security definer as $$
+  select
+    count(*)::bigint,
+    coalesce(sum(total_amount_ngn), 0)::bigint,
+    coalesce(sum(coach_payout_ngn), 0)::bigint
+  from public.bookings
+  where (p_status is null or status = p_status)
+    and (p_from is null or starts_at >= p_from)
+    and (p_to   is null or starts_at <= p_to);
+$$;
+
 -- ─── Enable RLS on all user-facing tables ─────────────────────────────────────
 
 alter table public.profiles                      enable row level security;

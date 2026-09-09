@@ -2,8 +2,8 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, UserCheck, WalletCards } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, RefreshCw, UserCheck, WalletCards } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -34,28 +34,27 @@ type AdminDashboardPayload = {
 export default function AdminDashboardPage() {
   const [data, setData] = useState<AdminDashboardPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [retrying, setRetrying] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/admin/dashboard")
-      .then((r) => r.json() as Promise<AdminDashboardPayload & { error?: string }>)
-      .then((payload) => {
-        if (!alive) return;
-        if (payload.error) throw new Error(payload.error);
-        setData(payload);
-      })
-      .catch((error) => {
-        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load admin dashboard" });
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
+  const load = useCallback(async (mode: "initial" | "refresh" = "initial") => {
+    if (mode === "refresh") setRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/dashboard");
+      const payload = (await res.json()) as AdminDashboardPayload & { error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Unable to load admin dashboard");
+      setData(payload);
+    } catch (error) {
+      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load admin dashboard" });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const metrics = data?.metrics;
   const recentBookings = data?.recent_bookings ?? [];
@@ -73,10 +72,21 @@ export default function AdminDashboardPage() {
                 <p className="text-xs font-medium text-white/75">Admin</p>
                 <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
               </div>
-              <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white">
-                <UserCheck className="size-4" />
-                Review applications
-              </Link>
+              <div className="flex items-center gap-2">
+                <LobbButton
+                  variant="unstyled"
+                  onClick={() => load("refresh")}
+                  disabled={loading || refreshing}
+                  aria-label="Refresh"
+                  className="inline-flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/20 text-white disabled:opacity-60"
+                >
+                  <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
+                </LobbButton>
+                <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white">
+                  <UserCheck className="size-4" />
+                  Review applications
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -162,6 +172,7 @@ export default function AdminDashboardPage() {
                           showLobbToast({ type: "error", message: "Retry failed. Check server logs." });
                         } finally {
                           setRetrying(false);
+                          load("refresh");
                         }
                       }}
                       className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"

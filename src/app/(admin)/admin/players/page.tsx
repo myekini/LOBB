@@ -1,9 +1,9 @@
 "use client";
 
 import { Input as LobbInput } from "@/components/ui/input";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Search, Users } from "lucide-react";
-import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
+import { AdminBackHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { formatDate, money } from "@/lib/dashboard-client-types";
@@ -21,20 +21,27 @@ type PlayerRow = {
 export default function AdminPlayersPage() {
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    fetch("/api/admin/players")
-      .then((r) => r.json() as Promise<{ players?: PlayerRow[]; error?: string }>)
-      .then((json) => {
-        if (json.error) throw new Error(json.error);
-        setPlayers(json.players ?? []);
-      })
-      .catch((error) => {
-        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load players" });
-      })
-      .finally(() => setLoading(false));
+  const load = useCallback(async (mode: "initial" | "refresh" = "initial") => {
+    if (mode === "refresh") setRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/players");
+      const json = (await res.json()) as { players?: PlayerRow[]; error?: string };
+      if (!res.ok) throw new Error(json.error ?? "Unable to load players");
+      setPlayers(json.players ?? []);
+    } catch (error) {
+      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load players" });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -48,7 +55,7 @@ export default function AdminPlayersPage() {
 
   return (
     <AdminShell>
-      <AdminBackHeader title="Players" />
+      <AdminBackHeader title="Players" action={<AdminRefreshButton onClick={() => load("refresh")} busy={loading || refreshing} />} />
 
       <div className="mx-auto max-w-4xl">
         <section className="grid gap-3 sm:grid-cols-3">

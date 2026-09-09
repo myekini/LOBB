@@ -2,8 +2,8 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import { Download, Gavel, Loader2, Send } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Download, Gavel, Loader2, RefreshCw, Send } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
 import { Modal } from "@/components/ui/modal";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -21,7 +21,9 @@ export default function AdminBookingsPage() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [bookings, setBookings] = useState<DashboardBooking[]>([]);
+  const [summary, setSummary] = useState<{ record_count: number; gross_ngn: number; payout_ngn: number } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -32,40 +34,51 @@ export default function AdminBookingsPage() {
   const [payoutTarget, setPayoutTarget] = useState<DashboardBooking | null>(null);
   const [payoutBusy, setPayoutBusy] = useState(false);
 
-  const buildUrl = (cursor?: string) => {
-    const params = new URLSearchParams();
-    if (filter !== "all") params.set("status", filter);
-    if (from) params.set("from", from);
-    if (to) params.set("to", `${to}T23:59:59`);
-    if (cursor) params.set("cursor", cursor);
-    const qs = params.toString();
-    return `/api/admin/bookings${qs ? `?${qs}` : ""}`;
+  const buildUrl = useCallback(
+    (cursor?: string) => {
+      const params = new URLSearchParams();
+      if (filter !== "all") params.set("status", filter);
+      if (from) params.set("from", from);
+      if (to) params.set("to", `${to}T23:59:59`);
+      if (cursor) params.set("cursor", cursor);
+      const qs = params.toString();
+      return `/api/admin/bookings${qs ? `?${qs}` : ""}`;
+    },
+    [filter, from, to]
+  );
+
+  type ListResponse = {
+    bookings?: DashboardBooking[];
+    next_cursor?: string | null;
+    summary?: { record_count: number; gross_ngn: number; payout_ngn: number } | null;
+    error?: string;
   };
 
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-    setNextCursor(null);
-    fetch(buildUrl())
-      .then((r) => r.json() as Promise<{ bookings?: DashboardBooking[]; next_cursor?: string | null; error?: string }>)
-      .then((json) => {
-        if (!alive) return;
-        if (json.error) throw new Error(json.error);
+  const load = useCallback(
+    async (mode: "initial" | "refresh") => {
+      if (mode === "refresh") setRefreshing(true);
+      else setLoading(true);
+      setNextCursor(null);
+      try {
+        const res = await fetch(buildUrl());
+        const json = (await res.json()) as ListResponse;
+        if (!res.ok) throw new Error(json.error ?? "Unable to load bookings");
         setBookings(json.bookings ?? []);
         setNextCursor(json.next_cursor ?? null);
-      })
-      .catch((error) => {
+        setSummary(json.summary ?? null);
+      } catch (error) {
         showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load bookings" });
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [buildUrl]
+  );
 
-    return () => {
-      alive = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, from, to]);
+  useEffect(() => {
+    load("initial");
+  }, [load]);
 
   const loadMore = async () => {
     if (!nextCursor || loadingMore) return;
@@ -83,7 +96,6 @@ export default function AdminBookingsPage() {
     }
   };
 
-  const totalValue = bookings.reduce((sum, booking) => sum + booking.total_amount_ngn, 0);
   const pendingPayoutCount = bookings.filter(isPayable).length;
 
   const submitDispute = async () => {
@@ -177,13 +189,24 @@ export default function AdminBookingsPage() {
           <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Ledger</p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">Bookings</h1>
         </div>
-        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{bookings.length}{nextCursor ? "+" : ""} loaded</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{bookings.length}{nextCursor ? "+" : ""} loaded</p>
+          <LobbButton
+            variant="unstyled"
+            onClick={() => load("refresh")}
+            disabled={loading || refreshing}
+            aria-label="Refresh"
+            className="inline-flex size-9 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] disabled:opacity-60"
+          >
+            <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
+          </LobbButton>
+        </div>
       </div>
 
       <section className="mt-5 grid gap-3 sm:grid-cols-3">
-        <LedgerMetric label="Loaded value" value={money(totalValue)} />
-        <LedgerMetric label="Loaded records" value={`${bookings.length}${nextCursor ? "+" : ""}`} />
-        <LedgerMetric label="Needs payout" value={String(pendingPayoutCount)} urgent={pendingPayoutCount > 0} />
+        <LedgerMetric label="Filtered value" value={money(summary?.gross_ngn ?? 0)} />
+        <LedgerMetric label="Records" value={String(summary?.record_count ?? bookings.length)} />
+        <LedgerMetric label="Needs payout (loaded)" value={String(pendingPayoutCount)} urgent={pendingPayoutCount > 0} />
       </section>
 
       <div className="mt-6 flex gap-2 overflow-x-auto pb-1">

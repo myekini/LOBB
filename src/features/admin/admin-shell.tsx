@@ -4,7 +4,7 @@ import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, CalendarDays, Gavel, LayoutDashboard, Loader2, LogOut, UserCheck, Users, WalletCards } from "lucide-react";
+import { ArrowLeft, CalendarDays, Gavel, LayoutDashboard, Loader2, LogOut, RefreshCw, UserCheck, Users, WalletCards } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -101,14 +101,28 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function AdminBackHeader({ title, href = "/admin" }: { title: string; href?: string }) {
+export function AdminBackHeader({ title, href = "/admin", action }: { title: string; href?: string; action?: React.ReactNode }) {
   return (
     <div className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3 lg:flex">
       <Link href={href} className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]" aria-label="Go back">
         <ArrowLeft className="size-5" />
       </Link>
-      <h1 className="truncate text-center text-[22px] font-semibold md:text-2xl lg:text-left">{title}</h1>
-      <div aria-hidden="true" />
+      <h1 className="truncate text-center text-[22px] font-semibold md:text-2xl lg:text-left lg:flex-1">{title}</h1>
+      <div className="flex justify-end">{action}</div>
     </div>
+  );
+}
+
+export function AdminRefreshButton({ onClick, busy }: { onClick: () => void; busy: boolean }) {
+  return (
+    <LobbButton
+      variant="unstyled"
+      onClick={onClick}
+      disabled={busy}
+      aria-label="Refresh"
+      className="inline-flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)] disabled:opacity-60 lg:size-9 lg:rounded-[var(--lobb-radius-md)]"
+    >
+      <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
+    </LobbButton>
   );
 }

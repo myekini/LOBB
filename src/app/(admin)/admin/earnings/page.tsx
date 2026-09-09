@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as LobbButton } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, Loader2, RefreshCw, WalletCards } from "lucide-react";
 import { AdminShell } from "@/features/admin/admin-shell";
 import { formatBookingDate, money, sessionParties } from "@/lib/dashboard-client-types";
@@ -35,28 +35,27 @@ type EarningsPayload = {
 export default function AdminEarningsPage() {
   const [data, setData] = useState<EarningsPayload | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [retrying, setRetrying] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/admin/earnings")
-      .then((r) => r.json() as Promise<EarningsPayload & { error?: string }>)
-      .then((payload) => {
-        if (!alive) return;
-        if (payload.error) throw new Error(payload.error);
-        setData(payload);
-      })
-      .catch((error) => {
-        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load earnings" });
-      })
-      .finally(() => {
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
+  const load = useCallback(async (mode: "initial" | "refresh" = "initial") => {
+    if (mode === "refresh") setRefreshing(true);
+    try {
+      const res = await fetch("/api/admin/earnings");
+      const payload = (await res.json()) as EarningsPayload & { error?: string };
+      if (!res.ok) throw new Error(payload.error ?? "Unable to load earnings");
+      setData(payload);
+    } catch (error) {
+      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load earnings" });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const metrics = data?.metrics;
   const platformFee = (booking: RevenueBooking) => booking.platform_commission_ngn + booking.convenience_fee_ngn;
@@ -80,6 +79,7 @@ export default function AdminEarningsPage() {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to retry payouts" });
     } finally {
       setRetrying(false);
+      load("refresh");
     }
   };
 
@@ -93,7 +93,18 @@ export default function AdminEarningsPage() {
           </p>
           <h1 className="mt-1 text-3xl font-semibold tracking-tight">Earnings</h1>
         </div>
-        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">Booking revenue</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">Booking revenue</p>
+          <LobbButton
+            variant="unstyled"
+            onClick={() => load("refresh")}
+            disabled={loading || refreshing}
+            aria-label="Refresh"
+            className="inline-flex size-9 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] disabled:opacity-60"
+          >
+            <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
+          </LobbButton>
+        </div>
       </div>
 
       <section className="mt-6 border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-6 text-[var(--lobb-text-inverse)] sm:p-8">

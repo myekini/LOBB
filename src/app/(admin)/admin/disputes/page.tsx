@@ -5,7 +5,7 @@ import { Input as LobbInput } from "@/components/ui/input";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Gavel, Loader2 } from "lucide-react";
-import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
+import { AdminBackHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { FormAlert } from "@/components/ui/form-alert";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
@@ -114,7 +114,7 @@ export default function AdminDisputesPage() {
 
   return (
     <AdminShell>
-      <AdminBackHeader title="Disputes" />
+      <AdminBackHeader title="Disputes" action={<AdminRefreshButton onClick={() => load()} busy={loading} />} />
 
       {loading ? (
         <div className="space-y-4">
