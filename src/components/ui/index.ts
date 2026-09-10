@@ -18,5 +18,6 @@ export * from "./select";
 export * from "./skeleton";
 export * from "./star-rating";
 export * from "./status-badge";
+export * from "./table";
 export * from "./tabs";
 export * from "./textarea";

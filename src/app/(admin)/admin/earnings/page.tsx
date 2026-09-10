@@ -2,7 +2,7 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import { useState } from "react";
-import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import {
   AdminEmptyState,
   AdminMetricCard,
@@ -12,6 +12,7 @@ import {
   useAdminResource,
 } from "@/features/admin/admin-shell";
 import { retryStuckPayouts } from "@/features/admin/payout-actions";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatBookingDate, money, sessionParties } from "@/lib/dashboard-client-types";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 
@@ -59,7 +60,17 @@ export default function AdminEarningsPage() {
 
   return (
     <AdminShell>
-      <AdminPageHeader eyebrow="Finance" title="Earnings" description="Booking revenue" backHref="/admin">
+      <AdminPageHeader eyebrow="Finance" title="Earnings" description="Booking revenue and payout health" backHref="/admin">
+        <LobbButton
+          variant="unstyled"
+          type="button"
+          disabled={retrying}
+          onClick={retryPayouts}
+          className="inline-flex h-11 items-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-sm font-medium disabled:opacity-60"
+        >
+          {retrying ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+          {retrying ? "Retrying" : "Retry stuck payouts"}
+        </LobbButton>
         <AdminRefreshButton onClick={() => reload("refresh")} busy={loading || refreshing} />
       </AdminPageHeader>
 
@@ -85,62 +96,55 @@ export default function AdminEarningsPage() {
         )}
       </div>
 
-      <section className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-          <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-warning)]/12 text-[var(--lobb-warning)]">
-              <AlertTriangle className="size-4" />
-            </span>
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold">Payout operations</h2>
-              <p className="mt-1 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-                Retry completed sessions where the payout transfer to the coach has not been sent yet.
-              </p>
-            </div>
-          </div>
-        </div>
-        <LobbButton variant="unstyled"
-          type="button"
-          disabled={retrying}
-          onClick={retryPayouts}
-          className="inline-flex h-full min-h-20 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
-        >
-          {retrying ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
-          {retrying ? "Retrying payouts" : "Retry stuck payouts"}
-        </LobbButton>
-      </section>
-
       <div className="mt-8 flex items-center justify-between">
         <h2 className="font-semibold">Recent revenue</h2>
         <span className="text-xs font-medium text-[var(--lobb-text-secondary)]">{money(totalRecentFees)} fees shown</span>
       </div>
-      <section className="mt-3 grid gap-3 xl:grid-cols-2">
+      <section className="mt-3">
         {loading ? (
-          Array.from({ length: 4 }).map((_, index) => <SkeletonBlock key={index} className="h-24 rounded-[var(--lobb-radius-lg)]" />)
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <SkeletonBlock key={index} className="h-14 rounded-[var(--lobb-radius-md)]" />
+            ))}
+          </div>
         ) : data?.recent_revenue?.length ? (
-          data.recent_revenue.map((booking) => (
-            <article key={booking.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">#{booking.id.slice(0, 8)}</p>
-                  <p className="mt-1 text-sm font-medium">
-                    {sessionParties(booking).player} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {sessionParties(booking).coach}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
-                </div>
-                <p className="font-medium">{money(booking.total_amount_ngn)}</p>
-              </div>
-              <div className="mt-4 flex items-center justify-between rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-medium">
-                <span className="text-[var(--lobb-text-secondary)]">Platform fee</span>
-                <span>{money(platformFee(booking))}</span>
-              </div>
-            </article>
-          ))
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Booking</TableHead>
+                <TableHead>Session</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Platform fee</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.recent_revenue.map((booking) => {
+                const { coach, player } = sessionParties(booking);
+                return (
+                  <TableRow key={booking.id}>
+                    <TableCell className="whitespace-nowrap font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      #{booking.id.slice(0, 8)}
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {player} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {coach}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      {formatBookingDate(booking.starts_at)}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right text-sm font-medium">{money(booking.total_amount_ngn)}</TableCell>
+                    <TableCell className="whitespace-nowrap text-right text-sm font-medium text-[var(--lobb-clay)]">
+                      {money(platformFee(booking))}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         ) : (
           <AdminEmptyState
             title="No revenue yet"
             body="Paid bookings will appear here once sessions are confirmed or completed."
-            className="xl:col-span-2"
           />
         )}
       </section>

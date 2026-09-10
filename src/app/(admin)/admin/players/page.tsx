@@ -1,8 +1,7 @@
 "use client";
 
-import { Input as LobbInput } from "@/components/ui/input";
 import { useMemo, useState } from "react";
-import { Search, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import {
   AdminEmptyState,
   AdminMetricCard,
@@ -11,6 +10,9 @@ import {
   AdminShell,
   useAdminResource,
 } from "@/features/admin/admin-shell";
+import { SearchInput } from "@/components/ui/search-input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PersonCell } from "@/components/common/person-cell";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { formatDate, money } from "@/lib/dashboard-client-types";
 
@@ -41,81 +43,84 @@ export default function AdminPlayersPage() {
 
   return (
     <AdminShell>
-      <AdminPageHeader
-        eyebrow="Directory"
-        title="Players"
-        backHref="/admin"
-      >
+      <AdminPageHeader eyebrow="Directory" title="Players" backHref="/admin">
         <AdminRefreshButton onClick={() => reload("refresh")} busy={loading || refreshing} />
       </AdminPageHeader>
 
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         <section className="grid gap-3 sm:grid-cols-3">
           <AdminMetricCard label="Players" value={String(players.length)} />
           <AdminMetricCard label="With bookings" value={String(players.filter((p) => p.stats.bookings > 0).length)} />
           <AdminMetricCard label="Lifetime booking value" value={money(totalSpend)} />
         </section>
 
-        <div className="mt-6 flex items-center gap-2.5 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4">
-          <Search className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />
-          <LobbInput
+        <div className="mt-6">
+          <SearchInput
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name, email, or phone…"
-            className="h-12 w-full border-0 bg-transparent text-[14px] font-medium outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
           />
         </div>
 
-        <section className="mt-5 space-y-3">
+        <section className="mt-5">
           {loading ? (
-            <>
-              <SkeletonBlock className="h-20 rounded-[var(--lobb-radius-lg)]" />
-              <SkeletonBlock className="h-20 rounded-[var(--lobb-radius-lg)]" />
-              <SkeletonBlock className="h-20 rounded-[var(--lobb-radius-lg)]" />
-            </>
+            <div className="space-y-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonBlock key={i} className="h-14 rounded-[var(--lobb-radius-md)]" />
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
-            <AdminEmptyState
-              icon={Users}
-              title={query ? "No players match that search" : "No players yet"}
-            />
+            <AdminEmptyState icon={Users} title={query ? "No players match that search" : "No players yet"} />
           ) : (
-            filtered.map((player) => (
-              <article
-                key={player.id}
-                className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-4"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-[15px] font-medium">
-                    {player.full_name ?? <span className="text-[var(--lobb-text-tertiary)]">Onboarding incomplete</span>}
-                    {player.referred_by_coach_id && (
-                      <span className="ml-2 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay)]/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--lobb-clay)]">
-                        Referred
-                      </span>
-                    )}
-                  </p>
-                  <p className="mt-0.5 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">
-                    {player.email ?? "no email"}{player.phone_number ? ` · ${player.phone_number}` : ""} · joined {formatDate(player.created_at)}
-                  </p>
-                </div>
-                <div className="mt-3 flex shrink-0 items-center gap-4 sm:mt-0">
-                  <Stat label="Bookings" value={`${player.stats.completed}/${player.stats.bookings}`} />
-                  <Stat label="Spend" value={money(player.stats.spend)} />
-                  <Stat label="Last session" value={formatDate(player.stats.last)} />
-                </div>
-              </article>
-            ))
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Player</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Joined</TableHead>
+                  <TableHead className="text-right">Sessions</TableHead>
+                  <TableHead className="text-right">Spend</TableHead>
+                  <TableHead className="text-right">Last session</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((player) => (
+                  <TableRow key={player.id}>
+                    <TableCell>
+                      <PersonCell
+                        name={player.full_name}
+                        trailing={
+                          player.referred_by_coach_id ? (
+                            <span className="rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-clay)]/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[var(--lobb-clay)]">
+                              Referred
+                            </span>
+                          ) : undefined
+                        }
+                      />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      {player.email ?? "no email"}
+                      {player.phone_number ? <span className="block">{player.phone_number}</span> : null}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      {formatDate(player.created_at)}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right text-sm font-medium">
+                      {player.stats.completed}/{player.stats.bookings}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right text-sm font-medium">
+                      {money(player.stats.spend)}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      {formatDate(player.stats.last)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </section>
       </div>
     </AdminShell>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="text-right">
-      <p className="text-[13px] font-medium">{value}</p>
-      <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--lobb-text-tertiary)]">{label}</p>
-    </div>
   );
 }
