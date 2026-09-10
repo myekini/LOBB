@@ -87,7 +87,7 @@ export default function AdminEarningsPage() {
           <>
             <AdminMetricCard label="Gross booking value" value={money(metrics?.gmv_ngn ?? 0)} />
             <AdminMetricCard label="Coach payouts shown" value={money(totalCoachPayouts)} />
-            <AdminMetricCard label="Completed bookings" value={String(metrics?.total_bookings ?? 0)} />
+            <AdminMetricCard label="Total bookings" value={String(metrics?.total_bookings ?? 0)} />
           </>
         )}
       </div>
