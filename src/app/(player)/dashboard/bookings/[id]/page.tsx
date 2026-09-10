@@ -265,6 +265,9 @@ export default function BookingDetailPage() {
 
             <section className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
               <InfoRow icon={MapPin} label="Location" value={booking.location || "Location not specified"} />
+              {booking.location && (
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(booking.location)}&travelmode=driving`} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]">Get directions</a>
+              )}
               {booking.player_notes && (
                 <div className="mt-4 border-t border-[var(--lobb-border-subtle)] pt-4">
                   <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Note to coach</p>

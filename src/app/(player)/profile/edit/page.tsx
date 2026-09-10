@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { PlayerHeader } from "@/components/layout/player-nav";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 function initials(name: string) {
   return name
@@ -26,6 +27,8 @@ export default function EditProfilePage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [skillLevel, setSkillLevel] = useState("");
+  const [preferredLocations, setPreferredLocations] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -37,15 +40,16 @@ export default function EditProfilePage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, email, avatar_url, email_notifications_enabled")
-        .eq("id", user.id)
-        .maybeSingle();
+      const [{ data }, { data: player }] = await Promise.all([
+        supabase.from("profiles").select("full_name, email, avatar_url, email_notifications_enabled").eq("id", user.id).maybeSingle(),
+        supabase.from("players").select("skill_level, preferred_locations").eq("id", user.id).maybeSingle(),
+      ]);
       setName(data?.full_name ?? "");
       setEmail(data?.email ?? "");
       setEmailNotifications(data?.email_notifications_enabled ?? true);
       setAvatarUrl(data?.avatar_url ?? null);
+      setSkillLevel(player?.skill_level ?? "");
+      setPreferredLocations((player?.preferred_locations ?? []).join(", "));
       setLoading(false);
     });
   }, [router]);
@@ -86,6 +90,14 @@ export default function EditProfilePage() {
         .eq("id", userId);
 
       if (error) throw error;
+
+      const { error: playerError } = await supabase.from("players").upsert({
+        id: userId,
+        full_name: name.trim(),
+        skill_level: skillLevel || null,
+        preferred_locations: preferredLocations.split(",").map((item) => item.trim()).filter(Boolean),
+      });
+      if (playerError) throw playerError;
 
       showLobbToast({ type: "success", message: "Profile saved." });
       router.push("/profile");
@@ -155,6 +167,23 @@ export default function EditProfilePage() {
               <p className="mt-1.5 text-xs font-medium text-[var(--lobb-text-secondary)] leading-relaxed">
                 Used for booking confirmations, 24-hour reminders, and session reviews.
               </p>
+            </label>
+
+            <div className="mt-5">
+              <span className="text-sm font-medium">Playing level</span>
+              <SearchableSelect
+                className="mt-2 h-14"
+                value={skillLevel}
+                onChange={setSkillLevel}
+                placeholder="Select your level"
+                options={["Beginner", "Improver", "Intermediate", "Advanced"].map((value) => ({ value, label: value }))}
+              />
+            </div>
+
+            <label className="mt-5 block">
+              <span className="text-sm font-medium">Preferred locations</span>
+              <LobbInput value={preferredLocations} onChange={(event) => setPreferredLocations(event.target.value)} placeholder="Lekki, Ikoyi, Victoria Island" className="mt-2 h-14" />
+              <span className="mt-1.5 block text-xs leading-5 text-[var(--lobb-text-secondary)]">Separate multiple areas with commas.</span>
             </label>
 
             {email.trim() && (

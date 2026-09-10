@@ -19,6 +19,8 @@ import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { createClient } from "@/lib/supabase/client";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { SecurityNudge } from "@/features/auth/security-nudge";
+import { fetchWithCache } from "@/lib/offline-cache";
+import type { DashboardBooking } from "@/lib/dashboard-client-types";
 
 type ProfileData = {
   full_name: string | null;
@@ -26,6 +28,8 @@ type ProfileData = {
   phone_number: string | null;
   avatar_url: string | null;
 };
+
+type PlayerPreferences = { skill_level: string | null; preferred_locations: string[] };
 
 function initials(name: string | null) {
   if (!name) return null;
@@ -40,17 +44,21 @@ export default function ProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [preferences, setPreferences] = useState<PlayerPreferences>({ skill_level: null, preferred_locations: [] });
+  const [bookingCount, setBookingCount] = useState(0);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, email, phone_number, avatar_url")
-        .eq("id", user.id)
-        .maybeSingle();
+      const [{ data }, { data: player }, dashboard] = await Promise.all([
+        supabase.from("profiles").select("full_name, email, phone_number, avatar_url").eq("id", user.id).maybeSingle(),
+        supabase.from("players").select("skill_level, preferred_locations").eq("id", user.id).maybeSingle(),
+        fetchWithCache<{ upcoming: DashboardBooking[]; past: DashboardBooking[] }>("lobb.dashboard.player", "/api/dashboard/player").catch(() => ({ upcoming: [], past: [] })),
+      ]);
       setProfile(data);
+      setPreferences({ skill_level: player?.skill_level ?? null, preferred_locations: player?.preferred_locations ?? [] });
+      setBookingCount((dashboard.upcoming?.length ?? 0) + (dashboard.past?.length ?? 0));
       setLoading(false);
     });
   }, [router]);
@@ -101,9 +109,17 @@ export default function ProfilePage() {
           )}
         </div>
 
+        {!loading && (
+          <section className="mb-5 grid grid-cols-3 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+            <ProfileStat value={preferences.skill_level || "Not set"} label="Level" />
+            <ProfileStat value={String(preferences.preferred_locations.length)} label="Locations" bordered />
+            <ProfileStat value={String(bookingCount)} label="Bookings" bordered />
+          </section>
+        )}
+
         {/* Account */}
         <SettingGroup label="Account">
-          <SettingRow href="/profile/edit" icon={<Pencil className="size-[18px]" />} label="Edit profile" description="Name, photo, contact info" />
+          <SettingRow href="/profile/edit" icon={<Pencil className="size-[18px]" />} label="Player preferences" description="Level, locations and contact details" />
           <SettingRow href="/account/security" icon={<ShieldCheck className="size-[18px]" />} label="Sign-in & security" description="Password and passkey" last />
         </SettingGroup>
 
@@ -135,6 +151,10 @@ export default function ProfilePage() {
       <PlayerBottomNav active="profile" />
     </main>
   );
+}
+
+function ProfileStat({ value, label, bordered }: { value: string; label: string; bordered?: boolean }) {
+  return <div className={`min-w-0 p-4 ${bordered ? "border-l border-[var(--lobb-border-subtle)]" : ""}`}><p className="truncate text-sm font-semibold capitalize">{value}</p><p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">{label}</p></div>;
 }
 
 function SettingGroup({ label, children }: { label: string; children: React.ReactNode }) {

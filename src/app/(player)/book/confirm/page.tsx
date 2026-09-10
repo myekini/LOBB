@@ -1,275 +1,67 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { track } from "@/lib/analytics";
-import {
-  CalendarDays,
-  CheckCircle,
-  ClipboardList,
-  CreditCard,
-  ReceiptText,
-  MapPin,
-  MessageCircle,
-  Phone,
-} from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { LobbBrandLoader } from "@/components/common/lobb-skeleton";
-import type { BookingWithDetails } from "@/lib/types";
+import { BookingStatusScreen } from "@/features/booking/booking-status-screen";
+import { track } from "@/lib/analytics";
 import { appError, type AppErrorPayload } from "@/lib/app-errors";
 import { readApiError, toastAppError } from "@/lib/client-errors";
-import { money, formatSessionDateTime } from "@/lib/dashboard-client-types";
-import { BookingStatusScreen } from "@/features/booking/booking-status-screen";
-
-function formatEndTime(iso: string) {
-  return new Date(new Date(iso).getTime() + 60 * 60 * 1000).toLocaleTimeString("en-NG", {
-    hour: "numeric", minute: "2-digit", hour12: true,
-    timeZone: "Africa/Lagos",
-  });
-}
-
-function toWhatsAppNumber(phone: string) {
-  return phone.replace(/[^0-9]/g, "");
-}
+import type { BookingWithDetails } from "@/lib/types";
 
 function BookingConfirmContent() {
-  const search    = useSearchParams();
-  const router    = useRouter();
+  const search = useSearchParams();
+  const router = useRouter();
   const reference = search.get("reference") ?? search.get("trxref");
-
-  const [booking,       setBooking]       = useState<BookingWithDetails | null>(null);
-  const [loading,       setLoading]       = useState(true);
-  const [failed,        setFailed]        = useState(false);
-  const [paymentFailed, setPaymentFailed] = useState(false);
-  const [confirmError,  setConfirmError]  = useState<AppErrorPayload | null>(null);
+  const [state, setState] = useState<"loading" | "failed" | "pending">("loading");
+  const [confirmError, setConfirmError] = useState<AppErrorPayload | null>(null);
 
   useEffect(() => {
     if (!reference) {
       setConfirmError(appError("PAYMENT_NOT_FOUND"));
-      setFailed(true);
-      setLoading(false);
+      setState("pending");
       return;
     }
-
     let cancelled = false;
-    let attempts  = 0;
-
+    let attempts = 0;
     const verify = () => {
       attempts += 1;
       fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`)
-        .then(async (res) => {
-          // 402 = Paystack confirmed the payment failed (abandoned/failed status)
-          if (res.status === 402) {
-            const paymentError = await readApiError(res, "PAYMENT_FAILED");
-            if (!cancelled) {
-              setConfirmError(paymentError);
-              toastAppError(paymentError, "PAYMENT_FAILED");
-              setPaymentFailed(true);
-              setLoading(false);
-            }
+        .then(async (response) => {
+          if (response.status === 402) {
+            const error = await readApiError(response, "PAYMENT_FAILED");
+            if (!cancelled) { setConfirmError(error); setState("failed"); }
             return;
           }
-          if (!res.ok) throw await readApiError(res, "PAYMENT_VERIFY_FAILED");
-          const json = (await res.json()) as { booking?: BookingWithDetails };
-          if (!json.booking) throw appError("PAYMENT_VERIFY_FAILED");
-          // Booking exists but confirmation webhook has not arrived yet, so keep retrying.
-          if (json.booking.status !== "confirmed" && json.booking.payment_status !== "paid") {
-            throw appError("PAYMENT_PENDING");
-          }
+          if (!response.ok) throw await readApiError(response, "PAYMENT_VERIFY_FAILED");
+          const payload = (await response.json()) as { booking?: BookingWithDetails };
+          if (!payload.booking || (payload.booking.status !== "confirmed" && payload.booking.payment_status !== "paid")) throw appError("PAYMENT_PENDING");
           if (cancelled) return;
-          setBooking(json.booking);
-          track("Booking Confirmed", {
-            booking_id: json.booking.id,
-            coach_slug: json.booking.coach_slug,
-            coach_name: json.booking.coach_full_name,
-            total_paid: json.booking.total_amount_ngn,
-            reference:  json.booking.paystack_reference,
-          });
-          router.replace(`/dashboard/bookings/${json.booking.id}?confirmed=1`);
+          track("Booking Confirmed", { booking_id: payload.booking.id, coach_slug: payload.booking.coach_slug, total_paid: payload.booking.total_amount_ngn, reference });
+          router.replace(`/dashboard/bookings/${payload.booking.id}?confirmed=1`);
         })
-        .catch((err) => {
+        .catch((error) => {
           if (cancelled) return;
           if (attempts < 12) {
-            // Progressive backoff: ~1.5s, 3s, then capped at 7s per attempt (~60s total window)
-            const delay = attempts <= 3 ? attempts * 1500 : Math.min(attempts * 2000, 7000);
-            window.setTimeout(verify, delay);
+            window.setTimeout(verify, attempts <= 3 ? attempts * 1500 : Math.min(attempts * 2000, 7000));
             return;
           }
-          setConfirmError(toastAppError(err, "PAYMENT_VERIFY_FAILED"));
-          setFailed(true);
-          setLoading(false);
+          setConfirmError(toastAppError(error, "PAYMENT_VERIFY_FAILED"));
+          setState("pending");
         });
     };
-
     verify();
-
     return () => { cancelled = true; };
   }, [reference, router]);
 
-  if (loading) {
-    return <LobbBrandLoader message="Confirming your payment…" />;
+  if (state === "loading") return <LobbBrandLoader message="Confirming your payment…" />;
+  if (state === "failed") {
+    return <BookingStatusScreen icon={<span className="inline-flex size-16 items-center justify-center rounded-full border border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10"><CreditCard className="size-8 text-[var(--lobb-error)]" /></span>} title="Payment not completed" body="No charge was made. Choose the booking to try again." error={confirmError} errorFallbackCode="PAYMENT_FAILED" primary={{ href: "/dashboard/bookings", label: "My bookings" }} secondary={{ href: "/coaches", label: "Browse coaches" }} />;
   }
-
-  if (paymentFailed) {
-    return (
-      <BookingStatusScreen
-        icon={
-          <div className="inline-flex size-16 items-center justify-center rounded-full border border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10">
-            <CreditCard className="size-8 text-[var(--lobb-error)]" />
-          </div>
-        }
-        title="Payment not completed"
-        body="No charge was made. Try booking again."
-        error={confirmError}
-        errorFallbackCode="PAYMENT_FAILED"
-        primary={{ href: "/coaches", label: "Browse coaches" }}
-        secondary={{ href: "/dashboard/bookings", label: "My bookings" }}
-      />
-    );
-  }
-
-  if (failed || !booking) {
-    return (
-      <BookingStatusScreen
-        title="Still confirming your payment"
-        body="This usually takes under a minute. If you were charged, keep this reference — your booking appears under My bookings once it clears."
-        error={confirmError}
-        errorFallbackCode="PAYMENT_PENDING"
-        reference={reference}
-        primary={{ href: "/dashboard/bookings", label: "Go to my bookings" }}
-        secondary={{ href: "/home", label: "Back to home" }}
-      />
-    );
-  }
-
-  return (
-    <main className="lobb-app-page flex min-h-screen flex-col items-center justify-center p-5 text-[var(--lobb-text-primary)]">
-      <section className="w-full max-w-md">
-        {/* Success header */}
-        <div className="text-center">
-          <div className="inline-flex size-20 items-center justify-center rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/20 bg-[var(--lobb-success)]/10">
-            <CheckCircle className="size-10 text-[var(--lobb-success)]" />
-          </div>
-          <h1 className="mt-6 text-2.5xl font-semibold tracking-tight text-[var(--lobb-text-primary)]">Booking confirmed</h1>
-          <p className="mt-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">Details sent to your phone</p>
-        </div>
-
-        {/* Booking receipt */}
-        <div className="lobb-surface-outlined mt-7 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6">
-          {/* Session time */}
-          <div>
-            <p className="flex items-center gap-2 text-sm font-medium text-[var(--lobb-bg-inverse)]">
-              <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
-              {formatSessionDateTime(booking.starts_at)}
-            </p>
-            <p className="ml-6 mt-1 text-xs font-bold text-[var(--lobb-text-secondary)] uppercase tracking-wider">
-              {formatEndTime(booking.starts_at)}, 60 minute session
-            </p>
-          </div>
-
-          <div className="my-5 border-t border-dashed border-[var(--lobb-border-subtle)]" />
-
-          {/* Coach */}
-          <div className="flex items-center gap-4">
-            <div className="size-12 shrink-0 overflow-hidden rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] shadow-sm">
-              {booking.coach_profile_photo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={booking.coach_profile_photo_url} alt="" className="size-full object-cover" />
-              ) : (
-                <div className="flex size-full items-center justify-center font-bold text-[var(--lobb-text-secondary)] bg-[var(--lobb-bg-secondary)]">
-                  {booking.coach_full_name?.charAt(0)}
-                </div>
-              )}
-            </div>
-            <div>
-              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-clay)]">Your Coach</p>
-              <p className="font-medium text-base text-[var(--lobb-bg-inverse)] tracking-tight">{booking.coach_full_name}</p>
-              {booking.coach_slug && (
-                <Link href={`/coaches/${booking.coach_slug}`} className="text-xs font-medium text-[var(--lobb-clay)] hover:underline">
-                  View profile
-                </Link>
-              )}
-            </div>
-          </div>
-
-          {/* Coach contact */}
-          {booking.coach_phone && (
-            <div className="mt-4 flex gap-2.5">
-              <a
-                href={`tel:${booking.coach_phone.replace(/\s/g, "")}`}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] py-2.5 text-xs font-medium text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-bg-secondary)] active:scale-95"
-              >
-                <Phone className="size-3.5 text-[var(--lobb-clay)]" /> Call Coach
-              </a>
-              <a
-                href={`https://wa.me/${toWhatsAppNumber(booking.coach_phone)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] py-2.5 text-xs font-medium text-[var(--lobb-text-primary)] transition-all hover:bg-[var(--lobb-bg-secondary)] active:scale-95"
-              >
-                <MessageCircle className="size-3.5 text-[var(--lobb-clay)]" /> WhatsApp
-              </a>
-            </div>
-          )}
-
-          {/* Location */}
-          {booking.location && (
-            <>
-              <div className="my-5 border-t border-dashed border-[var(--lobb-border-subtle)]" />
-              <p className="flex items-start gap-2.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-                <span className="text-[var(--lobb-bg-inverse)] leading-relaxed">{booking.location}</span>
-              </p>
-            </>
-          )}
-
-          <div className="my-5 border-t border-dashed border-[var(--lobb-border-subtle)]" />
-
-          {/* Payment */}
-          <div className="space-y-3.5">
-            <div className="flex items-center justify-between text-sm font-medium text-[var(--lobb-text-secondary)]">
-              <span className="flex items-center gap-2">
-                <CreditCard className="size-4 text-[var(--lobb-clay)]" /> Total Paid
-              </span>
-              <span className="font-medium text-[var(--lobb-bg-inverse)] text-base">{money(booking.total_amount_ngn)}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)]/60 px-3.5 py-2.5 text-xs border border-[var(--lobb-border-subtle)]/50">
-              <span className="flex items-center gap-1.5 font-bold text-[var(--lobb-text-secondary)]">
-                <ClipboardList className="size-3.5 text-[var(--lobb-clay)]" /> Reference
-              </span>
-              <span className="font-mono text-[var(--lobb-bg-inverse)] font-medium text-[11px] select-all">
-                {booking.paystack_reference ?? reference}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* CTAs */}
-        <Link
-          href="/dashboard/bookings"
-          className="mt-7 flex h-14 w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)] transition-all active:scale-98"
-        >
-          View my bookings
-        </Link>
-        <Link
-          href={`/dashboard/bookings/${booking.id}/receipt${booking.paystack_reference ?? reference ? `?reference=${encodeURIComponent(booking.paystack_reference ?? reference ?? "")}` : ""}`}
-          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-sm font-medium text-[var(--lobb-bg-inverse)]"
-        >
-          <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
-          View receipt
-        </Link>
-        <Link href="/home" className="mt-4 block text-center text-xs font-medium text-[var(--lobb-text-secondary)] transition-all hover:text-[var(--lobb-clay)]">
-          Back to home
-        </Link>
-      </section>
-    </main>
-  );
+  return <BookingStatusScreen title="Still confirming your payment" body="This usually takes under a minute. Your booking will appear as confirmed as soon as the payment clears." error={confirmError} errorFallbackCode="PAYMENT_PENDING" reference={reference} primary={{ href: "/dashboard/bookings", label: "Go to my bookings" }} secondary={{ href: "/home", label: "Back to home" }} />;
 }
 
 export default function BookingConfirmPage() {
-  return (
-    <Suspense fallback={null}>
-      <BookingConfirmContent />
-    </Suspense>
-  );
+  return <Suspense fallback={null}><BookingConfirmContent /></Suspense>;
 }
