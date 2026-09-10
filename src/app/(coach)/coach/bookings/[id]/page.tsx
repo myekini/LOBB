@@ -4,8 +4,7 @@ import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards, X } from "lucide-react";
-import { Dialog } from "@base-ui/react/dialog";
+import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards } from "lucide-react";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
 import { showLobbToast } from "@/providers/lobb-global-state";
@@ -17,6 +16,7 @@ import {
   type DashboardBooking,
 } from "@/lib/dashboard-client-types";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { AppDialog } from "@/components/ui/app-dialog";
 
 export default function CoachBookingDetailPage() {
   const params = useParams<{ id: string }>();
@@ -116,7 +116,7 @@ export default function CoachBookingDetailPage() {
           Back to bookings
         </Link>
 
-        <section className="overflow-hidden bg-[#0D0D0D] p-5 text-white shadow-[var(--lobb-shadow-modal)] sm:p-6">
+        <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <span className={`inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] px-3 py-1.5 text-xs font-medium capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/75"}`}>
@@ -231,21 +231,21 @@ export default function CoachBookingDetailPage() {
         )}
       </section>
 
-      <Dialog.Root open={showCancel} onOpenChange={setShowCancel}>
-        <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
-          <Dialog.Popup
-            aria-labelledby="coach-cancel-title"
-            className="fixed inset-x-0 bottom-0 z-[70] p-4"
-          >
-            <section className="lobb-surface-outlined mx-auto w-full max-w-md bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
-              <div className="flex items-start justify-between gap-4">
-                <h2 id="coach-cancel-title" className="text-lg font-semibold">Cancel this session?</h2>
-                <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center">
-                  <X className="size-5" />
-                </Dialog.Close>
-              </div>
-              <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+      <AppDialog
+        open={showCancel}
+        onOpenChange={setShowCancel}
+        title="Cancel this session?"
+        description="This removes the session from both schedules and notifies the player."
+        tone="danger"
+        busy={cancelling}
+        footer={
+          <>
+            <LobbButton variant="outline" onClick={() => setShowCancel(false)} disabled={cancelling}>Keep session</LobbButton>
+            <LobbButton variant="destructive" disabled={cancelling} onClick={cancelBooking}>{cancelling ? "Cancelling…" : "Cancel session"}</LobbButton>
+          </>
+        }
+      >
+              <p className="text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
                 {cancelPolicy.refundPercent > 0 ? (
                   <>
                     The player will receive <strong>{cancelPolicy.label.toLowerCase()}</strong> of <strong>{money(cancelRefundNgn)}</strong>. This booking will be removed from both schedules and the player will be notified by email.
@@ -262,22 +262,7 @@ export default function CoachBookingDetailPage() {
               <p className="mt-3 text-sm font-medium text-[var(--lobb-error)]">
                 Repeated cancellations may affect your coach standing on LOBB.
               </p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Dialog.Close className="h-12 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]">
-                  Keep Session
-                </Dialog.Close>
-                <LobbButton variant="unstyled"
-                  disabled={cancelling}
-                  onClick={cancelBooking}
-                  className="h-12 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-error)] text-sm font-medium text-[var(--lobb-error)] disabled:opacity-60"
-                >
-                  {cancelling ? "Cancelling..." : "Yes, Cancel"}
-                </LobbButton>
-              </div>
-            </section>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
+      </AppDialog>
     </main>
   );
 }

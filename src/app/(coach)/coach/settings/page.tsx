@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { SecurityNudge } from "@/features/auth/security-nudge";
+import { NotificationToggle } from "@/components/common/notification-toggle";
 
 function maskedAccount(account: string | null | undefined) {
   if (!account) return "Not connected";
@@ -39,12 +40,6 @@ export default async function CoachSettingsPage() {
   const coach = coachResult.data;
 
   const accountStatus = coach.status.replace(/_/g, " ");
-  const notificationsDetail = profile?.email
-    ? profile.email_notifications_enabled !== false
-      ? "Email alerts enabled"
-      : "Email alerts off"
-    : "Add an email to enable alerts";
-
   const kycStatus = coach.kyc_status as string ?? "pending";
   const kycVerified = coach.kyc_nin_verified || coach.kyc_bvn_verified;
   const kycLabel =
@@ -71,7 +66,7 @@ export default async function CoachSettingsPage() {
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
-      <CoachFlowHeader title="Settings" eyebrow="Coach account" active="profile" />
+      <CoachFlowHeader title="Settings" eyebrow="Coach account" active="settings" />
 
       <div className="mx-auto max-w-2xl px-5 pt-6 sm:px-6">
         <SecurityNudge />
@@ -142,12 +137,10 @@ export default async function CoachSettingsPage() {
         </SettingGroup>
 
         <SettingGroup label="Notifications">
-          <SettingRow
-            icon={<Bell className="size-[18px]" />}
-            label="Email notifications"
-            value={notificationsDetail}
-            last
-          />
+          <div className="flex items-center">
+            <span className="ml-5 flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"><Bell className="size-[18px]" /></span>
+            <NotificationToggle initialEnabled={profile?.email_notifications_enabled !== false} disabled={!profile?.email} />
+          </div>
         </SettingGroup>
 
         <div className="mt-2">

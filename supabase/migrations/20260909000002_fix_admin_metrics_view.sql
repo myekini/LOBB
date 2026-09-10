@@ -69,3 +69,9 @@ language sql stable security definer as $$
     and (p_from is null or starts_at >= p_from)
     and (p_to   is null or starts_at <= p_to);
 $$;
+
+-- Supabase does not always apply default privileges to freshly-created views;
+-- the admin API reads these as the service role, so grant it explicitly.
+grant select on public.admin_core_metrics      to service_role;
+grant select on public.admin_player_directory  to service_role;
+grant execute on function public.admin_bookings_summary(text, timestamptz, timestamptz) to service_role;

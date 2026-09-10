@@ -11,6 +11,7 @@ import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { LobbErrorBanner } from "@/components/common/lobb-error";
 import { appError, type AppErrorPayload } from "@/lib/app-errors";
 import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
+import { ConfirmDialog } from "@/components/ui/app-dialog";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -96,6 +97,8 @@ export default function CoachAvailabilityPage() {
   const [dirty,   setDirty]   = useState(false);
   const [saved,   setSaved]   = useState(false);
   const [error,   setError]   = useState<AppErrorPayload | null>(null);
+  const [view, setView] = useState<"schedule" | "time-off">("schedule");
+  const [confirmReplace, setConfirmReplace] = useState(false);
 
   // Quick-apply state
   const [selectedDows, setSelectedDows] = useState<number[]>([1, 2, 3, 4, 5]);
@@ -131,7 +134,14 @@ export default function CoachAvailabilityPage() {
   const applyQuick = () => {
     if (!selectedDows.length || quickStart >= quickEnd) return;
     const hasExisting = windows.some((w) => selectedDows.includes(w.dow));
-    if (hasExisting && !window.confirm("This will replace existing hours for the selected days. Continue?")) return;
+    if (hasExisting) {
+      setConfirmReplace(true);
+      return;
+    }
+    applyQuickConfirmed();
+  };
+
+  const applyQuickConfirmed = () => {
     setWindows((prev) => [
       ...prev.filter((w) => !selectedDows.includes(w.dow)),
       ...selectedDows.map((dow) => ({
@@ -142,6 +152,7 @@ export default function CoachAvailabilityPage() {
       })),
     ].sort((a, b) => a.dow - b.dow || a.start.localeCompare(b.start)));
     mark();
+    setConfirmReplace(false);
   };
 
   const addWindow = (dow: number) => {
@@ -236,7 +247,7 @@ export default function CoachAvailabilityPage() {
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
-      <CoachFlowHeader title="Availability" eyebrow="Bookable slots" active="bookings" className="hidden md:block" />
+      <CoachFlowHeader title="Availability" eyebrow="Bookable slots" active="calendar" className="hidden md:block" />
 
       {/* Mobile header */}
       <header className="lobb-app-header sticky top-0 z-40 border-b border-[var(--lobb-border-subtle)] px-4 py-3 backdrop-blur-xl md:hidden">
@@ -271,9 +282,14 @@ export default function CoachAvailabilityPage() {
               <AvailabilityMetric icon={CalendarX2} value={String(upcomingClosed.length)} label="Date exceptions" />
             </section>
 
-            <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+            <div className="lobb-segmented mb-5 grid grid-cols-2 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 sm:max-w-md">
+              <LobbButton variant="unstyled" onClick={() => setView("schedule")} className={`h-11 ${view === "schedule" ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]" : "text-[var(--lobb-text-secondary)]"}`}>Regular schedule</LobbButton>
+              <LobbButton variant="unstyled" onClick={() => setView("time-off")} className={`h-11 ${view === "time-off" ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]" : "text-[var(--lobb-text-secondary)]"}`}>Time off</LobbButton>
+            </div>
+
+            <div className="grid gap-5">
               {/* ── Section 1: Weekly hours ───────────────────────────────── */}
-              <WeeklyHoursSection
+              {view === "schedule" && <WeeklyHoursSection
                 addWindow={addWindow}
                 applyQuick={applyQuick}
                 quickEnd={quickEnd}
@@ -285,10 +301,10 @@ export default function CoachAvailabilityPage() {
                 setSelectedDows={setSelectedDows}
                 updateWindow={updateWindow}
                 windows={windows}
-              />
+              />}
 
               {/* ── Section 2: Days off ───────────────────────────────────── */}
-              <DaysOffSection
+              {view === "time-off" && <DaysOffSection
                 blockedDates={blockedDates}
                 calendarCells={calendarCells}
                 month={month}
@@ -297,7 +313,7 @@ export default function CoachAvailabilityPage() {
                 toggleDate={toggleDate}
                 upcomingClosed={upcomingClosed}
                 windows={windows}
-              />
+              />}
             </div>
 
             <LobbErrorBanner
@@ -329,6 +345,15 @@ export default function CoachAvailabilityPage() {
           </LobbButton>
         </div>
       </footer>
+
+      <ConfirmDialog
+        open={confirmReplace}
+        onOpenChange={setConfirmReplace}
+        title="Replace these hours?"
+        description="The current hours for your selected days will be replaced with this new time range."
+        confirmLabel="Replace hours"
+        onConfirm={applyQuickConfirmed}
+      />
     </main>
   );
 }
@@ -525,8 +550,8 @@ function DaysOffSection({
 }) {
   return (
     <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-      <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Date exceptions</p>
-      <h2 className="mt-1 text-xl font-semibold">Block a day you cannot coach</h2>
+      <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Time off</p>
+      <h2 className="mt-1 text-xl font-semibold">Mark a day unavailable</h2>
       <p className="mt-1 text-sm leading-6 text-[var(--lobb-text-secondary)]">
         Select a date to make the entire day unavailable. Select it again to reopen it.
       </p>
@@ -578,7 +603,7 @@ function DaysOffSection({
               disabled={isPast}
               onClick={() => toggleDate(cell.value)}
               aria-pressed={isClosed}
-              aria-label={`${isClosed ? "Reopen" : "Close"} ${cell.date.toLocaleDateString("en-NG", { weekday: "long", day: "numeric", month: "long" })}`}
+              aria-label={`${isClosed ? "Make available" : "Mark unavailable"} ${cell.date.toLocaleDateString("en-NG", { weekday: "long", day: "numeric", month: "long" })}`}
               className={`relative flex h-10 w-full items-center justify-center rounded-[var(--lobb-radius-md)] text-sm font-medium transition-all active:scale-95 ${
                 isPast
                   ? "cursor-not-allowed opacity-30 text-[var(--lobb-text-tertiary)]"

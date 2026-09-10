@@ -43,7 +43,7 @@ export function LobbToaster() {
           background: "var(--lobb-bg-elevated)",
           color: "var(--lobb-text-primary)",
           border: "1px solid var(--lobb-border-subtle)",
-          borderRadius: "14px",
+          borderRadius: "var(--lobb-radius-lg)",
           fontSize: "13px",
           fontWeight: 600,
           boxShadow: "var(--lobb-shadow-modal)",

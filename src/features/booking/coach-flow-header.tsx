@@ -14,7 +14,7 @@ type CoachHeaderActionIcon = "calendar" | "pencil";
 type CoachFlowHeaderProps = {
   title: string;
   eyebrow?: string;
-  active?: "home" | "bookings" | "earnings" | "profile";
+  active?: "home" | "bookings" | "calendar" | "earnings" | "profile" | "settings";
   actionHref?: string;
   actionLabel?: string;
   actionIcon?: CoachHeaderActionIcon;

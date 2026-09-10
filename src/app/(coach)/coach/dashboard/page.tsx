@@ -3,7 +3,7 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CalendarDays, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Moon, Share2, Sun, Sunrise, User, WalletCards, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Circle, Clock3, Gift, Landmark, Mail, MapPin, Share2, User, XCircle } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { SecurityNudge } from "@/features/auth/security-nudge";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
@@ -49,29 +49,6 @@ function getGreeting() {
   if (hour < 12) return "Good morning";
   if (hour < 17) return "Good afternoon";
   return "Good evening";
-}
-
-function getCoachMood() {
-  const hour = new Date().getHours();
-  if (hour < 12) {
-    return {
-      Icon: Sunrise,
-      prompt: "Set the tone for today's lessons.",
-      detail: "Review bookings, availability, and payout status before players arrive.",
-    };
-  }
-  if (hour < 17) {
-    return {
-      Icon: Sun,
-      prompt: "Keep today's bookings moving.",
-      detail: "Track upcoming sessions, earnings, and profile readiness from one place.",
-    };
-  }
-  return {
-    Icon: Moon,
-    prompt: "Wrap up today and line up tomorrow.",
-    detail: "Check recent sessions, share your link, and keep your calendar ready.",
-  };
 }
 
 export default function CoachDashboardPage() {
@@ -159,8 +136,6 @@ export default function CoachDashboardPage() {
   const CompletionIcon = completionCard.icon;
   const recentBookings = data?.recent_bookings ?? [];
   const firstName = data?.coach?.full_name?.split(" ")[0] || "Coach";
-  const mood = getCoachMood();
-  const MoodIcon = mood.Icon;
 
   return (
     <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
@@ -172,22 +147,19 @@ export default function CoachDashboardPage() {
           <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
               <div className="lobb-hero-eyebrow inline-flex max-w-full items-center gap-2 rounded-[var(--lobb-radius-md)] border px-3 py-2">
-                <MoodIcon className="size-4 text-[var(--lobb-clay)]" />
+                <Circle className="size-2 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
                 <span className="truncate text-[11px] font-medium uppercase tracking-[0.18em]">
                   {getGreeting()}, {firstName}
                 </span>
               </div>
               <h1 className="mt-4 max-w-2xl text-[28px] font-semibold leading-[1.08] tracking-tight text-balance sm:text-[38px]">
-                {mood.prompt}
+                {nextSession ? `Next session: ${formatBookingDate(nextSession.starts_at)}` : "Your coaching business, at a glance."}
               </h1>
-              <p className="lobb-hero-muted mt-2 max-w-xl text-[14px] font-normal leading-[1.6]">
-                {mood.detail}
-              </p>
             </div>
 
             <div className="grid grid-cols-3 gap-2 sm:w-[360px] lg:shrink-0">
               <HeroChip value={String(upcoming.length)} label="Sessions" />
-              <HeroChip value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending" />
+              <HeroChip value={money(data?.earnings?.net_this_month_ngn ?? 0)} label="This month" />
               <HeroChip value={coachStatus.replace(/_/g, " ")} label="Status" />
             </div>
           </div>
@@ -270,20 +242,6 @@ export default function CoachDashboardPage() {
           </aside>
 
           <section className="min-w-0 space-y-4">
-            {loading ? (
-              <div className="grid gap-3 sm:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <SkeletonBlock key={index} className="h-[150px] rounded-[var(--lobb-radius-lg)]" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-3">
-                <Stat icon={CalendarDays} value={String(upcoming.length)} label="Upcoming sessions" detail="booked sessions" />
-                <Stat icon={WalletCards} value={money(data?.earnings?.net_this_week_ngn ?? 0)} label="This week" detail="net earnings" />
-                <Stat icon={Clock3} value={money(data?.earnings?.pending_payout_ngn ?? 0)} label="Pending payout" detail="awaiting payout" featured />
-              </div>
-            )}
-
             <section className="lobb-surface-inset bg-[var(--lobb-bg-elevated)] p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -319,20 +277,6 @@ function HeroChip({ value, label }: { value: string; label: string }) {
     <div className="min-w-0 rounded-[var(--lobb-radius-md)] border border-white/15 bg-white/[0.08] px-3 py-2.5">
       <p className="truncate text-sm font-medium capitalize text-white">{value}</p>
       <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.12em] text-white/50">{label}</p>
-    </div>
-  );
-}
-
-function Stat({ value, label, detail, featured, icon: Icon }: { value: string; label: string; detail: string; featured?: boolean; icon: typeof CalendarDays }) {
-  return (
-    <div className={`lobb-surface-outlined p-5 ${featured ? "bg-[#0D0D0D] text-white" : "bg-[var(--lobb-bg-elevated)]"}`}>
-      <div className="flex items-start justify-between">
-        <Icon className="size-5 text-[var(--lobb-clay)]" />
-        <span className={`size-2 rounded-full ${featured ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-bg-secondary)]"}`} />
-      </div>
-      <p className="mt-5 truncate text-3xl font-semibold leading-none">{value}</p>
-      <p className="mt-3 text-sm font-medium">{label}</p>
-      <p className={`mt-1 text-xs font-medium ${featured ? "text-white/65" : "text-[var(--lobb-text-secondary)]"}`}>{detail}</p>
     </div>
   );
 }

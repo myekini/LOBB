@@ -123,7 +123,7 @@ export default function CoachEarningsPage() {
 
         {/* ── Top summary card ────────────────────────────────────────────── */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
-          <section className="overflow-hidden bg-[#0D0D0D] p-5 text-white sm:p-6">
+          <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/75">Total earnings</p>
             {loading ? (
               <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" />
@@ -155,6 +155,20 @@ export default function CoachEarningsPage() {
             </p>
           </Link>
         </div>
+
+        <section className="mt-4 grid gap-0 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] sm:grid-cols-3">
+          {[
+            ["01", "Session completed", "The session is recorded in your earnings."],
+            ["02", "Payout processing", "LOBB clears the session and prepares the transfer."],
+            ["03", "Sent to your bank", hasBank ? `Paid to ${bank?.bank_name ?? "your connected account"}.` : "Connect a bank account to receive transfers."],
+          ].map(([step, title, detail], index) => (
+            <div key={step} className={`p-4 ${index ? "border-t border-[var(--lobb-border-subtle)] sm:border-l sm:border-t-0" : ""}`}>
+              <p className="text-[10px] font-medium tracking-[0.16em] text-[var(--lobb-clay)]">{step}</p>
+              <p className="mt-2 text-sm font-semibold">{title}</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--lobb-text-secondary)]">{detail}</p>
+            </div>
+          ))}
+        </section>
 
         {/* ── Session payouts ─────────────────────────────────────────────── */}
         <div className="mt-7 flex items-center justify-between">

@@ -149,13 +149,18 @@ export default async function CoachProfilePage() {
       <CoachFlowHeader title="Profile" eyebrow="Coach account" active="profile" actionHref="/coach/profile/edit" actionLabel="Edit" actionIcon="pencil" />
 
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
+        <nav aria-label="Profile sections" className="lobb-segmented mb-5 grid grid-cols-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 sm:max-w-lg">
+          <a href="#public-profile" className="flex h-10 items-center justify-center text-center text-xs font-medium text-[var(--lobb-text-primary)]">Public profile</a>
+          <a href="#growth-tools" className="flex h-10 items-center justify-center text-center text-xs font-medium text-[var(--lobb-text-secondary)]">Growth tools</a>
+          <a href="#account-readiness" className="flex h-10 items-center justify-center text-center text-xs font-medium text-[var(--lobb-text-secondary)]">Readiness</a>
+        </nav>
         <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
 
           {/* ── Aside ──────────────────────────────────────────────────────── */}
           <aside className="space-y-4">
 
             {/* Profile identity card */}
-            <section className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+            <section id="public-profile" className="scroll-mt-24 lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
               <div className="p-4 sm:p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-secondary)] ring-1 ring-[var(--lobb-border-subtle)]">
@@ -204,7 +209,7 @@ export default async function CoachProfilePage() {
 
             {/* QR & share card */}
             {canShare ? (
-              <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+              <section id="growth-tools" className="scroll-mt-24 lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <CoachKicker>Share your profile</CoachKicker>
@@ -249,7 +254,7 @@ export default async function CoachProfilePage() {
                 </div>
               </section>
             ) : (
-              <section className="lobb-surface-inset border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+              <section id="growth-tools" className="scroll-mt-24 lobb-surface-inset border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
                 <div className="flex items-start gap-3">
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
                     <QrCode className="size-5" />
@@ -296,7 +301,7 @@ export default async function CoachProfilePage() {
           </aside>
 
           {/* ── Main checklist ─────────────────────────────────────────────── */}
-          <section className="min-w-0">
+          <section id="account-readiness" className="min-w-0 scroll-mt-24">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Required details</h2>

@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, Home, User, WalletCards } from "lucide-react";
+import { CalendarClock, CalendarDays, Home, User, WalletCards } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/coach/dashboard", label: "Home",     icon: Home },
   { href: "/coach/bookings",  label: "Bookings", icon: CalendarDays },
+  { href: "/coach/availability", label: "Calendar", icon: CalendarClock },
   { href: "/coach/earnings",  label: "Earnings", icon: WalletCards },
   { href: "/coach/profile",   label: "Profile",  icon: User },
 ] as const;
 
-type ActiveTab = "home" | "bookings" | "earnings" | "profile";
+type ActiveTab = "home" | "bookings" | "calendar" | "earnings" | "profile" | "settings";
 
 export function CoachBottomNav({ active }: { active: ActiveTab }) {
   return (
@@ -54,11 +55,9 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
 }
 
 export function CoachDesktopNav({ active }: { active: ActiveTab }) {
-  const desktopItems = items.filter((item) => item.label !== "Profile");
-
   return (
     <nav className="lobb-desktop-nav hidden items-center gap-1 md:flex" aria-label="Coach navigation">
-      {desktopItems.map((item) => {
+      {items.map((item) => {
         const isActive = item.label.toLowerCase() === active;
         const Icon = item.icon;
         return (
