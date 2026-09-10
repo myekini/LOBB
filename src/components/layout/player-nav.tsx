@@ -69,11 +69,9 @@ export function PlayerBottomNav({ active }: { active: ActiveTab }) {
 }
 
 export function PlayerDesktopNav({ active }: { active: ActiveTab }) {
-  const desktopItems = items.filter((item) => item.label !== "Profile");
-
   return (
     <nav className="lobb-desktop-nav hidden items-center gap-1 md:flex" aria-label="Player navigation">
-      {desktopItems.map((item) => {
+      {items.map((item) => {
         const isActive = item.label.toLowerCase() === active;
         const Icon = item.icon;
         return (

@@ -4,7 +4,7 @@ import { Button as LobbButton } from "@/components/ui/button";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState, useMemo } from "react";
-import { CheckCircle2, MapPin, PenLine, Timer } from "lucide-react";
+import { MapPin, PenLine, Timer } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { CoachPublicProfile } from "@/lib/types";
@@ -222,11 +222,13 @@ function BookingStep2Content() {
         </div>
 
         {/* Court list */}
-        <div className="space-y-2 p-4 sm:p-5">
+        <div role="radiogroup" aria-label="Choose a court" className="space-y-2 p-4 sm:p-5">
           {courtOptions.map((court) => (
             <div key={court.id}>
               <LobbButton variant="unstyled"
                 type="button"
+                role="radio"
+                aria-checked={selectedCourtId === court.id && !showCustom}
                 onClick={() => handleSelectCourt(court.id)}
                 className={`h-auto min-h-[76px] w-full whitespace-normal rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] ${
                   selectedCourtId === court.id && !showCustom
@@ -247,23 +249,23 @@ function BookingStep2Content() {
                       {court.area}
                       {court.courtCount ? ` · ${court.courtCount} court${court.courtCount > 1 ? "s" : ""}` : ""}
                     </p>
-                    <div className="mt-2"><AccessBadge rule={court.accessRule} /></div>
-                    {court.publicNote && (
-                      <p className="mt-1 text-[11px] leading-snug text-[var(--lobb-text-tertiary)]">
+                    <div className="mt-1.5"><AccessBadge rule={court.accessRule} /></div>
+                    {court.publicNote && selectedCourtId === court.id && !showCustom && (
+                      <p className="mt-2 border-t border-[var(--lobb-border-subtle)] pt-2 text-[11px] leading-snug text-[var(--lobb-text-tertiary)]">
                         {court.publicNote}
                       </p>
                     )}
                   </div>
-                  <div className="flex size-6 items-start justify-end">
-                    {selectedCourtId === court.id && !showCustom && (
-                      <CheckCircle2 className="size-5 text-[var(--lobb-clay)]" />
-                    )}
-                  </div>
+                  <span className={`mt-0.5 flex size-5 items-center justify-center rounded-full border ${selectedCourtId === court.id && !showCustom ? "border-[var(--lobb-clay)]" : "border-[var(--lobb-border-strong)]"}`}>
+                    {selectedCourtId === court.id && !showCustom && <span className="size-2.5 rounded-full bg-[var(--lobb-clay)]" />}
+                  </span>
                 </div>
               </LobbButton>
 
             </div>
           ))}
+
+          <div className="flex items-center gap-3 py-2"><span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" /><span className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Or</span><span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" /></div>
 
           {/* Other / custom location */}
           {showCustom ? (

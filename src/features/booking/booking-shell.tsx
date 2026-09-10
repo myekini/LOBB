@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as LobbButton } from "@/components/ui/button";
-import { ArrowLeft, Check, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
@@ -30,23 +30,18 @@ export function BookingShell({
             <ArrowLeft className="size-5" />
           </Link>
           <div className="min-w-0 text-center">
-            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Step {step} of 3</p>
-            <h1 className="truncate text-[15px] font-semibold">Book a session</h1>
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-clay)]">Book a session</p>
+            <h1 className="truncate text-[15px] font-semibold">{STEP_LABELS[step - 1]}</h1>
           </div>
           <ThemeToggle className="size-11 rounded-[var(--lobb-radius-md)]" />
         </div>
       </header>
 
       <div className="mx-auto w-full max-w-2xl px-4 pt-4 sm:px-6 lg:pt-7">
-        <ol aria-label="Booking progress" className="mb-5 grid grid-cols-3 border-b border-[var(--lobb-border-subtle)]">
-          {([1, 2, 3] as const).map((s) => (
-            <li key={s} aria-current={s === step ? "step" : undefined} className={`relative flex min-w-0 items-center justify-center gap-1.5 px-1 pb-3 text-center text-xs font-medium sm:text-sm ${s === step ? "text-[var(--lobb-text-primary)]" : s < step ? "text-[var(--lobb-success)]" : "text-[var(--lobb-text-tertiary)]"}`}>
-              {s < step && <Check className="size-3.5 shrink-0" />}
-              <span className="truncate">{STEP_LABELS[s - 1]}</span>
-              {s === step && <span className="absolute inset-x-0 bottom-[-1px] h-0.5 bg-[var(--lobb-bg-inverse)]" />}
-            </li>
-          ))}
-        </ol>
+        <div className="mb-4 flex items-center gap-3" aria-label={`Step ${step} of 3: ${STEP_LABELS[step - 1]}`}>
+          <span className="shrink-0 text-xs font-medium text-[var(--lobb-text-secondary)]">Step {step} of 3</span>
+          <span className="grid flex-1 grid-cols-3 gap-1.5" aria-hidden="true">{([1, 2, 3] as const).map((item) => <span key={item} className={`h-1 rounded-full ${item <= step ? "bg-[var(--lobb-clay)]" : "bg-[var(--lobb-border-subtle)]"}`} />)}</span>
+        </div>
         <section className="min-w-0">{children}</section>
       </div>
     </main>

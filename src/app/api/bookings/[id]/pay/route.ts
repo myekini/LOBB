@@ -80,7 +80,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
       if (paymentErr) return internalError(paymentErr, "PAYMENT_INIT_FAILED");
     }
 
-    return NextResponse.json({ reference, paystack_url: init.authorization_url });
+    return NextResponse.json({ reference, access_code: init.access_code, paystack_url: init.authorization_url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unable to restart payment";
     return apiError("PAYMENT_INIT_FAILED", 500, { message });

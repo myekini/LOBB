@@ -4,6 +4,7 @@ import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Script from "next/script";
 import {
   AlertCircle,
   CalendarPlus,
@@ -23,9 +24,6 @@ import { durationMinutes, firstJoin, type DashboardBooking, type JoinedCoach } f
 import { fetchWithCache } from "@/lib/offline-cache";
 import { BookingCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { readApiError, toastAppError } from "@/lib/client-errors";
-import { createClient } from "@/lib/supabase/client";
-import type { CoachPublicProfile } from "@/lib/types";
-import { SmallCoachCard } from "@/features/coaches/coach-cards";
 
 type BookingTab = "upcoming" | "past";
 
@@ -176,14 +174,13 @@ export default function DashboardPage() {
   const [past, setPast] = useState<DashboardBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingId, setPayingId] = useState<string | null>(null);
+  const [paystackReady, setPaystackReady] = useState(false);
 
   // API returns starts_at descending; the next session is the soonest one.
   const sortedUpcoming = useMemo(
     () => [...upcoming].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
     [upcoming],
   );
-  const nextSession = sortedUpcoming[0] ?? null;
-  const laterSessions = sortedUpcoming.slice(1);
 
   useEffect(() => {
     if (pathname === "/dashboard") {
@@ -219,9 +216,24 @@ export default function DashboardPage() {
     try {
       const response = await fetch(`/api/bookings/${bookingId}/pay`, { method: "POST" });
       if (!response.ok) throw await readApiError(response, "PAYMENT_INIT_FAILED");
-      const payload = (await response.json()) as { paystack_url?: string };
-      if (!payload.paystack_url) throw new Error("Could not restart payment. Try again.");
-      window.location.href = payload.paystack_url;
+      const payload = (await response.json()) as { reference?: string; access_code?: string };
+      if (!payload.reference || !payload.access_code) throw new Error("Could not restart payment. Try again.");
+      const Paystack = (window as typeof window & { PaystackPop?: new () => { resumeTransaction: (accessCode: string, callbacks: { onSuccess: (transaction: { reference: string }) => void; onCancel: () => void; onError: (error: { message?: string }) => void }) => void } }).PaystackPop;
+      if (!Paystack) throw new Error("Secure payment is still loading. Try again.");
+      new Paystack().resumeTransaction(payload.access_code, {
+        onSuccess: (transaction) => {
+          const reference = transaction.reference || payload.reference!;
+          router.push(`/book/confirm?reference=${encodeURIComponent(reference)}`);
+        },
+        onCancel: () => {
+          setPayingId(null);
+          showLobbToast({ type: "info", message: "Payment paused. You can continue whenever you’re ready." });
+        },
+        onError: (error) => {
+          setPayingId(null);
+          toastAppError(new Error(error.message || "Paystack could not open."), "PAYMENT_INIT_FAILED");
+        },
+      });
     } catch (error) {
       toastAppError(error, "PAYMENT_INIT_FAILED");
       setPayingId(null);
@@ -230,6 +242,7 @@ export default function DashboardPage() {
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
+      <Script src="https://js.paystack.co/v2/inline.js" strategy="afterInteractive" onLoad={() => setPaystackReady(true)} />
       <PlayerHeader active="bookings" title="Bookings" eyebrow="Player" />
       <section className="mx-auto max-w-5xl px-4 pt-7 sm:px-6 lg:pt-10">
         <div className="lobb-segmented relative grid grid-cols-2 overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-1 sm:max-w-md">
@@ -265,31 +278,14 @@ export default function DashboardPage() {
             </div>
           </div>
         ) : tab === "upcoming" ? (
-          nextSession ? (
-            <div key="upcoming" className={laterSessions.length ? "grid gap-6 lg:grid-cols-[minmax(0,1.06fr)_minmax(0,0.94fr)] lg:items-start" : "grid gap-6"}>
-              <div className="animate-in fade-in-0 slide-in-from-bottom-2 fill-mode-both duration-500 lg:sticky lg:top-6">
-                <NextSessionCard booking={nextSession} payingId={payingId} onPay={resumePayment} />
-              </div>
-              {laterSessions.length > 0 && (
-                <div>
-                  <div className="mb-4 flex items-center gap-3">
-                    <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">Up next</span>
-                    <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
-                  </div>
-                  <div className="grid gap-4">
-                    {laterSessions.map((booking, index) => (
-                      <div
-                        key={booking.id}
-                        className="animate-in fade-in-0 slide-in-from-bottom-2 fill-mode-both duration-500"
-                        style={{ animationDelay: `${Math.min(index + 1, 8) * 55}ms` }}
-                      >
-                        <BookingCard booking={booking} payingId={payingId} onPay={resumePayment} />
-                      </div>
-                    ))}
-                  </div>
+          sortedUpcoming.length ? (
+            <section key="upcoming" className="grid gap-4 lg:grid-cols-2">
+              {sortedUpcoming.map((booking, index) => (
+                <div key={booking.id} className="animate-in fade-in-0 slide-in-from-bottom-2 fill-mode-both duration-500" style={{ animationDelay: `${Math.min(index, 8) * 55}ms` }}>
+                  <BookingCard booking={booking} payingId={payingId} onPay={resumePayment} paystackReady={paystackReady} />
                 </div>
-              )}
-            </div>
+              ))}
+            </section>
           ) : (
             <EmptyBookings tab="upcoming" />
           )
@@ -303,7 +299,7 @@ export default function DashboardPage() {
                   className="animate-in fade-in-0 slide-in-from-bottom-2 fill-mode-both duration-500"
                   style={{ animationDelay: `${Math.min(index, 8) * 55}ms` }}
                 >
-                  <BookingCard booking={booking} payingId={payingId} onPay={resumePayment} />
+                  <BookingCard booking={booking} payingId={payingId} onPay={resumePayment} paystackReady={paystackReady} />
                 </div>
               ))}
             </section>
@@ -320,14 +316,16 @@ export default function DashboardPage() {
 
 /* ─────────────────────────── Next session hero ──────────────────────────── */
 
-function NextSessionCard({
+export function NextSessionCard({
   booking,
   payingId,
   onPay,
+  paystackReady,
 }: {
   booking: DashboardBooking;
   payingId: string | null;
   onPay: (id: string) => void;
+  paystackReady: boolean;
 }) {
   const coach = firstJoin(booking.coaches);
   const coachName = coach?.full_name ?? "Coach";
@@ -391,7 +389,7 @@ function NextSessionCard({
             <>
               <LobbButton variant="unstyled"
                 onClick={() => onPay(booking.id)}
-                disabled={payingId !== null}
+                disabled={payingId !== null || !paystackReady}
                 className="flex h-11 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-xs font-medium uppercase tracking-[0.1em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
               >
                 {payingId === booking.id ? "Starting payment…" : "Complete payment"}
@@ -477,10 +475,12 @@ function BookingCard({
   booking,
   payingId,
   onPay,
+  paystackReady,
 }: {
   booking: DashboardBooking;
   payingId: string | null;
   onPay: (id: string) => void;
+  paystackReady: boolean;
 }) {
   const coach = firstJoin(booking.coaches);
   const isUpcoming = booking.is_upcoming ?? booking.status === "confirmed";
@@ -531,7 +531,7 @@ function BookingCard({
           <>
             <LobbButton variant="unstyled"
               onClick={() => onPay(booking.id)}
-              disabled={payingId !== null}
+              disabled={payingId !== null || !paystackReady}
               className="flex h-10 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] text-xs font-medium text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
             >
               {payingId === booking.id ? "Starting payment…" : "Complete payment"}
@@ -583,26 +583,6 @@ function BookingCard({
 /* ─────────────────────────────── Empty state ────────────────────────────── */
 
 function EmptyBookings({ tab }: { tab: BookingTab }) {
-  const [suggested, setSuggested] = useState<CoachPublicProfile[]>([]);
-
-  useEffect(() => {
-    if (tab !== "upcoming") return;
-    let alive = true;
-    const supabase = createClient();
-    supabase
-      .from("coach_profiles_public")
-      .select("*")
-      .eq("status", "active")
-      .order("session_count", { ascending: false })
-      .limit(3)
-      .then(({ data }) => {
-        if (alive && data) setSuggested(data as CoachPublicProfile[]);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [tab]);
-
   if (tab === "past") {
     return (
       <LobbEmptyState
@@ -612,36 +592,5 @@ function EmptyBookings({ tab }: { tab: BookingTab }) {
     );
   }
 
-  return (
-    <div className="animate-in fade-in-0 duration-500">
-      <LobbEmptyState
-        title="No upcoming sessions"
-        body="No sessions yet. Find a coach and get on court."
-        action={
-          <Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay)] px-6 text-sm font-medium text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
-            Find a coach
-          </Link>
-        }
-      />
-      {suggested.length > 0 && (
-        <section className="mt-8">
-          <div className="mb-4 flex items-center gap-3">
-            <span className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">Start with one of these coaches</span>
-            <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
-            {suggested.map((coach, index) => (
-              <div
-                key={coach.id}
-                className="animate-in fade-in-0 slide-in-from-bottom-2 fill-mode-both duration-500"
-                style={{ animationDelay: `${index * 70}ms` }}
-              >
-                <SmallCoachCard coach={coach} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
-  );
+  return <LobbEmptyState title="No upcoming sessions" body="Your confirmed and pending sessions will appear here." action={<Link href="/coaches" className="inline-flex h-12 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-6 text-sm font-medium text-white">Find a coach</Link>} />;
 }

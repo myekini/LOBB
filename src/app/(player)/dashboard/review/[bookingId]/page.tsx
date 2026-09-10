@@ -55,7 +55,7 @@ export default function LeaveReviewPage() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Unable to submit review");
       showLobbToast({ type: "success", message: "Review submitted. Thank you." });
-      window.setTimeout(() => router.push("/dashboard/bookings"), 800);
+      window.setTimeout(() => router.push(`/dashboard/bookings/${params.bookingId}?reviewed=1`), 500);
     } catch (error) {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to submit review" });
     } finally {
@@ -100,7 +100,7 @@ export default function LeaveReviewPage() {
         </header>
 
         <h2 className="text-[22px] font-semibold leading-tight">How was your session with {(coach?.full_name ?? "your coach").split(" ")[0]}?</h2>
-        <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
+        <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)} · {booking.location}</p>
 
         <div className="lobb-surface-outlined mt-7 flex items-center gap-3 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -121,6 +121,7 @@ export default function LeaveReviewPage() {
           ))}
         </div>
         <p className="mt-3 text-center text-sm font-medium text-[var(--lobb-text-secondary)]">{rating ? `${rating} out of 5` : "Tap to rate"}</p>
+        <p className="mt-2 text-center text-xs leading-5 text-[var(--lobb-text-tertiary)]">Your rating and written review may appear publicly on the coach’s profile.</p>
 
         <label className="mt-8 block">
           <LobbTextarea

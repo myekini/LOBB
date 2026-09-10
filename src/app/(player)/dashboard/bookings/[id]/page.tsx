@@ -50,6 +50,7 @@ export default function BookingDetailPage() {
   const router = useRouter();
   const search = useSearchParams();
   const justConfirmed = search.get("confirmed") === "1";
+  const justReviewed = search.get("reviewed") === "1";
   const [showCancel, setShowCancel] = useState(false);
   const [booking, setBooking] = useState<DashboardBooking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -200,6 +201,12 @@ export default function BookingDetailPage() {
             </div>
           </section>
         )}
+        {justReviewed && (
+          <section className="mb-5 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/25 bg-[var(--lobb-success)]/10 p-4" role="status">
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
+            <div><h2 className="text-sm font-semibold">Review published</h2><p className="mt-1 text-sm text-[var(--lobb-text-secondary)]">Thank you—your feedback now appears with this completed session.</p></div>
+          </section>
+        )}
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div>
@@ -337,9 +344,9 @@ export default function BookingDetailPage() {
           </LobbButton>
         )}
 
-        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-3 flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-medium">
+        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-4 flex items-center justify-center gap-2 py-2 text-xs font-medium text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-clay)]">
           <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
-          View receipt
+          Payment receipt
         </Link>
         <Link href="/dashboard/bookings" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
           Back to bookings
