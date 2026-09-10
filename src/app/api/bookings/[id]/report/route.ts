@@ -10,9 +10,9 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
  * Admin resolves within the 48h SLA (see docs/FLOWS.md).
  */
 
+// Must stay in sync with REPORT_CATEGORIES in the player booking-detail UI.
 const CATEGORIES = [
   "coach_no_show",
-  "player_no_show",
   "session_cut_short",
   "safety_concern",
   "other",

@@ -2,10 +2,11 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, CreditCard, MapPin, Printer, ReceiptText, UserRound } from "lucide-react";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { FeeBreakdown } from "@/components/common/fee-breakdown";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { BookingWithDetails } from "@/lib/types";
@@ -97,13 +98,6 @@ export default function BookingReceiptPage() {
   const coach = firstJoin(booking?.coaches);
   const player = firstJoin(booking?.players);
   const receiptId = payment?.paystack_reference ?? booking?.paystack_reference ?? booking?.id ?? "";
-  const rows = useMemo(
-    () => [
-      { label: "Coach session", amount: booking?.hourly_rate_ngn ?? 0 },
-      { label: "LOBB convenience fee", amount: booking?.convenience_fee_ngn ?? booking?.platform_fee_ngn ?? 0 },
-    ],
-    [booking]
-  );
 
   if (loading) {
     return (
@@ -148,7 +142,7 @@ export default function BookingReceiptPage() {
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--lobb-clay)]">LOBB receipt</p>
                 <h1 className="lobb-receipt-title mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Thanks for your payment</h1>
-                <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">Your Lagos tennis session is confirmed and recorded.</p>
+                <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">Your session is confirmed.</p>
               </div>
               <div className="flex size-12 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-[var(--lobb-clay)]">
                 <ReceiptText className="size-6" />
@@ -175,18 +169,12 @@ export default function BookingReceiptPage() {
           </section>
 
           <section className="lobb-receipt-summary p-6 sm:p-8">
-            <div className="space-y-4">
-              {rows.map((row) => (
-                <p key={row.label} className="flex items-center justify-between gap-5 text-sm font-medium text-[var(--lobb-text-secondary)]">
-                  <span>{row.label}</span>
-                  <span className="font-medium text-[var(--lobb-text-primary)]">{money(row.amount)}</span>
-                </p>
-              ))}
-              <p className="flex items-center justify-between gap-5 border-t border-[var(--lobb-border-subtle)] pt-5 text-base font-medium">
-                <span>Total</span>
-                <span>{money(booking.total_amount_ngn)}</span>
-              </p>
-            </div>
+            <FeeBreakdown
+              sessionFeeNgn={booking.hourly_rate_ngn}
+              convenienceFeeNgn={booking.convenience_fee_ngn}
+              platformFeeNgn={booking.platform_fee_ngn}
+              totalNgn={booking.total_amount_ngn}
+            />
 
             <div className="mt-8 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4">
               <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">Receipt ID</p>

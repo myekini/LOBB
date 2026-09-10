@@ -1,11 +1,10 @@
 "use client";
 
 import { Button as LobbButton } from "@/components/ui/button";
-import { Input as LobbInput } from "@/components/ui/input";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useCallback, useEffect, useState } from "react";
 import { CheckCircle2, Gavel, Loader2 } from "lucide-react";
-import { AdminBackHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
+import { AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { FormAlert } from "@/components/ui/form-alert";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
@@ -39,12 +38,11 @@ type Dispute = {
   bookings: DisputeBooking | DisputeBooking[] | null;
 };
 
-type Resolution = "refund_player" | "release_to_coach" | "split";
+type Resolution = "refund_player" | "release_to_coach";
 
 const RESOLUTION_OPTIONS: Array<{ value: Resolution; label: string; description: string }> = [
   { value: "refund_player", label: "Refund player", description: "Full refund via Paystack; booking cancelled, coach gets nothing." },
   { value: "release_to_coach", label: "Release to coach", description: "Coach is paid in full on the next payout run; no refund." },
-  { value: "split", label: "Split", description: "Refund part to the player, release part to the coach. LOBB keeps its commission and convenience fee." },
 ];
 
 export default function AdminDisputesPage() {
@@ -53,7 +51,6 @@ export default function AdminDisputesPage() {
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resolution, setResolution] = useState<Resolution>("refund_player");
-  const [refundPercent, setRefundPercent] = useState(50);
   const [notes, setNotes] = useState("");
 
   const load = useCallback(() => {
@@ -75,7 +72,6 @@ export default function AdminDisputesPage() {
   const openResolve = (dispute: Dispute) => {
     setResolvingId(dispute.id);
     setResolution("refund_player");
-    setRefundPercent(50);
     setNotes("");
   };
 
@@ -85,13 +81,7 @@ export default function AdminDisputesPage() {
       const res = await fetch(`/api/admin/disputes/${dispute.id}/resolve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resolution,
-          ...(resolution === "split"
-            ? { player_refund_percent: refundPercent, coach_release_percent: 100 - refundPercent }
-            : {}),
-          internal_notes: notes,
-        }),
+        body: JSON.stringify({ resolution, internal_notes: notes }),
       });
       const json = (await res.json()) as { ok?: boolean; refund_error?: string | null; error?: string };
       if (!res.ok) throw new Error(json.error ?? "Could not resolve dispute");
@@ -114,7 +104,9 @@ export default function AdminDisputesPage() {
 
   return (
     <AdminShell>
-      <AdminBackHeader title="Disputes" action={<AdminRefreshButton onClick={() => load()} busy={loading} />} />
+      <AdminPageHeader eyebrow="Resolution" title="Disputes" backHref="/admin">
+        <AdminRefreshButton onClick={() => load()} busy={loading} />
+      </AdminPageHeader>
 
       {loading ? (
         <div className="space-y-4">
@@ -175,7 +167,7 @@ export default function AdminDisputesPage() {
 
                       {isResolving && (
                         <div className="mt-4 space-y-3 border-t border-[var(--lobb-border-subtle)] pt-4">
-                          <div className="grid gap-2 sm:grid-cols-3">
+                          <div className="grid gap-2 sm:grid-cols-2">
                             {RESOLUTION_OPTIONS.map((option) => (
                               <LobbButton variant="unstyled"
                                 key={option.value}
@@ -192,37 +184,6 @@ export default function AdminDisputesPage() {
                               </LobbButton>
                             ))}
                           </div>
-
-                          {resolution === "split" && (
-                            <div className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-4">
-                              <div className="flex items-center justify-between text-[12px] font-medium">
-                                <span>Player refund: {refundPercent}%</span>
-                                <span>Coach release: {100 - refundPercent}%</span>
-                              </div>
-                              <LobbInput
-                                type="range"
-                                min={0}
-                                max={100}
-                                step={5}
-                                value={refundPercent}
-                                onChange={(e) => setRefundPercent(Number(e.target.value))}
-                                className="mt-3 w-full accent-[var(--lobb-clay)]"
-                              />
-                              {(() => {
-                                const total = booking?.total_amount_ngn ?? 0;
-                                const playerBack = Math.round((total * refundPercent) / 100);
-                                const coachGets = Math.round(((booking?.coach_payout_ngn ?? 0) * (100 - refundPercent)) / 100);
-                                const lobbKeeps = total - playerBack - coachGets;
-                                return (
-                                  <div className="mt-2 space-y-0.5 text-[11px] font-medium text-[var(--lobb-text-secondary)]">
-                                    <p>Player refunded {money(playerBack)}</p>
-                                    <p>Coach receives {money(coachGets)}</p>
-                                    <p>LOBB keeps {money(lobbKeeps)} (commission + fee)</p>
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                          )}
 
                           <LobbTextarea
                             value={notes}

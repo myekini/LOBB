@@ -110,6 +110,20 @@ export function formatDate(iso: string | null) {
   return new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
 }
 
+// Long form for confirmation / receipt surfaces: "Monday, 3 March at 2:00 PM".
+export function formatSessionDateTime(iso: string, opts: { withYear?: boolean } = {}) {
+  return new Date(iso).toLocaleString("en-NG", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    ...(opts.withYear ? { year: "numeric" } : {}),
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Africa/Lagos",
+  });
+}
+
 export function money(amount: number) {
   return `₦${(amount ?? 0).toLocaleString("en-NG")}`;
 }

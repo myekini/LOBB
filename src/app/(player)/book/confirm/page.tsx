@@ -14,22 +14,12 @@ import {
   MessageCircle,
   Phone,
 } from "lucide-react";
-import { showLobbToast } from "@/providers/lobb-global-state";
 import { LobbBrandLoader } from "@/components/common/lobb-skeleton";
 import type { BookingWithDetails } from "@/lib/types";
-import { LobbErrorBanner } from "@/components/common/lobb-error";
 import { appError, type AppErrorPayload } from "@/lib/app-errors";
 import { readApiError, toastAppError } from "@/lib/client-errors";
-
-function money(v: number) { return `₦${v.toLocaleString()}`; }
-
-function formatDateTime(iso: string) {
-  return new Date(iso).toLocaleString("en-NG", {
-    weekday: "long", day: "numeric", month: "long",
-    hour: "numeric", minute: "2-digit", hour12: true,
-    timeZone: "Africa/Lagos",
-  });
-}
+import { money, formatSessionDateTime } from "@/lib/dashboard-client-types";
+import { BookingStatusScreen } from "@/features/booking/booking-status-screen";
 
 function formatEndTime(iso: string) {
   return new Date(new Date(iso).getTime() + 60 * 60 * 1000).toLocaleTimeString("en-NG", {
@@ -95,7 +85,6 @@ function BookingConfirmContent() {
             total_paid: json.booking.total_amount_ngn,
             reference:  json.booking.paystack_reference,
           });
-          showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
           router.replace(`/dashboard/bookings/${json.booking.id}?confirmed=1`);
         })
         .catch((err) => {
@@ -118,61 +107,38 @@ function BookingConfirmContent() {
   }, [reference, router]);
 
   if (loading) {
-    return <LobbBrandLoader message="Verifying your payment and securing your booking." />;
+    return <LobbBrandLoader message="Confirming your payment…" />;
   }
 
   if (paymentFailed) {
     return (
-      <main className="lobb-app-page flex min-h-screen items-center justify-center p-5">
-        <div className="w-full max-w-md text-center">
-          <div className="inline-flex size-16 items-center justify-center rounded-full bg-[var(--lobb-error)]/10 border border-[var(--lobb-error)]/20">
+      <BookingStatusScreen
+        icon={
+          <div className="inline-flex size-16 items-center justify-center rounded-full border border-[var(--lobb-error)]/20 bg-[var(--lobb-error)]/10">
             <CreditCard className="size-8 text-[var(--lobb-error)]" />
           </div>
-          <p className="mt-5 text-lg font-medium text-[var(--lobb-bg-inverse)]">Payment not completed</p>
-          <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
-            Your payment did not go through. No charge was made. Please try booking again.
-          </p>
-          <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_FAILED" className="mt-5 text-left" />
-          <Link
-            href="/coaches"
-            className="mt-8 flex h-14 w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]"
-          >
-            Browse coaches
-          </Link>
-          <Link href="/dashboard/bookings" className="mt-4 block text-sm font-bold text-[var(--lobb-text-secondary)]">
-            My bookings
-          </Link>
-        </div>
-      </main>
+        }
+        title="Payment not completed"
+        body="No charge was made. Try booking again."
+        error={confirmError}
+        errorFallbackCode="PAYMENT_FAILED"
+        primary={{ href: "/coaches", label: "Browse coaches" }}
+        secondary={{ href: "/dashboard/bookings", label: "My bookings" }}
+      />
     );
   }
 
   if (failed || !booking) {
     return (
-      <main className="lobb-app-page flex min-h-screen items-center justify-center p-5">
-        <div className="w-full max-w-md text-center">
-          <p className="text-lg font-medium text-[var(--lobb-bg-inverse)]">Payment is still being confirmed</p>
-          <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
-            This can take a minute. Check your bookings, it will appear there once confirmed.
-            If you were charged, save this reference:
-          </p>
-          <LobbErrorBanner error={confirmError} fallbackCode="PAYMENT_PENDING" className="mt-5 text-left" />
-          {reference && (
-            <p className="mt-3 rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-bg-elevated)] px-4 py-2 font-mono text-sm font-bold select-all">
-              {reference}
-            </p>
-          )}
-          <Link
-            href="/dashboard/bookings"
-            className="mt-8 flex h-14 w-full items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]"
-          >
-            Go to my bookings
-          </Link>
-          <Link href="/home" className="mt-4 block text-sm font-bold text-[var(--lobb-text-secondary)]">
-            Back to home
-          </Link>
-        </div>
-      </main>
+      <BookingStatusScreen
+        title="Still confirming your payment"
+        body="This usually takes under a minute. If you were charged, keep this reference — your booking appears under My bookings once it clears."
+        error={confirmError}
+        errorFallbackCode="PAYMENT_PENDING"
+        reference={reference}
+        primary={{ href: "/dashboard/bookings", label: "Go to my bookings" }}
+        secondary={{ href: "/home", label: "Back to home" }}
+      />
     );
   }
 
@@ -194,7 +160,7 @@ function BookingConfirmContent() {
           <div>
             <p className="flex items-center gap-2 text-sm font-medium text-[var(--lobb-bg-inverse)]">
               <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
-              {formatDateTime(booking.starts_at)}
+              {formatSessionDateTime(booking.starts_at)}
             </p>
             <p className="ml-6 mt-1 text-xs font-bold text-[var(--lobb-text-secondary)] uppercase tracking-wider">
               {formatEndTime(booking.starts_at)}, 60 minute session

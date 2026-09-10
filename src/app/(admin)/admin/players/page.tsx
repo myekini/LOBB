@@ -1,10 +1,16 @@
 "use client";
 
 import { Input as LobbInput } from "@/components/ui/input";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, Users } from "lucide-react";
-import { AdminBackHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
-import { showLobbToast } from "@/providers/lobb-global-state";
+import {
+  AdminEmptyState,
+  AdminMetricCard,
+  AdminPageHeader,
+  AdminRefreshButton,
+  AdminShell,
+  useAdminResource,
+} from "@/features/admin/admin-shell";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { formatDate, money } from "@/lib/dashboard-client-types";
 
@@ -19,29 +25,9 @@ type PlayerRow = {
 };
 
 export default function AdminPlayersPage() {
-  const [players, setPlayers] = useState<PlayerRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { data, loading, refreshing, reload } = useAdminResource<{ players: PlayerRow[] }>("/api/admin/players");
+  const players = useMemo(() => data?.players ?? [], [data]);
   const [query, setQuery] = useState("");
-
-  const load = useCallback(async (mode: "initial" | "refresh" = "initial") => {
-    if (mode === "refresh") setRefreshing(true);
-    try {
-      const res = await fetch("/api/admin/players");
-      const json = (await res.json()) as { players?: PlayerRow[]; error?: string };
-      if (!res.ok) throw new Error(json.error ?? "Unable to load players");
-      setPlayers(json.players ?? []);
-    } catch (error) {
-      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load players" });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,13 +41,19 @@ export default function AdminPlayersPage() {
 
   return (
     <AdminShell>
-      <AdminBackHeader title="Players" action={<AdminRefreshButton onClick={() => load("refresh")} busy={loading || refreshing} />} />
+      <AdminPageHeader
+        eyebrow="Directory"
+        title="Players"
+        backHref="/admin"
+      >
+        <AdminRefreshButton onClick={() => reload("refresh")} busy={loading || refreshing} />
+      </AdminPageHeader>
 
       <div className="mx-auto max-w-4xl">
         <section className="grid gap-3 sm:grid-cols-3">
-          <Metric label="Players" value={String(players.length)} />
-          <Metric label="With bookings" value={String(players.filter((p) => p.stats.bookings > 0).length)} />
-          <Metric label="Lifetime booking value" value={money(totalSpend)} />
+          <AdminMetricCard label="Players" value={String(players.length)} />
+          <AdminMetricCard label="With bookings" value={String(players.filter((p) => p.stats.bookings > 0).length)} />
+          <AdminMetricCard label="Lifetime booking value" value={money(totalSpend)} />
         </section>
 
         <div className="mt-6 flex items-center gap-2.5 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4">
@@ -82,10 +74,10 @@ export default function AdminPlayersPage() {
               <SkeletonBlock className="h-20 rounded-[var(--lobb-radius-lg)]" />
             </>
           ) : filtered.length === 0 ? (
-            <div className="rounded-[var(--lobb-radius-lg)] border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center">
-              <Users className="mx-auto size-6 text-[var(--lobb-text-tertiary)]" />
-              <p className="mt-3 text-sm font-medium">{query ? "No players match that search" : "No players yet"}</p>
-            </div>
+            <AdminEmptyState
+              icon={Users}
+              title={query ? "No players match that search" : "No players yet"}
+            />
           ) : (
             filtered.map((player) => (
               <article
@@ -116,15 +108,6 @@ export default function AdminPlayersPage() {
         </section>
       </div>
     </AdminShell>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-      <p className="text-xl font-semibold leading-none">{value}</p>
-      <p className="mt-1 text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
-    </div>
   );
 }
 

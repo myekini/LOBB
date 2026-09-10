@@ -15,7 +15,9 @@ import {
   type DashboardBooking,
 } from "@/lib/dashboard-client-types";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { FeeBreakdown } from "@/components/common/fee-breakdown";
 import { cancellationPolicy } from "@/lib/lobb-money";
+import { trustCopy } from "@/lib/trust-copy";
 import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
 
 function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
@@ -107,7 +109,7 @@ export default function BookingDetailPage() {
       if (!response.ok) throw new Error(payload.error ?? "Could not send your report");
       setDispute(payload.dispute ?? { id: "new", status: "open", resolution: null, player_refund_percent: null, created_at: new Date().toISOString(), resolved_at: null });
       setShowReport(false);
-      toastAppSuccess("Report received. The coach payout is on hold while we review — expect an update within 48 hours.");
+      toastAppSuccess(trustCopy.reportAck);
     } catch (error) {
       toastAppError(error, "UNKNOWN_ERROR");
     } finally {
@@ -271,9 +273,12 @@ export default function BookingDetailPage() {
             <CreditCard className="size-4 text-[var(--lobb-clay)]" />
             {payment?.status ?? "pending"}
           </p>
-          <PaymentRow amount={booking.hourly_rate_ngn} label="Session fee" />
-          <PaymentRow amount={booking.convenience_fee_ngn ?? booking.platform_fee_ngn} label="Convenience fee" />
-          <PaymentRow amount={booking.total_amount_ngn} label="Total paid" strong />
+          <FeeBreakdown
+            sessionFeeNgn={booking.hourly_rate_ngn}
+            convenienceFeeNgn={booking.convenience_fee_ngn}
+            platformFeeNgn={booking.platform_fee_ngn}
+            totalNgn={booking.total_amount_ngn}
+          />
           <p className="mt-3 break-all rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold text-[var(--lobb-text-secondary)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
         </DetailSection>
 
@@ -297,8 +302,7 @@ export default function BookingDetailPage() {
                   We&apos;re reviewing your report
                 </p>
                 <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
-                  The coach&apos;s payout is on hold until this is resolved. You&apos;ll hear from us
-                  within 48 hours — your money is protected.
+                  {trustCopy.reviewInProgress}
                 </p>
               </>
             ) : (
@@ -309,10 +313,10 @@ export default function BookingDetailPage() {
                 </p>
                 <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
                   {dispute.resolution === "refund_player"
-                    ? "Resolved in your favour — your refund is on its way to your payment method."
+                    ? trustCopy.resolvedRefund
                     : dispute.resolution === "split" && (dispute.player_refund_percent ?? 0) > 0
-                    ? `Resolved with a ${dispute.player_refund_percent}% refund to you.`
-                    : "Resolved after review. If you disagree, reply to the resolution email and we'll take another look."}
+                    ? trustCopy.resolvedPartial(dispute.player_refund_percent ?? 0)
+                    : trustCopy.resolvedNoRefund}
                 </p>
               </>
             )}
@@ -354,7 +358,7 @@ export default function BookingDetailPage() {
                 <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
               </div>
               <p className="mt-1 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
-                Reporting instantly puts the coach&apos;s payout on hold. We review every report within 48 hours.
+                {trustCopy.reportPrompt}
               </p>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -391,7 +395,7 @@ export default function BookingDetailPage() {
                 {reporting ? <Loader2 className="size-4 animate-spin" /> : "Send report & hold payout"}
               </LobbButton>
               <p className="mt-2 text-center text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
-                False reports may lead to account review.
+                {trustCopy.falseReport}
               </p>
             </div>
           </Dialog.Popup>
@@ -456,14 +460,5 @@ function InfoRow({ icon: Icon, label, value }: { icon: typeof MapPin; label: str
         <span className="mt-1 block text-sm font-medium leading-6">{value}</span>
       </span>
     </div>
-  );
-}
-
-function PaymentRow({ amount, label, strong }: { amount: number; label: string; strong?: boolean }) {
-  return (
-    <p className={`flex items-center justify-between gap-5 py-1.5 text-sm ${strong ? "font-medium text-[var(--lobb-text-primary)]" : "font-medium text-[var(--lobb-text-secondary)]"}`}>
-      <span>{label}</span>
-      <span className="font-medium text-[var(--lobb-text-primary)]">{money(amount)}</span>
-    </p>
   );
 }

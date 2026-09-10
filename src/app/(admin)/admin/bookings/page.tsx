@@ -3,8 +3,8 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useCallback, useEffect, useState } from "react";
-import { Download, Gavel, Loader2, RefreshCw, Send } from "lucide-react";
-import { AdminShell } from "@/features/admin/admin-shell";
+import { Download, Gavel, Loader2, Send } from "lucide-react";
+import { AdminEmptyState, AdminMetricCard, AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { Modal } from "@/components/ui/modal";
 import { FormAlert } from "@/components/ui/form-alert";
 import { formatBookingDate, money, sessionParties, type DashboardBooking } from "@/lib/dashboard-client-types";
@@ -184,29 +184,15 @@ export default function AdminBookingsPage() {
 
   return (
     <AdminShell>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Ledger</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Bookings</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{bookings.length}{nextCursor ? "+" : ""} loaded</p>
-          <LobbButton
-            variant="unstyled"
-            onClick={() => load("refresh")}
-            disabled={loading || refreshing}
-            aria-label="Refresh"
-            className="inline-flex size-9 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] disabled:opacity-60"
-          >
-            <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
-          </LobbButton>
-        </div>
-      </div>
+      <AdminPageHeader eyebrow="Ledger" title="Bookings" backHref="/admin">
+        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{bookings.length}{nextCursor ? "+" : ""} loaded</p>
+        <AdminRefreshButton onClick={() => load("refresh")} busy={loading || refreshing} />
+      </AdminPageHeader>
 
-      <section className="mt-5 grid gap-3 sm:grid-cols-3">
-        <LedgerMetric label="Filtered value" value={money(summary?.gross_ngn ?? 0)} />
-        <LedgerMetric label="Records" value={String(summary?.record_count ?? bookings.length)} />
-        <LedgerMetric label="Needs payout (loaded)" value={String(pendingPayoutCount)} urgent={pendingPayoutCount > 0} />
+      <section className="grid gap-3 sm:grid-cols-3">
+        <AdminMetricCard label="Filtered value" value={money(summary?.gross_ngn ?? 0)} />
+        <AdminMetricCard label="Records" value={String(summary?.record_count ?? bookings.length)} />
+        <AdminMetricCard label="Needs payout (loaded)" value={String(pendingPayoutCount)} urgent={pendingPayoutCount > 0} />
       </section>
 
       <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
@@ -295,10 +281,11 @@ export default function AdminBookingsPage() {
           </article>
           );
         }) : (
-          <div className="border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center xl:col-span-2">
-            <p className="text-lg font-medium">No booking records</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">Try another status filter or date range, or wait for new paid sessions to arrive.</p>
-          </div>
+          <AdminEmptyState
+            title="No booking records"
+            body="Try another status filter or date range, or wait for new paid sessions to arrive."
+            className="xl:col-span-2"
+          />
         )}
       </section>
 
@@ -381,15 +368,6 @@ function DisputeSummary({ booking }: { booking: DashboardBooking }) {
       <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
         #{booking.id.slice(0, 8)} · {formatBookingDate(booking.starts_at)} · {money(booking.total_amount_ngn)}
       </p>
-    </div>
-  );
-}
-
-function LedgerMetric({ label, value, urgent }: { label: string; value: string; urgent?: boolean }) {
-  return (
-    <div className={`lobb-surface-outlined border p-4 ${urgent ? "border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10" : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"}`}>
-      <p className="text-xl font-semibold leading-none">{value}</p>
-      <p className="mt-1 text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
     </div>
   );
 }

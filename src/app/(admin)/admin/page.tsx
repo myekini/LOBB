@@ -2,11 +2,18 @@
 
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, RefreshCw, UserCheck, WalletCards } from "lucide-react";
-import { AdminShell } from "@/features/admin/admin-shell";
+import { useState } from "react";
+import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, UserCheck, WalletCards } from "lucide-react";
+import {
+  AdminEmptyState,
+  AdminMetricCard,
+  AdminPageHeader,
+  AdminRefreshButton,
+  AdminShell,
+  useAdminResource,
+} from "@/features/admin/admin-shell";
+import { retryStuckPayouts } from "@/features/admin/payout-actions";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
-import { showLobbToast } from "@/providers/lobb-global-state";
 import { MetricGridSkeleton, TableRowsSkeleton } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -32,29 +39,8 @@ type AdminDashboardPayload = {
 };
 
 export default function AdminDashboardPage() {
-  const [data, setData] = useState<AdminDashboardPayload | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { data, loading, refreshing, reload } = useAdminResource<AdminDashboardPayload>("/api/admin/dashboard");
   const [retrying, setRetrying] = useState(false);
-
-  const load = useCallback(async (mode: "initial" | "refresh" = "initial") => {
-    if (mode === "refresh") setRefreshing(true);
-    try {
-      const res = await fetch("/api/admin/dashboard");
-      const payload = (await res.json()) as AdminDashboardPayload & { error?: string };
-      if (!res.ok) throw new Error(payload.error ?? "Unable to load admin dashboard");
-      setData(payload);
-    } catch (error) {
-      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load admin dashboard" });
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   const metrics = data?.metrics;
   const recentBookings = data?.recent_bookings ?? [];
@@ -63,145 +49,107 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminShell>
-      <section className="space-y-4">
-        <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 sm:p-6">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Operations</p>
-                <h1 className="mt-1 text-[30px] font-semibold leading-tight tracking-tight sm:text-[36px]">Dashboard</h1>
-                <p className="mt-2 text-sm text-[var(--lobb-text-secondary)]">Bookings, coach approvals and payout health.</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <LobbButton
-                  variant="unstyled"
-                  onClick={() => load("refresh")}
-                  disabled={loading || refreshing}
-                  aria-label="Refresh"
-                  className="inline-flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-border-strong)] hover:text-[var(--lobb-text-primary)] disabled:opacity-60"
-                >
-                  <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
-                </LobbButton>
-                <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)] transition hover:bg-[var(--lobb-clay)] hover:text-white">
-                  <UserCheck className="size-4" />
-                  Review applications
-                </Link>
-              </div>
+      <AdminPageHeader
+        eyebrow="Operations"
+        title="Dashboard"
+        description="Bookings, coach approvals and payout health."
+      >
+        <AdminRefreshButton onClick={() => reload("refresh")} busy={loading || refreshing} />
+        <Link
+          href="/admin/coaches"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)] transition hover:bg-[var(--lobb-clay)] hover:text-white"
+        >
+          <UserCheck className="size-4" />
+          Review applications
+        </Link>
+      </AdminPageHeader>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-4">
+          {loading ? (
+            <MetricGridSkeleton />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <AdminMetricCard icon={<Clock3 className="size-4" />} value={String(metrics?.pending_coach_approvals ?? 0)} label="Coach queue" hint="Awaiting admin review" tone="clay" />
+              <AdminMetricCard icon={<CalendarDays className="size-4" />} value={String(metrics?.total_bookings ?? 0)} label="Bookings" hint="Sessions created on LOBB" tone="neutral" />
+              <AdminMetricCard icon={<WalletCards className="size-4" />} value={money(metrics?.lobb_earnings_ngn ?? 0)} label="Platform fees" hint="Earned from completed sessions" tone="neutral" />
+              <AdminMetricCard icon={<CheckCircle2 className="size-4" />} value={String(metrics?.active_coaches ?? 0)} label="Verified coaches" hint="Live and bookable" tone="success" />
             </div>
-        </div>
+          )}
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-          <div className="space-y-4">
+          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <SectionTitle title="Recent bookings" href="/admin/bookings" />
             {loading ? (
-              <MetricGridSkeleton />
+              <TableRowsSkeleton />
+            ) : recentBookings.length ? (
+              <BookingsTable bookings={recentBookings.slice(0, 7)} />
             ) : (
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Stat icon={<Clock3 className="size-4" />} value={String(metrics?.pending_coach_approvals ?? 0)} label="Coach queue" hint="Awaiting admin review" tone="clay" />
-                <Stat icon={<CalendarDays className="size-4" />} value={String(metrics?.total_bookings ?? 0)} label="Bookings" hint="Sessions created on LOBB" tone="neutral" />
-                <Stat icon={<WalletCards className="size-4" />} value={money(metrics?.lobb_earnings_ngn ?? 0)} label="Platform fees" hint="Earned from completed sessions" tone="neutral" />
-                <Stat icon={<CheckCircle2 className="size-4" />} value={String(metrics?.active_coaches ?? 0)} label="Verified coaches" hint="Live and bookable" tone="success" />
-              </div>
+              <AdminEmptyState icon={AlertTriangle} title="No bookings yet" body="Paid player sessions will appear here as bookings are created." />
             )}
-
-            <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-              <SectionTitle title="Recent bookings" href="/admin/bookings" />
-              {loading ? (
-                <TableRowsSkeleton />
-              ) : recentBookings.length ? (
-                <BookingsTable bookings={recentBookings.slice(0, 7)} />
-              ) : (
-                <EmptyPanel title="No bookings yet" body="Paid player sessions will appear here as bookings are created." />
-              )}
-            </section>
-          </div>
-
-          <aside className="space-y-4">
-            <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-              <SectionTitle title="Applications" href="/admin/coaches" />
-              {loading ? (
-                <TableRowsSkeleton rows={4} />
-              ) : pendingCoaches.length ? (
-                <div className="space-y-4">
-                  {pendingCoaches.slice(0, 4).map((coach) => <CoachReviewRow key={coach.id} coach={coach} />)}
-                </div>
-              ) : (
-                <EmptyPanel title="No pending applications" body="Submitted coach profiles will appear here for review." compact />
-              )}
-            </section>
-
-            {!loading && stuckPayouts > 0 && (
-              <section className="border border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10 p-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[var(--lobb-warning)]" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-[var(--lobb-text-primary)]">
-                      {stuckPayouts} stuck payout{stuckPayouts !== 1 ? "s" : ""}
-                    </p>
-                    <p className="mt-1 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
-                      Completed sessions with no Paystack transfer.
-                    </p>
-                    <LobbButton variant="unstyled"
-                      disabled={retrying}
-                      onClick={async () => {
-                        setRetrying(true);
-                        try {
-                          const res = await fetch("/api/admin/payouts/retry-stuck", { method: "POST" });
-                          const json = await res.json() as { retried?: number; succeeded?: number; failed?: number };
-                          showLobbToast(
-                            (json.retried ?? 0) === 0
-                              ? { type: "success", message: "No stuck payouts to retry" }
-                              : {
-                                  type: json.failed ? "error" : "success",
-                                  message: `${json.succeeded ?? 0} transferred, ${json.failed ?? 0} failed`,
-                                }
-                          );
-                        } catch {
-                          showLobbToast({ type: "error", message: "Retry failed. Check server logs." });
-                        } finally {
-                          setRetrying(false);
-                          load("refresh");
-                        }
-                      }}
-                      className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
-                    >
-                      {retrying ? "Retrying" : "Retry stuck payouts"}
-                    </LobbButton>
-                  </div>
-                </div>
-              </section>
-            )}
-
-            <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold">Revenue</h2>
-                <Link href="/admin/earnings" className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]" aria-label="Open earnings">
-                  <ArrowUpRight className="size-4" />
-                </Link>
-              </div>
-              <div className="mt-5 space-y-3">
-                <RevenueRow label="Gross booking value" value={money(metrics?.gmv_ngn ?? 0)} />
-                <RevenueRow label="Platform fees earned" value={money(metrics?.lobb_earnings_ngn ?? 0)} strong />
-                <RevenueRow label="Bookings created" value={String(metrics?.total_bookings ?? 0)} />
-              </div>
-            </section>
-          </aside>
+          </section>
         </div>
-      </section>
-    </AdminShell>
-  );
-}
 
-function Stat({ icon, value, label, hint, tone }: { icon: React.ReactNode; value: string; label: string; hint: string; tone: "success" | "clay" | "neutral" }) {
-  const toneClass = tone === "success" ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]" : tone === "clay" ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)]" : "bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]";
+        <aside className="space-y-4">
+          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <SectionTitle title="Applications" href="/admin/coaches" />
+            {loading ? (
+              <TableRowsSkeleton rows={4} />
+            ) : pendingCoaches.length ? (
+              <div className="space-y-4">
+                {pendingCoaches.slice(0, 4).map((coach) => <CoachReviewRow key={coach.id} coach={coach} />)}
+              </div>
+            ) : (
+              <AdminEmptyState icon={AlertTriangle} title="No pending applications" body="Submitted coach profiles will appear here for review." />
+            )}
+          </section>
 
-  return (
-    <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-      <div className="flex items-start justify-between gap-3">
-        <span className={`flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] ${toneClass}`}>{icon}</span>
+          {!loading && stuckPayouts > 0 && (
+            <section className="border border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10 p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0 text-[var(--lobb-warning)]" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-[var(--lobb-text-primary)]">
+                    {stuckPayouts} stuck payout{stuckPayouts !== 1 ? "s" : ""}
+                  </p>
+                  <p className="mt-1 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
+                    Completed sessions with no Paystack transfer.
+                  </p>
+                  <LobbButton variant="unstyled"
+                    disabled={retrying}
+                    onClick={async () => {
+                      setRetrying(true);
+                      try {
+                        await retryStuckPayouts();
+                      } finally {
+                        setRetrying(false);
+                        reload("refresh");
+                      }
+                    }}
+                    className="mt-3 inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
+                  >
+                    {retrying ? "Retrying" : "Retry stuck payouts"}
+                  </LobbButton>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Revenue</h2>
+              <Link href="/admin/earnings" className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]" aria-label="Open earnings">
+                <ArrowUpRight className="size-4" />
+              </Link>
+            </div>
+            <div className="mt-5 space-y-3">
+              <RevenueRow label="Gross booking value" value={money(metrics?.gmv_ngn ?? 0)} />
+              <RevenueRow label="Platform fees earned" value={money(metrics?.lobb_earnings_ngn ?? 0)} strong />
+              <RevenueRow label="Bookings created" value={String(metrics?.total_bookings ?? 0)} />
+            </div>
+          </section>
+        </aside>
       </div>
-      <p className="mt-5 text-2xl font-semibold leading-none">{value}</p>
-      <p className="mt-3 text-sm font-medium">{label}</p>
-      <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{hint}</p>
-    </div>
+    </AdminShell>
   );
 }
 
@@ -302,16 +250,6 @@ function RevenueRow({ value, label, strong }: { value: string; label: string; st
     <div className="flex items-center justify-between gap-4 border-b border-[var(--lobb-border-subtle)] pb-3 last:border-b-0 last:pb-0">
       <p className="text-xs font-bold text-[var(--lobb-text-secondary)]">{label}</p>
       <p className={`shrink-0 text-sm font-medium ${strong ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-bg-inverse)]"}`}>{value}</p>
-    </div>
-  );
-}
-
-function EmptyPanel({ title, body, compact }: { title: string; body: string; compact?: boolean }) {
-  return (
-    <div className={`rounded-[var(--lobb-radius-md)] border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] ${compact ? "p-4" : "p-6"}`}>
-      <AlertTriangle className="size-4 text-[var(--lobb-text-secondary)]" />
-      <p className="font-medium">{title}</p>
-      <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{body}</p>
     </div>
   );
 }

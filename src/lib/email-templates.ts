@@ -1,3 +1,5 @@
+import { trustCopy, DISPUTE_SLA_HOURS } from "@/lib/trust-copy";
+
 export type EmailTemplate = {
   subject: string;
   preview: string;
@@ -233,8 +235,8 @@ export function paymentReceiptEmail(info: EmailBookingInfo): EmailTemplate {
     </div>
     ${amountTable([
       ["Session fee", info.sessionFeeNgn, "normal"],
-      ["LOBB service fee (5%)", info.convenienceFeeNgn, "normal"],
-      ["Total charged", total, "strong"],
+      ["Convenience fee", info.convenienceFeeNgn, "normal"],
+      ["Total paid", total, "strong"],
     ])}
     ${detailTable([
       ["Coach", info.coachName],
@@ -243,7 +245,7 @@ export function paymentReceiptEmail(info: EmailBookingInfo): EmailTemplate {
       ["Paid", paidAt],
       ["Booking ref", displayRef],
     ])}
-    ${noteCard("Protected payment", "LOBB holds payment securely and releases it to the coach after the session is completed.", "success")}`,
+    ${noteCard("Protected payment", "LOBB holds your payment and releases it to the coach after the session.", "success")}`,
     { label: "View receipt", href: receiptUrl(info) }
   );
 
@@ -585,12 +587,12 @@ export function disputeCategoryLabel(category: string) {
 }
 
 export function disputeOpenedReporterEmail(info: DisputeEmailInfo): EmailTemplate {
-  const subject = "We got your report — your money is protected";
-  const preview = "Payout is on hold. We'll resolve this within 48 hours.";
+  const subject = "We've got your report";
+  const preview = `The coach's payout is on hold — we'll update you within ${DISPUTE_SLA_HOURS} hours.`;
   const html = shell(
     "Report received",
     preview,
-    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">Thanks for telling us. The payout for this session is <strong>on hold</strong> while we review, and we'll get back to you within <strong>48 hours</strong>.</p>
+    `<p style="margin:0;color:#42392f;font:700 16px/1.7 Arial,Helvetica,sans-serif;">${escapeHtml(trustCopy.reviewInProgress)}</p>
     ${detailTable([
       ["Issue", disputeCategoryLabel(info.category)],
       ["Coach", info.coachName],
@@ -603,7 +605,7 @@ export function disputeOpenedReporterEmail(info: DisputeEmailInfo): EmailTemplat
     subject,
     preview,
     html,
-    text: `Report received — payout on hold.\nIssue: ${disputeCategoryLabel(info.category)}\nCoach: ${info.coachName}\nSession: ${formatDate(info.startsAt)}\nWe'll resolve this within 48 hours.`,
+    text: `Report received. ${trustCopy.reviewInProgress}\nIssue: ${disputeCategoryLabel(info.category)}\nCoach: ${info.coachName}\nSession: ${formatDate(info.startsAt)}`,
   };
 }
 

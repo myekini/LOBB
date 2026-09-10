@@ -3,10 +3,11 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, CalendarDays, Gavel, LayoutDashboard, Loader2, LogOut, RefreshCw, UserCheck, Users, WalletCards } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 
 const navItems = [
@@ -105,18 +106,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function AdminBackHeader({ title, href = "/admin", action }: { title: string; href?: string; action?: React.ReactNode }) {
-  return (
-    <div className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3 lg:flex">
-      <Link href={href} className="flex size-11 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] shadow-[var(--lobb-shadow-card)]" aria-label="Go back">
-        <ArrowLeft className="size-5" />
-      </Link>
-      <h1 className="truncate text-center text-[22px] font-semibold md:text-2xl lg:text-left lg:flex-1">{title}</h1>
-      <div className="flex justify-end">{action}</div>
-    </div>
-  );
-}
-
 export function AdminRefreshButton({ onClick, busy }: { onClick: () => void; busy: boolean }) {
   return (
     <LobbButton
@@ -129,4 +118,163 @@ export function AdminRefreshButton({ onClick, busy }: { onClick: () => void; bus
       <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
     </LobbButton>
   );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Standard admin page primitives. Every admin page composes these so headers,
+// metric tiles and empty states stay identical across the section.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * One page header for the whole admin section. `eyebrow` is the small clay
+ * kicker, `backHref` renders the round back button, `children` is the right-hand
+ * action slot (usually <AdminRefreshButton />).
+ */
+export function AdminPageHeader({
+  eyebrow,
+  title,
+  description,
+  backHref,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  backHref?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex items-start gap-3">
+        {backHref && (
+          <Link
+            href={backHref}
+            aria-label="Go back"
+            className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"
+          >
+            <ArrowLeft className="size-5" />
+          </Link>
+        )}
+        <div className="min-w-0">
+          {eyebrow && (
+            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">{eyebrow}</p>
+          )}
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
+          {description && (
+            <p className="mt-1.5 text-sm font-medium text-[var(--lobb-text-secondary)]">{description}</p>
+          )}
+        </div>
+      </div>
+      {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
+    </div>
+  );
+}
+
+/** Metric tile used in every admin stat grid. */
+export function AdminMetricCard({
+  label,
+  value,
+  hint,
+  icon,
+  tone = "neutral",
+  urgent = false,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  icon?: React.ReactNode;
+  tone?: "neutral" | "clay" | "success";
+  urgent?: boolean;
+}) {
+  const toneClass =
+    tone === "success"
+      ? "bg-[var(--lobb-success)]/10 text-[var(--lobb-success)]"
+      : tone === "clay"
+        ? "bg-[var(--lobb-clay)]/10 text-[var(--lobb-clay)]"
+        : "bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]";
+
+  return (
+    <div
+      className={cn(
+        "lobb-surface-outlined border p-4",
+        urgent
+          ? "border-[var(--lobb-warning)]/45 bg-[var(--lobb-warning)]/10"
+          : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]"
+      )}
+    >
+      {icon && (
+        <span className={cn("mb-4 flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)]", toneClass)}>
+          {icon}
+        </span>
+      )}
+      <p className="text-2xl font-semibold leading-none">{value}</p>
+      <p className="mt-2 text-sm font-medium">{label}</p>
+      {hint && <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">{hint}</p>}
+    </div>
+  );
+}
+
+/** Dashed placeholder for "nothing here yet" states. */
+export function AdminEmptyState({
+  icon: Icon,
+  title,
+  body,
+  className,
+}: {
+  icon?: React.ComponentType<{ className?: string }>;
+  title: string;
+  body?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center",
+        className
+      )}
+    >
+      {Icon && <Icon className="mx-auto size-5 text-[var(--lobb-text-secondary)]" />}
+      <p className={cn("text-base font-medium", Icon && "mt-3")}>{title}</p>
+      {body && (
+        <p className="mx-auto mt-2 max-w-sm text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{body}</p>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Shared loader for the simple admin pages (one GET returning the whole payload).
+ * Pages with cursors/filters keep their own fetch loop but still use the
+ * primitives above. Errors surface as a toast; `reload("refresh")` drives the
+ * spinner on <AdminRefreshButton />.
+ */
+export function useAdminResource<T>(url: string, { immediate = true }: { immediate?: boolean } = {}) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(immediate);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const reload = useCallback(
+    async (mode: "initial" | "refresh" = "initial") => {
+      if (mode === "refresh") setRefreshing(true);
+      else setLoading(true);
+      try {
+        const res = await fetch(url);
+        const json = (await res.json()) as T & { error?: string };
+        if (!res.ok) throw new Error(json?.error ?? "Something went wrong");
+        setData(json);
+      } catch (error) {
+        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Something went wrong" });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [url]
+  );
+
+  useEffect(() => {
+    if (immediate) reload("initial");
+  }, [reload, immediate]);
+
+  return { data, loading, refreshing, reload };
 }

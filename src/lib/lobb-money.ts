@@ -37,7 +37,7 @@ export function cancellationPolicy(
     return {
       refundPercent: 100,
       label: "Full refund",
-      note: "Coach and admin cancellations always return the full payment to the player.",
+      note: "Coach and admin cancellations are always refunded in full.",
     };
   }
 
@@ -47,14 +47,14 @@ export function cancellationPolicy(
     return {
       refundPercent: 100,
       label: "Full refund",
-      note: "Cancel at least 24 hours before the session for a full refund within 2 to 5 business days.",
+      note: "Free cancellation up to 24 hours before the session. Refunds reach your card in 2–5 business days.",
     };
   }
 
   return {
     refundPercent: 50,
     label: "50% refund",
-    note: "Cancelling within 24 hours of the session returns 50% to you. The coach receives a partial payment for holding the slot.",
+    note: "Cancel within 24 hours and 50% comes back to you; the coach keeps the rest for holding the slot.",
   };
 }
 

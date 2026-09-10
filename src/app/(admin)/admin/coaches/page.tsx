@@ -5,7 +5,8 @@ import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, Loader2, PlayCircle, UserCheck, X } from "lucide-react";
-import { AdminBackHeader, AdminShell } from "@/features/admin/admin-shell";
+import { AdminEmptyState, AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
+import { AppDialog } from "@/components/ui/app-dialog";
 import { money } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
@@ -94,18 +95,18 @@ export default function AdminCoachApprovalsPage() {
 
   return (
     <AdminShell>
-      <AdminBackHeader title="Coach Approvals" />
-      <div className="mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-medium text-[var(--lobb-clay)]">Review queue</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight">{coaches.length} pending</h1>
-          </div>
-          <p className="max-w-md text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-            Approve turns solid green once all 8 launch checks pass. You can still override and approve with gaps &mdash; only do it when you can defend the call.
-          </p>
-        </div>
-      </div>
+      <AdminPageHeader
+        eyebrow="Review queue"
+        title="Coach approvals"
+        description={
+          loading
+            ? "Approve turns green once all 8 launch checks pass."
+            : `${coaches.length} awaiting review — approve turns green once all 8 launch checks pass.`
+        }
+        backHref="/admin"
+      >
+        <AdminRefreshButton onClick={loadCoaches} busy={loading} />
+      </AdminPageHeader>
 
       <section className="grid gap-4 xl:grid-cols-2">
         {loading ? (
@@ -180,38 +181,41 @@ export default function AdminCoachApprovalsPage() {
           </article>
           );
         }) : (
-          <div className="border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-8 text-center xl:col-span-2">
-            <UserCheck className="mx-auto size-5 text-[var(--lobb-clay)]" />
-            <p className="text-lg font-medium">No coaches waiting</p>
-            <p className="mx-auto mt-2 max-w-sm text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">New coach applications will appear here once they submit their profile for review.</p>
-          </div>
+          <AdminEmptyState
+            icon={UserCheck}
+            title="No coaches waiting"
+            body="New coach applications will appear here once they submit their profile for review."
+            className="xl:col-span-2"
+          />
         )}
       </section>
 
-      {rejecting && (
-        <div className="fixed inset-0 z-[70] flex items-end bg-black/40 p-4 md:items-center" onClick={() => setRejecting(null)}>
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reject-coach-title"
-            className="mx-auto w-full max-w-md border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[0_18px_44px_rgba(0,0,0,0.2)]"
-            onClick={(event) => event.stopPropagation()}
+      <AppDialog
+        open={Boolean(rejecting)}
+        onOpenChange={(open) => { if (!open) { setRejecting(null); setReason(""); } }}
+        title="Reason for rejection"
+        description={rejecting ? `Tell ${rejecting.full_name} what they need to fix.` : undefined}
+        busy={busyId === rejecting?.id}
+        tone="danger"
+        footer={
+          <LobbButton
+            variant="unstyled"
+            disabled={!reason.trim() || busyId === rejecting?.id}
+            onClick={() => rejecting && decide(rejecting, "reject")}
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-semibold text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)] sm:w-auto sm:px-6"
           >
-            <h2 id="reject-coach-title" className="text-lg font-semibold">Reason for rejection</h2>
-            <p className="mt-2 text-sm font-medium text-[var(--lobb-text-secondary)]">Tell {rejecting.full_name} what they need to fix.</p>
-            <LobbTextarea
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              placeholder="e.g. Headline is too short, add a certification, and re-upload a clearer profile photo."
-              className="mt-4 h-28 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)]"
-            />
-            <LobbButton variant="unstyled" disabled={!reason.trim() || busyId === rejecting.id} onClick={() => decide(rejecting, "reject")} className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-semibold text-[var(--lobb-text-inverse)] disabled:bg-[var(--lobb-bg-secondary)] disabled:text-[var(--lobb-text-tertiary)]">
-              {busyId === rejecting.id && <Loader2 className="size-4 animate-spin" />}
-              {busyId === rejecting.id ? "Sending" : "Send rejection"}
-            </LobbButton>
-          </section>
-        </div>
-      )}
+            {busyId === rejecting?.id && <Loader2 className="size-4 animate-spin" />}
+            {busyId === rejecting?.id ? "Sending" : "Send rejection"}
+          </LobbButton>
+        }
+      >
+        <LobbTextarea
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+          placeholder="e.g. Headline is too short, add a certification, and re-upload a clearer profile photo."
+          className="h-28 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)]"
+        />
+      </AppDialog>
     </AdminShell>
   );
 }
