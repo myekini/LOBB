@@ -11,6 +11,7 @@ import { courtImage } from "@/lib/demo-content";
 import type { CoachPublicProfile } from "@/lib/types";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { SkeletonBlock, SmallCoachCardSkeleton } from "@/components/common/lobb-skeleton";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 
 function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: string }) {
   return (
@@ -474,8 +475,8 @@ function LandingSplash() {
         <div className="lobb-landing-top-gradient absolute inset-x-0 top-0 h-[620px] bg-[linear-gradient(180deg,var(--lobb-bg-secondary),transparent)]" />
       </div>
 
-      <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/78 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr] lg:px-8">
+      <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 backdrop-blur-xl">
+        <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex min-w-0 items-center gap-2.5 md:justify-self-start">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">
               <LobbMark size={18} />
@@ -483,18 +484,19 @@ function LandingSplash() {
             <span className="hidden text-[13px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-bg-inverse)] sm:inline">LOBB</span>
           </Link>
 
-          <nav aria-label="Main navigation" className="hidden items-center gap-7 text-sm font-medium text-[var(--lobb-text-secondary)] md:flex md:justify-self-center">
+          <nav aria-label="Main navigation" className="hidden items-center justify-self-center gap-8 text-sm font-medium text-[var(--lobb-text-secondary)] md:flex">
             <Link href="/coaches" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">Coaches</Link>
             <Link href="/how-it-works" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">How it works</Link>
             <Link href="/about" className="lobb-nav-link transition hover:text-[var(--lobb-bg-inverse)]">About</Link>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3 md:justify-self-end">
+          <div className="flex shrink-0 items-center justify-self-end gap-1 sm:gap-2">
             <Link href="/auth/login" className="inline-flex h-10 items-center justify-center rounded-[var(--lobb-radius-lg)] px-3 text-sm font-medium text-[var(--lobb-text-secondary)] transition hover:text-[var(--lobb-bg-inverse)] sm:px-4">
               Sign in
             </Link>
-            <Link href="/coaches" className="lobb-cta-sheen inline-flex h-10 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-medium text-white transition duration-300 hover:bg-[var(--lobb-clay)] active:scale-[0.98] sm:px-5">
-              Find a coach
+            <ThemeToggle className="size-10 rounded-[var(--lobb-radius-md)]" />
+            <Link href="/coaches" className="lobb-cta-sheen hidden h-10 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)] transition duration-300 hover:bg-[var(--lobb-clay)] hover:text-white active:scale-[0.98] sm:inline-flex">
+              Browse coaches
             </Link>
           </div>
         </div>
@@ -505,7 +507,7 @@ function LandingSplash() {
           <p className="mb-5 text-sm font-medium text-[var(--lobb-clay)]">Verified tennis coaching in Lagos</p>
 
           <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight text-[var(--lobb-bg-inverse)] sm:text-[64px] lg:text-[76px] text-balance">
-            Book tennis coaching without the WhatsApp runaround.
+            Skip the WhatsApp chase. Book a verified tennis coach.
           </h1>
           <p className="mt-6 max-w-xl text-[16px] leading-7 text-[var(--lobb-text-secondary)] sm:text-[18px] text-pretty">
             Compare verified coaches, see upfront rates and reserve a real time—all in one place.
@@ -531,9 +533,9 @@ function LandingSplash() {
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,13,13,0.05),rgba(13,13,13,0.9)),linear-gradient(90deg,rgba(13,13,13,0.72),rgba(13,13,13,0.08)_48%,rgba(13,13,13,0.76)),radial-gradient(circle_at_78%_18%,rgba(196,98,45,0.34),transparent_28%)]" aria-hidden="true" />
 
             <div className="relative grid min-h-[390px] content-end p-5 sm:min-h-[440px] sm:p-7">
-              <div className="max-w-[430px] text-white">
-                <p className="text-sm font-medium text-white/75">Featured on LOBB</p>
-                <h2 className="mt-2 text-[30px] font-semibold leading-[1.04] tracking-tight sm:text-[40px] text-balance">
+              <div className="max-w-[390px] border border-white/15 bg-[#0d0d0d]/78 p-4 text-white backdrop-blur-md sm:p-5">
+                <p className="text-xs font-medium text-white/70">Featured coach</p>
+                <h2 className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight text-balance">
                   {heroCoach?.full_name ?? "Verified coaching across Lagos"}
                 </h2>
                 <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80">
@@ -541,7 +543,7 @@ function LandingSplash() {
                   {heroCoach?.avg_rating != null && <span className="inline-flex items-center gap-1.5"><Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{Number(heroCoach.avg_rating).toFixed(1)}</span>}
                   {heroCoach?.hourly_rate_ngn != null && <span>{coachRate(heroCoach.hourly_rate_ngn)}</span>}
                 </div>
-                <Link href={heroCoach ? `/coaches/${heroCoach.slug ?? heroCoach.id}` : "/coaches"} className="mt-6 inline-flex h-12 items-center gap-2 bg-white px-5 text-sm font-semibold text-[#0d0d0d] transition hover:bg-[var(--lobb-clay)] hover:text-white">
+                <Link data-keep-light href={heroCoach ? `/coaches/${heroCoach.slug ?? heroCoach.id}` : "/coaches"} className="mt-5 inline-flex h-11 items-center gap-2 bg-white px-4 text-sm font-semibold text-[#0d0d0d] transition hover:bg-[var(--lobb-clay)] hover:text-white">
                   {heroCoach ? "View coach profile" : "Browse coaches"}
                   <ArrowRight className="size-4" />
                 </Link>

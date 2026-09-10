@@ -17,7 +17,7 @@ export function ThemeToggle({ className }: { className?: string }) {
       onClick={toggleTheme}
       title={isDark ? "Light mode" : "Dark mode"}
       className={cn(
-        "inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-clay)]/40 hover:text-[var(--lobb-bg-inverse)] active:scale-[0.96]",
+        "inline-flex h-10 w-10 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)] transition-[color,border-color,background-color,transform] duration-200 hover:border-[var(--lobb-border-strong)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)] active:scale-[0.96]",
         className
       )}
     >

@@ -109,6 +109,7 @@
     --lobb-text-link:        var(--lobb-clay);
 
     --lobb-border-subtle:    #E8E3DC;
+    --lobb-border-strong:    #CFC7BD;
     --lobb-border-focus:     var(--lobb-clay);
     --lobb-border-error:     #D64045;
 
@@ -160,6 +161,7 @@
     --lobb-success-soft:     rgba(45, 106, 79, 0.18);
 
     --lobb-border-subtle:    #2E2924;
+    --lobb-border-strong:    #50473F;
     --lobb-shadow-card:      0 2px 16px rgba(0, 0, 0, 0.30);
     --lobb-shadow-sheet:     0 -4px 24px rgba(0, 0, 0, 0.40);
     --lobb-shadow-modal:     0 8px 40px rgba(0, 0, 0, 0.50);

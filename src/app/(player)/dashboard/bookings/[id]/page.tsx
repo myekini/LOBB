@@ -4,7 +4,7 @@ import { Button as LobbButton } from "@/components/ui/button";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, Circle, CreditCard, Flag, Loader2, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
 import {
@@ -46,6 +46,8 @@ function toWhatsAppNumber(phone: string) {
 export default function BookingDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const search = useSearchParams();
+  const justConfirmed = search.get("confirmed") === "1";
   const [showCancel, setShowCancel] = useState(false);
   const [booking, setBooking] = useState<DashboardBooking | null>(null);
   const [loading, setLoading] = useState(true);
@@ -184,6 +186,18 @@ export default function BookingDetailPage() {
           <h1 className="truncate text-center font-semibold">Booking detail</h1>
           <div aria-hidden="true" />
         </header>
+
+        {justConfirmed && (
+          <section className="mb-5 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/25 bg-[var(--lobb-success)]/10 p-4" role="status">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-success)] text-white">
+              <CheckCircle2 className="size-5" />
+            </span>
+            <div>
+              <h2 className="text-sm font-semibold text-[var(--lobb-text-primary)]">Booking confirmed</h2>
+              <p className="mt-1 text-sm leading-5 text-[var(--lobb-text-secondary)]">You’re all set. The session details and coach contact are below.</p>
+            </div>
+          </section>
+        )}
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
           <div>

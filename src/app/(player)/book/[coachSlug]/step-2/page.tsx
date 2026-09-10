@@ -228,13 +228,13 @@ function BookingStep2Content() {
               <LobbButton variant="unstyled"
                 type="button"
                 onClick={() => handleSelectCourt(court.id)}
-                className={`w-full rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-all duration-150 active:scale-[0.99] ${
+                className={`w-full whitespace-normal rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-all duration-150 active:scale-[0.99] ${
                   selectedCourtId === court.id && !showCustom
                     ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] ring-1 ring-[var(--lobb-clay)]"
                     : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] hover:border-[var(--lobb-clay)]/40"
                 }`}
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="grid grid-cols-[minmax(0,1fr)_24px] items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <p className={`font-medium leading-tight ${
                       selectedCourtId === court.id && !showCustom
@@ -247,14 +247,14 @@ function BookingStep2Content() {
                       {court.area}
                       {court.courtCount ? ` · ${court.courtCount} court${court.courtCount > 1 ? "s" : ""}` : ""}
                     </p>
+                    <div className="mt-2"><AccessBadge rule={court.accessRule} /></div>
                     {court.publicNote && (
                       <p className="mt-1 text-[11px] leading-snug text-[var(--lobb-text-tertiary)]">
                         {court.publicNote}
                       </p>
                     )}
                   </div>
-              <div className="flex max-w-[112px] shrink-0 flex-col items-end gap-2 text-right">
-                    <AccessBadge rule={court.accessRule} />
+                  <div className="flex size-6 items-start justify-end">
                     {selectedCourtId === court.id && !showCustom && (
                       <CheckCircle2 className="size-5 text-[var(--lobb-clay)]" />
                     )}

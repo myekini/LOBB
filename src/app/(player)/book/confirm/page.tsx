@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { track } from "@/lib/analytics";
 import {
   CalendarDays,
@@ -44,6 +44,7 @@ function toWhatsAppNumber(phone: string) {
 
 function BookingConfirmContent() {
   const search    = useSearchParams();
+  const router    = useRouter();
   const reference = search.get("reference") ?? search.get("trxref");
 
   const [booking,       setBooking]       = useState<BookingWithDetails | null>(null);
@@ -95,7 +96,7 @@ function BookingConfirmContent() {
             reference:  json.booking.paystack_reference,
           });
           showLobbToast({ type: "success", message: "Booking confirmed! Check your WhatsApp." });
-          setLoading(false);
+          router.replace(`/dashboard/bookings/${json.booking.id}?confirmed=1`);
         })
         .catch((err) => {
           if (cancelled) return;
@@ -114,7 +115,7 @@ function BookingConfirmContent() {
     verify();
 
     return () => { cancelled = true; };
-  }, [reference]);
+  }, [reference, router]);
 
   if (loading) {
     return <LobbBrandLoader message="Verifying your payment and securing your booking." />;

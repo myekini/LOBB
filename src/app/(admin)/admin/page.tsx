@@ -60,17 +60,16 @@ export default function AdminDashboardPage() {
   const recentBookings = data?.recent_bookings ?? [];
   const pendingCoaches = data?.pending_coach_approvals ?? [];
   const stuckPayouts = data?.stuck_payouts ?? 0;
-  const approvalCopy = (metrics?.pending_coach_approvals ?? 0) > 0 ? "Coach applications are waiting" : "Coach approvals are clear";
 
   return (
     <AdminShell>
       <section className="space-y-4">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-stretch">
-          <div className="flex min-h-[132px] flex-col justify-center border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 sm:p-6">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-medium text-white/75">Admin</p>
-                <h1 className="mt-2 text-[32px] font-semibold leading-none tracking-tight sm:text-[38px]">Operations dashboard</h1>
+                <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Operations</p>
+                <h1 className="mt-1 text-[30px] font-semibold leading-tight tracking-tight sm:text-[36px]">Dashboard</h1>
+                <p className="mt-2 text-sm text-[var(--lobb-text-secondary)]">Bookings, coach approvals and payout health.</p>
               </div>
               <div className="flex items-center gap-2">
                 <LobbButton
@@ -78,29 +77,16 @@ export default function AdminDashboardPage() {
                   onClick={() => load("refresh")}
                   disabled={loading || refreshing}
                   aria-label="Refresh"
-                  className="inline-flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/20 text-white disabled:opacity-60"
+                  className="inline-flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-border-strong)] hover:text-[var(--lobb-text-primary)] disabled:opacity-60"
                 >
                   <RefreshCw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
                 </LobbButton>
-                <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white">
+                <Link href="/admin/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)] transition hover:bg-[var(--lobb-clay)] hover:text-white">
                   <UserCheck className="size-4" />
                   Review applications
                 </Link>
               </div>
             </div>
-          </div>
-
-          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-            <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">Coach approvals</p>
-            <h2 className="mt-2 text-xl font-semibold leading-tight">{approvalCopy}</h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
-              Review profiles before they appear to players.
-            </p>
-            <Link href="/admin/coaches" className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-sm font-medium transition-colors hover:border-[var(--lobb-clay)]/35">
-              Open approvals
-              <ArrowUpRight className="size-4" />
-            </Link>
-          </section>
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">

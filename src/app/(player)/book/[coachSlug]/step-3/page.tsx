@@ -2,6 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import Script from "next/script";
 import { CalendarDays, MapPin, ShieldCheck } from "lucide-react";
 import { BookingButton, BookingShell } from "@/features/booking/booking-shell";
 import { ConsentCheckbox, ConsentLink } from "@/components/ui/consent-checkbox";
@@ -12,6 +13,20 @@ import { track } from "@/lib/analytics";
 import { readApiError, toastAppError } from "@/lib/client-errors";
 
 const LOBB_FEE_RATE = 0.05;
+
+type PaystackPopup = {
+  resumeTransaction: (accessCode: string, callbacks: {
+    onSuccess: (transaction: { reference: string }) => void;
+    onCancel: () => void;
+    onError: (error: { message?: string }) => void;
+  }) => void;
+};
+
+declare global {
+  interface Window {
+    PaystackPop?: new () => PaystackPopup;
+  }
+}
 
 function formatCountdown(seconds: number) {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
@@ -53,6 +68,9 @@ function BookingStep3Content() {
   const subCourt  = search.get("sub_court") ?? "";
   const [coach,   setCoach]   = useState<CoachPublicProfile | null>(null);
   const [paying,  setPaying]  = useState(false);
+  const [paymentStage, setPaymentStage] = useState<"idle" | "opening" | "confirming">("idle");
+  const [paystackReady, setPaystackReady] = useState(false);
+  const [paymentSession, setPaymentSession] = useState<{ reference: string; accessCode: string } | null>(null);
   const [acceptedCancellationPolicy, setAcceptedCancellationPolicy] = useState(false);
   const [seconds, setSeconds] = useState(() => {
     if (!expiresAt) return 10 * 60;
@@ -100,9 +118,60 @@ function BookingStep3Content() {
   const total      = sessionFee + lobbFee;
   const canPay = Boolean(coach) && acceptedCancellationPolicy;
 
+  const verifyAndOpenBooking = async (reference: string) => {
+    setPaymentStage("confirming");
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const response = await fetch(`/api/payments/verify?reference=${encodeURIComponent(reference)}`);
+      if (response.ok) {
+        const payload = (await response.json()) as { booking?: { id: string; status?: string; payment_status?: string } };
+        if (payload.booking && (payload.booking.status === "confirmed" || payload.booking.payment_status === "paid")) {
+          track("Booking Confirmed", { booking_id: payload.booking.id, coach_slug: slug, total_paid: total, reference });
+          router.replace(`/dashboard/bookings/${payload.booking.id}?confirmed=1`);
+          return;
+        }
+      } else if (response.status === 402) {
+        throw new Error("Payment was not completed. You can try again.");
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, attempt < 3 ? 1200 : 2500));
+    }
+    router.replace(`/book/confirm?reference=${encodeURIComponent(reference)}`);
+  };
+
+  const openPaystack = (session: { reference: string; accessCode: string }) => {
+    if (!window.PaystackPop) {
+      window.location.href = `/book/confirm?reference=${encodeURIComponent(session.reference)}`;
+      return;
+    }
+    setPaymentStage("opening");
+    const popup = new window.PaystackPop();
+    popup.resumeTransaction(session.accessCode, {
+      onSuccess: (transaction) => {
+        void verifyAndOpenBooking(transaction.reference || session.reference).catch((error) => {
+          toastAppError(error, "PAYMENT_VERIFY_FAILED");
+          setPaymentStage("idle");
+          setPaying(false);
+        });
+      },
+      onCancel: () => {
+        setPaymentStage("idle");
+        setPaying(false);
+        showLobbToast({ type: "info", message: "Payment paused. Your booking details are still here." });
+      },
+      onError: (error) => {
+        toastAppError(new Error(error.message || "Paystack could not open."), "PAYMENT_INIT_FAILED");
+        setPaymentStage("idle");
+        setPaying(false);
+      },
+    });
+  };
+
   const handlePay = async () => {
     if (paying || !canPay) return;
     setPaying(true);
+    if (paymentSession) {
+      openPaystack(paymentSession);
+      return;
+    }
     try {
       const res = await fetch("/api/bookings", {
         method:  "POST",
@@ -120,13 +189,15 @@ function BookingStep3Content() {
       });
       if (!res.ok) {
         toastAppError(await readApiError(res, "PAYMENT_INIT_FAILED"), "PAYMENT_INIT_FAILED");
+        setPaying(false);
         return;
       }
       const json = (await res.json()) as {
-        booking_id?: string; reference?: string; paystack_url?: string;
+        booking_id?: string; reference?: string; access_code?: string;
       };
-      if (!json.paystack_url) {
+      if (!json.booking_id || !json.reference || !json.access_code) {
         toastAppError(new Error("Could not initiate payment. Try again."), "PAYMENT_INIT_FAILED");
+        setPaying(false);
         return;
       }
       track("Payment Initiated", {
@@ -137,15 +208,22 @@ function BookingStep3Content() {
         booking_id: json.booking_id,
         reference: json.reference,
       });
-      window.location.href = json.paystack_url;
+      const session = { reference: json.reference, accessCode: json.access_code };
+      setPaymentSession(session);
+      openPaystack(session);
     } catch {
       toastAppError(null, "NETWORK_ERROR");
-    } finally {
       setPaying(false);
     }
   };
 
   return (
+    <>
+    <Script
+      src="https://js.paystack.co/v2/inline.js"
+      strategy="afterInteractive"
+      onLoad={() => setPaystackReady(true)}
+    />
     <BookingShell
       step={3}
       backHref={`/book/${slug}/step-2?slot=${encodeURIComponent(slot)}&lock=${lockId}&expires=${encodeURIComponent(expiresAt)}`}
@@ -248,14 +326,15 @@ function BookingStep3Content() {
         <ConsentLink href="/cancellation-policy">Cancellation Policy</ConsentLink> for this booking.
       </ConsentCheckbox>
 
-      <BookingButton disabled={!canPay} loading={paying} onClick={handlePay}>
-        {paying ? "Opening Paystack" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}
+      <BookingButton disabled={!canPay || !paystackReady} loading={paying} onClick={handlePay}>
+        {paymentStage === "confirming" ? "Confirming your booking" : paying ? "Opening secure payment" : coach ? `Pay ${money(total)} securely` : "Loading booking summary"}
       </BookingButton>
 
       <p className="mt-4 text-center text-xs text-[var(--lobb-text-secondary)]">
-        Secure payment by Paystack
+        Pay securely without leaving this page · Powered by Paystack
       </p>
     </BookingShell>
+    </>
   );
 }
 
