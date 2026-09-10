@@ -5,8 +5,7 @@ import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CalendarDays, CheckCircle2, Circle, CreditCard, Flag, Loader2, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound, X } from "lucide-react";
-import { Dialog } from "@base-ui/react/dialog";
+import { ArrowLeft, CalendarDays, CheckCircle2, Circle, CreditCard, Flag, Loader2, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound } from "lucide-react";
 import {
   durationMinutes,
   firstJoin,
@@ -19,6 +18,7 @@ import { FeeBreakdown } from "@/components/common/fee-breakdown";
 import { cancellationPolicy } from "@/lib/lobb-money";
 import { trustCopy } from "@/lib/trust-copy";
 import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
+import { AppDialog } from "@/components/ui/app-dialog";
 
 function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
   const profile = firstJoin(value);
@@ -348,19 +348,7 @@ export default function BookingDetailPage() {
         </div>
       </section>
 
-      <Dialog.Root open={showReport} onOpenChange={setShowReport}>
-        <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
-          <Dialog.Popup aria-labelledby="report-session-title" className="fixed inset-x-0 bottom-0 z-[70] p-4">
-            <div className="mx-auto w-full max-w-md rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
-              <div className="flex items-start justify-between gap-4">
-                <h2 id="report-session-title" className="text-lg font-semibold">What went wrong?</h2>
-                <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
-              </div>
-              <p className="mt-1 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
-                {trustCopy.reportPrompt}
-              </p>
-
+      <AppDialog open={showReport} onOpenChange={setShowReport} title="What went wrong?" description={trustCopy.reportPrompt} busy={reporting}>
               <div className="mt-4 grid grid-cols-2 gap-2">
                 {REPORT_CATEGORIES.map((category) => (
                   <LobbButton variant="unstyled"
@@ -397,42 +385,30 @@ export default function BookingDetailPage() {
               <p className="mt-2 text-center text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
                 {trustCopy.falseReport}
               </p>
-            </div>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
+      </AppDialog>
 
-      <Dialog.Root open={showCancel} onOpenChange={setShowCancel}>
-        <Dialog.Portal>
-          <Dialog.Backdrop className="fixed inset-0 z-[70] bg-black/40" />
-          <Dialog.Popup
-            aria-labelledby="cancel-booking-title"
-            className="fixed inset-x-0 bottom-0 z-[70] p-4"
-          >
-            <div className="mx-auto w-full max-w-md border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 shadow-[var(--lobb-shadow-modal)]">
-              <div className="flex items-start justify-between gap-4">
-                <h2 id="cancel-booking-title" className="text-lg font-semibold">Cancel this booking?</h2>
-                <Dialog.Close aria-label="Close" className="flex size-8 items-center justify-center"><X className="size-5" /></Dialog.Close>
-              </div>
-              <p className="mt-4 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+      <AppDialog
+        open={showCancel}
+        onOpenChange={setShowCancel}
+        title="Cancel this booking?"
+        description="Review the refund before confirming."
+        tone="danger"
+        busy={cancelling}
+        footer={
+          <>
+            <LobbButton variant="outline" onClick={() => setShowCancel(false)} disabled={cancelling}>Keep booking</LobbButton>
+            <LobbButton variant="destructive" disabled={cancelling} onClick={cancelBooking}>{cancelling ? "Cancelling…" : "Cancel booking"}</LobbButton>
+          </>
+        }
+      >
+              <p className="text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
                 {fullRefund ? (
                   <>You will receive a <strong>full refund of {money(refundNgn)}</strong> within 2 to 5 business days.</>
                 ) : (
                   <>You will receive <strong>50% back — {money(refundNgn)}</strong> — within 2 to 5 business days. The coach keeps the rest for holding the slot.</>
                 )}
               </p>
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                <Dialog.Close className="h-12 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]">
-                  Keep booking
-                </Dialog.Close>
-                <LobbButton variant="unstyled" type="button" disabled={cancelling} onClick={cancelBooking} className="h-12 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/35 text-sm font-semibold text-[var(--lobb-error)] disabled:opacity-60">
-                  {cancelling ? "Cancelling" : "Cancel booking"}
-                </LobbButton>
-              </div>
-            </div>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
+      </AppDialog>
     </main>
   );
 }

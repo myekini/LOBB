@@ -8,7 +8,7 @@ export default function CoachDashboardLoading() {
     <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Dashboard" eyebrow="LOBB Coach" active="home" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <section className="mb-5 overflow-hidden bg-[#0D0D0D] p-5 sm:p-6">
+        <section className="mb-5 overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 sm:p-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <SkeletonBlock className="h-3.5 w-28 bg-white/10" />

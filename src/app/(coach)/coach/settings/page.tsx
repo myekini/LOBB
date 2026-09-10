@@ -70,20 +70,10 @@ export default async function CoachSettingsPage() {
 
       <div className="mx-auto max-w-2xl px-5 pt-6 sm:px-6">
         <SecurityNudge />
-        <section className="mb-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5">
-          <p className="text-xs font-medium text-[var(--lobb-clay)]">Coach account</p>
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-              <p className="mt-1 text-sm font-medium text-[var(--lobb-text-secondary)]">
-                Manage login, payout, and notification details.
-              </p>
-            </div>
-            <span className="inline-flex w-fit items-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] px-3 py-1.5 text-xs font-medium capitalize text-[var(--lobb-clay)]">
-              {accountStatus}
-            </span>
-          </div>
-        </section>
+        <div className="mb-5 flex items-center justify-between gap-4 px-1">
+          <p className="text-sm text-[var(--lobb-text-secondary)]">Login, verification, payouts and notifications.</p>
+          <span className="shrink-0 text-xs font-medium capitalize text-[var(--lobb-clay)]">{accountStatus}</span>
+        </div>
 
         <SettingGroup label="Account">
           <SettingRow
@@ -192,6 +182,7 @@ function SettingRow({
         <p className="mt-0.5 truncate text-[12px] capitalize text-[var(--lobb-text-tertiary)]">{value}</p>
       </div>
       {href && <ChevronRight className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />}
+      {!href && <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">Read only</span>}
     </div>
   );
 
