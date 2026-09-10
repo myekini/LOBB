@@ -10,7 +10,7 @@ export default function NotFoundPage() {
       </p>
       <Link
         href="/"
-        className="mt-8 inline-flex h-12 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] px-7 text-sm font-medium text-white"
+        className="mt-8 inline-flex h-12 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-inverse)] px-7 text-sm font-medium text-[var(--lobb-text-inverse)]"
       >
         Back to Home
       </Link>

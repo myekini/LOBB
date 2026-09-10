@@ -215,7 +215,7 @@ export default function AdminCoachesPage() {
             <span
               className={cn(
                 "rounded-full px-1.5 text-[11px] font-bold",
-                tab === item.value ? "bg-white/15" : "bg-[var(--lobb-bg-secondary)]"
+                tab === item.value ? "bg-[var(--lobb-border-inverse)]" : "bg-[var(--lobb-bg-secondary)]"
               )}
             >
               {counts[item.value] ?? 0}

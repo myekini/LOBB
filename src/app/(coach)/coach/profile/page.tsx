@@ -370,11 +370,11 @@ export default async function CoachProfilePage() {
                     <AlertTriangle className="size-4 text-[var(--lobb-clay)]" />
                     Continue profile setup
                   </p>
-                  <p className="mt-1 text-sm font-medium text-white/75">Next: {nextIncomplete.label}</p>
+                  <p className="mt-1 text-sm font-medium text-[var(--lobb-text-inverse-muted)]">Next: {nextIncomplete.label}</p>
                 </div>
                 <Link
                   href={nextIncomplete.href}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white px-5 text-sm font-medium text-[#0d0d0d]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-text-inverse)] px-5 text-sm font-medium text-[var(--lobb-bg-inverse)]"
                 >
                   Add {nextIncomplete.label.toLowerCase()}
                   <ChevronRight className="size-4" />

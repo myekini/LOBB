@@ -8,15 +8,15 @@ export default function CoachDashboardLoading() {
     <main className="lobb-app-page min-h-screen px-5 pb-28 text-[var(--lobb-text-primary)] sm:px-6">
       <CoachFlowHeader title="Dashboard" eyebrow="LOBB Coach" active="home" />
       <section className="mx-auto max-w-6xl pt-5 lg:pt-7">
-        <section className="mb-5 overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 sm:p-6">
+        <section className="lobb-hero-card relative mb-5 overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <SkeletonBlock className="h-3.5 w-28 bg-white/10" />
-              <SkeletonBlock className="mt-3 h-9 w-52 bg-white/10 sm:h-10" />
+              <SkeletonBlock className="h-3.5 w-28 bg-[var(--lobb-border-inverse)]" />
+              <SkeletonBlock className="mt-3 h-9 w-52 bg-[var(--lobb-border-inverse)] sm:h-10" />
             </div>
             <div className="grid grid-cols-3 gap-2 sm:w-[340px]">
               {Array.from({ length: 3 }).map((_, i) => (
-                <SkeletonBlock key={i} className="h-[60px] rounded-[var(--lobb-radius-md)] bg-white/10" />
+                <SkeletonBlock key={i} className="h-[60px] rounded-[var(--lobb-radius-md)] bg-[var(--lobb-border-inverse)]" />
               ))}
             </div>
           </div>

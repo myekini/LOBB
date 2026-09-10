@@ -119,19 +119,19 @@ export default function CoachBookingDetailPage() {
         <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <span className={`inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] px-3 py-1.5 text-xs font-medium capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-white" : "bg-white/10 text-white/75"}`}>
+              <span className={`inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] px-3 py-1.5 text-xs font-medium capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-[var(--lobb-text-inverse)]" : "bg-[var(--lobb-border-inverse)] text-[var(--lobb-text-inverse-muted)]"}`}>
                 <Circle className="size-2 fill-current text-[var(--lobb-success)]" />
                 {booking.status}
               </span>
-              <h2 className="mt-5 text-[28px] font-semibold leading-tight text-white sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
-              <p className="mt-2 text-sm font-medium text-white/75">
+              <h2 className="mt-5 text-[28px] font-semibold leading-tight text-[var(--lobb-text-inverse)] sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-2 text-sm font-medium text-[var(--lobb-text-inverse-muted)]">
                 {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} session
               </p>
             </div>
-            <div className="rounded-[var(--lobb-radius-lg)] border border-white/10 bg-white/[0.06] p-4 sm:min-w-[220px]">
-              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-white/75">Coach payout</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
-              <p className="mt-1 text-xs font-medium text-white/75">From this session</p>
+            <div className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-inverse)] bg-[var(--lobb-border-inverse)] p-4 sm:min-w-[220px]">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-inverse-muted)]">Coach payout</p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--lobb-text-inverse)]">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
+              <p className="mt-1 text-xs font-medium text-[var(--lobb-text-inverse-muted)]">From this session</p>
             </div>
           </div>
         </section>
