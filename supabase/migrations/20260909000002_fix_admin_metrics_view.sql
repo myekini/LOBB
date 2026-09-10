@@ -65,7 +65,7 @@ language sql stable security definer as $$
     coalesce(sum(total_amount_ngn), 0)::bigint,
     coalesce(sum(coach_payout_ngn), 0)::bigint
   from public.bookings
-  where (p_status is null or status = p_status)
+  where (p_status is null or status::text = p_status)
     and (p_from is null or starts_at >= p_from)
     and (p_to   is null or starts_at <= p_to);
 $$;
