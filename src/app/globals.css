@@ -819,15 +819,16 @@
   animation-delay: calc(120ms + var(--i) * 75ms);
 }
 
-/* Scroll reveals: .lobb-reveal-pending is added by JS only to below-fold
-   elements, so content never ships hidden without JS. */
-.lobb-reveal-pending {
+/* Scroll reveals. The landing adds `.lobb-reveal-js` to <html> before first
+   paint, so targets only ship hidden when JS is present — without it they stay
+   visible. JS then adds `.lobb-reveal-in` as each element enters the viewport. */
+.lobb-reveal-js [data-reveal]:not(.lobb-reveal-in) {
   opacity: 0;
   transform: translateY(26px);
   filter: blur(7px);
 }
 
-.lobb-reveal-pending.lobb-reveal-in {
+.lobb-reveal-js [data-reveal].lobb-reveal-in {
   opacity: 1;
   transform: none;
   filter: blur(0);
@@ -836,6 +837,14 @@
     transform 0.8s var(--lobb-ease-out),
     filter 0.8s var(--lobb-ease-out);
   transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Keyboard focus ring for landing links and buttons (no per-element classes). */
+.lobb-landing a:focus-visible,
+.lobb-landing button:focus-visible {
+  outline: 2px solid var(--lobb-clay);
+  outline-offset: 3px;
+  border-radius: var(--lobb-radius-sm);
 }
 
 .lobb-nav-link {
@@ -998,7 +1007,7 @@
     animation: none;
     filter: none;
   }
-  .lobb-reveal-pending {
+  .lobb-reveal-js [data-reveal] {
     opacity: 1;
     transform: none;
     filter: none;

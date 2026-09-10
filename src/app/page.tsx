@@ -9,7 +9,7 @@ import { LandingSplash } from "@/features/marketing/landing-splash";
 export default async function Home() {
   const supabase = createClient();
 
-  const [{ data: { user } }, { data: coaches }] = await Promise.all([
+  const [{ data: { user } }, { data: coaches }, { count }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("coach_profiles_public")
@@ -17,6 +17,7 @@ export default async function Home() {
       .eq("status", "active")
       .order("session_count", { ascending: false })
       .limit(3),
+    supabase.from("coach_profiles_public").select("id", { count: "exact", head: true }).eq("status", "active"),
   ]);
 
   if (user) {
@@ -28,5 +29,5 @@ export default async function Home() {
     if (role === "player") redirect("/home");
   }
 
-  return <LandingSplash coaches={(coaches ?? []) as CoachPublicProfile[]} />;
+  return <LandingSplash coaches={(coaches ?? []) as CoachPublicProfile[]} coachCount={count ?? 0} />;
 }

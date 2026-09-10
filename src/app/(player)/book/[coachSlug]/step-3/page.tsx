@@ -308,7 +308,7 @@ function BookingStep3Content() {
               <span className="font-medium text-[var(--lobb-text-primary)]">{money(sessionFee)}</span>
             </div>
             <div className="flex justify-between text-sm font-medium text-[var(--lobb-text-secondary)]">
-              <span>LOBB service fee (5%)</span>
+              <span>Convenience fee (5%)</span>
               <span className="font-medium text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
             </div>
             <div className="pt-2">

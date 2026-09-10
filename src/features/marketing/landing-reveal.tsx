@@ -3,21 +3,32 @@
 import { useEffect } from "react";
 
 /**
- * Scroll-reveal for the landing page. Renders nothing — it just binds an
- * IntersectionObserver to every `[data-reveal]` element that is still below the
- * fold on mount, so content stays visible if JS never runs. The landing markup
- * is server-rendered, so a single pass on mount is enough.
+ * Scroll-reveal for the landing page. Renders nothing.
+ *
+ * The inline script in <LandingSplash> adds `.lobb-reveal-js` to <html> before
+ * first paint, so `[data-reveal]` elements start hidden (via CSS) and animate in
+ * instead of flashing visible→hidden. Without JS the class is never added and
+ * everything stays visible. This effect just adds `.lobb-reveal-in` as each
+ * element enters the viewport; above-fold elements fire on mount.
  */
 export function LandingReveal() {
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
     const els = Array.from(document.querySelectorAll<HTMLElement>("[data-reveal]"));
+    const reveal = (el: Element) => el.classList.add("lobb-reveal-in");
+
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      !("IntersectionObserver" in window)
+    ) {
+      els.forEach(reveal);
+      return;
+    }
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            entry.target.classList.add("lobb-reveal-in");
+            reveal(entry.target);
             io.unobserve(entry.target);
           }
         }
@@ -25,13 +36,7 @@ export function LandingReveal() {
       { rootMargin: "0px 0px -10% 0px", threshold: 0.15 },
     );
 
-    for (const el of els) {
-      if (el.getBoundingClientRect().top > window.innerHeight * 0.9) {
-        el.classList.add("lobb-reveal-pending");
-        io.observe(el);
-      }
-    }
-
+    els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
 

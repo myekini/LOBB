@@ -114,6 +114,8 @@ export default function AdminCoachesPage() {
   const [reason, setReason] = useState("");
   const [suspendTarget, setSuspendTarget] = useState<DirectoryCoach | null>(null);
   const [suspendReason, setSuspendReason] = useState("");
+  const [overrideTarget, setOverrideTarget] = useState<CoachApproval | null>(null);
+  const [overrideReason, setOverrideReason] = useState("");
 
   const load = useCallback(() => {
     setLoadingPending(true);
@@ -181,6 +183,8 @@ export default function AdminCoachesPage() {
       setReason("");
       setSuspendTarget(null);
       setSuspendReason("");
+      setOverrideTarget(null);
+      setOverrideReason("");
       load();
     } catch (error) {
       showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to update coach" });
@@ -279,7 +283,7 @@ export default function AdminCoachesPage() {
                     <LobbButton
                       variant="unstyled"
                       disabled={busyId === coach.id}
-                      onClick={() => postDecision(coach.id, "approve")}
+                      onClick={() => failing === 0 ? postDecision(coach.id, "approve") : setOverrideTarget(coach)}
                       className={`flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] text-sm font-semibold disabled:opacity-60 ${
                         failing === 0
                           ? "bg-[var(--lobb-success)] text-white"
@@ -287,7 +291,7 @@ export default function AdminCoachesPage() {
                       }`}
                     >
                       {busyId === coach.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
-                      {busyId === coach.id ? "Working" : failing === 0 ? "Approve" : `Approve anyway (${failing} failing)`}
+                      {busyId === coach.id ? "Approving…" : failing === 0 ? "Approve" : `Review override (${failing})`}
                     </LobbButton>
                     <LobbButton variant="unstyled" disabled={busyId === coach.id} onClick={() => setRejecting(coach)} className="flex h-12 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/35 text-sm font-semibold text-[var(--lobb-error)] disabled:opacity-60">
                       <X className="size-4" />
@@ -419,6 +423,29 @@ export default function AdminCoachesPage() {
           onChange={(event) => setReason(event.target.value)}
           placeholder="e.g. Headline is too short, add a certification, and re-upload a clearer profile photo."
           className="h-28 w-full resize-none rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-4 text-sm font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-border-focus)]"
+        />
+      </AppDialog>
+
+      <AppDialog
+        open={Boolean(overrideTarget)}
+        onOpenChange={(open) => { if (!open) { setOverrideTarget(null); setOverrideReason(""); } }}
+        title="Approve with failed checks"
+        description={overrideTarget ? `${overrideTarget.full_name} does not meet every launch check. Add a short internal reason before approving.` : undefined}
+        footer={
+          <LobbButton
+            variant="dark"
+            disabled={!overrideReason.trim() || busyId === overrideTarget?.id}
+            onClick={() => overrideTarget && postDecision(overrideTarget.id, "approve", overrideReason)}
+          >
+            {busyId === overrideTarget?.id ? "Approving…" : "Approve coach"}
+          </LobbButton>
+        }
+      >
+        <LobbTextarea
+          value={overrideReason}
+          onChange={(event) => setOverrideReason(event.target.value)}
+          placeholder="Why is this application safe to approve?"
+          rows={3}
         />
       </AppDialog>
 

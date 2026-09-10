@@ -3,7 +3,7 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import { Textarea as LobbTextarea } from "@/components/ui/textarea";
 import { useCallback, useEffect, useState } from "react";
-import { Download, Gavel, Loader2, Send } from "lucide-react";
+import { Download, Eye, Gavel, Loader2, Send } from "lucide-react";
 import { AdminEmptyState, AdminMetricCard, AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { Modal } from "@/components/ui/modal";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -13,6 +13,8 @@ import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PersonCell } from "@/components/common/person-cell";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Filter = "all" | "pending" | "confirmed" | "completed" | "disputed" | "cancelled";
 
@@ -35,6 +37,7 @@ export default function AdminBookingsPage() {
 
   const [payoutTarget, setPayoutTarget] = useState<DashboardBooking | null>(null);
   const [payoutBusy, setPayoutBusy] = useState(false);
+  const [detailTarget, setDetailTarget] = useState<DashboardBooking | null>(null);
 
   const buildUrl = useCallback(
     (cursor?: string) => {
@@ -192,42 +195,44 @@ export default function AdminBookingsPage() {
       </AdminPageHeader>
 
       <section className="grid gap-3 sm:grid-cols-3">
-        <AdminMetricCard label="Filtered value" value={money(summary?.gross_ngn ?? 0)} />
-        <AdminMetricCard label="Records" value={String(summary?.record_count ?? bookings.length)} />
-        <AdminMetricCard label="Needs payout (loaded)" value={String(pendingPayoutCount)} urgent={pendingPayoutCount > 0} />
+        <AdminMetricCard label="Booking value in results" value={money(summary?.gross_ngn ?? 0)} />
+        <AdminMetricCard label="Bookings in results" value={String(summary?.record_count ?? bookings.length)} />
+        <AdminMetricCard label="Ready to pay (loaded)" value={String(pendingPayoutCount)} urgent={pendingPayoutCount > 0} />
       </section>
 
-      <div className="mt-6 flex gap-2 overflow-x-auto pb-1">
-        {filters.map((item) => (
-          <LobbButton variant="unstyled" key={item} onClick={() => setFilter(item)} className={`h-10 shrink-0 rounded-[var(--lobb-radius-md)] px-4 text-sm font-semibold capitalize ${filter === item ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)]" : "border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-secondary)]"}`}>
-            {item === "all" ? "All" : item}
-          </LobbButton>
-        ))}
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-end gap-3">
+      <div className="mt-6 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-3">
+      <div className="grid gap-3 sm:grid-cols-[180px_1fr_1fr_auto] sm:items-end">
+        <label className="text-xs font-medium text-[var(--lobb-text-secondary)]">
+          Status
+          <Select value={filter} onValueChange={(value) => setFilter(value as Filter)}>
+            <SelectTrigger size="sm" className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {filters.map((item) => <SelectItem key={item} value={item}>{item === "all" ? "All bookings" : item[0].toUpperCase() + item.slice(1)}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </label>
         <label className="text-xs font-medium text-[var(--lobb-text-secondary)]">
           From
-          <input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="mt-1 block h-10 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-medium" />
+          <Input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} className="mt-1 h-10" />
         </label>
         <label className="text-xs font-medium text-[var(--lobb-text-secondary)]">
           To
-          <input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="mt-1 block h-10 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-3 text-sm font-medium" />
+          <Input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} className="mt-1 h-10" />
         </label>
-        {(from || to) && (
-          <LobbButton variant="unstyled" onClick={() => { setFrom(""); setTo(""); }} className="h-10 rounded-[var(--lobb-radius-md)] px-3 text-xs font-semibold text-[var(--lobb-text-secondary)] underline">
-            Clear dates
-          </LobbButton>
-        )}
         <LobbButton
           variant="unstyled"
           onClick={exportCsv}
           disabled={!bookings.length}
-          className="ml-auto inline-flex h-10 items-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-4 text-xs font-semibold disabled:opacity-60"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] px-4 text-xs font-semibold disabled:opacity-60"
         >
           <Download className="size-4" />
           Export loaded ({bookings.length})
         </LobbButton>
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-3 border-t border-[var(--lobb-border-subtle)] pt-2">
+        <p className="text-xs text-[var(--lobb-text-tertiary)]">{summary?.record_count ?? bookings.length} booking{(summary?.record_count ?? bookings.length) === 1 ? "" : "s"} in these results</p>
+        {(from || to || filter !== "all") && <LobbButton variant="ghost" size="sm" onClick={() => { setFilter("all"); setFrom(""); setTo(""); }}>Reset filters</LobbButton>}
+      </div>
       </div>
 
       <section className="mt-6">
@@ -238,81 +243,52 @@ export default function AdminBookingsPage() {
             ))}
           </div>
         ) : bookings.length ? (
+          <>
+          <div className="space-y-3 md:hidden">
+            {bookings.map((booking) => <MobileBookingCard key={booking.id} booking={booking} onView={() => setDetailTarget(booking)} />)}
+          </div>
+          <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Booking</TableHead>
                 <TableHead>Session</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Payout</TableHead>
+                <TableHead>Financials</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.map((booking) => {
-                const payable = isPayable(booking);
                 const coach = firstJoin(booking.coaches);
                 const player = firstJoin(booking.players);
-                const canDispute = ["confirmed", "completed"].includes(booking.status);
                 return (
                   <TableRow key={booking.id}>
-                    <TableCell className="whitespace-nowrap font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">
-                      #{booking.id.slice(0, 8)}
-                      {booking.paystack_reference ? (
-                        <span className="mt-0.5 block text-[var(--lobb-text-tertiary)]">{booking.paystack_reference}</span>
-                      ) : null}
-                    </TableCell>
                     <TableCell>
                       <PersonCell
                         name={player?.full_name ?? "Player"}
                         imageUrl={player?.avatar_url ?? null}
                         secondary={`coached by ${coach?.full_name ?? "Coach"}`}
                       />
+                      <span className="mt-1 block font-mono text-[10px] text-[var(--lobb-text-tertiary)]">#{booking.id.slice(0, 8)}</span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
                       {formatBookingDate(booking.starts_at)}
+                      <span className="mt-1 block max-w-52 truncate text-[var(--lobb-text-tertiary)]">{booking.location || "Location not set"}</span>
                     </TableCell>
                     <TableCell>
-                      <PayoutState booking={booking} />
+                      <p className="whitespace-nowrap text-sm font-semibold">{money(booking.total_amount_ngn)}</p>
+                      <div className="mt-1 flex items-center gap-2"><PayoutState booking={booking} /><span className="text-[10px] text-[var(--lobb-text-tertiary)]">{money(booking.coach_payout_ngn)} coach</span></div>
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={booking.status} />
                     </TableCell>
-                    <TableCell className="whitespace-nowrap text-right text-sm font-medium">
-                      {money(booking.total_amount_ngn)}
-                      <span className="mt-0.5 block text-xs font-normal text-[var(--lobb-text-secondary)]">
-                        payout {money(booking.coach_payout_ngn)}
-                      </span>
-                    </TableCell>
                     <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        {payable && (
-                          <LobbButton
-                            variant="unstyled"
-                            type="button"
-                            disabled={payoutBusy}
-                            onClick={() => setPayoutTarget(booking)}
-                            className="inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
-                          >
-                            <Send className="size-3.5" />
-                            Pay out
-                          </LobbButton>
-                        )}
-                        {canDispute && (
-                          <LobbButton
-                            variant="unstyled"
-                            type="button"
-                            disabled={disputeBusy}
-                            onClick={() => { setDisputeTarget(booking); setDisputeReason(""); }}
-                            className="inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/30 px-3 text-xs font-medium text-[var(--lobb-error)] transition hover:bg-[var(--lobb-error)]/8 disabled:opacity-60"
-                          >
-                            <Gavel className="size-3.5" />
-                            Dispute
-                          </LobbButton>
-                        )}
-                        {!payable && !canDispute && <span className="text-xs text-[var(--lobb-text-tertiary)]">—</span>}
+                      <div className="flex items-center justify-end">
+                        <LobbButton variant="unstyled" type="button" onClick={() => setDetailTarget(booking)} className="inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-3 text-xs font-medium">
+                          <Eye className="size-3.5" />
+                          View
+                        </LobbButton>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -320,6 +296,8 @@ export default function AdminBookingsPage() {
               })}
             </TableBody>
           </Table>
+          </div>
+          </>
         ) : (
           <AdminEmptyState
             title="No booking records"
@@ -395,7 +373,59 @@ export default function AdminBookingsPage() {
           </div>
         </Modal>
       )}
+
+      {detailTarget && (
+        <Modal title="Booking details" onClose={() => setDetailTarget(null)}>
+          <BookingDetails booking={detailTarget} />
+          <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-end">
+            {["confirmed", "completed"].includes(detailTarget.status) && <LobbButton variant="outline" onClick={() => { const booking = detailTarget; setDetailTarget(null); setDisputeReason(""); setDisputeTarget(booking); }}><Gavel className="size-4" />Open dispute</LobbButton>}
+            {isPayable(detailTarget) && <LobbButton variant="dark" onClick={() => { const booking = detailTarget; setDetailTarget(null); setPayoutTarget(booking); }}><Send className="size-4" />Pay {money(detailTarget.coach_payout_ngn)}</LobbButton>}
+            <LobbButton variant="ghost" onClick={() => setDetailTarget(null)}>Close</LobbButton>
+          </div>
+        </Modal>
+      )}
     </AdminShell>
+  );
+}
+
+function MobileBookingCard({ booking, onView }: { booking: DashboardBooking; onView: () => void }) {
+  const { coach, player } = sessionParties(booking);
+  return (
+    <article className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{player}</p>
+          <p className="mt-0.5 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">with {coach}</p>
+        </div>
+        <StatusBadge status={booking.status} />
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 border-y border-[var(--lobb-border-subtle)] py-3 text-xs">
+        <div><p className="text-[var(--lobb-text-tertiary)]">Session</p><p className="mt-1 font-medium">{formatBookingDate(booking.starts_at)}</p></div>
+        <div className="text-right"><p className="text-[var(--lobb-text-tertiary)]">Total</p><p className="mt-1 font-semibold">{money(booking.total_amount_ngn)}</p></div>
+        <div><p className="text-[var(--lobb-text-tertiary)]">Payout</p><div className="mt-1"><PayoutState booking={booking} /></div></div>
+        <div className="text-right"><p className="text-[var(--lobb-text-tertiary)]">Reference</p><p className="mt-1 font-mono font-medium">#{booking.id.slice(0, 8)}</p></div>
+      </div>
+      <LobbButton variant="outline" onClick={onView} className="mt-3 w-full"><Eye className="size-4" />View details</LobbButton>
+    </article>
+  );
+}
+
+function BookingDetails({ booking }: { booking: DashboardBooking }) {
+  const { coach, player } = sessionParties(booking);
+  const rows = [
+    ["Player", player],
+    ["Coach", coach],
+    ["Session", formatBookingDate(booking.starts_at)],
+    ["Status", booking.status.replace(/_/g, " ")],
+    ["Booking total", money(booking.total_amount_ngn)],
+    ["Coach payout", money(booking.coach_payout_ngn)],
+    ["Booking reference", `#${booking.id.slice(0, 8)}`],
+    ["Payment reference", booking.paystack_reference ?? "Not available"],
+  ];
+  return (
+    <div className="divide-y divide-[var(--lobb-border-subtle)] border-y border-[var(--lobb-border-subtle)]">
+      {rows.map(([label, value]) => <div key={label} className="flex items-start justify-between gap-5 py-3 text-sm"><span className="text-[var(--lobb-text-secondary)]">{label}</span><span className="max-w-[62%] break-words text-right font-medium capitalize">{value}</span></div>)}
+    </div>
   );
 }
 

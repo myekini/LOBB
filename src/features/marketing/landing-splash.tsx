@@ -4,6 +4,7 @@ import { ArrowRight, MapPin, Star } from "lucide-react";
 import type { CoachPublicProfile } from "@/lib/types";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { LandingReveal } from "@/features/marketing/landing-reveal";
+import { CoachThumb } from "@/features/marketing/coach-thumb";
 
 const HERO_IMAGE = "/court-hero.jpg";
 
@@ -34,11 +35,14 @@ function DotLabel({ children }: { children: React.ReactNode }) {
  * signed-in visitor to their app, so this only ever renders for logged-out
  * users, and the coach list is fetched on the server by the route.
  */
-export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
+export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicProfile[]; coachCount: number }) {
   const heroCoach = coaches[0] ?? null;
 
   return (
     <main id="main-content" className="lobb-landing relative min-h-[100dvh] overflow-x-hidden text-[var(--lobb-text-primary)]">
+      {/* Hide reveal targets before first paint so they animate in rather than
+          flashing visible→hidden. No-op without JS — content stays visible. */}
+      <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('lobb-reveal-js')" }} />
       <LandingReveal />
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -47,7 +51,7 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
 
       <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 backdrop-blur-xl">
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="group flex min-w-0 items-center gap-2.5 md:justify-self-start">
+          <Link href="/" aria-label="LOBB home" className="group flex min-w-0 items-center gap-2.5 md:justify-self-start">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">
               <LobbMark size={18} />
             </span>
@@ -72,15 +76,15 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
         </div>
       </header>
 
-      <section className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] lg:px-8 lg:py-16">
+      <section aria-labelledby="hero-heading" className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] lg:px-8 lg:py-16">
         <div className="max-w-3xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
           <p className="mb-5 text-sm font-medium text-[var(--lobb-clay)]">Verified tennis coaching in Lagos</p>
 
-          <h1 className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight text-[var(--lobb-text-primary)] sm:text-[64px] lg:text-[76px] text-balance">
+          <h1 id="hero-heading" className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight text-[var(--lobb-text-primary)] sm:text-[64px] lg:text-[76px] text-balance">
             Skip the WhatsApp chase. Book a verified tennis coach.
           </h1>
           <p className="mt-6 max-w-xl text-[16px] leading-7 text-[var(--lobb-text-secondary)] sm:text-[18px] text-pretty">
-            Compare verified coaches, see upfront rates and reserve a real time—all in one place.
+            Compare verified coaches, see upfront rates and book a real slot — all in one place.
           </p>
 
           <div className="mt-8">
@@ -90,7 +94,10 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
             </Link>
           </div>
 
-          <p className="mt-5 text-sm text-[var(--lobb-text-secondary)]">Verified profiles · Upfront pricing · Secure payment</p>
+          <p className="mt-5 text-sm text-[var(--lobb-text-secondary)]">
+            {coachCount > 0 ? `${coachCount} verified ${coachCount === 1 ? "coach" : "coaches"} in Lagos · ` : ""}
+            Upfront pricing · Secure payment
+          </p>
         </div>
 
         <div className="relative animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-150">
@@ -107,10 +114,10 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
 
             <div className="relative grid min-h-[390px] content-end p-5 sm:min-h-[440px] sm:p-7">
               <div className="max-w-[390px] border border-white/15 bg-[#0d0d0d]/78 p-4 text-white backdrop-blur-md sm:p-5">
-                <p className="text-xs font-medium text-white/70">Featured coach</p>
-                <h2 className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight text-balance">
-                  {heroCoach?.full_name ?? "Verified coaching across Lagos"}
-                </h2>
+                <p className="text-xs font-medium text-white/70">{heroCoach ? "Featured coach" : "On LOBB"}</p>
+                <p className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight text-balance">
+                  {heroCoach?.full_name ?? "Verified coaches across Lagos"}
+                </p>
                 <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80">
                   {heroCoach?.primary_location && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-[var(--lobb-clay)]" />{heroCoach.primary_location}</span>}
                   {heroCoach?.avg_rating != null && <span className="inline-flex items-center gap-1.5"><Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{Number(heroCoach.avg_rating).toFixed(1)}</span>}
@@ -126,11 +133,11 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-12 sm:px-6 lg:px-8 lg:pt-16">
+      <section aria-labelledby="coaches-heading" className="relative z-10 mx-auto max-w-7xl px-4 pb-6 pt-12 sm:px-6 lg:px-8 lg:pt-16">
         <div data-reveal className="mb-6 flex items-end justify-between gap-4">
           <div>
             <DotLabel>Coaches on LOBB</DotLabel>
-            <h2 className="mt-3 text-[28px] font-semibold leading-[1.04] tracking-tight sm:text-[38px] text-balance">Choose with confidence.</h2>
+            <h2 id="coaches-heading" className="mt-3 text-[28px] font-semibold leading-[1.04] tracking-tight sm:text-[38px] text-balance">Choose with confidence.</h2>
           </div>
           <Link href="/coaches" className="group hidden items-center gap-2 text-sm font-semibold transition hover:text-[var(--lobb-clay)] sm:inline-flex">View all <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link>
         </div>
@@ -144,10 +151,10 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
         <Link href="/coaches" className="mt-4 flex h-12 items-center justify-center gap-2 border border-[var(--lobb-border-subtle)] text-sm font-semibold sm:hidden">View all coaches <ArrowRight className="size-4" /></Link>
       </section>
 
-      <section className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
+      <section aria-labelledby="how-heading" className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16 lg:px-8 lg:py-24">
         <div data-reveal className="lg:sticky lg:top-24 lg:self-start">
           <DotLabel>How booking works</DotLabel>
-          <h2 className="mt-3 max-w-md text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[44px] text-balance">
+          <h2 id="how-heading" className="mt-3 max-w-md text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[44px] text-balance">
             Three steps from search to court.
           </h2>
           <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--lobb-text-secondary)]">
@@ -178,12 +185,12 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
         </div>
       </section>
 
-      <section className="lobb-landing-band relative z-10 border-y border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/58 px-4 py-12 backdrop-blur sm:px-6 lg:px-8">
+      <section aria-label="Why book on LOBB" className="lobb-landing-band relative z-10 border-y border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]/58 px-4 py-12 backdrop-blur sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl md:grid-cols-3">
           {([
             ["Verified profiles", "Review coaching experience, location and player feedback before you book."],
             ["The full price upfront", "See the coach's rate and LOBB's 5% convenience fee before you pay."],
-            ["Clear cancellation terms", "Cancel at least 24 hours ahead for a full refund. Later cancellations receive 50%."],
+            ["Clear cancellation terms", "Cancel at least 24 hours ahead for a full refund. Later cancellations are refunded 50%."],
           ] as const).map(([title, body], i) => (
             <div
               key={title}
@@ -198,11 +205,11 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
         </div>
       </section>
 
-      <section className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+      <section aria-labelledby="coaches-cta-heading" className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
         <div data-reveal className="lobb-landing-panel grid gap-8 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 sm:p-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end lg:p-12">
           <div>
             <DotLabel>For coaches</DotLabel>
-            <h2 className="mt-3 max-w-2xl text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[44px] text-balance">
+            <h2 id="coaches-cta-heading" className="mt-3 max-w-2xl text-[32px] font-semibold leading-[1.02] tracking-tight sm:text-[44px] text-balance">
               Spend less time arranging lessons.
             </h2>
             <p className="mt-5 max-w-xl text-sm leading-6 text-[var(--lobb-text-secondary)]">
@@ -211,14 +218,14 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
           </div>
           <div className="lg:text-right">
             <Link href="/auth/signup/coach" className="lobb-cta-sheen group inline-flex h-12 items-center justify-center gap-2 bg-[var(--lobb-bg-inverse)] px-6 text-sm font-semibold text-[var(--lobb-text-inverse)] transition duration-300 hover:-translate-y-0.5 hover:bg-[var(--lobb-clay)]">
-              Apply to coach on LOBB
+              Start coaching on LOBB
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="lobb-dark-band relative z-10 overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+      <section aria-labelledby="final-cta-heading" className="lobb-dark-band relative z-10 overflow-hidden px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
         <div
           className="absolute inset-0 opacity-[0.16] mix-blend-screen"
           style={{ backgroundImage: `url(${HERO_IMAGE})`, backgroundSize: "cover", backgroundPosition: "center" }}
@@ -226,7 +233,7 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(196,98,45,0.28),transparent_60%),linear-gradient(180deg,rgba(13,13,13,0.65),rgba(13,13,13,0.35))]" aria-hidden="true" />
         <div data-reveal className="relative mx-auto max-w-3xl text-center">
-          <h2 className="text-[40px] font-semibold leading-[0.98] tracking-tight sm:text-[60px] text-balance">
+          <h2 id="final-cta-heading" className="text-[40px] font-semibold leading-[0.98] tracking-tight sm:text-[60px] text-balance">
             Your next tennis session starts here.
           </h2>
           <p className="mx-auto mt-5 max-w-md text-[15px] leading-[1.7] text-white/75">
@@ -234,7 +241,7 @@ export function LandingSplash({ coaches }: { coaches: CoachPublicProfile[] }) {
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-8 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
-              Find a coach
+              Browse coaches
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
@@ -266,13 +273,8 @@ function LandingCoachSummary({ coach }: { coach: CoachPublicProfile }) {
   const href = `/coaches/${coach.slug ?? coach.id}`;
   return (
     <Link href={href} className="lobb-landing-panel group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
-      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--lobb-bg-secondary)]">
-        {coach.profile_photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={coach.profile_photo_url} alt={coach.full_name} className="size-full object-cover object-top transition duration-500 group-hover:scale-[1.03]" />
-        ) : (
-          <div className="flex size-full items-center justify-center text-4xl font-semibold text-[var(--lobb-text-tertiary)]">{coach.full_name.charAt(0)}</div>
-        )}
+      <div className="relative">
+        <CoachThumb src={coach.profile_photo_url} name={coach.full_name} />
         {coach.hourly_rate_ngn != null && <span className="absolute bottom-3 left-3 bg-[#0d0d0d]/82 px-2.5 py-1.5 text-xs font-medium text-white">{coachRate(coach.hourly_rate_ngn)}</span>}
       </div>
       <div className="p-4">

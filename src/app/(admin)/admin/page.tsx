@@ -3,7 +3,7 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, UserCheck, WalletCards } from "lucide-react";
+import { AlertTriangle, ArrowRight, ArrowUpRight, CalendarDays, CheckCircle2, Clock3, Gavel, UserCheck, WalletCards } from "lucide-react";
 import {
   AdminEmptyState,
   AdminMetricCard,
@@ -38,6 +38,7 @@ type AdminDashboardPayload = {
     hourly_rate_ngn: number | null;
   }>;
   stuck_payouts?: number;
+  open_disputes?: number;
 };
 
 export default function AdminDashboardPage() {
@@ -48,6 +49,8 @@ export default function AdminDashboardPage() {
   const recentBookings = data?.recent_bookings ?? [];
   const pendingCoaches = data?.pending_coach_approvals ?? [];
   const stuckPayouts = data?.stuck_payouts ?? 0;
+  const openDisputes = data?.open_disputes ?? 0;
+  const actionCount = stuckPayouts + openDisputes + pendingCoaches.length;
 
   return (
     <AdminShell>
@@ -80,11 +83,11 @@ export default function AdminDashboardPage() {
           )}
 
           <section>
-            <SectionTitle title="Recent bookings" href="/admin/bookings" />
+            <SectionTitle title="Latest booking activity" href="/admin/bookings" />
             {loading ? (
               <TableRowsSkeleton />
             ) : recentBookings.length ? (
-              <BookingsTable bookings={recentBookings.slice(0, 7)} />
+              <BookingsTable bookings={recentBookings.slice(0, 5)} />
             ) : (
               <AdminEmptyState icon={AlertTriangle} title="No bookings yet" body="Paid player sessions will appear here as bookings are created." />
             )}
@@ -92,6 +95,23 @@ export default function AdminDashboardPage() {
         </div>
 
         <aside className="space-y-4">
+          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-secondary)]">Action required</p>
+                <p className="mt-1 text-sm font-semibold">{loading ? "Checking operations…" : actionCount ? `${actionCount} item${actionCount === 1 ? "" : "s"} need attention` : "Everything is clear"}</p>
+              </div>
+              {!loading && actionCount === 0 && <CheckCircle2 className="size-5 text-[var(--lobb-success)]" />}
+            </div>
+            {!loading && actionCount > 0 && (
+              <div className="mt-4 divide-y divide-[var(--lobb-border-subtle)] border-y border-[var(--lobb-border-subtle)]">
+                {stuckPayouts > 0 && <ActionRow href="/admin/earnings" icon={<WalletCards className="size-4" />} label="Stuck payouts" count={stuckPayouts} urgent />}
+                {openDisputes > 0 && <ActionRow href="/admin/disputes" icon={<Gavel className="size-4" />} label="Open disputes" count={openDisputes} urgent />}
+                {pendingCoaches.length > 0 && <ActionRow href="/admin/coaches" icon={<UserCheck className="size-4" />} label="Coach applications" count={pendingCoaches.length} />}
+              </div>
+            )}
+          </section>
+
           <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
             <SectionTitle title="Applications" href="/admin/coaches" />
             {loading ? (
@@ -155,12 +175,24 @@ export default function AdminDashboardPage() {
   );
 }
 
+function ActionRow({ href, icon, label, count, urgent = false }: { href: string; icon: React.ReactNode; label: string; count: number; urgent?: boolean }) {
+  return (
+    <Link href={href} className="group flex min-h-12 items-center gap-3 py-2.5">
+      <span className={urgent ? "text-[var(--lobb-error)]" : "text-[var(--lobb-clay)]"}>{icon}</span>
+      <span className="flex-1 text-sm font-medium">{label}</span>
+      <span className="text-sm font-semibold">{count}</span>
+      <ArrowRight className="size-4 text-[var(--lobb-text-tertiary)] transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:translate-x-0.5" />
+    </Link>
+  );
+}
+
 function SectionTitle({ title, href }: { title: string; href?: string }) {
   return (
     <div className="mb-3 flex items-center justify-between gap-3">
       <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-secondary)]">{title}</span>
       {href && (
-        <Link href={href} className="flex size-8 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]" aria-label={`Open ${title}`}>
+        <Link href={href} className="inline-flex h-8 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 text-xs font-medium text-[var(--lobb-text-secondary)]" aria-label={`Open ${title}`}>
+          View all
           <ArrowUpRight className="size-4" />
         </Link>
       )}
@@ -170,12 +202,32 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
 
 function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
   return (
+    <>
+    <div className="space-y-2 md:hidden">
+      {bookings.map((booking) => {
+        const coach = firstJoin(booking.coaches);
+        const player = firstJoin(booking.players);
+        return (
+          <article key={booking.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0"><p className="truncate text-sm font-semibold">{player?.full_name ?? "Player"}</p><p className="mt-0.5 truncate text-xs text-[var(--lobb-text-secondary)]">coached by {coach?.full_name ?? "Coach"}</p></div>
+              <StatusBadge status={booking.status} />
+            </div>
+            <div className="mt-3 flex items-end justify-between gap-3 border-t border-[var(--lobb-border-subtle)] pt-3">
+              <p className="text-xs font-medium text-[var(--lobb-text-secondary)]">{formatBookingDate(booking.starts_at)}</p>
+              <p className="shrink-0 text-sm font-semibold">{money(booking.total_amount_ngn)}</p>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+    <div className="hidden md:block">
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>Session</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead className="text-right">Amount</TableHead>
+          <TableHead>Session</TableHead>
+          <TableHead className="text-right">Total</TableHead>
           <TableHead className="text-right">Status</TableHead>
         </TableRow>
       </TableHeader>
@@ -206,6 +258,8 @@ function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
         })}
       </TableBody>
     </Table>
+    </div>
+    </>
   );
 }
 
