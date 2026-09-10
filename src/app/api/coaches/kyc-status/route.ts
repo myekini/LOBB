@@ -8,7 +8,7 @@ export const GET = withRole("coach", async (_request, auth) => {
   const { data: coach, error } = await auth.admin
     .from("coaches")
     .select(
-      "kyc_status, kyc_nin_verified, kyc_bvn_verified, kyc_failed_reason, nin_encrypted, bvn_encrypted, bank_account_number, bank_name, dva_account_number, dva_bank_name",
+      "kyc_status, kyc_nin_verified, kyc_bvn_verified, kyc_failed_reason, nin_encrypted, bvn_encrypted, bank_account_number, bank_name, bank_code, dva_account_number, dva_bank_name",
     )
     .eq("id", auth.user.id)
     .maybeSingle();
@@ -24,6 +24,7 @@ export const GET = withRole("coach", async (_request, auth) => {
     has_nin: Boolean(coach.nin_encrypted),
     has_bvn: Boolean(coach.bvn_encrypted),
     bank_name: coach.bank_name,
+    bank_code: coach.bank_code,
     bank_account_number: coach.bank_account_number,
     dva_account_number: coach.dva_account_number,
     dva_bank_name: coach.dva_bank_name,

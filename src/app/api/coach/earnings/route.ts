@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withRole } from "@/lib/api-auth";
 import { internalError } from "@/lib/api-response";
+import { bankLogosByCode } from "@/lib/bank-logos";
 
 export const GET = withRole(["coach", "admin"], async (_request, auth) => {
   const coachId = auth.user.id;
@@ -46,6 +47,8 @@ export const GET = withRole(["coach", "admin"], async (_request, auth) => {
     .reduce((s, c) => s + c.amount, 0);
 
   const { referral_code, ...bank } = coachResult.data ?? {};
+  const bankCode = coachResult.data?.bank_code ?? null;
+  const bankLogo = bankCode ? (await bankLogosByCode()).get(bankCode) ?? null : null;
 
   return NextResponse.json({
     summary: summaryResult.data ?? {
@@ -67,6 +70,6 @@ export const GET = withRole(["coach", "admin"], async (_request, auth) => {
       credits,
     },
     payouts: payoutsResult.data ?? [],
-    bank: bank ?? null,
+    bank: coachResult.data ? { ...bank, logo: bankLogo } : null,
   });
 });

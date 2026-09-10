@@ -11,11 +11,13 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { createClient } from "@/lib/supabase/client";
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { BankLogo } from "@/components/common/bank-logo";
 
-type Bank = { name: string; code: string };
+type Bank = { name: string; code: string; logo?: string | null };
 
 type CoachBankData = {
   bank_name: string | null;
+  bank_code: string | null;
   bank_account_number: string | null;
   has_bvn: boolean;
   dva_account_number: string | null;
@@ -59,7 +61,11 @@ export default function CoachBankSetupPage() {
 
   const hasKyc = Boolean(coachData?.has_bvn);
   const existing = coachData?.bank_account_number
-    ? { bankName: coachData.bank_name, lastFour: coachData.bank_account_number.slice(-4) }
+    ? {
+        bankName: coachData.bank_name,
+        lastFour: coachData.bank_account_number.slice(-4),
+        logo: banks.find((b) => b.code === coachData.bank_code)?.logo ?? null,
+      }
     : null;
   const hasDva = Boolean(coachData?.dva_account_number);
 
@@ -163,12 +169,15 @@ export default function CoachBankSetupPage() {
 
         {/* Current payout bank */}
         {existing && (
-          <div className="lobb-surface-outlined mb-6 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-            <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
-              Current payout account
-            </p>
-            <p className="mt-2 text-[15px] font-medium">{existing.bankName ?? "Bank account"}</p>
-            <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">**** {existing.lastFour}</p>
+          <div className="lobb-surface-outlined mb-6 flex items-center gap-3.5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+            <BankLogo logoUrl={existing.logo} name={existing.bankName} size="md" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">
+                Current payout account
+              </p>
+              <p className="mt-1 text-[15px] font-medium">{existing.bankName ?? "Bank account"}</p>
+              <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">**** {existing.lastFour}</p>
+            </div>
           </div>
         )}
 
@@ -214,10 +223,13 @@ export default function CoachBankSetupPage() {
           </div>
 
           {selectedBank && /^\d{10}$/.test(accountNumber) && (
-            <div className="rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Will receive payouts at</p>
-              <p className="mt-2 text-[15px] font-medium">{selectedBank.name}</p>
-              <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">{accountNumber}</p>
+            <div className="flex items-center gap-3.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay)]/[0.06] p-4">
+              <BankLogo logoUrl={selectedBank.logo} name={selectedBank.name} size="md" />
+              <div className="min-w-0">
+                <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Will receive payouts at</p>
+                <p className="mt-1 text-[15px] font-medium">{selectedBank.name}</p>
+                <p className="mt-0.5 font-mono text-sm text-[var(--lobb-text-secondary)]">{accountNumber}</p>
+              </div>
             </div>
           )}
 

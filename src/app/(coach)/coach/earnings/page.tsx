@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, Clock3, Gift, Landmark, WalletCards, XCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Gift, WalletCards, XCircle } from "lucide-react";
 import { CoachBottomNav } from "@/components/layout/coach-nav";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { money } from "@/lib/dashboard-client-types";
 import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
 import { CoachSurface } from "@/components/common/coach-surface";
+import { BankLogo } from "@/components/common/bank-logo";
 
 type Payout = {
   id: string;
@@ -48,6 +49,7 @@ type EarningsPayload = {
     bank_name: string | null;
     bank_account_number: string | null;
     bank_code: string | null;
+    logo: string | null;
     paystack_recipient_code: string | null;
     dva_account_number: string | null;
     dva_bank_name: string | null;
@@ -142,9 +144,7 @@ export default function CoachEarningsPage() {
 
           <Link href="/coach/settings/bank" className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 transition-colors hover:border-[var(--lobb-clay)]/35">
             <div className="flex items-start justify-between gap-3">
-              <div className="flex size-12 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)]">
-                <Landmark className="size-5 text-[var(--lobb-clay)]" />
-              </div>
+              <BankLogo logoUrl={hasBank ? bank?.logo : null} name={bank?.bank_name} size="md" />
               <ArrowRight className="size-4 text-[var(--lobb-text-tertiary)]" />
             </div>
             <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Bank account</p>
