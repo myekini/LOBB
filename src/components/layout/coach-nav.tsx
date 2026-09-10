@@ -55,9 +55,13 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
 }
 
 export function CoachDesktopNav({ active }: { active: ActiveTab }) {
+  // Profile lives in the account dropdown (CoachAccountMenu) on desktop — omit it
+  // here to avoid a duplicate entry. The bottom nav (mobile) still shows it.
+  const desktopItems = items.filter((item) => item.label !== "Profile");
+
   return (
     <nav className="lobb-desktop-nav hidden items-center gap-1 md:flex" aria-label="Coach navigation">
-      {items.map((item) => {
+      {desktopItems.map((item) => {
         const isActive = item.label.toLowerCase() === active;
         const Icon = item.icon;
         return (

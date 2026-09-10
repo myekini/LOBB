@@ -82,6 +82,23 @@ function BookingStep3Content() {
     if (!slot || !lockId || !expiresAt) router.replace(`/coaches/${slug}`);
   }, [slot, lockId, expiresAt, router, slug]);
 
+  // The Paystack SDK may already be loaded (e.g. from another page in the SPA),
+  // in which case next/script's onLoad never fires. Detect the global directly
+  // so the Pay button isn't stuck disabled.
+  useEffect(() => {
+    if (window.PaystackPop) {
+      setPaystackReady(true);
+      return;
+    }
+    const id = window.setInterval(() => {
+      if (window.PaystackPop) {
+        setPaystackReady(true);
+        window.clearInterval(id);
+      }
+    }, 300);
+    return () => window.clearInterval(id);
+  }, []);
+
   useEffect(() => {
     fetch(`/api/coaches/${slug}`)
       .then((r) => r.json())

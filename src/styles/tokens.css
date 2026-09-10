@@ -97,6 +97,8 @@
    *  --lobb-text-primary   Body text (adjusts for dark mode)
    *  --lobb-text-secondary Secondary text, captions, and inactive navigation
    *  --lobb-text-tertiary  Placeholder, metadata
-   *  --lobb-text-inverse   Text on dark surfaces
+   *  --lobb-text-inverse        Text on inverse surfaces (bg-inverse)
+   *  --lobb-text-inverse-muted  Secondary text on inverse surfaces
+   *  --lobb-border-inverse      Hairline borders / faint fills on inverse surfaces
    */
 }

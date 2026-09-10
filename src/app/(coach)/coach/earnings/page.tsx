@@ -124,16 +124,16 @@ export default function CoachEarningsPage() {
         {/* ── Top summary card ────────────────────────────────────────────── */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-stretch">
           <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/75">Total earnings</p>
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-inverse-muted)]">Total earnings</p>
             {loading ? (
-              <SkeletonBlock className="mt-6 h-10 w-44 bg-white/15" />
+              <SkeletonBlock className="mt-6 h-10 w-44 bg-[var(--lobb-border-inverse)]" />
             ) : (
-              <p className="mt-6 text-[38px] font-semibold leading-none sm:text-[48px]">{money(totalEarnings)}</p>
+              <p className="mt-6 text-[38px] font-semibold leading-none text-[var(--lobb-text-inverse)] sm:text-[48px]">{money(totalEarnings)}</p>
             )}
-            <p className="mt-3 text-sm font-medium text-white/75">Sessions and referral bonuses combined.</p>
+            <p className="mt-3 text-sm font-medium text-[var(--lobb-text-inverse-muted)]">Sessions and referral bonuses combined.</p>
 
             {/* 3-column breakdown */}
-            <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-[var(--lobb-radius-lg)] border border-white/10">
+            <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-inverse)]">
               <WalletStat value={loading ? null : money(sessionEarnings)} label="Sessions" />
               <WalletStat value={loading ? null : money(referralEarnings)} label="Referrals" bordered />
               <WalletStat value={loading ? null : money(summary?.pending_payout_ngn ?? 0)} label="Pending" bordered />
@@ -304,9 +304,9 @@ export default function CoachEarningsPage() {
 
 function WalletStat({ value, label, bordered }: { value: string | null; label: string; bordered?: boolean }) {
   return (
-    <div className={`p-4 ${bordered ? "border-l border-white/10" : ""}`}>
-      {value ? <p className="truncate text-lg font-medium text-white">{value}</p> : <SkeletonBlock className="h-6 w-24 bg-white/15" />}
-      <p className="mt-1 text-[10px] font-medium uppercase leading-4 tracking-[0.12em] text-white/75">{label}</p>
+    <div className={`p-4 ${bordered ? "border-l border-[var(--lobb-border-inverse)]" : ""}`}>
+      {value ? <p className="truncate text-lg font-medium text-[var(--lobb-text-inverse)]">{value}</p> : <SkeletonBlock className="h-6 w-24 bg-[var(--lobb-border-inverse)]" />}
+      <p className="mt-1 text-[10px] font-medium uppercase leading-4 tracking-[0.12em] text-[var(--lobb-text-inverse-muted)]">{label}</p>
     </div>
   );
 }

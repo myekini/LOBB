@@ -105,7 +105,9 @@
     --lobb-text-primary:     #1A1714;
     --lobb-text-secondary:   #6B6560;
     --lobb-text-tertiary:    #A09890;
-    --lobb-text-inverse:     #FFFFFF;
+    --lobb-text-inverse:        #FFFFFF;
+    --lobb-text-inverse-muted:  rgba(255, 255, 255, 0.72);
+    --lobb-border-inverse:      rgba(255, 255, 255, 0.12);
     --lobb-text-link:        var(--lobb-clay);
 
     --lobb-border-subtle:    #E8E3DC;
@@ -157,7 +159,9 @@
     --lobb-text-primary:     #FAF8F5;
     --lobb-text-secondary:   #A09890;
     --lobb-text-tertiary:    #6B6560;
-    --lobb-text-inverse:     #0D0D0D;
+    --lobb-text-inverse:        #0D0D0D;
+    --lobb-text-inverse-muted:  rgba(13, 13, 13, 0.66);
+    --lobb-border-inverse:      rgba(13, 13, 13, 0.10);
     --lobb-success-soft:     rgba(45, 106, 79, 0.18);
 
     --lobb-border-subtle:    #2E2924;

@@ -75,13 +75,13 @@ export default function AdminEarningsPage() {
       </AdminPageHeader>
 
       <section className="border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-6 text-[var(--lobb-text-inverse)] sm:p-8">
-        <p className="text-xs font-medium uppercase tracking-[0.16em] text-white/75">LOBB earnings</p>
+        <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-inverse-muted)]">LOBB earnings</p>
         {loading ? (
-          <SkeletonBlock className="mt-5 h-12 w-52 bg-white/15" />
+          <SkeletonBlock className="mt-5 h-12 w-52 bg-[var(--lobb-border-inverse)]" />
         ) : (
-          <p className="mt-5 text-[38px] font-semibold leading-none sm:text-[54px]">{money(metrics?.lobb_earnings_ngn ?? 0)}</p>
+          <p className="mt-5 text-[38px] font-semibold leading-none text-[var(--lobb-text-inverse)] sm:text-[54px]">{money(metrics?.lobb_earnings_ngn ?? 0)}</p>
         )}
-        <p className="mt-3 text-sm font-medium text-white/75">Completed booking commission and convenience fees.</p>
+        <p className="mt-3 text-sm font-medium text-[var(--lobb-text-inverse-muted)]">Completed booking commission and convenience fees.</p>
       </section>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">

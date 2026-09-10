@@ -188,6 +188,23 @@ export default function DashboardPage() {
     }
   }, [pathname, router]);
 
+  // next/script's onLoad won't fire if the Paystack SDK is already loaded from
+  // another page — detect the global directly so pay buttons don't stay disabled.
+  useEffect(() => {
+    const w = window as typeof window & { PaystackPop?: unknown };
+    if (w.PaystackPop) {
+      setPaystackReady(true);
+      return;
+    }
+    const id = window.setInterval(() => {
+      if (w.PaystackPop) {
+        setPaystackReady(true);
+        window.clearInterval(id);
+      }
+    }, 300);
+    return () => window.clearInterval(id);
+  }, []);
+
   useEffect(() => {
     let alive = true;
 
