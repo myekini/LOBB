@@ -228,7 +228,7 @@ function BookingStep2Content() {
               <LobbButton variant="unstyled"
                 type="button"
                 onClick={() => handleSelectCourt(court.id)}
-                className={`w-full whitespace-normal rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-all duration-150 active:scale-[0.99] ${
+                className={`h-auto min-h-[76px] w-full whitespace-normal rounded-[var(--lobb-radius-lg)] border p-4 text-left transition-[background-color,border-color,transform] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.99] ${
                   selectedCourtId === court.id && !showCustom
                     ? "border-[var(--lobb-clay)] bg-[var(--lobb-clay-light)] ring-1 ring-[var(--lobb-clay)]"
                     : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] hover:border-[var(--lobb-clay)]/40"
@@ -291,7 +291,7 @@ function BookingStep2Content() {
             <LobbButton variant="unstyled"
               type="button"
               onClick={handleShowCustom}
-              className="flex w-full items-center gap-2.5 rounded-[var(--lobb-radius-lg)] border border-dashed border-[var(--lobb-border-subtle)] p-4 text-left transition-all duration-150 hover:border-[var(--lobb-clay)]/40 active:scale-[0.99]"
+              className="flex h-auto min-h-14 w-full items-center gap-2.5 rounded-[var(--lobb-radius-lg)] border border-dashed border-[var(--lobb-border-subtle)] p-4 text-left transition-[border-color,transform] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-[var(--lobb-clay)]/40 active:scale-[0.99]"
             >
               <PenLine className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />
               <span className="text-sm font-medium text-[var(--lobb-text-secondary)]">Other location</span>

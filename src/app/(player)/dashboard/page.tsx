@@ -363,12 +363,12 @@ function NextSessionCard({
           type="button"
           disabled={!hasLocation}
           onClick={() => copyText(booking.location, "Location copied")}
-          className="mt-4 flex w-full items-start gap-2 rounded-[var(--lobb-radius-lg)] border border-white/10 bg-white/[0.06] p-3 text-left transition duration-200 hover:border-white/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-default disabled:hover:border-white/10 disabled:hover:bg-white/[0.06]"
+          className="mt-4 flex h-auto min-h-[72px] w-full items-start gap-2 rounded-[var(--lobb-radius-lg)] border border-white/10 bg-white/[0.06] p-3 text-left whitespace-normal transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-white/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-default disabled:hover:border-white/10 disabled:hover:bg-white/[0.06]"
         >
             <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/45">Location</p>
-              <p className="mt-1 text-sm font-medium leading-5 text-white/78">{hasLocation ? booking.location : "Location pending"}</p>
+              <p className="mt-1 break-words text-sm font-medium leading-5 text-white/78">{hasLocation ? booking.location : "Location pending"}</p>
               {hasLocation && <p className="mt-1 text-[11px] font-bold text-white/45">Click to copy location</p>}
             </div>
         </LobbButton>
@@ -508,9 +508,9 @@ function BookingCard({
         </div>
       </div>
 
-      <p className="mt-3 flex items-start gap-1.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
+      <p className="mt-3 grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-1.5 text-xs font-medium leading-5 text-[var(--lobb-text-secondary)]">
         <MapPin className="mt-0.5 size-3.5 shrink-0 text-[var(--lobb-clay)]" />
-        {booking.location}
+        <span className="min-w-0 break-words">{booking.location || "Location pending"}</span>
       </p>
 
       {ownReview && (
