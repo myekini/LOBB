@@ -16,6 +16,8 @@ import { retryStuckPayouts } from "@/features/admin/payout-actions";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { MetricGridSkeleton, TableRowsSkeleton } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PersonCell } from "@/components/common/person-cell";
 
 type AdminDashboardPayload = {
   metrics: {
@@ -77,7 +79,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+          <section>
             <SectionTitle title="Recent bookings" href="/admin/bookings" />
             {loading ? (
               <TableRowsSkeleton />
@@ -166,81 +168,57 @@ function SectionTitle({ title, href }: { title: string; href?: string }) {
   );
 }
 
-// Compact row list — no fixed-width table, so it works on any screen without
-// sideways scrolling, and player/coach names don't fight for space.
 function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
   return (
-    <div className="divide-y divide-[var(--lobb-border-subtle)]">
-      {bookings.map((booking) => {
-        const coach = firstJoin(booking.coaches);
-        const player = firstJoin(booking.players);
-        const coachName = coach?.full_name ?? "Coach";
-        const playerName = player?.full_name ?? "Player";
-
-        return (
-          <div key={booking.id} className="flex items-center gap-3 py-3">
-            <Avatar name={playerName} imageUrl={player?.avatar_url ?? null} size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium leading-tight">
-                {playerName}
-                <span className="mx-1.5 font-normal text-[var(--lobb-text-tertiary)]">· coached by</span>
-                {coachName}
-              </p>
-              <p className="mt-0.5 truncate text-[11px] font-medium text-[var(--lobb-text-secondary)]">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Session</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead className="text-right">Amount</TableHead>
+          <TableHead className="text-right">Status</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {bookings.map((booking) => {
+          const coach = firstJoin(booking.coaches);
+          const player = firstJoin(booking.players);
+          return (
+            <TableRow key={booking.id}>
+              <TableCell>
+                <PersonCell
+                  name={player?.full_name ?? "Player"}
+                  imageUrl={player?.avatar_url ?? null}
+                  secondary={`coached by ${coach?.full_name ?? "Coach"}`}
+                />
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
                 {formatBookingDate(booking.starts_at)}
-                <span className="mx-1.5">·</span>
-                <span className="font-mono">{booking.paystack_reference ?? `#${booking.id.slice(0, 6)}`}</span>
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              <span className="text-sm font-medium">{money(booking.total_amount_ngn)}</span>
-              <StatusBadge status={booking.status} />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function Avatar({ name, imageUrl, size = "md" }: { name: string; imageUrl?: string | null; size?: "sm" | "md" }) {
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase() || "LA";
-  const sizeClass = size === "sm" ? "size-7 text-[10px]" : "size-9 text-xs";
-
-  return (
-    <span className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-bg-primary)] font-medium text-[var(--lobb-clay)] ${sizeClass}`}>
-      {imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={imageUrl} alt="" className="size-full object-cover" />
-      ) : (
-        initials
-      )}
-    </span>
+              </TableCell>
+              <TableCell className="whitespace-nowrap text-right text-sm font-medium">
+                {money(booking.total_amount_ngn)}
+              </TableCell>
+              <TableCell className="text-right">
+                <StatusBadge status={booking.status} />
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
   );
 }
 
 function CoachReviewRow({ coach }: { coach: NonNullable<AdminDashboardPayload["pending_coach_approvals"]>[number] }) {
   return (
     <Link href="/admin/coaches" className="flex items-center gap-3">
-      <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--lobb-bg-primary)]">
-        {coach.profile_photo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
-        ) : (
-          <UserCheck className="size-4 text-[var(--lobb-clay)]" />
-        )}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium">{coach.full_name}</span>
-        <span className="block truncate text-xs font-medium text-[var(--lobb-text-secondary)]">{coach.primary_location ?? coach.headline ?? "Coach profile"}</span>
-      </span>
-      <span className="rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-3 py-2 text-xs font-medium text-[var(--lobb-text-secondary)]">Open</span>
+      <PersonCell
+        name={coach.full_name}
+        imageUrl={coach.profile_photo_url}
+        secondary={coach.primary_location ?? coach.headline ?? "Coach profile"}
+        className="flex-1"
+      />
+      <span className="shrink-0 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-3 py-2 text-xs font-medium text-[var(--lobb-text-secondary)]">Open</span>
     </Link>
   );
 }

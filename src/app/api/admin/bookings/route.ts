@@ -54,8 +54,32 @@ export const GET = withRole("admin", async (request, auth) => {
   const [{ data, error }, summary] = await Promise.all([query, summaryPromise]);
   if (error) return internalError(error);
 
-  const bookings = data ?? [];
-  const nextCursor = bookings.length === limit ? bookings[bookings.length - 1]?.starts_at ?? null : null;
+  const rows = data ?? [];
+
+  // Attach each player's avatar so the ledger's PersonCell can render a photo
+  // (bookings.players only carries full_name). Mirrors /api/admin/dashboard.
+  const playerIds = Array.from(new Set(rows.map((b) => b.player_id).filter(Boolean)));
+  const avatarByPlayerId = new Map<string, string | null>();
+  if (playerIds.length > 0) {
+    const { data: profiles, error: profileError } = await auth.admin
+      .from("profiles")
+      .select("id, avatar_url")
+      .in("id", playerIds);
+    if (profileError) return internalError(profileError);
+    for (const profile of profiles ?? []) avatarByPlayerId.set(profile.id, profile.avatar_url);
+  }
+
+  const bookings = rows.map((booking) => {
+    const avatar_url = avatarByPlayerId.get(booking.player_id) ?? null;
+    const players = Array.isArray(booking.players)
+      ? booking.players.map((p: { full_name: string }) => ({ ...p, avatar_url }))
+      : booking.players
+        ? { ...booking.players, avatar_url }
+        : booking.players;
+    return { ...booking, players };
+  });
+
+  const nextCursor = bookings.length === limit ? rows[rows.length - 1]?.starts_at ?? null : null;
 
   return NextResponse.json({ bookings, next_cursor: nextCursor, limit, summary });
 });

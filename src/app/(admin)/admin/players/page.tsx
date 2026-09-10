@@ -21,6 +21,7 @@ type PlayerRow = {
   full_name: string | null;
   email: string | null;
   phone_number: string | null;
+  avatar_url: string | null;
   created_at: string;
   referred_by_coach_id: string | null;
   stats: { bookings: number; completed: number; spend: number; last: string | null };
@@ -89,6 +90,7 @@ export default function AdminPlayersPage() {
                     <TableCell>
                       <PersonCell
                         name={player.full_name}
+                        imageUrl={player.avatar_url}
                         trailing={
                           player.referred_by_coach_id ? (
                             <span className="rounded-[var(--lobb-radius-sm)] bg-[var(--lobb-clay)]/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[var(--lobb-clay)]">

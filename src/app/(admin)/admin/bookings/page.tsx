@@ -7,10 +7,12 @@ import { Download, Gavel, Loader2, Send } from "lucide-react";
 import { AdminEmptyState, AdminMetricCard, AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { Modal } from "@/components/ui/modal";
 import { FormAlert } from "@/components/ui/form-alert";
-import { formatBookingDate, money, sessionParties, type DashboardBooking } from "@/lib/dashboard-client-types";
+import { firstJoin, formatBookingDate, money, sessionParties, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
-import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PersonCell } from "@/components/common/person-cell";
 
 type Filter = "all" | "pending" | "confirmed" | "completed" | "disputed" | "cancelled";
 
@@ -228,63 +230,100 @@ export default function AdminBookingsPage() {
         </LobbButton>
       </div>
 
-      <section className="mt-6 grid gap-3 xl:grid-cols-2">
+      <section className="mt-6">
         {loading ? (
-          <>
-            {Array.from({ length: 5 }).map((_, index) => <BookingCardSkeleton key={index} />)}
-          </>
-        ) : bookings.length ? bookings.map((booking) => {
-          const payable = isPayable(booking);
-          const { coach, player } = sessionParties(booking);
-          return (
-          <article key={booking.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 md:grid md:grid-cols-[150px_minmax(0,1fr)_auto] md:items-center md:gap-5">
-            <div>
-              <p className="truncate font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">#{booking.id.slice(0, 8)}</p>
-              <p className="mt-1 text-sm font-medium">{formatBookingDate(booking.starts_at)}</p>
-            </div>
-            <div className="mt-3 min-w-0 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 py-2 md:mt-0">
-              <p className="truncate text-sm font-medium">
-                {player} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {coach}
-              </p>
-              <p className="mt-1 truncate text-xs font-medium text-[var(--lobb-text-secondary)]">
-                Payout {money(booking.coach_payout_ngn)}
-                {booking.paystack_reference ? ` · ref ${booking.paystack_reference}` : ""}
-              </p>
-            </div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 md:mt-0 md:justify-end">
-              <StatusBadge status={booking.status} />
-              <PayoutState booking={booking} />
-              <p className="font-medium">{money(booking.total_amount_ngn)}</p>
-              {payable && (
-                <LobbButton variant="unstyled"
-                  type="button"
-                  disabled={payoutBusy}
-                  onClick={() => setPayoutTarget(booking)}
-                  className="inline-flex h-10 items-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
-                >
-                  <Send className="size-4" />
-                  Pay out
-                </LobbButton>
-              )}
-              {["confirmed", "completed"].includes(booking.status) && (
-                <LobbButton variant="unstyled"
-                  type="button"
-                  disabled={disputeBusy}
-                  onClick={() => { setDisputeTarget(booking); setDisputeReason(""); }}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/30 px-3 text-xs font-medium text-[var(--lobb-error)] transition hover:bg-[var(--lobb-error)]/8 disabled:opacity-60"
-                >
-                  <Gavel className="size-3.5" />
-                  Dispute
-                </LobbButton>
-              )}
-            </div>
-          </article>
-          );
-        }) : (
+          <div className="space-y-2">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <SkeletonBlock key={index} className="h-14 rounded-[var(--lobb-radius-md)]" />
+            ))}
+          </div>
+        ) : bookings.length ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Booking</TableHead>
+                <TableHead>Session</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Payout</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {bookings.map((booking) => {
+                const payable = isPayable(booking);
+                const coach = firstJoin(booking.coaches);
+                const player = firstJoin(booking.players);
+                const canDispute = ["confirmed", "completed"].includes(booking.status);
+                return (
+                  <TableRow key={booking.id}>
+                    <TableCell className="whitespace-nowrap font-mono text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      #{booking.id.slice(0, 8)}
+                      {booking.paystack_reference ? (
+                        <span className="mt-0.5 block text-[var(--lobb-text-tertiary)]">{booking.paystack_reference}</span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell>
+                      <PersonCell
+                        name={player?.full_name ?? "Player"}
+                        imageUrl={player?.avatar_url ?? null}
+                        secondary={`coached by ${coach?.full_name ?? "Coach"}`}
+                      />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
+                      {formatBookingDate(booking.starts_at)}
+                    </TableCell>
+                    <TableCell>
+                      <PayoutState booking={booking} />
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={booking.status} />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-right text-sm font-medium">
+                      {money(booking.total_amount_ngn)}
+                      <span className="mt-0.5 block text-xs font-normal text-[var(--lobb-text-secondary)]">
+                        payout {money(booking.coach_payout_ngn)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end gap-2">
+                        {payable && (
+                          <LobbButton
+                            variant="unstyled"
+                            type="button"
+                            disabled={payoutBusy}
+                            onClick={() => setPayoutTarget(booking)}
+                            className="inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] disabled:opacity-60"
+                          >
+                            <Send className="size-3.5" />
+                            Pay out
+                          </LobbButton>
+                        )}
+                        {canDispute && (
+                          <LobbButton
+                            variant="unstyled"
+                            type="button"
+                            disabled={disputeBusy}
+                            onClick={() => { setDisputeTarget(booking); setDisputeReason(""); }}
+                            className="inline-flex h-9 items-center gap-1.5 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/30 px-3 text-xs font-medium text-[var(--lobb-error)] transition hover:bg-[var(--lobb-error)]/8 disabled:opacity-60"
+                          >
+                            <Gavel className="size-3.5" />
+                            Dispute
+                          </LobbButton>
+                        )}
+                        {!payable && !canDispute && <span className="text-xs text-[var(--lobb-text-tertiary)]">—</span>}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        ) : (
           <AdminEmptyState
             title="No booking records"
             body="Try another status filter or date range, or wait for new paid sessions to arrive."
-            className="xl:col-span-2"
           />
         )}
       </section>

@@ -33,6 +33,7 @@ export const GET = withRole("admin", async (request, auth) => {
     full_name: p.full_name,
     email: p.email,
     phone_number: p.phone_number,
+    avatar_url: p.avatar_url ?? null,
     created_at: p.created_at,
     referred_by_coach_id: p.referred_by_coach_id,
     stats: {
