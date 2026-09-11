@@ -30,9 +30,9 @@ that needs it (e.g. password reset, which isn't used today but might be).
 Both projects deliver OTP codes via a custom hook to Resend, not Supabase's
 built-in SMTP.
 
-- [ ] **Enabled**, pointing at `https://<app-url>/api/auth/email-hook`
-  - Production: `https://lobb.ng/api/auth/email-hook`
-  - Staging: `https://staging.lobb.ng/api/auth/email-hook` (or the `.vercel.app` URL until the domain is wired)
+- [ ] **Enabled**, pointing at `https://<app-url>/api/auth/supabase-email-hook`
+  - Production: `https://lobb.ng/api/auth/supabase-email-hook`
+  - Staging: `https://staging.lobb.ng/api/auth/supabase-email-hook` (or the current stable `.vercel.app` URL — check Vercel → Project → Settings → Domains for the `staging` branch; the `staging.lobb.ng` DNS and the `lobb-git-staging-*.vercel.app` branch alias are both unresolved as of 2026-09-11, so a per-deployment URL won't stay valid — this needs a stable one before the hook can be pointed at it reliably)
 - [ ] Secret matches `SUPABASE_EMAIL_HOOK_SECRET` in Vercel for that
   environment (production and Preview currently share the **same** secret
   value in Vercel — keep the hook secret identical on both Supabase projects
