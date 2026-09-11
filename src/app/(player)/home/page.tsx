@@ -1,70 +1,130 @@
-"use client";
-/* eslint-disable @next/next/no-img-element */
-
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, CalendarDays, MapPin, Repeat2, Search } from "lucide-react";
+import { redirect } from "next/navigation";
+import { ArrowRight, CalendarDays, Clock3, CreditCard, MapPin, TriangleAlert } from "lucide-react";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
-import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { SmallCoachCard } from "@/features/coaches/coach-cards";
-import { createClient } from "@/lib/supabase/client";
-import { fetchWithCache } from "@/lib/offline-cache";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { loadPlayerBookings, canLeaveReview } from "@/lib/dashboard-queries";
 import { firstJoin, formatBookingDate, type DashboardBooking } from "@/lib/dashboard-client-types";
 import type { CoachPublicProfile } from "@/lib/types";
 
-export default function PlayerHomePage() {
-  const [firstName, setFirstName] = useState("Player");
-  const [bookings, setBookings] = useState<DashboardBooking[]>([]);
-  const [coaches, setCoaches] = useState<CoachPublicProfile[]>([]);
-  const [loading, setLoading] = useState(true);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    let alive = true;
-    const supabase = createClient();
-    Promise.all([
-      supabase.auth.getUser().then(async ({ data: { user } }) => {
-        if (!user) return null;
-        const { data } = await supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle();
-        return data?.full_name?.split(" ")[0] ?? null;
-      }),
-      fetchWithCache<{ upcoming: DashboardBooking[]; past: DashboardBooking[] }>("lobb.dashboard.player", "/api/dashboard/player"),
-      fetch("/api/coaches?limit=3").then((response) => response.ok ? response.json() : { coaches: [] }),
-    ]).then(([name, dashboard, coachPayload]) => {
-      if (!alive) return;
-      if (name) setFirstName(name);
-      setBookings(dashboard.upcoming ?? []);
-      setCoaches((coachPayload as { coaches?: CoachPublicProfile[] }).coaches?.slice(0, 3) ?? []);
-    }).finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
-  }, []);
+const VISIBLE_UPCOMING_STATUSES = new Set(["confirmed", "pending", "pending_payment"]);
 
-  const nextBooking = useMemo(() => [...bookings].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null, [bookings]);
+function timeOfDayGreeting() {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-NG", { hour: "numeric", hour12: false, timeZone: "Africa/Lagos" }).format(new Date())
+  );
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+export default async function PlayerHomePage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/login");
+
+  const admin = createAdminClient();
+
+  // Each fetch fails independently — a dead recommended-coaches call should
+  // never take down the booking card, and vice versa. Previously this ran
+  // client-side with no .catch() at all: a failed request quietly rendered
+  // "Nothing booked yet" instead of ever surfacing that something broke.
+  const [profileResult, bookingsResult, coachesResult] = await Promise.allSettled([
+    supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    loadPlayerBookings(admin, user.id),
+    admin
+      .from("coach_profiles_public")
+      .select("*")
+      .eq("status", "active")
+      .order("avg_rating", { ascending: false, nullsFirst: false })
+      .limit(3),
+  ]);
+
+  const firstName =
+    profileResult.status === "fulfilled" ? profileResult.value.data?.full_name?.split(" ")[0] || "Player" : "Player";
+
+  const bookingsFailed = bookingsResult.status === "rejected" || Boolean((bookingsResult as PromiseFulfilledResult<{ error: unknown }>).value?.error);
+  const bookings: DashboardBooking[] =
+    bookingsResult.status === "fulfilled" ? ((bookingsResult.value.data as DashboardBooking[] | null) ?? []) : [];
+
+  const now = Date.now();
+  const upcoming = bookings.filter(
+    (b) => new Date(b.starts_at).getTime() >= now && VISIBLE_UPCOMING_STATUSES.has(b.status)
+  );
+  const nextBooking = [...upcoming].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
   const coach = firstJoin(nextBooking?.coaches);
   const needsPayment = nextBooking && ["pending", "pending_payment"].includes(nextBooking.status) && nextBooking.payments?.[0]?.status !== "paid";
+
+  const reviewableBooking = bookings.find((b) => canLeaveReview(b)) ?? null;
+  const reviewableCoach = firstJoin(reviewableBooking?.coaches);
+
+  const coaches: CoachPublicProfile[] = coachesResult.status === "fulfilled" ? ((coachesResult.value.data as CoachPublicProfile[] | null) ?? []) : [];
 
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
       <PlayerHeader active="home" title="Home" eyebrow="Player" />
       <section className="mx-auto max-w-6xl px-4 pt-7 sm:px-6 lg:pt-10">
-        <div className="flex flex-col gap-5 border-b border-[var(--lobb-border-subtle)] pb-7 sm:flex-row sm:items-end sm:justify-between">
-          <div><p className="text-xs font-medium text-[var(--lobb-clay)]">Welcome back, {firstName}</p><h1 className="mt-2 max-w-xl text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">Your next time on court.</h1></div>
-          <Link href="/coaches" className="inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-sm font-medium text-white"><Search className="size-4" /> Find a coach</Link>
-        </div>
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
-          {loading ? <SkeletonBlock className="h-64 rounded-[var(--lobb-radius-lg)]" /> : nextBooking ? (
-            <article className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 sm:p-6">
-              <div className="flex items-center justify-between gap-4"><p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--lobb-clay)]">Next session</p><span className="text-xs font-medium capitalize text-[var(--lobb-text-secondary)]">{needsPayment ? "Payment pending" : nextBooking.status}</span></div>
-              <h2 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">{formatBookingDate(nextBooking.starts_at)}</h2>
-              <div className="mt-5 flex items-center gap-3 border-t border-[var(--lobb-border-subtle)] pt-5"><div className="size-12 overflow-hidden rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)]">{coach?.profile_photo_url && <>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={coach.profile_photo_url} alt="" className="size-full object-cover" /></>}</div><div className="min-w-0"><p className="truncate font-medium">{coach?.full_name ?? "Your coach"}</p><p className="truncate text-sm text-[var(--lobb-text-secondary)]">{coach?.headline ?? "Tennis coach"}</p></div></div>
-              <p className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] gap-2 text-sm leading-6 text-[var(--lobb-text-secondary)]"><MapPin className="mt-1 size-4 text-[var(--lobb-clay)]" /><span className="break-words">{nextBooking.location || "Location pending"}</span></p>
-              <div className="mt-6 flex gap-2"><Link href={`/dashboard/bookings/${nextBooking.id}`} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-medium text-[var(--lobb-text-inverse)]">{needsPayment ? "Complete payment" : "View booking"}<ArrowRight className="size-4" /></Link><Link href="/dashboard/bookings" className="flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-sm font-medium">All bookings</Link></div>
-            </article>
-          ) : (
-            <article className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6"><CalendarDays className="size-5 text-[var(--lobb-clay)]" /><h2 className="mt-6 text-2xl font-semibold">Nothing booked yet</h2><p className="mt-2 text-sm leading-6 text-[var(--lobb-text-secondary)]">Choose a verified coach and reserve a time that works for you.</p><Link href="/coaches" className="mt-6 inline-flex h-11 items-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)]">Browse coaches <ArrowRight className="size-4" /></Link></article>
-          )}
-          <aside className="lobb-surface-inset border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-5"><Repeat2 className="size-5 text-[var(--lobb-clay)]" /><h2 className="mt-5 text-lg font-semibold">Book your next session</h2><p className="mt-2 text-sm leading-6 text-[var(--lobb-text-secondary)]">Compare verified coaches by location, experience and price.</p><Link href="/coaches" className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-[var(--lobb-clay)]">Explore coaches <ArrowRight className="size-4" /></Link></aside>
-        </div>
-        {coaches.length > 0 && <section className="mt-10"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Recommended coaches</h2><Link href="/coaches" className="text-sm font-medium text-[var(--lobb-clay)]">View all</Link></div><div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">{coaches.map((item) => <SmallCoachCard key={item.id} coach={item} />)}</div></section>}
+        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{timeOfDayGreeting()}, {firstName}</p>
+
+        {bookingsFailed ? (
+          <div className="mt-4 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-error)]/40 bg-[var(--lobb-error)]/5 p-5">
+            <TriangleAlert className="mt-0.5 size-5 shrink-0 text-[var(--lobb-error)]" />
+            <div>
+              <p className="font-medium text-[var(--lobb-text-primary)]">Could not load your bookings</p>
+              <p className="mt-1 text-sm text-[var(--lobb-text-secondary)]">Everything else on this page is fine — just this part failed to load. Refresh to try again.</p>
+            </div>
+          </div>
+        ) : nextBooking && needsPayment ? (
+          // ── State: payment pending — one job, one button ──
+          <article className="mt-4 lobb-surface-outlined border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay-light)] p-6">
+            <div className="flex items-center gap-2 text-[var(--lobb-clay)]"><CreditCard className="size-5" /><p className="text-xs font-medium uppercase tracking-[0.15em]">Payment pending</p></div>
+            <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">Your session is waiting for payment.</h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--lobb-text-secondary)]">Complete payment before your reserved slot expires — {formatBookingDate(nextBooking.starts_at)}.</p>
+            <Link href={`/dashboard/bookings/${nextBooking.id}`} className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-6 text-sm font-medium text-white">Complete payment<ArrowRight className="size-4" /></Link>
+          </article>
+        ) : nextBooking ? (
+          // ── State: upcoming session — the booking, not a coach pitch ──
+          <article className="mt-4 lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 sm:p-6">
+            <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--lobb-clay)]">Your next session</p>
+                <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{formatBookingDate(nextBooking.starts_at)}</h1>
+                <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-[var(--lobb-text-secondary)]"><MapPin className="mt-1 size-4 shrink-0 text-[var(--lobb-clay)]" /><span className="break-words">{nextBooking.location || "Location pending"}</span></p>
+              </div>
+              <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:text-right">
+                <div className="size-12 shrink-0 overflow-hidden rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)]">{coach?.profile_photo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
+                )}</div>
+                <p className="min-w-0 truncate font-medium">{coach?.full_name ?? "Your coach"}</p>
+              </div>
+            </div>
+            <div className="mt-6 flex gap-2 border-t border-[var(--lobb-border-subtle)] pt-5"><Link href={`/dashboard/bookings/${nextBooking.id}`} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-medium text-[var(--lobb-text-inverse)] sm:flex-none">View booking<ArrowRight className="size-4" /></Link><Link href="/dashboard" className="flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-sm font-medium">All bookings</Link></div>
+          </article>
+        ) : (
+          // ── State: nothing booked — one CTA, not four ──
+          <article className="mt-4 lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6">
+            <CalendarDays className="size-5 text-[var(--lobb-clay)]" />
+            <h1 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">Ready for your next session?</h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--lobb-text-secondary)]">Choose a verified coach and reserve a time that works for you.</p>
+            <Link href="/coaches" className="mt-6 inline-flex h-11 items-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)]">Browse coaches<ArrowRight className="size-4" /></Link>
+          </article>
+        )}
+
+        {reviewableBooking && reviewableCoach && (
+          <Link href={`/dashboard/review/${reviewableBooking.id}`} className="mt-4 flex items-center justify-between gap-4 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-5 py-4">
+            <div className="flex items-center gap-3"><Clock3 className="size-5 shrink-0 text-[var(--lobb-clay)]" /><div><p className="font-medium text-[var(--lobb-text-primary)]">How was your session with {reviewableCoach.full_name}?</p><p className="mt-0.5 text-sm text-[var(--lobb-text-secondary)]">A quick review helps other players choose.</p></div></div>
+            <ArrowRight className="size-5 shrink-0 text-[var(--lobb-clay)]" />
+          </Link>
+        )}
+
+        {coaches.length > 0 && <section className="mt-10"><div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Recommended coaches</h2><Link href="/coaches" className="text-sm font-medium text-[var(--lobb-clay)]">View all coaches</Link></div><div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">{coaches.map((item) => <SmallCoachCard key={item.id} coach={item} />)}</div></section>}
       </section>
       <PlayerBottomNav active="home" />
     </main>

@@ -7,7 +7,6 @@ import { usePathname, useRouter } from "next/navigation";
 import Script from "next/script";
 import {
   AlertCircle,
-  CalendarPlus,
   CheckCircle2,
   Circle,
   Clock3,
@@ -51,54 +50,8 @@ function formatTimeRange(startsAt: string, endsAt: string) {
   return `${formatTime(startsAt)} – ${formatTime(endsAt)}`;
 }
 
-function lagosDateOnly(iso: string) {
-  return new Date(iso).toLocaleDateString("en-CA", { timeZone: "Africa/Lagos" });
-}
-
-function proximityLabel(startsAt: string) {
-  const diff = Math.round(
-    (new Date(lagosDateOnly(startsAt)).getTime() - new Date(lagosDateOnly(new Date().toISOString())).getTime()) / 86400000,
-  );
-  if (diff <= 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  return `In ${diff} days`;
-}
-
 function mapsUrl(location: string) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}&travelmode=driving`;
-}
-
-function gcalStamp(iso: string) {
-  return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-}
-
-function calendarUrl(booking: DashboardBooking, coachName: string) {
-  const params = new URLSearchParams({
-    action: "TEMPLATE",
-    text: `Tennis lesson with ${coachName}`,
-    dates: `${gcalStamp(booking.starts_at)}/${gcalStamp(booking.ends_at)}`,
-    location: booking.location,
-    details: sessionDetailsText(booking, coachName),
-  });
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-}
-
-function sessionDetailsText(booking: DashboardBooking, coachName: string) {
-  return [
-    `Tennis lesson with ${coachName}`,
-    `${formatDay(booking.starts_at)}, ${formatTimeRange(booking.starts_at, booking.ends_at)}`,
-    booking.location ? `Location: ${booking.location}` : "Location pending",
-    "Booked on LOBB.",
-  ].join("\n");
-}
-
-async function copyText(value: string, successMessage: string) {
-  try {
-    await navigator.clipboard.writeText(value);
-    showLobbToast({ type: "success", message: successMessage });
-  } catch {
-    showLobbToast({ type: "error", message: "Could not copy. Please try again." });
-  }
 }
 
 /* ───────────────────────────── Status helpers ───────────────────────────── */
@@ -328,127 +281,6 @@ export default function DashboardPage() {
 
       <PlayerBottomNav active="bookings" />
     </main>
-  );
-}
-
-/* ─────────────────────────── Next session hero ──────────────────────────── */
-
-export function NextSessionCard({
-  booking,
-  payingId,
-  onPay,
-  paystackReady,
-}: {
-  booking: DashboardBooking;
-  payingId: string | null;
-  onPay: (id: string) => void;
-  paystackReady: boolean;
-}) {
-  const coach = firstJoin(booking.coaches);
-  const coachName = coach?.full_name ?? "Coach";
-  const pendingPay = needsPayment(booking);
-  const isConfirming = !pendingPay && booking.status !== "confirmed";
-  const minutes = durationMinutes(booking.starts_at, booking.ends_at);
-  const hasLocation = Boolean(booking.location?.trim());
-  const googleCalendarUrl = calendarUrl(booking, coachName);
-
-  return (
-    <article className="lobb-hero-card relative overflow-visible border p-5 sm:p-7">
-      <div className="relative">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.18em] opacity-55">Next session</p>
-          <StatusChip booking={booking} />
-        </div>
-
-        <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--lobb-clay)]">{proximityLabel(booking.starts_at)}</p>
-        <h2 className="mt-1.5 text-[30px] font-semibold leading-none tracking-tight sm:text-[40px]">{formatDay(booking.starts_at)}</h2>
-        <p className="mt-2.5 text-sm font-bold opacity-75">
-          {formatTimeRange(booking.starts_at, booking.ends_at)} · {minutes} min
-        </p>
-
-        <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5">
-          <CoachAvatar coach={coach} />
-          <div className="min-w-0">
-            <p className="truncate font-medium">{coachName}</p>
-            <p className="truncate text-sm font-medium opacity-60">{coach?.headline || "Tennis coach"}</p>
-          </div>
-        </div>
-
-        <LobbButton variant="unstyled"
-          type="button"
-          disabled={!hasLocation}
-          onClick={() => copyText(booking.location, "Location copied")}
-          className="mt-4 flex h-auto min-h-[72px] w-full items-start gap-2 rounded-[var(--lobb-radius-lg)] border border-white/10 bg-white/[0.06] p-3 text-left whitespace-normal transition-[background-color,border-color,transform] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-white/25 hover:bg-white/[0.08] active:scale-[0.99] disabled:cursor-default disabled:hover:border-white/10 disabled:hover:bg-white/[0.06]"
-        >
-            <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/45">Location</p>
-              <p className="mt-1 break-words text-sm font-medium leading-5 text-white/78">{hasLocation ? booking.location : "Location pending"}</p>
-              {hasLocation && <p className="mt-1 text-[11px] font-bold text-white/45">Click to copy location</p>}
-            </div>
-        </LobbButton>
-
-        {pendingPay && (
-          <p className="mt-5 flex items-start gap-2 border border-[var(--lobb-warning)]/40 bg-[var(--lobb-warning)]/12 p-3 text-xs font-medium leading-5">
-            <AlertCircle className="mt-0.5 size-4 shrink-0 text-[var(--lobb-warning)]" />
-            This slot is not held until payment is complete.
-          </p>
-        )}
-        {isConfirming && (
-          <p className="mt-5 flex items-start gap-2 border border-white/10 bg-white/[0.06] p-3 text-xs font-medium leading-5 opacity-85">
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            Payment is recorded. We are finalizing this booking confirmation.
-          </p>
-        )}
-
-        <div className="mt-6 flex flex-wrap gap-2">
-          {pendingPay ? (
-            <>
-              <LobbButton variant="unstyled"
-                onClick={() => onPay(booking.id)}
-                disabled={payingId !== null || !paystackReady}
-                className="flex h-11 flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-5 text-xs font-medium uppercase tracking-[0.1em] text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] disabled:opacity-60"
-              >
-                {payingId === booking.id ? "Starting payment…" : "Complete payment"}
-              </LobbButton>
-              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/15 px-4 text-xs font-medium transition hover:border-white/40 active:scale-[0.98]">
-                View details
-              </Link>
-            </>
-          ) : (
-            <>
-              {hasLocation ? (
-                <a
-                  href={mapsUrl(booking.location)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-keep-light
-                  className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white text-xs font-medium text-[#0d0d0d] transition duration-300 hover:bg-white/85 active:scale-[0.98]"
-                >
-                  <Navigation className="size-4 text-[var(--lobb-clay)]" /> Directions
-                </a>
-              ) : (
-                <span className="flex h-11 min-w-[132px] flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white/8 text-xs font-medium text-white/45">
-                  <Navigation className="size-4" /> Location pending
-                </span>
-              )}
-              <a
-                href={googleCalendarUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-11 min-w-[142px] flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-white/15 px-3 text-xs font-medium transition hover:border-white/40 active:scale-[0.98]"
-              >
-                <CalendarPlus className="size-4 text-[var(--lobb-clay)]" />
-                Add calendar
-              </a>
-              <Link href={`/dashboard/bookings/${booking.id}`} className="flex h-11 min-w-[92px] flex-1 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/15 px-4 text-xs font-medium transition hover:border-white/40 active:scale-[0.98]">
-                Details
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-    </article>
   );
 }
 
