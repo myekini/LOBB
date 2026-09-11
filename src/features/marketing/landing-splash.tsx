@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, MapPin, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { CoachPublicProfile } from "@/lib/types";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { LandingReveal } from "@/features/marketing/landing-reveal";
@@ -15,10 +15,6 @@ function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: str
       <circle cx="32" cy="17" r="5.5" fill={color} />
     </svg>
   );
-}
-
-function coachRate(value: number | null) {
-  return value == null ? "Rate TBD" : `₦${value.toLocaleString("en-NG")}/hr`;
 }
 
 function DotLabel({ children }: { children: React.ReactNode }) {
@@ -36,8 +32,6 @@ function DotLabel({ children }: { children: React.ReactNode }) {
  * users, and the coach list is fetched on the server by the route.
  */
 export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicProfile[]; coachCount: number }) {
-  const heroCoach = coaches[0] ?? null;
-
   return (
     <main id="main-content" className="lobb-landing relative min-h-[100dvh] overflow-x-hidden text-[var(--lobb-text-primary)]">
       {/* Hide reveal targets before first paint so they animate in rather than
@@ -76,60 +70,29 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
         </div>
       </header>
 
-      <section aria-labelledby="hero-heading" className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.82fr)] lg:px-8 lg:py-16">
-        <div className="max-w-3xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+      <section aria-labelledby="hero-heading" className="relative z-10 mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-7xl items-center overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.22fr)_minmax(340px,0.78fr)] lg:px-8 lg:py-20">
+        <div className="relative z-10 max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
           <p className="mb-5 text-sm font-medium text-[var(--lobb-clay)]">Verified tennis coaching in Lagos</p>
-
-          <h1 id="hero-heading" className="max-w-3xl text-[44px] font-semibold leading-[0.98] tracking-tight text-[var(--lobb-text-primary)] sm:text-[64px] lg:text-[76px] text-balance">
-            Skip the WhatsApp chase. Book a verified tennis coach.
+          <h1 id="hero-heading" className="max-w-[900px] text-[46px] font-semibold leading-[0.96] tracking-tight text-[var(--lobb-text-primary)] text-balance sm:text-[66px] lg:text-[78px]">
+            Skip the WhatsApp chase. Book a verified coach.
           </h1>
-          <p className="mt-6 max-w-xl text-[16px] leading-7 text-[var(--lobb-text-secondary)] sm:text-[18px] text-pretty">
-            Compare verified coaches, see upfront rates and book a real slot — all in one place.
+          <p className="mt-6 max-w-lg text-[16px] leading-7 text-[var(--lobb-text-secondary)] sm:text-[18px]">
+            Compare trusted coaches, see the full price and book an available tennis session.
           </p>
-
-          <div className="mt-8">
-            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 w-full items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98] sm:w-auto">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link href="/coaches" className="lobb-cta-sheen group inline-flex h-14 items-center justify-center gap-2 bg-[var(--lobb-clay)] px-7 text-sm font-semibold text-white transition duration-300 hover:bg-[var(--lobb-clay-dark)] active:scale-[0.98]">
               Browse coaches
               <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
+            <Link href="/auth/signup/coach" className="inline-flex h-14 items-center justify-center px-5 text-sm font-semibold text-[var(--lobb-text-secondary)] transition-colors duration-300 hover:text-[var(--lobb-text-primary)]">
+              Become a coach
+            </Link>
           </div>
-
-          <p className="mt-5 text-sm text-[var(--lobb-text-secondary)]">
-            {coachCount > 0 ? `${coachCount} verified ${coachCount === 1 ? "coach" : "coaches"} in Lagos · ` : ""}
-            Upfront pricing · Secure payment
-          </p>
         </div>
 
-        <div className="relative animate-in fade-in-0 slide-in-from-bottom-6 duration-700 delay-150">
-          <div className="lobb-hero-visual group relative min-h-[390px] overflow-hidden border border-white/15 bg-[#0d0d0d] sm:min-h-[440px]">
-            <Image
-              src={HERO_IMAGE}
-              alt=""
-              fill
-              priority
-              sizes="(min-width: 1024px) 520px, 100vw"
-              className="scale-105 object-cover opacity-[0.88] transition duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,13,13,0.05),rgba(13,13,13,0.9)),linear-gradient(90deg,rgba(13,13,13,0.72),rgba(13,13,13,0.08)_48%,rgba(13,13,13,0.76)),radial-gradient(circle_at_78%_18%,rgba(196,98,45,0.34),transparent_28%)]" aria-hidden="true" />
-
-            <div className="relative grid min-h-[390px] content-end p-5 sm:min-h-[440px] sm:p-7">
-              <div className="max-w-[390px] border border-white/15 bg-[#0d0d0d]/78 p-4 text-white backdrop-blur-md sm:p-5">
-                <p className="text-xs font-medium text-white/70">{heroCoach ? "Featured coach" : "On LOBB"}</p>
-                <p className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight text-balance">
-                  {heroCoach?.full_name ?? "Verified coaches across Lagos"}
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/80">
-                  {heroCoach?.primary_location && <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-[var(--lobb-clay)]" />{heroCoach.primary_location}</span>}
-                  {heroCoach?.avg_rating != null && <span className="inline-flex items-center gap-1.5"><Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{Number(heroCoach.avg_rating).toFixed(1)}</span>}
-                  {heroCoach?.hourly_rate_ngn != null && <span>{coachRate(heroCoach.hourly_rate_ngn)}</span>}
-                </div>
-                <Link data-keep-light href={heroCoach ? `/coaches/${heroCoach.slug ?? heroCoach.id}` : "/coaches"} className="mt-5 inline-flex h-11 items-center gap-2 bg-white px-4 text-sm font-semibold text-[#0d0d0d] transition hover:bg-[var(--lobb-clay)] hover:text-white">
-                  {heroCoach ? "View coach profile" : "Browse coaches"}
-                  <ArrowRight className="size-4" />
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="relative mt-10 min-h-[280px] animate-in overflow-hidden fade-in-0 duration-700 sm:min-h-[360px] lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[46%] lg:min-h-0" aria-hidden="true">
+          <Image src={HERO_IMAGE} alt="" fill priority sizes="(min-width: 1024px) 46vw, 100vw" className="object-cover object-center" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,var(--lobb-bg-primary)_100%)] lg:bg-[linear-gradient(90deg,var(--lobb-bg-primary)_0%,transparent_42%),linear-gradient(180deg,transparent_70%,var(--lobb-bg-primary)_100%)]" />
         </div>
       </section>
 
