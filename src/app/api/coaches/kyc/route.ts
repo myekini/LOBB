@@ -5,6 +5,20 @@ import { logLegalConsent } from "@/lib/legal-consent";
 import { encryptField } from "@/lib/crypto";
 
 export async function POST(request: Request) {
+  try {
+    return await handleKycSubmit(request);
+  } catch (err) {
+    // Zero try/catch here used to mean any thrown error (most notably
+    // encryptField() when KYC_ENCRYPTION_KEY is unset) crashed the handler
+    // uncaught — Vercel's platform-level 500 for that has no JSON body, so
+    // the client's `await res.json()` failed with "Unexpected end of JSON
+    // input" instead of ever seeing a real error message.
+    console.error("KYC submit failed:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "Could not save identity details. Please try again." }, { status: 500 });
+  }
+}
+
+async function handleKycSubmit(request: Request) {
   const auth = await requireRole("coach");
   if (auth.error) {
     return NextResponse.json({ error: auth.error }, { status: auth.status });

@@ -93,16 +93,24 @@ export default function VerifyPage() {
     setError("");
     setVerifying(true);
 
-    const response = await fetch("/api/auth/verify-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...(pendingAuth.email ? { email: pendingAuth.email } : { phone: pendingAuth.phone }),
-        code: nextCode,
-        ...(pendingAuth.role ? { role: pendingAuth.role } : {}),
-      }),
-    });
-    const payload = (await response.json()) as {
+    let response: Response;
+    try {
+      response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(pendingAuth.email ? { email: pendingAuth.email } : { phone: pendingAuth.phone }),
+          code: nextCode,
+          ...(pendingAuth.role ? { role: pendingAuth.role } : {}),
+        }),
+      });
+    } catch {
+      setVerifying(false);
+      fail("Could not reach LOBB. Check your connection and try again.");
+      return;
+    }
+
+    const payload = (await response.json().catch(() => null)) as {
       error?: string;
       session?: {
         access_token: string;
@@ -111,11 +119,11 @@ export default function VerifyPage() {
       user?: {
         id: string;
       };
-    };
+    } | null;
 
-    if (!response.ok || !payload.session || !payload.user) {
+    if (!response.ok || !payload?.session || !payload.user) {
       setVerifying(false);
-      fail(payload.error || "Wrong code. Try again.");
+      fail(payload?.error || "Wrong code. Try again.");
       return;
     }
 

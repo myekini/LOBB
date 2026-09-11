@@ -41,8 +41,8 @@ export default function CoachSetupStep2Page() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nin: ninClean, bvn: bvnClean, identity_consent_accepted: acceptedIdentityConsent }),
       });
-      const json = (await res.json()) as { error?: string };
-      if (!res.ok) throw new Error(json.error ?? "Could not save identity details");
+      const json = (await res.json().catch(() => null)) as { error?: string } | null;
+      if (!res.ok) throw new Error(json?.error ?? "Could not save identity details");
 
       track("Coach Onboarding Step Completed", { step: 2 });
       router.push("/auth/setup/coach/3");
