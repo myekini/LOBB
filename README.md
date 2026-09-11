@@ -100,6 +100,35 @@ brand-kit/      Logos, badges, design docs
 supabase/       Database migrations
 ```
 
+## Architecture: Code to Court
+
+Two Supabase projects, two Vercel environments, one repo — a change only reaches real users after it's proven itself on staging first.
+
+| | Local | Staging | Production |
+| --- | --- | --- | --- |
+| Branch | *(any, `npm run dev`)* | `staging` | `main` |
+| Vercel | — | Preview deployment | Production deployment |
+| Supabase project | `zvqkofnkjdgxlbtbwhct` (staging) | `zvqkofnkjdgxlbtbwhct` | `nnzddpvhldwjvhxbrrgh` |
+| Live URL | `localhost:3000` | `staging.lobb.ng` | `lobb.ng` |
+| Who it's for | you, right now | the team, before launch | coaches &amp; players |
+
+```mermaid
+flowchart LR
+    Dev[VS Code<br/>npm run dev] -->|git push| GH[GitHub<br/>myekini/LOBB]
+
+    GH -->|staging branch| VS[Vercel<br/>preview deploy]
+    GH -->|staging branch| SS[Supabase<br/>staging project]
+    GH -->|main branch| VP[Vercel<br/>production deploy]
+    GH -->|main branch| SP[Supabase<br/>production project]
+
+    VS --> LS[staging.lobb.ng]
+    SS --> LS
+    VP --> LP[lobb.ng]
+    SP --> LP
+```
+
+Local dev points at the **staging** project (`.env.local`) — never production — so nothing you run on your own machine can touch real bookings. Migrations in `supabase/migrations/` are applied per branch (`db-migrate.yml`, or the Supabase GitHub integration once linked); `staging` requires the `Quality` check (typecheck/lint/build) to pass before merge, `main` doesn't gate on a review.
+
 ## Production Readiness
 
 Before launch:
@@ -107,7 +136,7 @@ Before launch:
 - [ ] Replace MVP legal text (/terms, /privacy)
 - [ ] Connect Paystack webhook callbacks
 - [ ] Wire admin approvals and payout flows to persistent tables
-- [ ] Add CI pipeline (lint, type-check, build)
+- [x] Add CI pipeline (lint, type-check, build)
 
 ## Access & License
 
