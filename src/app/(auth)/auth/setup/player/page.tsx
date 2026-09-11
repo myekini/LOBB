@@ -57,7 +57,7 @@ export default function PlayerSetupPage() {
 
     try {
       if (photoFile) {
-        uploadedPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "player-avatar", "user-media");
+        uploadedPhotoUrl = await uploadProfilePhoto(supabase, user.id, photoFile, "player-avatar", "avatars");
       }
 
       const { error: profileError } = await supabase

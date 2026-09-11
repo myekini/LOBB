@@ -76,7 +76,7 @@ export default function EditProfilePage() {
       let finalAvatarUrl = avatarUrl;
 
       if (photoFile) {
-        finalAvatarUrl = await uploadProfilePhoto(supabase, userId, photoFile, "player-avatar", "user-media");
+        finalAvatarUrl = await uploadProfilePhoto(supabase, userId, photoFile, "player-avatar", "avatars");
       }
 
       const { error } = await supabase
