@@ -352,19 +352,11 @@ create table if not exists public.paystack_events (
   created_at   timestamptz not null default now()
 );
 
--- ─── OTP verifications ────────────────────────────────────────────────────────
--- Persisted OTP state (survives deploys/restarts). Service-role access only.
-
-create table if not exists public.otp_verifications (
-  phone_number       text        primary key,
-  code_hash          text        not null,
-  role               public.user_role not null default 'player',
-  attempts           smallint    not null default 0,
-  request_timestamps bigint[]    not null default array[]::bigint[],
-  expires_at         timestamptz not null,
-  created_at         timestamptz not null default now(),
-  updated_at         timestamptz not null default now()
-);
+-- otp_verifications (the custom phone-OTP table) used to be created here.
+-- Removed 2026-09 — it's long gone from every real database (dropped by
+-- 20260714000001_db_cleanup.sql, zero code references remain) and recreating
+-- it on every full migration replay just to have a later file drop it again
+-- was pure churn. See db_cleanup.sql for the removal record.
 
 -- ─── Reviews ──────────────────────────────────────────────────────────────────
 -- One review per completed booking. Admin can soft-remove with a reason.

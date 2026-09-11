@@ -67,10 +67,6 @@ create index if not exists payments_reference_idx  on public.payments (paystack_
 
 create index if not exists paystack_events_ref_idx on public.paystack_events (reference);
 
--- ─── otp_verifications ────────────────────────────────────────────────────────
-
-create index if not exists otp_expires_idx on public.otp_verifications (expires_at);
-
 -- ─── reviews ──────────────────────────────────────────────────────────────────
 
 create index if not exists reviews_coach_idx   on public.reviews (coach_id) where removed_at is null;

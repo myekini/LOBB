@@ -135,7 +135,6 @@ alter table public.slot_locks                    enable row level security;
 alter table public.bookings                      enable row level security;
 alter table public.payments                      enable row level security;
 alter table public.paystack_events               enable row level security;
-alter table public.otp_verifications             enable row level security;
 alter table public.reviews                       enable row level security;
 alter table public.sms_jobs                      enable row level security;
 alter table public.email_jobs                    enable row level security;
@@ -354,10 +353,6 @@ create policy "payments: admin all"
 -- ─── paystack_events — service_role only ─────────────────────────────────────
 
 -- No authenticated user policies; webhook handler runs under service_role.
-
--- ─── otp_verifications — service_role only ───────────────────────────────────
-
--- OTP records are written/read only by the OTP API routes via service_role.
 
 -- ─── reviews ──────────────────────────────────────────────────────────────────
 
