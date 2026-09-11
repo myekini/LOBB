@@ -17,6 +17,7 @@ import {
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
+import { COACH_RATE_PRESETS, coachRateError, isValidCoachRate } from "@/lib/config/pricing";
 
 const LAGOS_LOCATIONS = [
   "Lekki",
@@ -37,8 +38,8 @@ const LAGOS_LOCATIONS = [
 
 const SKILL_LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced", "All levels"];
 
-// Common rate tiers in Lagos tennis market (NGN per hour)
-const RATE_OPTIONS = [5000, 7500, 10000, 15000, 20000, 25000, 30000, 40000, 50000];
+// Preset rate tiers from the central pricing system (NGN per hour)
+const RATE_OPTIONS = COACH_RATE_PRESETS;
 
 function formatRate(rate: number) {
   return rate >= 1000 ? `₦${(rate / 1000).toFixed(rate % 1000 === 0 ? 0 : 1)}k` : `₦${rate}`;
@@ -58,7 +59,7 @@ export default function CoachSetupStep4Page() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const canContinue = hourlyRate !== null && hourlyRate >= 1000 && Boolean(primaryLocation) && skillLevels.length > 0;
+  const canContinue = isValidCoachRate(hourlyRate) && Boolean(primaryLocation) && skillLevels.length > 0;
 
   // Prefill from the existing draft so revisiting this step never loses work
   useEffect(() => {
@@ -194,8 +195,8 @@ export default function CoachSetupStep4Page() {
                   className="relative z-10 h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] font-bold tracking-wide text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:ring-0"
                 />
               </div>
-              {hourlyRate !== null && hourlyRate < 1000 && (
-                <p className="mt-2 text-[12px] font-bold text-[var(--lobb-error)]">Minimum rate is ₦1,000.</p>
+              {hourlyRate !== null && coachRateError(hourlyRate) && (
+                <p className="mt-2 text-[12px] font-bold text-[var(--lobb-error)]">{coachRateError(hourlyRate)}</p>
               )}
             </label>
           </div>

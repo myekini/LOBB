@@ -11,8 +11,7 @@ import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import type { CoachPublicProfile } from "@/lib/types";
 import { track } from "@/lib/analytics";
 import { readApiError, toastAppError } from "@/lib/client-errors";
-
-const LOBB_FEE_RATE = 0.05;
+import { calculateFees } from "@/lib/config/pricing";
 
 type PaystackPopup = {
   resumeTransaction: (accessCode: string, callbacks: {
@@ -131,8 +130,7 @@ function BookingStep3Content() {
   }, [seconds]);
 
   const sessionFee = coach?.hourly_rate_ngn ?? 0;
-  const lobbFee    = Math.round(sessionFee * LOBB_FEE_RATE);
-  const total      = sessionFee + lobbFee;
+  const { convenienceFee: lobbFee, grossCharge: total } = calculateFees(sessionFee);
   const canPay = Boolean(coach) && acceptedCancellationPolicy;
 
   const verifyAndOpenBooking = async (reference: string) => {
@@ -300,29 +298,16 @@ function BookingStep3Content() {
 
         <div className="my-5 border-t border-dashed border-[var(--lobb-border-subtle)]" />
 
-        {/* Fee breakdown */}
+        {/* Total charge — the fee split is disclosed in the Cancellation &
+            Terms pages, not here (pricing spec v3.1). */}
         {coach ? (
-          <div className="space-y-3.5">
-            <div className="flex justify-between text-sm font-medium text-[var(--lobb-text-secondary)]">
-              <span>Session fee</span>
-              <span className="font-medium text-[var(--lobb-text-primary)]">{money(sessionFee)}</span>
-            </div>
-            <div className="flex justify-between text-sm font-medium text-[var(--lobb-text-secondary)]">
-              <span>Convenience fee (5%)</span>
-              <span className="font-medium text-[var(--lobb-text-primary)]">{money(lobbFee)}</span>
-            </div>
-            <div className="pt-2">
-              <div className="flex items-center justify-between rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
-                <span className="text-sm font-semibold text-[var(--lobb-text-primary)]">Total</span>
-                <span className="text-xl font-semibold text-[var(--lobb-clay)]">{money(total)}</span>
-              </div>
-            </div>
+          <div className="flex items-center justify-between rounded-[var(--lobb-radius-md)] border border-[var(--lobb-clay)]/20 bg-[var(--lobb-clay-light)] px-4 py-4">
+            <span className="text-sm font-semibold text-[var(--lobb-text-primary)]">Total</span>
+            <span className="text-xl font-semibold text-[var(--lobb-clay)]">{money(total)}</span>
           </div>
         ) : (
-          <div className="space-y-3 py-2">
-            <SkeletonBlock className="h-4 w-full" />
-            <SkeletonBlock className="h-4 w-3/4" />
-            <SkeletonBlock className="h-12 w-full rounded-[var(--lobb-radius-lg)]" />
+          <div className="py-2">
+            <SkeletonBlock className="h-14 w-full rounded-[var(--lobb-radius-lg)]" />
           </div>
         )}
         </div>

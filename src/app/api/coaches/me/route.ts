@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { CoachRow, CourtAccess } from "@/lib/types";
+import { coachRateError } from "@/lib/config/pricing";
 
 // Fields a coach is allowed to update via this endpoint
 type CoachUpdatePayload = Partial<
@@ -114,8 +115,8 @@ export async function PATCH(request: Request) {
       allowed.demo_video_url = body.demo_video_url ? String(body.demo_video_url).trim() : null;
     }
     if (typeof body.hourly_rate_ngn === "number") {
-      if (body.hourly_rate_ngn < 1000)
-        return NextResponse.json({ error: "Minimum rate is ₦1,000" }, { status: 400 });
+      const rateError = coachRateError(body.hourly_rate_ngn);
+      if (rateError) return NextResponse.json({ error: rateError }, { status: 400 });
       allowed.hourly_rate_ngn = body.hourly_rate_ngn;
     }
     if (typeof body.primary_location === "string") {

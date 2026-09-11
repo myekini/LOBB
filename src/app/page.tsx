@@ -16,7 +16,7 @@ export default async function Home() {
       .select("*")
       .eq("status", "active")
       .order("session_count", { ascending: false })
-      .limit(3),
+      .limit(6),
     supabase.from("coach_profiles_public").select("id", { count: "exact", head: true }).eq("status", "active"),
   ]);
 

@@ -16,7 +16,7 @@ import { retryStuckPayouts } from "@/features/admin/payout-actions";
 import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { MetricGridSkeleton, TableRowsSkeleton } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PersonCell } from "@/components/common/person-cell";
 
 type AdminDashboardPayload = {
@@ -210,7 +210,7 @@ function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
         return (
           <article key={booking.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0"><p className="truncate text-sm font-semibold">{player?.full_name ?? "Player"}</p><p className="mt-0.5 truncate text-xs text-[var(--lobb-text-secondary)]">coached by {coach?.full_name ?? "Coach"}</p></div>
+              <div className="min-w-0"><p className="truncate text-sm font-semibold">{player?.full_name ?? "Player"}</p><p className="mt-0.5 truncate text-xs text-[var(--lobb-text-secondary)]">{coach?.full_name ?? "Coach"}</p></div>
               <StatusBadge status={booking.status} />
             </div>
             <div className="mt-3 flex items-end justify-between gap-3 border-t border-[var(--lobb-border-subtle)] pt-3">
@@ -223,6 +223,7 @@ function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
     </div>
     <div className="hidden md:block">
     <Table>
+      <TableCaption className="sr-only">Five latest bookings with session, total and status.</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead>Session</TableHead>
@@ -241,7 +242,7 @@ function BookingsTable({ bookings }: { bookings: DashboardBooking[] }) {
                 <PersonCell
                   name={player?.full_name ?? "Player"}
                   imageUrl={player?.avatar_url ?? null}
-                  secondary={`coached by ${coach?.full_name ?? "Coach"}`}
+                  secondary={coach?.full_name ?? "Coach"}
                 />
               </TableCell>
               <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">

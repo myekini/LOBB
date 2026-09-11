@@ -8,13 +8,13 @@ import { AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admi
 import { FormAlert } from "@/components/ui/form-alert";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
-import { firstJoin, formatDate, money } from "@/lib/dashboard-client-types";
+import { bookingReference, firstJoin, formatDate, money } from "@/lib/dashboard-client-types";
 
 type Party = { full_name: string | null } | { full_name: string | null }[] | null;
 
 type DisputeBooking = {
   id: string;
-  booking_ref: string | null;
+  human_ref: string | null;
   starts_at: string;
   location: string | null;
   status: string;
@@ -143,11 +143,9 @@ export default function AdminDisputesPage() {
                           <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-error)]">
                             Open dispute · {formatDate(dispute.created_at)}
                           </p>
-                          <p className="mt-1.5 text-[15px] font-medium">
-                            {player?.full_name ?? "Player"} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {coach?.full_name ?? "Coach"}
-                          </p>
+                          <p className="mt-1.5 text-[15px] font-medium">{player?.full_name ?? "Player"} <span className="font-normal text-[var(--lobb-text-tertiary)]">vs</span> {coach?.full_name ?? "Coach"}</p>
                           <p className="mt-0.5 text-xs font-medium text-[var(--lobb-text-secondary)]">
-                            {booking?.booking_ref ?? booking?.id.slice(0, 8)} · {booking ? formatDate(booking.starts_at) : ""} · {money(booking?.total_amount_ngn ?? 0)}
+                            {booking ? bookingReference(booking) : "Booking unavailable"} · {booking ? formatDate(booking.starts_at) : ""} · {money(booking?.total_amount_ngn ?? 0)}
                           </p>
                         </div>
                         {!isResolving && (

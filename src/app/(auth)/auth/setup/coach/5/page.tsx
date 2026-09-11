@@ -258,7 +258,7 @@ export default function CoachSetupStep5Page() {
           <ConsentRow
             checked={acceptedCoachAgreement}
             onChange={setAcceptedCoachAgreement}
-            hint="Covers the 15% commission, payout terms, and how we expect coaches to conduct themselves on LOBB."
+            hint="Covers the 10% commission, payout terms, and how we expect coaches to conduct themselves on LOBB."
           >
             I agree to the <ConsentLink href="/coach-agreement">LOBB Coach Agreement</ConsentLink>.
           </ConsentRow>

@@ -14,6 +14,9 @@ import { showLobbToast } from "@/providers/lobb-global-state";
 import { fetchWithCache } from "@/lib/offline-cache";
 import { cn } from "@/lib/utils";
 import { CoachCardSkeleton, SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { COACH_RATE_CEILING, COACH_RATE_FLOOR, isValidCoachRate } from "@/lib/config/pricing";
+
+const RATE_BAND_LABEL = `Rate ₦${(COACH_RATE_FLOOR / 1000).toLocaleString()}k–₦${(COACH_RATE_CEILING / 1000).toLocaleString()}k`;
 
 type CoachApproval = {
   id: string;
@@ -95,7 +98,7 @@ function qualityChecks(coach: CoachApproval) {
     { label: "Photo uploaded", pass: Boolean(coach.profile_photo_url) },
     { label: "Headline 20+ chars", pass: (coach.headline?.length ?? 0) >= 20 },
     { label: "Bio 80+ words", pass: wordCount(coach.bio) >= 80 },
-    { label: "Rate ₦5k–₦80k", pass: coach.hourly_rate_ngn >= 5_000 && coach.hourly_rate_ngn <= 80_000 },
+    { label: RATE_BAND_LABEL, pass: isValidCoachRate(coach.hourly_rate_ngn) },
     { label: "Certification listed", pass: coach.certifications.some((c) => c.trim().length > 3) },
     { label: "Demo video", pass: Boolean(coach.demo_video_url) },
     { label: "Bank connected", pass: coach.bank_connected },

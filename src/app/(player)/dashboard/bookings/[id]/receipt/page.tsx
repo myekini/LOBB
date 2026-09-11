@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, CreditCard, MapPin, Printer, ReceiptText, UserRound } from "lucide-react";
 import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { FeeBreakdown } from "@/components/common/fee-breakdown";
-import { firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
+import { bookingReference, firstJoin, formatBookingDate, money, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import type { BookingWithDetails } from "@/lib/types";
 
@@ -183,7 +183,7 @@ export default function BookingReceiptPage() {
 
             <div className="mt-8 grid gap-4 text-sm font-medium text-[var(--lobb-text-secondary)] sm:grid-cols-2">
               <p><span className="font-medium text-[var(--lobb-text-primary)]">Player:</span> {player?.full_name ?? "Player"}</p>
-              <p><span className="font-medium text-[var(--lobb-text-primary)]">Booking:</span> {booking.id}</p>
+              <p><span className="font-medium text-[var(--lobb-text-primary)]">Booking:</span> {bookingReference(booking)}</p>
             </div>
           </section>
         </article>

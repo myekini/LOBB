@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { apiError } from "@/lib/api-response";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { SLOT_HOLD_MINUTES } from "@/lib/config/pricing";
 
-const LOCK_MINUTES      = 10;
+const LOCK_MINUTES      = SLOT_HOLD_MINUTES;
 const MIN_ADVANCE_HOURS = 24;
 const MAX_ADVANCE_DAYS  = 30;
 

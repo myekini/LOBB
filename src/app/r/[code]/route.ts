@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { REFERRAL_COOKIE_DAYS } from "@/lib/config/pricing";
 
 const COOKIE_NAME = "lobb_ref";
-const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
+const COOKIE_MAX_AGE = REFERRAL_COOKIE_DAYS * 24 * 60 * 60; // first-touch attribution window, in seconds
 
 export async function GET(request: Request, { params }: { params: { code: string } }) {
   const code = params.code.trim();

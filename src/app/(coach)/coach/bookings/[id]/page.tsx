@@ -9,6 +9,7 @@ import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
 import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import {
+  bookingReference,
   durationMinutes,
   firstJoin,
   formatBookingDate,
@@ -98,14 +99,13 @@ export default function CoachBookingDetailPage() {
 
   const player = firstJoin(booking.players);
   const playerProfile = firstJoin(booking.player_profile);
-  const payment = booking.payments?.[0];
   const isConfirmed = booking.status === "confirmed";
   const sessionInFuture = new Date(booking.starts_at).getTime() > Date.now();
   const canCancel = isConfirmed && sessionInFuture;
   const cancelPolicy = cancellationPolicy(booking.starts_at, "coach");
   const cancelRefundNgn = refundAmountNgn(booking.total_amount_ngn, cancelPolicy.refundPercent);
 
-  const sessionRef = payment?.paystack_reference ?? booking.paystack_reference ?? null;
+  const sessionRef = bookingReference(booking);
 
   return (
     <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
@@ -194,11 +194,8 @@ export default function CoachBookingDetailPage() {
             <DetailSection title="Earnings">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium">
                 <WalletCards className="size-4 text-[var(--lobb-clay)]" />
-                Session breakdown
+                Your payout
               </div>
-              <PaymentRow label="Session rate" amount={booking.hourly_rate_ngn} />
-              <PaymentRow label="Platform commission (15%)" amount={booking.platform_commission_ngn} negative />
-              <div className="my-2 border-t border-[var(--lobb-border-subtle)]" />
               <PaymentRow label="Your payout" amount={booking.coach_payout_ngn ?? booking.hourly_rate_ngn} strong />
               {sessionRef && (
                 <p className="mt-3 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 py-2 font-mono text-xs font-medium tracking-wider text-[var(--lobb-text-secondary)]">

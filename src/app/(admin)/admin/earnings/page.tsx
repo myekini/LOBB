@@ -12,9 +12,10 @@ import {
   useAdminResource,
 } from "@/features/admin/admin-shell";
 import { retryStuckPayouts } from "@/features/admin/payout-actions";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatBookingDate, money, sessionParties } from "@/lib/dashboard-client-types";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { bookingReference, firstJoin, formatBookingDate, money, sessionParties } from "@/lib/dashboard-client-types";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
+import { PersonCell } from "@/components/common/person-cell";
 
 type Metrics = {
   total_bookings: number;
@@ -26,6 +27,7 @@ type Metrics = {
 
 type RevenueBooking = {
   id: string;
+  human_ref: string | null;
   starts_at: string;
   status: string;
   total_amount_ngn: number;
@@ -34,7 +36,7 @@ type RevenueBooking = {
   coach_payout_ngn: number;
   paystack_transfer_code: string | null;
   escrow_released_at: string | null;
-  coaches: { full_name: string } | { full_name: string }[] | null;
+  coaches: { full_name: string; profile_photo_url: string | null } | { full_name: string; profile_photo_url: string | null }[] | null;
   players: { full_name: string } | { full_name: string }[] | null;
 };
 
@@ -122,11 +124,11 @@ export default function AdminEarningsPage() {
           <div className="space-y-3 md:hidden">
             {data.recent_revenue.map((booking) => {
               const { coach, player } = sessionParties(booking);
+              const coachRecord = firstJoin(booking.coaches);
               return (
                 <article key={booking.id} className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
-                  <p className="truncate text-sm font-semibold">{player}</p>
-                  <p className="mt-0.5 truncate text-xs text-[var(--lobb-text-secondary)]">coached by {coach}</p>
-                  <p className="mt-2 text-xs text-[var(--lobb-text-tertiary)]">{formatBookingDate(booking.starts_at)} · #{booking.id.slice(0, 8)}</p>
+                  <PersonCell name={coach} imageUrl={coachRecord?.profile_photo_url} secondary={player} />
+                  <p className="mt-2 text-xs text-[var(--lobb-text-tertiary)]">{formatBookingDate(booking.starts_at)} · {bookingReference(booking)}</p>
                   <div className="mt-4 grid grid-cols-3 gap-2 border-t border-[var(--lobb-border-subtle)] pt-3 text-xs">
                     <div><p className="text-[var(--lobb-text-tertiary)]">Gross</p><p className="mt-1 font-semibold">{money(booking.total_amount_ngn)}</p></div>
                     <div><p className="text-[var(--lobb-text-tertiary)]">Coach</p><p className="mt-1 font-semibold">{money(booking.coach_payout_ngn)}</p></div>
@@ -138,9 +140,10 @@ export default function AdminEarningsPage() {
           </div>
           <div className="hidden md:block">
           <Table>
+            <TableCaption className="sr-only">Recent booking revenue split between coaches and LOBB.</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead>Booking</TableHead>
+                <TableHead>Coach / player</TableHead>
                 <TableHead>Session</TableHead>
                 <TableHead className="text-right">Gross</TableHead>
                 <TableHead className="text-right">Coach payout</TableHead>
@@ -150,11 +153,12 @@ export default function AdminEarningsPage() {
             <TableBody>
               {data.recent_revenue.map((booking) => {
                 const { coach, player } = sessionParties(booking);
+                const coachRecord = firstJoin(booking.coaches);
                 return (
                   <TableRow key={booking.id}>
-                    <TableCell className="text-sm font-medium">
-                      {player} <span className="font-normal text-[var(--lobb-text-tertiary)]">· coached by</span> {coach}
-                      <span className="mt-1 block font-mono text-[10px] text-[var(--lobb-text-tertiary)]">#{booking.id.slice(0, 8)}</span>
+                    <TableCell>
+                      <PersonCell name={coach} imageUrl={coachRecord?.profile_photo_url} secondary={player} />
+                      <span className="mt-1 block text-[10px] font-medium tracking-wide text-[var(--lobb-text-tertiary)]">{bookingReference(booking)}</span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
                       {formatBookingDate(booking.starts_at)}

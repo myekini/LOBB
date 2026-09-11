@@ -37,6 +37,7 @@ export type JoinedReview = {
 
 export type DashboardBooking = {
   id: string;
+  human_ref?: string | null;
   coach_id: string;
   player_id: string;
   starts_at: string;
@@ -81,8 +82,7 @@ export function firstJoin<T>(value: T | T[] | null | undefined): T | null {
   return value ?? null;
 }
 
-// Canonical "who was in this session" phrasing for admin/dashboard surfaces.
-// Render as: `{player} · coached by {coach}`.
+// Canonical participant names for compact admin/dashboard identity cells.
 export function sessionParties(booking: {
   coaches: { full_name: string | null } | { full_name: string | null }[] | null;
   players: { full_name: string | null } | { full_name: string | null }[] | null;
@@ -108,6 +108,11 @@ export function formatBookingDate(iso: string) {
 export function formatDate(iso: string | null) {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** Public-facing booking reference. Never expose a raw UUID fragment in UI. */
+export function bookingReference(booking: { id: string; human_ref?: string | null }) {
+  return booking.human_ref ?? `LOBB-${booking.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
 }
 
 // Long form for confirmation / receipt surfaces: "Monday, 3 March at 2:00 PM".

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CalendarDays, CheckCircle2, Circle, CreditCard, Flag, Loader2, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound } from "lucide-react";
 import {
+  bookingReference,
   durationMinutes,
   firstJoin,
   formatBookingDate,
@@ -289,7 +290,7 @@ export default function BookingDetailPage() {
             platformFeeNgn={booking.platform_fee_ngn}
             totalNgn={booking.total_amount_ngn}
           />
-          <p className="mt-3 break-all rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold text-[var(--lobb-text-secondary)]">Ref: {payment?.paystack_reference ?? booking.id}</p>
+          <p className="mt-3 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-medium tracking-wide text-[var(--lobb-text-secondary)]">Booking reference: {bookingReference(booking)}</p>
         </DetailSection>
 
         <DetailSection title="Cancellation policy">

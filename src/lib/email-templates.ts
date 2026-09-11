@@ -233,11 +233,6 @@ export function paymentReceiptEmail(info: EmailBookingInfo): EmailTemplate {
       <p style="margin:6px 0 0;color:${BRAND.ink};font:900 44px/1 Arial,Helvetica,sans-serif;letter-spacing:-0.03em;">${money(total)}</p>
       <p style="margin:10px 0 0;color:${BRAND.muted};font:700 13px/1.6 Arial,Helvetica,sans-serif;">Your session is confirmed and your spot is held. See you on court.</p>
     </div>
-    ${amountTable([
-      ["Session fee", info.sessionFeeNgn, "normal"],
-      ["Convenience fee", info.convenienceFeeNgn, "normal"],
-      ["Total paid", total, "strong"],
-    ])}
     ${detailTable([
       ["Coach", info.coachName],
       ["Session", `${formatDate(info.startsAt)}${info.endsAt ? ` to ${formatTime(info.endsAt)}` : ""}`],

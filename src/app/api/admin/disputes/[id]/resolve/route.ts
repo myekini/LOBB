@@ -45,7 +45,7 @@ export const POST = withRole("admin", async (request, auth, context) => {
   const { data: booking } = await auth.admin
     .from("bookings")
     .select(
-      `id, booking_ref, player_id, coach_id, status, starts_at, total_amount_ngn, coach_payout_ngn,
+      `id, human_ref, player_id, coach_id, status, starts_at, total_amount_ngn, coach_payout_ngn,
        escrow_released_at, payments(paystack_reference, status),
        coaches!bookings_coach_id_fkey ( full_name ),
        players!bookings_player_id_fkey ( full_name )`
@@ -145,7 +145,7 @@ export const POST = withRole("admin", async (request, auth, context) => {
       auth.admin,
       {
         bookingId: booking.id,
-        humanRef: booking.booking_ref,
+        humanRef: booking.human_ref,
         coachName: (Array.isArray(coachJoin) ? coachJoin[0] : coachJoin)?.full_name ?? "Coach",
         playerName: (Array.isArray(playerJoin) ? playerJoin[0] : playerJoin)?.full_name ?? "Player",
         startsAt: booking.starts_at,

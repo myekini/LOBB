@@ -7,11 +7,11 @@ import { Download, Eye, Gavel, Loader2, Send } from "lucide-react";
 import { AdminEmptyState, AdminMetricCard, AdminPageHeader, AdminRefreshButton, AdminShell } from "@/features/admin/admin-shell";
 import { Modal } from "@/components/ui/modal";
 import { FormAlert } from "@/components/ui/form-alert";
-import { firstJoin, formatBookingDate, money, sessionParties, type DashboardBooking } from "@/lib/dashboard-client-types";
+import { bookingReference, firstJoin, formatBookingDate, money, sessionParties, type DashboardBooking } from "@/lib/dashboard-client-types";
 import { showLobbToast } from "@/providers/lobb-global-state";
 import { SkeletonBlock } from "@/components/common/lobb-skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PersonCell } from "@/components/common/person-cell";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -249,6 +249,7 @@ export default function AdminBookingsPage() {
           </div>
           <div className="hidden md:block">
           <Table>
+            <TableCaption className="sr-only">Booking results with session, financial, status and action details.</TableCaption>
             <TableHeader>
               <TableRow>
                 <TableHead>Booking</TableHead>
@@ -268,9 +269,9 @@ export default function AdminBookingsPage() {
                       <PersonCell
                         name={player?.full_name ?? "Player"}
                         imageUrl={player?.avatar_url ?? null}
-                        secondary={`coached by ${coach?.full_name ?? "Coach"}`}
+                        secondary={coach?.full_name ?? "Coach"}
                       />
-                      <span className="mt-1 block font-mono text-[10px] text-[var(--lobb-text-tertiary)]">#{booking.id.slice(0, 8)}</span>
+                      <span className="mt-1 block text-[10px] font-medium tracking-wide text-[var(--lobb-text-tertiary)]">{bookingReference(booking)}</span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs font-medium text-[var(--lobb-text-secondary)]">
                       {formatBookingDate(booking.starts_at)}
@@ -403,7 +404,7 @@ function MobileBookingCard({ booking, onView }: { booking: DashboardBooking; onV
         <div><p className="text-[var(--lobb-text-tertiary)]">Session</p><p className="mt-1 font-medium">{formatBookingDate(booking.starts_at)}</p></div>
         <div className="text-right"><p className="text-[var(--lobb-text-tertiary)]">Total</p><p className="mt-1 font-semibold">{money(booking.total_amount_ngn)}</p></div>
         <div><p className="text-[var(--lobb-text-tertiary)]">Payout</p><div className="mt-1"><PayoutState booking={booking} /></div></div>
-        <div className="text-right"><p className="text-[var(--lobb-text-tertiary)]">Reference</p><p className="mt-1 font-mono font-medium">#{booking.id.slice(0, 8)}</p></div>
+        <div className="text-right"><p className="text-[var(--lobb-text-tertiary)]">Reference</p><p className="mt-1 font-medium">{bookingReference(booking)}</p></div>
       </div>
       <LobbButton variant="outline" onClick={onView} className="mt-3 w-full"><Eye className="size-4" />View details</LobbButton>
     </article>
@@ -419,7 +420,7 @@ function BookingDetails({ booking }: { booking: DashboardBooking }) {
     ["Status", booking.status.replace(/_/g, " ")],
     ["Booking total", money(booking.total_amount_ngn)],
     ["Coach payout", money(booking.coach_payout_ngn)],
-    ["Booking reference", `#${booking.id.slice(0, 8)}`],
+    ["Booking reference", bookingReference(booking)],
     ["Payment reference", booking.paystack_reference ?? "Not available"],
   ];
   return (
@@ -433,9 +434,9 @@ function DisputeSummary({ booking }: { booking: DashboardBooking }) {
   const { coach, player } = sessionParties(booking);
   return (
     <div className="rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)] p-3 text-sm">
-      <p className="font-medium">{player} · coached by {coach}</p>
+      <div className="grid grid-cols-2 gap-4"><div><p className="text-xs text-[var(--lobb-text-tertiary)]">Player</p><p className="mt-1 font-medium">{player}</p></div><div><p className="text-xs text-[var(--lobb-text-tertiary)]">Coach</p><p className="mt-1 font-medium">{coach}</p></div></div>
       <p className="mt-1 text-xs font-medium text-[var(--lobb-text-secondary)]">
-        #{booking.id.slice(0, 8)} · {formatBookingDate(booking.starts_at)} · {money(booking.total_amount_ngn)}
+        {bookingReference(booking)} · {formatBookingDate(booking.starts_at)} · {money(booking.total_amount_ngn)}
       </p>
     </div>
   );

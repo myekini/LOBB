@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { bookingReference } from "@/lib/dashboard-client-types";
 import { isCronAuthorized } from "@/lib/cron-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
@@ -78,7 +79,7 @@ export async function GET(request: Request) {
 
   if (failedTransfers && failedTransfers.length > 0) {
     const refs = failedTransfers
-      .map((b) => b.human_ref ?? b.id.slice(0, 8))
+      .map((b) => bookingReference(b))
       .slice(0, 5)
       .join(", ");
     alerts.push({
@@ -107,7 +108,7 @@ export async function GET(request: Request) {
     const hoursAgo = Math.round((Date.now() - new Date(oldest.ends_at as string).getTime()) / 3600000);
     alerts.push({
       title: `${stuckConfirmed.length} session${stuckConfirmed.length === 1 ? "" : "s"} stuck in confirmed`,
-      detail: `Session${stuckConfirmed.length === 1 ? "" : "s"} ended but escrow not released. Oldest: ${oldest.human_ref ?? oldest.id.slice(0, 8)} ended ${hoursAgo}h ago. release-escrow cron may have failed.`,
+      detail: `Session${stuckConfirmed.length === 1 ? "" : "s"} ended but escrow not released. Oldest: ${bookingReference(oldest)} ended ${hoursAgo}h ago. release-escrow cron may have failed.`,
       link: `${appBase}/admin/bookings`,
       severity: "critical",
     });

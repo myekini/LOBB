@@ -11,7 +11,7 @@ export const GET = withRole("admin", async (_request, auth) => {
       `id, booking_id, reason, status, resolution, player_refund_percent,
        coach_release_percent, internal_notes, created_at, resolved_at,
        bookings (
-         id, booking_ref, starts_at, location, status, total_amount_ngn, coach_payout_ngn,
+         id, human_ref, starts_at, location, status, total_amount_ngn, coach_payout_ngn,
          coaches!bookings_coach_id_fkey ( full_name ),
          players!bookings_player_id_fkey ( full_name )
        )`

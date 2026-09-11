@@ -4,7 +4,7 @@ import { ArrowRight, MapPin, Star } from "lucide-react";
 import type { CoachPublicProfile } from "@/lib/types";
 import { ThemeToggle } from "@/components/common/theme-toggle";
 import { LandingReveal } from "@/features/marketing/landing-reveal";
-import { CoachThumb } from "@/features/marketing/coach-thumb";
+import { CoachBrowser } from "@/features/marketing/coach-browser";
 
 const HERO_IMAGE = "/court-hero.jpg";
 
@@ -141,13 +141,7 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
           </div>
           <Link href="/coaches" className="group hidden items-center gap-2 text-sm font-semibold transition hover:text-[var(--lobb-clay)] sm:inline-flex">View all <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link>
         </div>
-        {coaches.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-3">
-            {coaches.slice(0, 3).map((coach) => <LandingCoachSummary key={coach.id} coach={coach} />)}
-          </div>
-        ) : (
-          <div className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6 text-sm text-[var(--lobb-text-secondary)]">New coaches are being verified across Lagos.</div>
-        )}
+        <CoachBrowser coaches={coaches} coachCount={coachCount} />
         <Link href="/coaches" className="mt-4 flex h-12 items-center justify-center gap-2 border border-[var(--lobb-border-subtle)] text-sm font-semibold sm:hidden">View all coaches <ArrowRight className="size-4" /></Link>
       </section>
 
@@ -189,7 +183,7 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
         <div className="mx-auto grid max-w-7xl md:grid-cols-3">
           {([
             ["Verified profiles", "Review coaching experience, location and player feedback before you book."],
-            ["The full price upfront", "See the coach's rate and LOBB's 5% convenience fee before you pay."],
+            ["The full price upfront", "See your exact total before you pay — the coach's rate plus a small booking fee, no surprises."],
             ["Clear cancellation terms", "Cancel at least 24 hours ahead for a full refund. Later cancellations are refunded 50%."],
           ] as const).map(([title, body], i) => (
             <div
@@ -266,30 +260,5 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
         </div>
       </footer>
     </main>
-  );
-}
-
-function LandingCoachSummary({ coach }: { coach: CoachPublicProfile }) {
-  const href = `/coaches/${coach.slug ?? coach.id}`;
-  return (
-    <Link href={href} className="lobb-landing-panel group overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--lobb-clay)]/35">
-      <div className="relative">
-        <CoachThumb src={coach.profile_photo_url} name={coach.full_name} />
-        {coach.hourly_rate_ngn != null && <span className="absolute bottom-3 left-3 bg-[#0d0d0d]/82 px-2.5 py-1.5 text-xs font-medium text-white">{coachRate(coach.hourly_rate_ngn)}</span>}
-      </div>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate font-semibold">{coach.full_name}</h3>
-            <p className="mt-1 line-clamp-1 text-sm text-[var(--lobb-text-secondary)]">{coach.headline ?? "Tennis coach"}</p>
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium"><Star className="size-3.5 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{coach.avg_rating != null ? Number(coach.avg_rating).toFixed(1) : "New"}</span>
-        </div>
-        <div className="mt-4 flex items-center justify-between border-t border-[var(--lobb-border-subtle)] pt-3 text-xs">
-          <span className="inline-flex min-w-0 items-center gap-1.5 text-[var(--lobb-text-secondary)]"><MapPin className="size-3.5 shrink-0 text-[var(--lobb-clay)]" /><span className="truncate">{coach.primary_location ?? "Lagos"}</span></span>
-          <span className="ml-3 inline-flex shrink-0 items-center gap-1 font-semibold">View profile <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" /></span>
-        </div>
-      </div>
-    </Link>
   );
 }
