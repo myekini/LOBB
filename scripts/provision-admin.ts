@@ -8,7 +8,11 @@
  * Required env vars (copy from .env.local or pass inline):
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
- *   ADMIN_EMAILS   (comma-separated: hello@lobb.ng,ops@lobb.ng)
+ *   ADMIN_EMAILS      (comma-separated: hello@lobb.ng,ops@lobb.ng)
+ *   ADMIN_PASSWORD    (optional — sets/resets a password for every email in
+ *                      ADMIN_EMAILS, so this only makes sense for one email
+ *                      at a time in practice; leave unset to provision
+ *                      passwordless accounts that sign in by OTP only)
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -16,6 +20,7 @@ import { createClient } from "@supabase/supabase-js";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const rawEmails = process.env.ADMIN_EMAILS ?? "";
+const password = process.env.ADMIN_PASSWORD || undefined;
 
 if (!url || !key) {
   console.error("❌  NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.");
@@ -55,6 +60,7 @@ async function main() {
     if (!userId) {
       const { data: created, error } = await supabase.auth.admin.createUser({
         email,
+        ...(password ? { password } : {}),
         email_confirm: true,
         user_metadata: { requested_role: "admin" },
       });
@@ -65,9 +71,17 @@ async function main() {
       }
 
       userId = created.user.id;
-      console.log(`  + ${email} — created auth user ${userId}`);
+      console.log(`  + ${email} — created auth user ${userId}${password ? " (with password)" : ""}`);
     } else {
       console.log(`  ~ ${email} — found existing auth user ${userId}`);
+      if (password) {
+        const { error: pwError } = await supabase.auth.admin.updateUserById(userId, { password });
+        if (pwError) {
+          console.error(`  ✗ ${email} — password update failed: ${pwError.message}`);
+        } else {
+          console.log(`  ✓ ${email} — password updated`);
+        }
+      }
     }
 
     const { error: profileError } = await supabase
