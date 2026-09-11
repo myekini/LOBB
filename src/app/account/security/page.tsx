@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as LobbButton } from "@/components/ui/button";
-import { Input as LobbInput } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Fingerprint, KeyRound, Loader2, ShieldCheck } from "lucide-react";
@@ -172,16 +172,14 @@ export default function AccountSecurityPage() {
             </FormAlert>
           ) : (
             <form onSubmit={savePassword} className="mt-4 space-y-3">
-              <LobbInput
-                type="password"
+              <PasswordInput
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={state.hasPassword ? "New password" : "Password (min 8 characters)"}
                 className="h-12 w-full rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] px-4 text-[14px] font-medium text-[var(--lobb-text-primary)] outline-none focus:border-[var(--lobb-clay)]/50"
               />
-              <LobbInput
-                type="password"
+              <PasswordInput
                 autoComplete="new-password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}

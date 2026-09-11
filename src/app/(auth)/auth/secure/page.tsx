@@ -1,6 +1,6 @@
 "use client";
 
-import { Input as LobbInput } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormAlert } from "@/components/ui/form-alert";
@@ -112,8 +112,7 @@ function SecurePage() {
 
             <label className="mt-9 block">
               <OnboardingFieldLabel required>Password</OnboardingFieldLabel>
-              <LobbInput
-                type="password"
+              <PasswordInput
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -124,8 +123,7 @@ function SecurePage() {
 
             <label className="mt-5 block">
               <OnboardingFieldLabel required>Confirm password</OnboardingFieldLabel>
-              <LobbInput
-                type="password"
+              <PasswordInput
                 autoComplete="new-password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}

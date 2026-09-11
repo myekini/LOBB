@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { FormAlert } from "@/components/ui/form-alert";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { OnboardingShell } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 import { setPendingAuth } from "@/lib/auth-flow";
@@ -148,7 +149,7 @@ export function AuthLoginForm() {
           <Input autoFocus type="email" inputMode="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@email.com" />
         </Field>
         <Field label="Password" className="mt-4" error={passwordError || undefined}>
-          <Input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" />
+          <PasswordInput autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Your password" />
         </Field>
 
         <div className="mt-2 flex justify-end">
