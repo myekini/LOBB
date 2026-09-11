@@ -8,6 +8,7 @@ import { Bell, BellOff, Camera, Loader2, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 import { showLobbToast } from "@/providers/lobb-global-state";
+import { appErrorFromUnknown } from "@/lib/app-errors";
 import { PlayerHeader } from "@/components/layout/player-nav";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 
@@ -102,7 +103,7 @@ export default function EditProfilePage() {
       showLobbToast({ type: "success", message: "Profile saved." });
       router.push("/profile");
     } catch (err) {
-      showLobbToast({ type: "error", message: err instanceof Error ? err.message : "Could not save profile." });
+      showLobbToast({ type: "error", message: appErrorFromUnknown(err, "PROFILE_SAVE_FAILED").message });
     } finally {
       setSaving(false);
     }

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Camera, CheckCircle2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
+import { appErrorFromUnknown } from "@/lib/app-errors";
 import { InlineActionLoader, SkeletonBlock } from "@/components/common/lobb-skeleton";
 import {
   CERTIFICATION_OPTIONS,
@@ -307,8 +308,8 @@ export default function CoachProfileEditPage() {
         // after router.push can refresh the edit route before navigation settles.
         window.location.replace("/coach/profile");
       }
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (error) {
+      setError(appErrorFromUnknown(error, "PROFILE_SAVE_FAILED").message);
     } finally {
       setSaving(false);
     }

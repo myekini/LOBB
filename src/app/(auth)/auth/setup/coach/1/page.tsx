@@ -16,6 +16,7 @@ import {
 } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
+import { appErrorFromUnknown } from "@/lib/app-errors";
 
 export default function CoachSetupStepOnePage() {
   return (
@@ -118,7 +119,7 @@ function CoachSetupStepOneForm() {
       track("Coach Onboarding Step Completed", { step: 1 });
       router.push(returnTo);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not save your coach profile.");
+      setError(appErrorFromUnknown(error, "PROFILE_SAVE_FAILED").message);
     } finally {
       setSaving(false);
     }

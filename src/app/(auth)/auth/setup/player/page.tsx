@@ -17,6 +17,7 @@ import {
 } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
+import { appErrorFromUnknown } from "@/lib/app-errors";
 
 export default function PlayerSetupPage() {
   const router = useRouter();
@@ -87,7 +88,7 @@ export default function PlayerSetupPage() {
       router.replace("/home");
       router.refresh();
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Could not finish setup.");
+      setError(appErrorFromUnknown(error, "PROFILE_SAVE_FAILED").message);
     } finally {
       setSaving(false);
     }

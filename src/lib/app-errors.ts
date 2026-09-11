@@ -202,5 +202,13 @@ export function appErrorFromUnknown(error: unknown, fallbackCode: AppErrorCode =
   if (error instanceof Error && error.message) {
     return appError(fallbackCode, { message: error.message });
   }
+  // Supabase's PostgrestError/StorageError are plain objects with a
+  // `message` string, not Error instances — without this, every RLS
+  // violation or storage failure thrown straight from a supabase-js call
+  // (as opposed to a fetch to our own API routes) silently degraded to the
+  // generic fallback copy, hiding the actual reason.
+  if (error && typeof error === "object" && "message" in error && typeof error.message === "string" && error.message) {
+    return appError(fallbackCode, { message: error.message });
+  }
   return appError(fallbackCode);
 }
