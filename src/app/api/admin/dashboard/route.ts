@@ -3,9 +3,14 @@ import { withRole } from "@/lib/api-auth";
 import { internalError } from "@/lib/api-response";
 
 export const GET = withRole("admin", async (_request, auth) => {
-  const [metrics, coaches, bookings, stuckTransfers] = await Promise.all([
+  const [metrics, coaches, bookings, stuckTransfers, openDisputes] = await Promise.all([
     auth.admin.from("admin_core_metrics").select("*").maybeSingle(),
-    auth.admin.from("coaches").select("*").eq("status", "pending_review").order("created_at").limit(5),
+    auth.admin
+      .from("coaches")
+      .select("id, full_name, headline, primary_location, profile_photo_url, hourly_rate_ngn")
+      .eq("status", "pending_review")
+      .order("created_at")
+      .limit(5),
     auth.admin
       .from("bookings")
       .select("*, coaches!bookings_coach_id_fkey(full_name, slug, profile_photo_url), players!bookings_player_id_fkey(id, full_name), payments(status, paystack_reference)")
@@ -17,12 +22,17 @@ export const GET = withRole("admin", async (_request, auth) => {
       .eq("status", "completed")
       .not("escrow_released_at", "is", null)
       .is("paystack_transfer_code", null),
+    auth.admin
+      .from("disputes")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open"),
   ]);
 
   if (metrics.error) return internalError(metrics.error);
   if (coaches.error) return internalError(coaches.error);
   if (bookings.error) return internalError(bookings.error);
   if (stuckTransfers.error) return internalError(stuckTransfers.error);
+  if (openDisputes.error) return internalError(openDisputes.error);
 
   const recentBookings = bookings.data ?? [];
   const playerIds = Array.from(new Set(recentBookings.map((b) => b.player_id).filter(Boolean)));
@@ -55,5 +65,6 @@ export const GET = withRole("admin", async (_request, auth) => {
     pending_coach_approvals: coaches.data ?? [],
     recent_bookings: bookingsWithPlayerAvatars,
     stuck_payouts: stuckTransfers.count ?? 0,
+    open_disputes: openDisputes.count ?? 0,
   });
 });

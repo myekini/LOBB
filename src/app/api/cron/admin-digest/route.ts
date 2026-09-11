@@ -12,8 +12,8 @@ function money(ngn: number) {
 
 function stat(label: string, value: string, color = "#0d0d0d") {
   return `<td style="padding:16px;text-align:center;border-right:1px solid #e5e3df;vertical-align:top;">
-    <p style="margin:0;font:900 23px/1 Arial,Helvetica,sans-serif;color:${color};">${emailEscapeHtml(value)}</p>
-    <p style="margin:7px 0 0;font:800 10px/1.4 Arial,Helvetica,sans-serif;color:#8a8a8a;text-transform:uppercase;letter-spacing:0.08em;">${emailEscapeHtml(label)}</p>
+    <p style="margin:0;font:700 23px/1 Arial,Helvetica,sans-serif;color:${color};">${emailEscapeHtml(value)}</p>
+    <p style="margin:7px 0 0;font:600 11px/1.4 Arial,Helvetica,sans-serif;color:#8a8a8a;">${emailEscapeHtml(label)}</p>
   </td>`;
 }
 
@@ -26,21 +26,24 @@ export async function GET(request: Request) {
   const appBase = emailAppUrl("");
 
   // Run all queries in parallel
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const todayIso = todayStart.toISOString();
+  const now = new Date();
+  const previousMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const currentMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const previousMonthStartIso = previousMonthStart.toISOString();
+  const currentMonthStartIso = currentMonthStart.toISOString();
+  const monthName = previousMonthStart.toLocaleDateString("en-NG", { month: "long", year: "numeric", timeZone: "Africa/Lagos" });
 
   const [
     { count: pendingCoaches },
-    { count: todayBookings },
-    { data: todayRevenue },
+    { count: monthlyBookings },
+    { data: monthlyRevenue },
     { count: failedTransfers },
     { count: stuckSessions },
     { data: adminProfiles },
   ] = await Promise.all([
     admin.from("coaches").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
-    admin.from("bookings").select("id", { count: "exact", head: true }).gte("created_at", todayIso),
-    admin.from("bookings").select("hourly_rate_ngn").eq("status", "completed").gte("escrow_released_at", todayIso),
+    admin.from("bookings").select("id", { count: "exact", head: true }).gte("created_at", previousMonthStartIso).lt("created_at", currentMonthStartIso),
+    admin.from("bookings").select("total_amount_ngn").eq("status", "completed").gte("escrow_released_at", previousMonthStartIso).lt("escrow_released_at", currentMonthStartIso),
     admin.from("bookings").select("id", { count: "exact", head: true })
       .eq("status", "completed")
       .not("escrow_released_at", "is", null)
@@ -61,26 +64,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ sent: false, reason: "no admin emails configured" });
   }
 
-  const dailyGmv = (todayRevenue ?? []).reduce((sum, b) => sum + (b.hourly_rate_ngn ?? 0), 0);
+  const monthlyGmv = (monthlyRevenue ?? []).reduce((sum, b) => sum + (b.total_amount_ngn ?? 0), 0);
   const hasAlerts = (failedTransfers ?? 0) > 0 || (stuckSessions ?? 0) > 0;
 
-  const subject = `LOBB daily summary${hasAlerts ? " - action needed" : ""} - ${new Date().toLocaleDateString("en-NG", { day: "numeric", month: "short", timeZone: "Africa/Lagos" })}`;
+  const subject = `LOBB monthly summary: ${monthName}${hasAlerts ? " — action needed" : ""}`;
 
   const alertBlock = hasAlerts
     ? `<div style="margin-top:18px;background:#fff8f6;border:1px solid #f4c4b0;border-radius:10px;padding:16px 18px;">
         <p style="margin:0;font:900 12px/1 Arial,Helvetica,sans-serif;color:#c4622d;text-transform:uppercase;letter-spacing:0.08em;">Action needed</p>
-        ${(failedTransfers ?? 0) > 0 ? `<p style="margin:10px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#42392f;"><strong>${failedTransfers} failed payout${(failedTransfers ?? 0) === 1 ? "" : "s"}</strong> - coach transfers completed but Paystack transfer failed. <a href="${appBase}/admin/payouts" style="color:#c4622d;font-weight:900;text-decoration:none;">Review</a></p>` : ""}
+        ${(failedTransfers ?? 0) > 0 ? `<p style="margin:10px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#42392f;"><strong>${failedTransfers} failed payout${(failedTransfers ?? 0) === 1 ? "" : "s"}</strong> - coach transfers completed but Paystack transfer failed. <a href="${appBase}/admin/earnings" style="color:#c4622d;font-weight:900;text-decoration:none;">Review</a></p>` : ""}
         ${(stuckSessions ?? 0) > 0 ? `<p style="margin:10px 0 0;font:700 13px/1.55 Arial,Helvetica,sans-serif;color:#42392f;"><strong>${stuckSessions} stuck session${(stuckSessions ?? 0) === 1 ? "" : "s"}</strong> - confirmed bookings whose session ended 3+ hours ago without escrow release. <a href="${appBase}/admin/bookings" style="color:#c4622d;font-weight:900;text-decoration:none;">Review</a></p>` : ""}
       </div>`
     : "";
 
   const html = emailShell(
-    "LOBB daily summary",
-    new Date().toLocaleDateString("en-NG", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Africa/Lagos" }),
+    `${monthName} summary`,
+    `Bookings, revenue and open operations for ${monthName}.`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #e5e3df;border-radius:10px;overflow:hidden;">
       <tr>
-        ${stat("Bookings today", String(todayBookings ?? 0))}
-        ${stat("GMV today", dailyGmv > 0 ? money(dailyGmv) : "-")}
+        ${stat("Bookings", String(monthlyBookings ?? 0))}
+        ${stat("Completed GMV", monthlyGmv > 0 ? money(monthlyGmv) : "-")}
         ${stat("Pending coaches", String(pendingCoaches ?? 0), (pendingCoaches ?? 0) > 0 ? "#c4622d" : "#0d0d0d")}
       </tr>
     </table>
@@ -91,14 +94,14 @@ export async function GET(request: Request) {
   const text = [
     subject,
     "",
-    `Bookings today: ${todayBookings ?? 0}`,
-    `GMV today: ${dailyGmv > 0 ? money(dailyGmv) : "-"}`,
+    `Bookings in ${monthName}: ${monthlyBookings ?? 0}`,
+    `Completed GMV: ${monthlyGmv > 0 ? money(monthlyGmv) : "-"}`,
     `Pending coach approvals: ${pendingCoaches ?? 0}`,
     ...(hasAlerts
       ? [
           "",
           "ACTION NEEDED:",
-          ...(( failedTransfers ?? 0) > 0 ? [`- ${failedTransfers} failed coach payout(s) - ${appBase}/admin/payouts`] : []),
+          ...(( failedTransfers ?? 0) > 0 ? [`- ${failedTransfers} failed coach payout(s) - ${appBase}/admin/earnings`] : []),
           ...((stuckSessions ?? 0) > 0 ? [`- ${stuckSessions} stuck confirmed booking(s) - ${appBase}/admin/bookings`] : []),
         ]
       : []),
@@ -117,8 +120,9 @@ export async function GET(request: Request) {
   return NextResponse.json({
     sent,
     pending_coaches: pendingCoaches ?? 0,
-    today_bookings: todayBookings ?? 0,
-    today_gmv_ngn: dailyGmv,
+    period: monthName,
+    monthly_bookings: monthlyBookings ?? 0,
+    monthly_gmv_ngn: monthlyGmv,
     failed_transfers: failedTransfers ?? 0,
     stuck_sessions: stuckSessions ?? 0,
   });

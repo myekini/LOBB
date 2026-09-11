@@ -1,0 +1,190 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import type React from "react";
+import { Bell, ChevronRight, Landmark, Mail, Shield, ShieldCheck, ShieldX, Smartphone, WalletCards } from "lucide-react";
+import { CoachBottomNav } from "@/components/layout/coach-nav";
+import { CoachLogoutButton } from "@/components/common/coach-logout-button";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { SecurityNudge } from "@/features/auth/security-nudge";
+import { NotificationToggle } from "@/components/common/notification-toggle";
+
+function maskedAccount(account: string | null | undefined) {
+  if (!account) return "Not connected";
+  return `**** ${account.slice(-4)}`;
+}
+
+export default async function CoachSettingsPage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/auth/login");
+
+  const admin = createAdminClient();
+  const [profileResult, coachResult] = await Promise.all([
+    admin.from("profiles").select("phone_number, email, email_notifications_enabled, role").eq("id", user.id).maybeSingle(),
+    admin
+      .from("coaches")
+      .select("bank_name, bank_account_number, bank_code, paystack_recipient_code, dva_account_number, dva_bank_name, status, kyc_status, kyc_nin_verified, kyc_bvn_verified")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
+
+  if (profileResult.data?.role !== "coach") redirect("/");
+  if (!coachResult.data) redirect("/auth/setup/coach/1");
+
+  const profile = profileResult.data;
+  const coach = coachResult.data;
+
+  const accountStatus = coach.status.replace(/_/g, " ");
+  const kycStatus = coach.kyc_status as string ?? "pending";
+  const kycVerified = coach.kyc_nin_verified || coach.kyc_bvn_verified;
+  const kycLabel =
+    kycStatus === "identity_verified" || kycStatus === "bvn_verified"
+      ? "Verified"
+      : kycStatus === "identity_submitted" || kycStatus === "bvn_pending"
+        ? "Under review"
+        : kycStatus === "identity_failed" || kycStatus === "bvn_failed"
+          ? "Failed — resubmit"
+          : "Not started";
+  const KycIcon = kycVerified ? ShieldCheck : kycStatus.includes("failed") ? ShieldX : Shield;
+  const kycColor = kycVerified
+    ? "text-[var(--lobb-success)]"
+    : kycStatus.includes("failed")
+      ? "text-[var(--lobb-error)]"
+      : kycStatus.includes("submitted") || kycStatus.includes("pending")
+        ? "text-[var(--lobb-clay)]"
+        : "text-[var(--lobb-text-tertiary)]";
+
+  const hasDva = Boolean(coach.dva_account_number);
+  const dvaLabel = hasDva
+    ? `${coach.dva_bank_name ?? "LOBB earnings account"} · **** ${(coach.dva_account_number ?? "").slice(-4)}`
+    : "Not yet assigned";
+
+  return (
+    <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
+      <CoachFlowHeader title="Settings" eyebrow="Coach account" active="settings" />
+
+      <div className="mx-auto max-w-2xl px-5 pt-6 sm:px-6">
+        <SecurityNudge />
+        <div className="mb-5 flex items-center justify-between gap-4 px-1">
+          <p className="text-sm text-[var(--lobb-text-secondary)]">Login, verification, payouts and notifications.</p>
+          <span className="shrink-0 text-xs font-medium capitalize text-[var(--lobb-clay)]">{accountStatus}</span>
+        </div>
+
+        <SettingGroup label="Account">
+          <SettingRow
+            icon={<Smartphone className="size-[18px]" />}
+            label="Phone number"
+            value={profile?.phone_number ?? "Not set"}
+          />
+          <SettingRow
+            icon={<Mail className="size-[18px]" />}
+            label="Email"
+            value={profile?.email ?? "Not set"}
+            href="/coach/profile/edit"
+          />
+          <SettingRow
+            icon={<ShieldCheck className="size-[18px]" />}
+            label="Sign-in & security"
+            value="Password & passkey"
+            href="/account/security"
+          />
+          <SettingRow
+            icon={<Shield className="size-[18px]" />}
+            label="Account status"
+            value={accountStatus}
+            last
+          />
+        </SettingGroup>
+
+        <SettingGroup label="Verification">
+          <SettingRow
+            icon={<KycIcon className={`size-[18px] ${kycColor}`} />}
+            label="Identity (NIN + BVN)"
+            value={kycLabel}
+            href="/coach/settings/kyc"
+            last
+          />
+        </SettingGroup>
+
+        <SettingGroup label="Banking">
+          <SettingRow
+            icon={<Landmark className="size-[18px]" />}
+            label={coach.bank_name ?? "Payout bank"}
+            value={maskedAccount(coach.bank_account_number)}
+            href="/coach/settings/bank"
+          />
+          <SettingRow
+            icon={<WalletCards className="size-[18px]" />}
+            label="LOBB earnings account (DVA)"
+            value={dvaLabel}
+            last
+          />
+        </SettingGroup>
+
+        <SettingGroup label="Notifications">
+          <div className="flex items-center">
+            <span className="ml-5 flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]"><Bell className="size-[18px]" /></span>
+            <NotificationToggle initialEnabled={profile?.email_notifications_enabled !== false} disabled={!profile?.email} />
+          </div>
+        </SettingGroup>
+
+        <div className="mt-2">
+          <CoachLogoutButton />
+        </div>
+
+      </div>
+
+      <CoachBottomNav active="profile" />
+    </main>
+  );
+}
+
+function SettingGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-3">
+      <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+        {label}
+      </p>
+      <div className="lobb-surface-outlined overflow-hidden border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function SettingRow({
+  icon,
+  label,
+  value,
+  href,
+  last,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  href?: string;
+  last?: boolean;
+}) {
+  const inner = (
+    <div
+      className={`flex items-center gap-4 px-5 py-4 transition ${href ? "hover:bg-[var(--lobb-bg-secondary)]" : ""} ${
+        !last ? "border-b border-[var(--lobb-border-subtle)]" : ""
+      }`}
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px] font-bold text-[var(--lobb-text-primary)]">{label}</p>
+        <p className="mt-0.5 truncate text-[12px] capitalize text-[var(--lobb-text-tertiary)]">{value}</p>
+      </div>
+      {href && <ChevronRight className="size-4 shrink-0 text-[var(--lobb-text-tertiary)]" />}
+      {!href && <span className="shrink-0 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--lobb-text-tertiary)]">Read only</span>}
+    </div>
+  );
+
+  return href ? <Link href={href} className="block">{inner}</Link> : inner;
+}

@@ -3,23 +3,36 @@ import { withRole } from "@/lib/api-auth";
 import { internalError } from "@/lib/api-response";
 
 export const GET = withRole("admin", async (_request, auth) => {
-  const [metrics, bookings] = await Promise.all([
+  const [metrics, bookings, payoutAttention] = await Promise.all([
     auth.admin.from("admin_core_metrics").select("*").maybeSingle(),
     auth.admin
       .from("bookings")
       .select(
-        "id, starts_at, status, gross_amount, total_amount_ngn, platform_commission_ngn, convenience_fee_ngn, coaches!bookings_coach_id_fkey(full_name), players!bookings_player_id_fkey(full_name), payments(status, paid_at, paystack_reference)"
+        "id, human_ref, starts_at, status, gross_amount, total_amount_ngn, platform_commission_ngn, convenience_fee_ngn, coach_payout_ngn, paystack_transfer_code, escrow_released_at, coaches!bookings_coach_id_fkey(full_name, profile_photo_url), players!bookings_player_id_fkey(id, full_name), payments(status, paid_at, paystack_reference)"
       )
       .in("status", ["confirmed", "completed"])
       .order("starts_at", { ascending: false })
       .limit(12),
+    auth.admin
+      .from("bookings")
+      .select("coach_payout_ngn")
+      .eq("status", "completed")
+      .not("escrow_released_at", "is", null)
+      .is("paystack_transfer_code", null),
   ]);
 
   if (metrics.error) return internalError(metrics.error);
   if (bookings.error) return internalError(bookings.error);
+  if (payoutAttention.error) return internalError(payoutAttention.error);
+
+  const payouts = payoutAttention.data ?? [];
 
   return NextResponse.json({
     metrics: metrics.data,
     recent_revenue: bookings.data ?? [],
+    payout_attention: {
+      count: payouts.length,
+      amount_ngn: payouts.reduce((sum, booking) => sum + (booking.coach_payout_ngn ?? 0), 0),
+    },
   });
 });

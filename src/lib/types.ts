@@ -109,6 +109,7 @@ export type AvailableSlot = {
 
 export type BookingRow = {
   id: string;
+  human_ref: string | null;
   coach_id: string;
   player_id: string;
   starts_at: string;
@@ -398,6 +399,6 @@ export const COURT_ACCESS_OPTIONS = [
   { value: "coach_can_recommend" as CourtAccess, label: "I can recommend courts nearby" },
 ] as const;
 
-export const HOURLY_RATE_OPTIONS = [
-  5000, 7500, 10000, 12500, 15000, 20000, 25000, 30000, 40000, 50000,
-] as const;
+// Preset rate tiers for the rate pickers. Sourced from the central pricing
+// system so the band stays in one place — see src/lib/config/pricing.ts.
+export { COACH_RATE_PRESETS as HOURLY_RATE_OPTIONS } from "@/lib/config/pricing";

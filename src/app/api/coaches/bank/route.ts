@@ -8,6 +8,7 @@ import {
   createTransferRecipient,
 } from "@/lib/paystack";
 import { namesAreSimilar } from "@/lib/kyc";
+import { decryptField } from "@/lib/crypto";
 
 export async function POST(request: Request) {
   const auth = await requireRole("coach");
@@ -35,18 +36,26 @@ export async function POST(request: Request) {
   // Fetch coach + profile in one go
   const { data: coach, error: coachError } = await auth.admin
     .from("coaches")
-    .select("full_name, bvn, kyc_status, paystack_customer_code")
+    .select("full_name, bvn_encrypted, kyc_status, paystack_customer_code")
     .eq("id", auth.user.id)
     .maybeSingle();
 
   if (coachError) return NextResponse.json({ error: coachError.message }, { status: 500 });
   if (!coach) return NextResponse.json({ error: "Coach profile not found" }, { status: 404 });
 
-  if (!coach.bvn) {
+  if (!coach.bvn_encrypted) {
     return NextResponse.json(
       { error: "Complete identity verification (step 2) before setting up payouts" },
       { status: 400 }
     );
+  }
+
+  let bvn: string;
+  try {
+    bvn = decryptField(coach.bvn_encrypted);
+  } catch (err) {
+    console.error("Failed to decrypt BVN:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "Could not verify your identity details. Contact support@lobb.ng." }, { status: 500 });
   }
 
   const { data: profile, error: profileError } = await auth.admin
@@ -95,7 +104,7 @@ export async function POST(request: Request) {
     try {
       await validatePaystackCustomer({
         customer_code: customerCode,
-        bvn: coach.bvn,
+        bvn,
         account_number: accountNumber,
         bank_code: bankCode,
         first_name: firstName,

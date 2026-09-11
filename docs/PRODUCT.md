@@ -1,9 +1,5 @@
 # Product
 
-## Register
-
-product
-
 ## Users
 - **Players**: Tennis players in Lagos, Nigeria looking to discover verified coaches, book hourly sessions, pick courts, and pay securely.
 - **Coaches**: Professional tennis instructors in Lagos who manage their availability, receive session bookings, track their earnings, and receive bank payouts.

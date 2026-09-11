@@ -29,6 +29,10 @@ export function rateLimit(
 
 export function clientIp(request: Request): string {
   return (
+    // Set by Cloudflare when the app is proxied through it — this is the real
+    // visitor IP. Without it every request would share Cloudflare's edge IP and
+    // per-IP limits would collapse into one bucket.
+    request.headers.get("cf-connecting-ip") ??
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     request.headers.get("x-real-ip") ??
     "unknown"

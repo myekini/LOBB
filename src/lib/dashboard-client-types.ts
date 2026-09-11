@@ -37,6 +37,7 @@ export type JoinedReview = {
 
 export type DashboardBooking = {
   id: string;
+  human_ref?: string | null;
   coach_id: string;
   player_id: string;
   starts_at: string;
@@ -81,6 +82,17 @@ export function firstJoin<T>(value: T | T[] | null | undefined): T | null {
   return value ?? null;
 }
 
+// Canonical participant names for compact admin/dashboard identity cells.
+export function sessionParties(booking: {
+  coaches: { full_name: string | null } | { full_name: string | null }[] | null;
+  players: { full_name: string | null } | { full_name: string | null }[] | null;
+}) {
+  return {
+    coach: firstJoin(booking.coaches)?.full_name ?? "Coach",
+    player: firstJoin(booking.players)?.full_name ?? "Player",
+  };
+}
+
 export function formatBookingDate(iso: string) {
   return new Date(iso).toLocaleString("en-NG", {
     weekday: "short",
@@ -93,8 +105,32 @@ export function formatBookingDate(iso: string) {
   });
 }
 
+export function formatDate(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** Public-facing booking reference. Never expose a raw UUID fragment in UI. */
+export function bookingReference(booking: { id: string; human_ref?: string | null }) {
+  return booking.human_ref ?? `LOBB-${booking.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+}
+
+// Long form for confirmation / receipt surfaces: "Monday, 3 March at 2:00 PM".
+export function formatSessionDateTime(iso: string, opts: { withYear?: boolean } = {}) {
+  return new Date(iso).toLocaleString("en-NG", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    ...(opts.withYear ? { year: "numeric" } : {}),
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Africa/Lagos",
+  });
+}
+
 export function money(amount: number) {
-  return `₦${amount.toLocaleString("en-NG")}`;
+  return `₦${(amount ?? 0).toLocaleString("en-NG")}`;
 }
 
 export function durationMinutes(startsAt: string, endsAt: string) {

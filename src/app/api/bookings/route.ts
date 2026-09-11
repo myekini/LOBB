@@ -270,6 +270,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       booking_id:   booking.id,
       reference,
+      access_code:  paystackData.access_code,
       paystack_url: paystackData.authorization_url,
     });
   } catch (err) {

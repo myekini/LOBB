@@ -1,5 +1,6 @@
 "use client";
 
+import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, Home, Pencil, type LucideIcon } from "lucide-react";
@@ -13,7 +14,7 @@ type CoachHeaderActionIcon = "calendar" | "pencil";
 type CoachFlowHeaderProps = {
   title: string;
   eyebrow?: string;
-  active?: "home" | "bookings" | "earnings" | "profile";
+  active?: "home" | "bookings" | "calendar" | "earnings" | "profile" | "settings";
   actionHref?: string;
   actionLabel?: string;
   actionIcon?: CoachHeaderActionIcon;
@@ -58,20 +59,20 @@ export function CoachFlowHeader({
               <Link
                 href="/coach/dashboard"
                 aria-label="Coach home"
-                className="lobb-logo-shell flex size-10 items-center justify-center overflow-hidden rounded-[12px]"
+                className="lobb-logo-shell flex size-10 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-md)]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/favicon.svg" alt="" className="size-full" />
               </Link>
               <div className="hidden min-[380px]:block">
-                {eyebrow && <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">{eyebrow}</p>}
-                <h1 className="truncate text-base font-black">{title}</h1>
+                {eyebrow && <p className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">{eyebrow}</p>}
+                <h1 className="truncate text-base font-semibold">{title}</h1>
               </div>
             </div>
           ) : (
             <>
               <IconButton label="Back" onClick={() => canNavigate() && router.back()} icon={ArrowLeft} />
-              <button
+              <LobbButton variant="unstyled"
                 type="button"
                 onClick={() => {
                   if (canNavigate()) router.push("/coach/dashboard");
@@ -80,32 +81,32 @@ export function CoachFlowHeader({
                 aria-label="Coach home"
               >
                 <Home className="size-4" />
-              </button>
+              </LobbButton>
             </>
           )}
         </div>
 
         <div className={cn("min-w-0 flex-1 text-center", active && "min-[380px]:hidden")}>
-          {eyebrow && <p className="truncate text-[10px] font-black uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">{eyebrow}</p>}
-          <h1 className="truncate text-base font-black">{title}</h1>
+          {eyebrow && <p className="truncate text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-secondary)]">{eyebrow}</p>}
+          <h1 className="truncate text-base font-semibold">{title}</h1>
         </div>
 
         {active && <CoachDesktopNav active={active} />}
 
         <div className="flex items-center gap-2">
           {actionHref && actionLabel && (
-            <button
+            <LobbButton variant="unstyled"
               type="button"
               onClick={() => {
                 if (canNavigate()) router.push(actionHref);
               }}
-              className="flex h-10 items-center gap-1.5 bg-[var(--lobb-bg-inverse)] px-3 text-xs font-black text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
+              className="flex h-10 items-center gap-1.5 bg-[var(--lobb-bg-inverse)] px-3 text-xs font-medium text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
             >
               {ActionIcon && <ActionIcon className="size-3.5" />}
               <span className="hidden min-[380px]:inline">{actionLabel}</span>
-            </button>
+            </LobbButton>
           )}
-          <ThemeToggle className="size-10 rounded-[12px]" />
+          <ThemeToggle className="size-10 rounded-[var(--lobb-radius-md)]" />
           {showLogout && <CoachAccountMenu />}
         </div>
       </div>
@@ -115,13 +116,13 @@ export function CoachFlowHeader({
 
 function IconButton({ label, icon: Icon, onClick }: { label: string; icon: LucideIcon; onClick: () => void }) {
   return (
-    <button
+    <LobbButton variant="unstyled"
       type="button"
       onClick={onClick}
       className="flex size-10 items-center justify-center border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-[var(--lobb-shadow-card)] transition active:scale-[0.97]"
       aria-label={label}
     >
       <Icon className="size-4" />
-    </button>
+    </LobbButton>
   );
 }

@@ -11,12 +11,8 @@
   }
 }
 
-/* Accessibility: keyboard focus rings — overrides outline-none utilities for
-   keyboard users. Editable fields are excluded: browsers flag them
-   :focus-visible even on mouse click, and their containers already render a
-   clay border + glow via focus-within (the raw outline got clipped by
-   overflow-hidden wrappers into odd orange bars at the field edges). */
-*:focus-visible:not(input):not(textarea):not(select):not([contenteditable="true"]) {
+/* One keyboard-focus contract for every interactive control. */
+:where(button, a, input, textarea, select, [role="button"], [tabindex]):focus-visible {
   outline: 2px solid var(--lobb-clay) !important;
   outline-offset: 2px !important;
 }
@@ -109,10 +105,13 @@
     --lobb-text-primary:     #1A1714;
     --lobb-text-secondary:   #6B6560;
     --lobb-text-tertiary:    #A09890;
-    --lobb-text-inverse:     #FFFFFF;
+    --lobb-text-inverse:        #FFFFFF;
+    --lobb-text-inverse-muted:  rgba(255, 255, 255, 0.72);
+    --lobb-border-inverse:      rgba(255, 255, 255, 0.12);
     --lobb-text-link:        var(--lobb-clay);
 
     --lobb-border-subtle:    #E8E3DC;
+    --lobb-border-strong:    #CFC7BD;
     --lobb-border-focus:     var(--lobb-clay);
     --lobb-border-error:     #D64045;
 
@@ -121,45 +120,31 @@
     --lobb-success-soft:     #E8F4ED;
     --lobb-error:            #D64045;
     --lobb-warning:          #F4A228;
-    --lobb-accent-violet:    #5B3FA6;
-    --lobb-accent-violet-soft:#F0E8FF;
-    --lobb-accent-blue:      #1A4FBF;
-    --lobb-accent-blue-soft: #E8F0FF;
 
     --lobb-shadow-card:      0 2px 16px rgba(90, 60, 30, 0.08);
     --lobb-shadow-sheet:     0 -4px 24px rgba(90, 60, 30, 0.10);
     --lobb-shadow-modal:     0 8px 40px rgba(90, 60, 30, 0.14);
 
-    /* Legacy aliases kept so existing components migrate safely. */
-    --lobb-black:            var(--lobb-bg-inverse);
-    --lobb-surface:          var(--lobb-bg-elevated);
-    --lobb-bg:               var(--lobb-bg-primary);
-    --lobb-surface-2:        var(--lobb-bg-secondary);
-    --lobb-border:           var(--lobb-border-subtle);
-    --lobb-muted:            var(--lobb-text-secondary);
-    --lobb-ink:              var(--lobb-text-primary);
-    --lobb-green:            #0F3D2E;
-
     /* ── shadcn/ui base tokens ── */
-    --background:          oklch(1 0 0);
-    --foreground:          oklch(0.145 0 0);
-    --card:                oklch(1 0 0);
-    --card-foreground:     oklch(0.145 0 0);
-    --popover:             oklch(1 0 0);
-    --popover-foreground:  oklch(0.145 0 0);
-    --primary:             oklch(0.205 0 0);
-    --primary-foreground:  oklch(0.985 0 0);
-    --secondary:           oklch(0.97 0 0);
-    --secondary-foreground:oklch(0.205 0 0);
-    --muted:               oklch(0.97 0 0);
-    --muted-foreground:    oklch(0.556 0 0);
-    --accent:              oklch(0.97 0 0);
-    --accent-foreground:   oklch(0.205 0 0);
-    --destructive:         oklch(0.577 0.245 27.325);
-    --border:              oklch(0.922 0 0);
-    --input:               oklch(0.922 0 0);
-    --ring:                oklch(0.708 0 0);
-    --radius:              0.625rem;
+    --background:          var(--lobb-bg-primary);
+    --foreground:          var(--lobb-text-primary);
+    --card:                var(--lobb-bg-elevated);
+    --card-foreground:     var(--lobb-text-primary);
+    --popover:             var(--lobb-bg-elevated);
+    --popover-foreground:  var(--lobb-text-primary);
+    --primary:             var(--lobb-clay);
+    --primary-foreground:  var(--lobb-text-inverse);
+    --secondary:           var(--lobb-bg-secondary);
+    --secondary-foreground:var(--lobb-text-primary);
+    --muted:               var(--lobb-bg-secondary);
+    --muted-foreground:    var(--lobb-text-secondary);
+    --accent:              var(--lobb-clay-light);
+    --accent-foreground:   var(--lobb-text-primary);
+    --destructive:         var(--lobb-error);
+    --border:              var(--lobb-border-subtle);
+    --input:               var(--lobb-border-subtle);
+    --ring:                var(--lobb-clay);
+    --radius:              var(--lobb-radius-md);
   }
 
   [data-theme="dark"] {
@@ -174,35 +159,34 @@
     --lobb-text-primary:     #FAF8F5;
     --lobb-text-secondary:   #A09890;
     --lobb-text-tertiary:    #6B6560;
-    --lobb-text-inverse:     #0D0D0D;
+    --lobb-text-inverse:        #0D0D0D;
+    --lobb-text-inverse-muted:  rgba(13, 13, 13, 0.66);
+    --lobb-border-inverse:      rgba(13, 13, 13, 0.10);
     --lobb-success-soft:     rgba(45, 106, 79, 0.18);
-    --lobb-accent-violet-soft:rgba(123, 92, 202, 0.18);
-    --lobb-accent-violet:    #B9A7FF;
-    --lobb-accent-blue-soft: rgba(86, 133, 255, 0.18);
-    --lobb-accent-blue:      #AFC2FF;
 
     --lobb-border-subtle:    #2E2924;
+    --lobb-border-strong:    #50473F;
     --lobb-shadow-card:      0 2px 16px rgba(0, 0, 0, 0.30);
     --lobb-shadow-sheet:     0 -4px 24px rgba(0, 0, 0, 0.40);
     --lobb-shadow-modal:     0 8px 40px rgba(0, 0, 0, 0.50);
 
-    --background:          oklch(0.08 0.01 70);
-    --foreground:          oklch(0.96 0.01 85);
-    --card:                oklch(0.13 0.015 70);
-    --card-foreground:     oklch(0.96 0.01 85);
-    --popover:             oklch(0.13 0.015 70);
-    --popover-foreground:  oklch(0.96 0.01 85);
-    --primary:             oklch(0.92 0.015 85);
-    --primary-foreground:  oklch(0.08 0.01 70);
-    --secondary:           oklch(0.18 0.018 70);
-    --secondary-foreground:oklch(0.94 0.01 85);
-    --muted:               oklch(0.18 0.018 70);
-    --muted-foreground:    oklch(0.68 0.02 75);
-    --accent:              oklch(0.18 0.018 70);
-    --accent-foreground:   oklch(0.94 0.01 85);
-    --border:              oklch(0.24 0.018 70);
-    --input:               oklch(0.24 0.018 70);
-    --ring:                oklch(0.62 0.12 45);
+    --background:          var(--lobb-bg-primary);
+    --foreground:          var(--lobb-text-primary);
+    --card:                var(--lobb-bg-elevated);
+    --card-foreground:     var(--lobb-text-primary);
+    --popover:             var(--lobb-bg-elevated);
+    --popover-foreground:  var(--lobb-text-primary);
+    --primary:             var(--lobb-clay);
+    --primary-foreground:  var(--lobb-text-inverse);
+    --secondary:           var(--lobb-bg-secondary);
+    --secondary-foreground:var(--lobb-text-primary);
+    --muted:               var(--lobb-bg-secondary);
+    --muted-foreground:    var(--lobb-text-secondary);
+    --accent:              var(--lobb-clay-light);
+    --accent-foreground:   var(--lobb-text-primary);
+    --border:              var(--lobb-border-subtle);
+    --input:               var(--lobb-border-subtle);
+    --ring:                var(--lobb-clay);
   }
 
   * {
@@ -250,9 +234,9 @@
   .lobb-skeleton {
     background-image: linear-gradient(
       90deg,
-      var(--lobb-surface-2) 0%,
-      color-mix(in srgb, var(--lobb-surface-2) 62%, var(--lobb-surface) 38%) 42%,
-      var(--lobb-surface-2) 78%
+      var(--lobb-bg-secondary) 0%,
+      color-mix(in srgb, var(--lobb-bg-secondary) 62%, var(--lobb-bg-elevated) 38%) 42%,
+      var(--lobb-bg-secondary) 78%
     );
     background-size: 220% 100%;
     animation: lobbShimmer 1.5s ease-in-out infinite;
@@ -324,7 +308,6 @@
     --landing-panel: #fffefa;
     --landing-band: rgba(255, 254, 250, 0.72);
     --landing-border: rgba(26, 23, 20, 0.095);
-    --landing-muted: #6b625a;
     --landing-shadow-soft: 0 22px 64px rgba(58, 43, 20, 0.085);
     --landing-shadow-panel: 0 12px 34px rgba(58, 43, 20, 0.05);
     background:
@@ -357,11 +340,11 @@
     box-shadow: var(--landing-shadow-soft);
   }
 
-  .lobb-dark-panel {
-    background:
-      linear-gradient(135deg, rgba(196, 98, 45, 0.14), rgba(255, 255, 255, 0.025) 32%, transparent 70%),
-      #0d0d0d;
-    border-color: rgba(13, 13, 13, 0.88);
+  /* Full-bleed section that stays dark in both themes (final CTA band).
+     Sections layer their own gradients/imagery over this base. */
+  .lobb-dark-band {
+    background: #0d0d0d;
+    color: #ffffff;
   }
 
   .lobb-app-page {
@@ -380,19 +363,18 @@
     background: #0d0d0d;
   }
 
-  .lobb-app-card,
-  .lobb-app-panel,
-  .lobb-settings-group {
-    border-radius: 14px;
-    border-color: color-mix(in srgb, var(--lobb-border-subtle) 86%, transparent);
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.58), rgba(255,255,255,0)),
-      var(--lobb-bg-elevated);
-    box-shadow: 0 12px 34px rgba(58, 43, 20, 0.055);
+  .lobb-surface-outlined,
+  .lobb-surface-inset,
+  .lobb-surface-outlined {
+    border-radius: var(--lobb-radius-lg);
+    border-color: var(--lobb-border-subtle);
+    background: var(--lobb-bg-elevated);
+    box-shadow: none;
   }
 
-  .lobb-app-panel {
-    border-radius: 12px;
+  .lobb-surface-inset {
+    border-radius: var(--lobb-radius-md);
+    background: var(--lobb-bg-secondary);
   }
 
   .lobb-hero-card {
@@ -447,8 +429,8 @@
     border-radius: 999px;
   }
 
-  .lobb-settings-group {
-    border-radius: 12px;
+  .lobb-surface-outlined {
+    border-radius: var(--lobb-radius-lg);
   }
 
 
@@ -479,7 +461,7 @@
   }
 
   .lobb-onboarding-court {
-    color: var(--lobb-black);
+    color: var(--lobb-bg-inverse);
     opacity: 0.03;
   }
 
@@ -510,11 +492,11 @@
     letter-spacing: 0;
   }
 
-  .lobb-onboarding .bg-\[var\(--lobb-surface-2\)\] {
+  .lobb-onboarding .bg-\[var\(--lobb-bg-secondary\)\] {
     background-color: var(--onboarding-field);
   }
 
-  .lobb-onboarding .focus-within\:bg-\[var\(--lobb-surface\)\]:focus-within {
+  .lobb-onboarding .focus-within\:bg-\[var\(--lobb-bg-elevated\)\]:focus-within {
     background-color: var(--onboarding-field-focus);
   }
 
@@ -570,7 +552,6 @@
     --landing-panel: #15120f;
     --landing-band: rgba(255, 255, 255, 0.035);
     --landing-border: rgba(255, 255, 255, 0.075);
-    --landing-muted: rgba(255, 255, 255, 0.58);
     --landing-shadow-soft: 0 28px 86px rgba(0, 0, 0, 0.56);
     --landing-shadow-panel: none;
     background:
@@ -609,16 +590,6 @@
     border-color: rgba(255, 255, 255, 0.07);
   }
 
-  [data-theme="dark"] .lobb-app-card,
-  [data-theme="dark"] .lobb-app-panel,
-  [data-theme="dark"] .lobb-settings-group {
-    border-color: rgba(255, 255, 255, 0.075);
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.012)),
-      var(--lobb-bg-elevated);
-    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.22);
-  }
-
   [data-theme="dark"] .lobb-hero-card {
     color: white;
     background:
@@ -640,12 +611,12 @@
     box-shadow: none;
   }
 
-  [data-theme="dark"] .bg-\[var\(--lobb-black\)\].text-white,
-  [data-theme="dark"] .bg-\[var\(--lobb-black\)\] .text-white {
+  [data-theme="dark"] .bg-\[var\(--lobb-bg-inverse\)\].text-white,
+  [data-theme="dark"] .bg-\[var\(--lobb-bg-inverse\)\] .text-white {
     color: var(--lobb-text-inverse);
   }
 
-  [data-theme="dark"] .text-\[var\(--lobb-black\)\] {
+  [data-theme="dark"] .text-\[var\(--lobb-bg-inverse\)\] {
     color: var(--lobb-text-primary);
   }
 
@@ -848,15 +819,16 @@
   animation-delay: calc(120ms + var(--i) * 75ms);
 }
 
-/* Scroll reveals: .lobb-reveal-pending is added by JS only to below-fold
-   elements, so content never ships hidden without JS. */
-.lobb-reveal-pending {
+/* Scroll reveals. The landing adds `.lobb-reveal-js` to <html> before first
+   paint, so targets only ship hidden when JS is present — without it they stay
+   visible. JS then adds `.lobb-reveal-in` as each element enters the viewport. */
+.lobb-reveal-js [data-reveal]:not(.lobb-reveal-in) {
   opacity: 0;
   transform: translateY(26px);
   filter: blur(7px);
 }
 
-.lobb-reveal-pending.lobb-reveal-in {
+.lobb-reveal-js [data-reveal].lobb-reveal-in {
   opacity: 1;
   transform: none;
   filter: blur(0);
@@ -865,6 +837,14 @@
     transform 0.8s var(--lobb-ease-out),
     filter 0.8s var(--lobb-ease-out);
   transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Keyboard focus ring for landing links and buttons (no per-element classes). */
+.lobb-landing a:focus-visible,
+.lobb-landing button:focus-visible {
+  outline: 2px solid var(--lobb-clay);
+  outline-offset: 3px;
+  border-radius: var(--lobb-radius-sm);
 }
 
 .lobb-nav-link {
@@ -1027,7 +1007,7 @@
     animation: none;
     filter: none;
   }
-  .lobb-reveal-pending {
+  .lobb-reveal-js [data-reveal] {
     opacity: 1;
     transform: none;
     filter: none;
@@ -1053,7 +1033,7 @@
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0px 1000px var(--lobb-surface, #ffffff) inset;
-  -webkit-text-fill-color: var(--lobb-black, #000000);
+  -webkit-box-shadow: 0 0 0px 1000px var(--lobb-bg-elevated, #ffffff) inset;
+  -webkit-text-fill-color: var(--lobb-bg-inverse, #000000);
   transition: background-color 9999s ease-in-out 0s;
 }

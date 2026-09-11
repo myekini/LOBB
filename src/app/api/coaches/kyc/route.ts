@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import { verifyNIN, isValidNIN, isValidBVN } from "@/lib/kyc";
 import { logLegalConsent } from "@/lib/legal-consent";
+import { encryptField } from "@/lib/crypto";
 
 export async function POST(request: Request) {
   const auth = await requireRole("coach");
@@ -56,8 +57,8 @@ export async function POST(request: Request) {
         : "identity_submitted"; // pending_provider — collect & store, verify when live
 
   const updatePayload: Record<string, unknown> = {
-    nin,
-    bvn,
+    nin_encrypted: encryptField(nin),
+    bvn_encrypted: encryptField(bvn),
     kyc_status,
     kyc_nin_verified: ninResult.status === "verified",
   };

@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/cron-auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createTransfer } from "@/lib/paystack";
+import {
+  ESCROW_RELEASE_HOURS,
+  REFERRAL_CREDIT_NGN,
+  REFERRAL_WITHDRAWAL_THRESHOLD_NGN,
+} from "@/lib/config/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +16,7 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+  const twoHoursAgo = new Date(Date.now() - ESCROW_RELEASE_HOURS * 60 * 60 * 1000).toISOString();
 
   // ── Pass 1: release confirmed bookings whose session ended 2+ hours ago ──────
   const { data: bookings, error: fetchError } = await admin
@@ -85,7 +90,7 @@ export async function GET(request: Request) {
         referring_coach_id: profile.referred_by_coach_id,
         referred_user_id: booking.player_id,
         triggering_booking_id: booking.id,
-        amount: 1500,
+        amount: REFERRAL_CREDIT_NGN,
         status: "released",
         released_at: new Date().toISOString(),
       });
@@ -152,7 +157,7 @@ export async function GET(request: Request) {
   // ── Pass 3: pay out referral credits once a coach crosses the threshold ──────
   // Credits accrue as 'released'; batch them per coach and transfer when the
   // total reaches ₦5,000 (batching keeps transfer-fee overhead sane).
-  const REFERRAL_PAYOUT_THRESHOLD_NGN = 5000;
+  const REFERRAL_PAYOUT_THRESHOLD_NGN = REFERRAL_WITHDRAWAL_THRESHOLD_NGN;
   let referralPaid = 0;
   let referralFailed = 0;
 

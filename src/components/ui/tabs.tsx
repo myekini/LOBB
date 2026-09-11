@@ -2,9 +2,9 @@
 
 export function Tabs<T extends string>({ value, values, onChange }: { value: T; values: Array<{ value: T; label: string }>; onChange: (value: T) => void }) {
   return (
-    <div className="grid overflow-hidden rounded-[18px] border border-[var(--lobb-border)] bg-[var(--lobb-surface)] p-1" style={{ gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))` }}>
+    <div className="grid rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] p-1" style={{ gridTemplateColumns: `repeat(${values.length}, minmax(0, 1fr))` }}>
       {values.map((item) => (
-        <button key={item.value} onClick={() => onChange(item.value)} className={`h-11 rounded-[14px] text-sm font-black ${value === item.value ? "bg-[var(--lobb-black)] text-white" : "text-[var(--lobb-muted)]"}`}>
+        <button key={item.value} type="button" onClick={() => onChange(item.value)} className={`h-[var(--lobb-control-md)] rounded-[var(--lobb-radius-sm)] text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--lobb-clay)] ${value === item.value ? "bg-[var(--lobb-bg-elevated)] text-[var(--lobb-text-primary)] shadow-sm" : "text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-text-primary)]"}`}>
           {item.label}
         </button>
       ))}

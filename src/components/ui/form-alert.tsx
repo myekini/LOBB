@@ -57,7 +57,7 @@ export function FormAlert({
     <div
       role={variant === "error" ? "alert" : "status"}
       className={cn(
-        "flex items-start gap-3 rounded-[14px] border p-3.5 text-left",
+        "flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border p-3.5 text-left",
         wrap,
         className
       )}
@@ -65,11 +65,11 @@ export function FormAlert({
       <Icon className={cn("mt-0.5 size-4 shrink-0", icon)} />
       <div className="min-w-0 flex-1">
         {title && (
-          <p className={cn("text-[12px] font-black leading-snug", titleColor)}>{title}</p>
+          <p className={cn("text-[12px] font-medium leading-snug", titleColor)}>{title}</p>
         )}
         <div
           className={cn(
-            "text-[12.5px] font-semibold leading-relaxed text-[var(--lobb-text-secondary)]",
+            "text-[12.5px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]",
             title && "mt-0.5"
           )}
         >

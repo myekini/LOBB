@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, Home, User, WalletCards } from "lucide-react";
+import { CalendarClock, CalendarDays, Home, User, WalletCards } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/coach/dashboard", label: "Home",     icon: Home },
   { href: "/coach/bookings",  label: "Bookings", icon: CalendarDays },
+  { href: "/coach/availability", label: "Calendar", icon: CalendarClock },
   { href: "/coach/earnings",  label: "Earnings", icon: WalletCards },
   { href: "/coach/profile",   label: "Profile",  icon: User },
 ] as const;
 
-type ActiveTab = "home" | "bookings" | "earnings" | "profile";
+type ActiveTab = "home" | "bookings" | "calendar" | "earnings" | "profile" | "settings";
 
 export function CoachBottomNav({ active }: { active: ActiveTab }) {
   return (
@@ -40,7 +41,7 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
                 strokeWidth={isActive ? 2.5 : 1.85}
               />
               <span className={cn(
-                "text-[9px] font-black tracking-wider uppercase leading-none",
+                "text-[9px] font-medium tracking-wider uppercase leading-none",
                 isActive ? "text-[var(--lobb-clay)]" : "text-[var(--lobb-text-tertiary)]"
               )}>
                 {item.label}
@@ -54,6 +55,8 @@ export function CoachBottomNav({ active }: { active: ActiveTab }) {
 }
 
 export function CoachDesktopNav({ active }: { active: ActiveTab }) {
+  // Profile lives in the account dropdown (CoachAccountMenu) on desktop — omit it
+  // here to avoid a duplicate entry. The bottom nav (mobile) still shows it.
   const desktopItems = items.filter((item) => item.label !== "Profile");
 
   return (
@@ -67,7 +70,7 @@ export function CoachDesktopNav({ active }: { active: ActiveTab }) {
             href={item.href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "inline-flex h-10 items-center gap-2 px-4 text-sm font-black transition",
+              "inline-flex h-10 items-center gap-2 px-4 text-sm font-medium transition",
               isActive
                 ? "bg-[var(--lobb-bg-inverse)] text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-card)]"
                 : "text-[var(--lobb-text-secondary)] hover:bg-[var(--lobb-bg-secondary)] hover:text-[var(--lobb-text-primary)]"

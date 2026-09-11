@@ -1,0 +1,285 @@
+"use client";
+
+import { Button as LobbButton } from "@/components/ui/button";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Circle, MapPin, MessageCircle, Phone, User, WalletCards } from "lucide-react";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { cancellationPolicy, refundAmountNgn } from "@/lib/lobb-money";
+import { showLobbToast } from "@/providers/lobb-global-state";
+import {
+  bookingReference,
+  durationMinutes,
+  firstJoin,
+  formatBookingDate,
+  money,
+  type DashboardBooking,
+} from "@/lib/dashboard-client-types";
+import { CoachFlowHeader } from "@/features/booking/coach-flow-header";
+import { AppDialog } from "@/components/ui/app-dialog";
+
+export default function CoachBookingDetailPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [booking, setBooking]     = useState<DashboardBooking | null>(null);
+  const [loading, setLoading]     = useState(true);
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/bookings/${params.id}`)
+      .then(async (response) => {
+        const payload = (await response.json()) as { booking?: DashboardBooking; error?: string };
+        if (!response.ok || !payload.booking) throw new Error(payload.error ?? "Booking not found");
+        if (alive) setBooking(payload.booking);
+      })
+      .catch((error) => {
+        showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to load booking" });
+      })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [params.id]);
+
+  const cancelBooking = async () => {
+    if (!booking) return;
+    setCancelling(true);
+    try {
+      const response = await fetch(`/api/bookings/${booking.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Cancelled by coach" }),
+      });
+      const payload = await response.json() as { ok?: boolean; error?: string; refund_label?: string; refund_ngn?: number; refund_error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Unable to cancel booking");
+      if (payload.refund_error) {
+        showLobbToast({ type: "warning", message: "Booking cancelled. The refund needs manual review by LOBB support." });
+      } else {
+        const refundMsg = payload.refund_ngn
+          ? ` ${payload.refund_label ?? "Refund"} of ₦${payload.refund_ngn.toLocaleString()} started.`
+          : "";
+        showLobbToast({ type: "success", message: `Booking cancelled.${refundMsg}` });
+      }
+      router.push("/coach/bookings");
+    } catch (error) {
+      showLobbToast({ type: "error", message: error instanceof Error ? error.message : "Unable to cancel booking" });
+    } finally {
+      setCancelling(false);
+      setShowCancel(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+        <CoachFlowHeader title="Booking" eyebrow="Loading" showLogout={false} />
+        <section className="mx-auto max-w-5xl pt-5">
+          <BookingCardSkeleton />
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+        <CoachFlowHeader title="Booking" eyebrow="Not found" showLogout={false} />
+        <section className="mx-auto max-w-5xl pt-5">
+          <h1 className="text-xl font-semibold">Booking not found</h1>
+          <Link href="/coach/bookings" className="mt-5 block text-sm font-medium text-[var(--lobb-clay)]">Back to bookings</Link>
+        </section>
+      </main>
+    );
+  }
+
+  const player = firstJoin(booking.players);
+  const playerProfile = firstJoin(booking.player_profile);
+  const isConfirmed = booking.status === "confirmed";
+  const sessionInFuture = new Date(booking.starts_at).getTime() > Date.now();
+  const canCancel = isConfirmed && sessionInFuture;
+  const cancelPolicy = cancellationPolicy(booking.starts_at, "coach");
+  const cancelRefundNgn = refundAmountNgn(booking.total_amount_ngn, cancelPolicy.refundPercent);
+
+  const sessionRef = bookingReference(booking);
+
+  return (
+    <main className="lobb-app-page min-h-screen px-5 pb-10 text-[var(--lobb-text-primary)] sm:px-6">
+      <CoachFlowHeader title="Booking Detail" eyebrow="Coach schedule" actionHref="/coach/bookings" actionLabel="List" showLogout={false} />
+      <section className="mx-auto max-w-5xl pt-5 lg:pt-7">
+        <Link href="/coach/bookings" className="mb-4 inline-flex items-center gap-2 text-xs font-medium text-[var(--lobb-text-secondary)]">
+          <ArrowLeft className="size-4" />
+          Back to bookings
+        </Link>
+
+        <section className="overflow-hidden bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] shadow-[var(--lobb-shadow-modal)] sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <span className={`inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] px-3 py-1.5 text-xs font-medium capitalize ${isConfirmed ? "bg-[var(--lobb-success)]/20 text-[var(--lobb-text-inverse)]" : "bg-[var(--lobb-border-inverse)] text-[var(--lobb-text-inverse-muted)]"}`}>
+                <Circle className="size-2 fill-current text-[var(--lobb-success)]" />
+                {booking.status}
+              </span>
+              <h2 className="mt-5 text-[28px] font-semibold leading-tight text-[var(--lobb-text-inverse)] sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-2 text-sm font-medium text-[var(--lobb-text-inverse-muted)]">
+                {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} session
+              </p>
+            </div>
+            <div className="rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-inverse)] bg-[var(--lobb-border-inverse)] p-4 sm:min-w-[220px]">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-inverse-muted)]">Coach payout</p>
+              <p className="mt-2 text-2xl font-semibold text-[var(--lobb-text-inverse)]">{money(booking.coach_payout_ngn ?? booking.total_amount_ngn)}</p>
+              <p className="mt-1 text-xs font-medium text-[var(--lobb-text-inverse-muted)]">From this session</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <section className="space-y-4">
+            <DetailSection title="Player">
+              <div className="flex items-center gap-3">
+                <div className="flex size-12 items-center justify-center overflow-hidden rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-tertiary)]">
+                  {playerProfile?.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={playerProfile.avatar_url} alt="" className="size-full object-cover" />
+                  ) : (
+                    <User className="size-5" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{player?.full_name ?? "Player"}</p>
+                  {booking.player_notes && (
+                    <p className="mt-1 text-sm font-medium italic text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
+                  )}
+                </div>
+              </div>
+              {playerProfile?.phone_number ? (
+                <div className="mt-4 flex items-center gap-3">
+                  <a
+                    href={`tel:${playerProfile.phone_number}`}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-medium"
+                  >
+                    <Phone className="size-3.5 text-[var(--lobb-clay)]" />
+                    Call Player
+                  </a>
+                  <a
+                    href={`https://wa.me/${playerProfile.phone_number.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] py-2.5 text-xs font-medium"
+                  >
+                    <MessageCircle className="size-3.5 text-[var(--lobb-clay)]" />
+                    WhatsApp
+                  </a>
+                </div>
+              ) : (
+                <p className="mt-4 flex items-center gap-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
+                  <Phone className="size-4 text-[var(--lobb-clay)]" />
+                  Contact details are in your confirmation email
+                </p>
+              )}
+            </DetailSection>
+
+            <DetailSection title="Location">
+              <p className="flex items-start gap-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" />
+                {booking.location || "Location not specified"}
+              </p>
+            </DetailSection>
+          </section>
+
+          <aside className="space-y-4">
+            <DetailSection title="Earnings">
+              <div className="mb-3 flex items-center gap-2 text-sm font-medium">
+                <WalletCards className="size-4 text-[var(--lobb-clay)]" />
+                Your payout
+              </div>
+              <PaymentRow label="Your payout" amount={booking.coach_payout_ngn ?? booking.hourly_rate_ngn} strong />
+              {sessionRef && (
+                <p className="mt-3 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-primary)] px-3 py-2 font-mono text-xs font-medium tracking-wider text-[var(--lobb-text-secondary)]">
+                  {sessionRef}
+                </p>
+              )}
+            </DetailSection>
+
+            {canCancel && (
+              <section className="lobb-surface-inset border border-[var(--lobb-error)]/30 bg-[var(--lobb-bg-elevated)] p-4">
+                <p className="text-sm font-medium">Need to cancel?</p>
+                <p className="mt-1 text-sm font-medium leading-5 text-[var(--lobb-text-secondary)]">
+                  Cancelling refunds the player and removes the session from both schedules.
+                </p>
+                <LobbButton variant="unstyled"
+                  onClick={() => setShowCancel(true)}
+                  className="mt-4 h-11 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-error)] text-sm font-medium text-[var(--lobb-error)]"
+                >
+                  Cancel Session
+                </LobbButton>
+              </section>
+            )}
+          </aside>
+        </div>
+
+        {!canCancel && (
+          <Link href="/coach/bookings" className="mt-5 inline-flex text-sm font-bold text-[var(--lobb-text-secondary)]">
+            Back to bookings
+          </Link>
+        )}
+      </section>
+
+      <AppDialog
+        open={showCancel}
+        onOpenChange={setShowCancel}
+        title="Cancel this session?"
+        description="This removes the session from both schedules and notifies the player."
+        tone="danger"
+        busy={cancelling}
+        footer={
+          <>
+            <LobbButton variant="outline" onClick={() => setShowCancel(false)} disabled={cancelling}>Keep session</LobbButton>
+            <LobbButton variant="destructive" disabled={cancelling} onClick={cancelBooking}>{cancelling ? "Cancelling…" : "Cancel session"}</LobbButton>
+          </>
+        }
+      >
+              <p className="text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+                {cancelPolicy.refundPercent > 0 ? (
+                  <>
+                    The player will receive <strong>{cancelPolicy.label.toLowerCase()}</strong> of <strong>{money(cancelRefundNgn)}</strong>. This booking will be removed from both schedules and the player will be notified by email.
+                  </>
+                ) : (
+                  <>
+                    The player will receive <strong>no automatic refund</strong> under the current cancellation window. This booking will be removed from both schedules and the player will be notified by email.
+                  </>
+                )}
+              </p>
+              <p className="mt-3 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-bold leading-5 text-[var(--lobb-text-secondary)]">
+                {cancelPolicy.note}
+              </p>
+              <p className="mt-3 text-sm font-medium text-[var(--lobb-error)]">
+                Repeated cancellations may affect your coach standing on LOBB.
+              </p>
+      </AppDialog>
+    </main>
+  );
+}
+
+function DetailSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4">
+      <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</p>
+      {children}
+    </section>
+  );
+}
+
+function PaymentRow({ amount, label, strong, negative }: { amount: number; label: string; strong?: boolean; negative?: boolean }) {
+  return (
+    <p className={`flex justify-between gap-5 py-1 text-sm ${strong ? "font-medium text-[var(--lobb-text-primary)]" : "font-medium text-[var(--lobb-text-secondary)]"}`}>
+      <span>{label}</span>
+      <span className={negative ? "text-[var(--lobb-error)]" : undefined}>
+        {negative ? "−" : ""}{money(amount)}
+      </span>
+    </p>
+  );
+}

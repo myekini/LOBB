@@ -1,0 +1,451 @@
+"use client";
+
+import { Button as LobbButton } from "@/components/ui/button";
+import { Textarea as LobbTextarea } from "@/components/ui/textarea";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, CalendarDays, CheckCircle2, Circle, CreditCard, Flag, Loader2, MapPin, MessageCircle, Phone, ReceiptText, ShieldCheck, UserRound } from "lucide-react";
+import {
+  bookingReference,
+  durationMinutes,
+  firstJoin,
+  formatBookingDate,
+  money,
+  type DashboardBooking,
+} from "@/lib/dashboard-client-types";
+import { BookingCardSkeleton } from "@/components/common/lobb-skeleton";
+import { FeeBreakdown } from "@/components/common/fee-breakdown";
+import { cancellationPolicy } from "@/lib/lobb-money";
+import { trustCopy } from "@/lib/trust-copy";
+import { readApiError, toastAppError, toastAppSuccess } from "@/lib/client-errors";
+import { AppDialog } from "@/components/ui/app-dialog";
+
+function firstProfilePhone(value: DashboardBooking["coach_profile"]) {
+  const profile = firstJoin(value);
+  return profile?.phone_number ?? null;
+}
+
+type BookingDispute = {
+  id: string;
+  status: "open" | "resolved";
+  resolution: string | null;
+  player_refund_percent: number | null;
+  created_at: string;
+  resolved_at: string | null;
+};
+
+const REPORT_CATEGORIES = [
+  { value: "coach_no_show", label: "Coach didn't show up" },
+  { value: "session_cut_short", label: "Session was cut short" },
+  { value: "safety_concern", label: "Safety concern" },
+  { value: "other", label: "Something else" },
+] as const;
+
+function toWhatsAppNumber(phone: string) {
+  return phone.replace(/[^0-9]/g, "");
+}
+
+export default function BookingDetailPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const search = useSearchParams();
+  const justConfirmed = search.get("confirmed") === "1";
+  const justReviewed = search.get("reviewed") === "1";
+  const [showCancel, setShowCancel] = useState(false);
+  const [booking, setBooking] = useState<DashboardBooking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const [dispute, setDispute] = useState<BookingDispute | null>(null);
+  const [showReport, setShowReport] = useState(false);
+  const [reportCategory, setReportCategory] = useState<string>("");
+  const [reportText, setReportText] = useState("");
+  const [reporting, setReporting] = useState(false);
+  const coach = firstJoin(booking?.coaches);
+
+  useEffect(() => {
+    let alive = true;
+
+    fetch(`/api/bookings/${params.id}`)
+      .then(async (response) => {
+        if (!response.ok) throw await readApiError(response, "NOT_FOUND");
+        const payload = (await response.json()) as { booking?: DashboardBooking };
+        if (!payload.booking) throw new Error("Booking not found");
+        if (alive) setBooking(payload.booking);
+      })
+      .catch((error) => {
+        toastAppError(error, "NOT_FOUND");
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [params.id]);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/bookings/${params.id}/report`)
+      .then((r) => (r.ok ? (r.json() as Promise<{ dispute: BookingDispute | null }>) : { dispute: null }))
+      .then((json) => {
+        if (alive) setDispute(json.dispute ?? null);
+      })
+      .catch(() => null);
+    return () => {
+      alive = false;
+    };
+  }, [params.id]);
+
+  const submitReport = async () => {
+    if (!booking || !reportCategory || reportText.trim().length < 10) return;
+    setReporting(true);
+    try {
+      const response = await fetch(`/api/bookings/${booking.id}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: reportCategory, description: reportText.trim() }),
+      });
+      const payload = (await response.json()) as { dispute?: BookingDispute; error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not send your report");
+      setDispute(payload.dispute ?? { id: "new", status: "open", resolution: null, player_refund_percent: null, created_at: new Date().toISOString(), resolved_at: null });
+      setShowReport(false);
+      toastAppSuccess(trustCopy.reportAck);
+    } catch (error) {
+      toastAppError(error, "UNKNOWN_ERROR");
+    } finally {
+      setReporting(false);
+    }
+  };
+
+  const cancelBooking = async () => {
+    if (!booking) return;
+    setCancelling(true);
+    try {
+      const response = await fetch(`/api/bookings/${booking.id}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Cancelled by player from dashboard" }),
+      });
+      const payload = await response.json() as { error?: string; refund_error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Unable to cancel booking");
+      if (payload.refund_error) {
+        toastAppError(new Error("Booking cancelled, but the refund needs manual review. LOBB support will follow up."), "UNKNOWN_ERROR");
+      } else {
+        toastAppSuccess("Booking cancelled.");
+      }
+      router.push("/dashboard/bookings");
+    } catch (error) {
+      toastAppError(error, "UNKNOWN_ERROR");
+    } finally {
+      setCancelling(false);
+      setShowCancel(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="lobb-app-page min-h-screen px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
+        <section className="mx-auto max-w-5xl">
+          <BookingCardSkeleton />
+          <div className="mt-7 space-y-4">
+            <BookingCardSkeleton />
+            <BookingCardSkeleton />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <main className="lobb-app-page min-h-screen px-4 py-10 text-[var(--lobb-text-primary)] sm:px-6">
+        <section className="mx-auto max-w-3xl">
+          <h1 className="text-xl font-semibold">Booking not found</h1>
+          <Link href="/dashboard/bookings" className="mt-5 block text-sm font-medium text-[var(--lobb-clay)]">Back to bookings</Link>
+        </section>
+      </main>
+    );
+  }
+
+  const payment = booking.payments?.[0];
+  const isUpcoming = booking.status === "confirmed";
+  const coachPhone = payment?.status === "paid" ? firstProfilePhone(booking.coach_profile) : null;
+  const policy = cancellationPolicy(booking.starts_at, "player");
+  const fullRefund = policy.refundPercent === 100;
+  const policyNote = policy.note;
+  const refundNgn = Math.round((booking.total_amount_ngn ?? 0) * policy.refundPercent / 100);
+  const cancelDeadline = new Date(new Date(booking.starts_at).getTime() - 24 * 60 * 60 * 1000).toLocaleString("en-NG", {
+    weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Lagos",
+  });
+
+  return (
+    <main className="lobb-app-page min-h-screen px-4 pb-10 pt-5 text-[var(--lobb-text-primary)] sm:px-6 lg:pt-8">
+      <section className="mx-auto max-w-5xl">
+        <header className="mb-6 grid grid-cols-[44px_minmax(0,1fr)_44px] items-center gap-3">
+          <Link href="/dashboard/bookings" className="flex size-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)]" aria-label="Go back">
+            <ArrowLeft className="size-5" />
+          </Link>
+          <h1 className="truncate text-center font-semibold">Booking detail</h1>
+          <div aria-hidden="true" />
+        </header>
+
+        {justConfirmed && (
+          <section className="mb-5 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/25 bg-[var(--lobb-success)]/10 p-4" role="status">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-success)] text-white">
+              <CheckCircle2 className="size-5" />
+            </span>
+            <div>
+              <h2 className="text-sm font-semibold text-[var(--lobb-text-primary)]">Booking confirmed</h2>
+              <p className="mt-1 text-sm leading-5 text-[var(--lobb-text-secondary)]">You’re all set. The session details and coach contact are below.</p>
+            </div>
+          </section>
+        )}
+        {justReviewed && (
+          <section className="mb-5 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-success)]/25 bg-[var(--lobb-success)]/10 p-4" role="status">
+            <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[var(--lobb-success)]" />
+            <div><h2 className="text-sm font-semibold">Review published</h2><p className="mt-1 text-sm text-[var(--lobb-text-secondary)]">Thank you—your feedback now appears with this completed session.</p></div>
+          </section>
+        )}
+
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+          <div>
+            <section className="overflow-hidden border border-[var(--lobb-bg-inverse)] bg-[var(--lobb-bg-inverse)] p-5 text-[var(--lobb-text-inverse)] sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.16em] opacity-55">
+                <CalendarDays className="size-4 text-[var(--lobb-clay)]" />
+                Session
+              </p>
+                <span className="inline-flex items-center gap-2 rounded-[var(--lobb-radius-lg)] bg-white/10 px-3 py-1.5 text-xs font-medium capitalize">
+                  <Circle className="size-2 fill-current text-[var(--lobb-clay)]" />
+                  {booking.status.replaceAll("_", " ")}
+                </span>
+              </div>
+              <h2 className="mt-3 text-[27px] font-semibold leading-none sm:text-[36px]">{formatBookingDate(booking.starts_at)}</h2>
+              <p className="mt-3 text-sm font-medium opacity-60">
+                {durationMinutes(booking.starts_at, booking.ends_at)} minutes · {money(booking.total_amount_ngn)} paid
+              </p>
+            </section>
+
+            <section className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <div className="size-14 shrink-0 overflow-hidden rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-secondary)]">
+                  {coach?.profile_photo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
+                  ) : (
+                    <div className="flex size-full items-center justify-center text-[var(--lobb-text-secondary)]">
+                      <UserRound className="size-6" />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-clay)]">Coach</p>
+                  <p className="mt-1 truncate text-base font-medium">{coach?.full_name ?? "Coach"}</p>
+                  <p className="mt-0.5 text-sm font-medium text-[var(--lobb-text-secondary)]">{coach?.headline || coach?.primary_location || "Tennis coach"}</p>
+                  {coach?.slug && (
+                    <Link href={`/coaches/${coach.slug}`} className="mt-2 inline-flex text-xs font-medium text-[var(--lobb-clay)] hover:underline">
+                      View profile
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {coachPhone ? (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <a href={`tel:${coachPhone.replace(/\s/g, "")}`} className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-xs font-medium text-[var(--lobb-text-inverse)]">
+                    <Phone className="size-4 text-[var(--lobb-clay)]" /> Call
+                  </a>
+                  <a href={`https://wa.me/${toWhatsAppNumber(coachPhone)}`} target="_blank" rel="noopener noreferrer" className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-xs font-medium">
+                    <MessageCircle className="size-4 text-[var(--lobb-clay)]" /> WhatsApp
+                  </a>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="lobb-surface-outlined mt-5 border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-4 sm:p-5">
+              <InfoRow icon={MapPin} label="Location" value={booking.location || "Location not specified"} />
+              {booking.location && (
+                <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(booking.location)}&travelmode=driving`} target="_blank" rel="noopener noreferrer" className="mt-4 flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)]">Get directions</a>
+              )}
+              {booking.player_notes && (
+                <div className="mt-4 border-t border-[var(--lobb-border-subtle)] pt-4">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">Note to coach</p>
+                  <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">&quot;{booking.player_notes}&quot;</p>
+                </div>
+              )}
+            </section>
+          </div>
+
+          <aside className="lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 lg:sticky lg:top-6">
+        <DetailSection title="Payment" compact>
+          <p className="mb-3 flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">
+            <CreditCard className="size-4 text-[var(--lobb-clay)]" />
+            {payment?.status ?? "pending"}
+          </p>
+          <FeeBreakdown
+            sessionFeeNgn={booking.hourly_rate_ngn}
+            convenienceFeeNgn={booking.convenience_fee_ngn}
+            platformFeeNgn={booking.platform_fee_ngn}
+            totalNgn={booking.total_amount_ngn}
+          />
+          <p className="mt-3 rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-bg-primary)] px-3 py-2 text-xs font-medium tracking-wide text-[var(--lobb-text-secondary)]">Booking reference: {bookingReference(booking)}</p>
+        </DetailSection>
+
+        <DetailSection title="Cancellation policy">
+          <div className={`rounded-[var(--lobb-radius-lg)] border p-4 ${fullRefund ? "border-[var(--lobb-success)]/20 bg-[var(--lobb-success-soft)]" : "border-[var(--lobb-warning)]/25 bg-[var(--lobb-warning)]/10"}`}>
+            <p className="flex items-start gap-2 text-sm font-medium">
+              <ShieldCheck className="mt-0.5 size-4 text-[var(--lobb-clay)]" />
+              {fullRefund ? `Free cancellation until ${cancelDeadline}` : policy.label}
+            </p>
+            <p className="mt-2 text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{policyNote}</p>
+          </div>
+        </DetailSection>
+
+        {/* Session protection — report an issue / dispute status */}
+        {dispute ? (
+          <div className={`mt-6 rounded-[var(--lobb-radius-lg)] border p-4 ${dispute.status === "open" ? "border-[var(--lobb-warning)]/30 bg-[var(--lobb-warning)]/8" : "border-[var(--lobb-success)]/25 bg-[var(--lobb-success-soft)]"}`}>
+            {dispute.status === "open" ? (
+              <>
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <Flag className="size-4 text-[var(--lobb-warning)]" />
+                  We&apos;re reviewing your report
+                </p>
+                <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
+                  {trustCopy.reviewInProgress}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <CheckCircle2 className="size-4 text-[var(--lobb-success)]" />
+                  Issue resolved
+                </p>
+                <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-[var(--lobb-text-secondary)]">
+                  {dispute.resolution === "refund_player"
+                    ? trustCopy.resolvedRefund
+                    : dispute.resolution === "split" && (dispute.player_refund_percent ?? 0) > 0
+                    ? trustCopy.resolvedPartial(dispute.player_refund_percent ?? 0)
+                    : trustCopy.resolvedNoRefund}
+                </p>
+              </>
+            )}
+          </div>
+        ) : (booking.status === "confirmed" || booking.status === "completed") && payment?.status === "paid" ? (
+          <LobbButton variant="unstyled"
+            onClick={() => setShowReport(true)}
+            className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-sm font-medium text-[var(--lobb-text-secondary)] transition hover:border-[var(--lobb-warning)]/40 hover:text-[var(--lobb-text-primary)]"
+          >
+            <Flag className="size-4 text-[var(--lobb-warning)]" />
+            Something wrong? Report this session
+          </LobbButton>
+        ) : null}
+
+        {isUpcoming && (
+          <LobbButton variant="unstyled" onClick={() => setShowCancel(true)} className="mt-3 h-12 w-full rounded-[var(--lobb-radius-md)] border border-[var(--lobb-error)]/35 bg-transparent text-sm font-semibold text-[var(--lobb-error)]">
+            Cancel booking
+          </LobbButton>
+        )}
+
+        <Link href={`/dashboard/bookings/${booking.id}/receipt${payment?.paystack_reference ? `?reference=${encodeURIComponent(payment.paystack_reference)}` : ""}`} className="mt-4 flex items-center justify-center gap-2 py-2 text-xs font-medium text-[var(--lobb-text-secondary)] hover:text-[var(--lobb-clay)]">
+          <ReceiptText className="size-4 text-[var(--lobb-clay)]" />
+          Payment receipt
+        </Link>
+        <Link href="/dashboard/bookings" className="mt-4 block text-center text-sm font-bold text-[var(--lobb-text-secondary)]">
+          Back to bookings
+        </Link>
+          </aside>
+        </div>
+      </section>
+
+      <AppDialog open={showReport} onOpenChange={setShowReport} title="What went wrong?" description={trustCopy.reportPrompt} busy={reporting}>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {REPORT_CATEGORIES.map((category) => (
+                  <LobbButton variant="unstyled"
+                    key={category.value}
+                    type="button"
+                    onClick={() => setReportCategory(category.value)}
+                    className={`rounded-[var(--lobb-radius-md)] border px-3 py-2.5 text-left text-[12px] font-medium leading-tight transition ${
+                      reportCategory === category.value
+                        ? "border-[var(--lobb-clay)]/50 bg-[var(--lobb-clay)]/8 text-[var(--lobb-clay)]"
+                        : "border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] text-[var(--lobb-text-secondary)]"
+                    }`}
+                  >
+                    {category.label}
+                  </LobbButton>
+                ))}
+              </div>
+
+              <LobbTextarea
+                value={reportText}
+                onChange={(event) => setReportText(event.target.value)}
+                placeholder="Tell us what happened (required)…"
+                rows={3}
+                className="mt-3 w-full rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)] p-3 text-[13px] font-medium text-[var(--lobb-text-primary)] outline-none placeholder:text-[var(--lobb-text-tertiary)] focus:border-[var(--lobb-clay)]/50"
+              />
+
+              <LobbButton variant="unstyled"
+                type="button"
+                disabled={reporting || !reportCategory || reportText.trim().length < 10}
+                onClick={submitReport}
+                className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] text-sm font-medium text-[var(--lobb-text-inverse)] disabled:opacity-45"
+              >
+                {reporting ? <Loader2 className="size-4 animate-spin" /> : "Send report & hold payout"}
+              </LobbButton>
+              <p className="mt-2 text-center text-[11px] font-medium text-[var(--lobb-text-tertiary)]">
+                {trustCopy.falseReport}
+              </p>
+      </AppDialog>
+
+      <AppDialog
+        open={showCancel}
+        onOpenChange={setShowCancel}
+        title="Cancel this booking?"
+        description="Review the refund before confirming."
+        tone="danger"
+        busy={cancelling}
+        footer={
+          <>
+            <LobbButton variant="outline" onClick={() => setShowCancel(false)} disabled={cancelling}>Keep booking</LobbButton>
+            <LobbButton variant="destructive" disabled={cancelling} onClick={cancelBooking}>{cancelling ? "Cancelling…" : "Cancel booking"}</LobbButton>
+          </>
+        }
+      >
+              <p className="text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">
+                {fullRefund ? (
+                  <>You will receive a <strong>full refund of {money(refundNgn)}</strong> within 2 to 5 business days.</>
+                ) : (
+                  <>You will receive <strong>50% back — {money(refundNgn)}</strong> — within 2 to 5 business days. The coach keeps the rest for holding the slot.</>
+                )}
+              </p>
+      </AppDialog>
+    </main>
+  );
+}
+
+function DetailSection({ title, children, compact }: { title: string; children: React.ReactNode; compact?: boolean }) {
+  return (
+    <section className={compact ? "" : "mt-7"}>
+      <div className="mb-4 flex items-center gap-3">
+        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-[var(--lobb-text-tertiary)]">{title}</span>
+        <span className="h-px flex-1 bg-[var(--lobb-border-subtle)]" />
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value }: { icon: typeof MapPin; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--lobb-radius-lg)] bg-[var(--lobb-clay-light)] text-[var(--lobb-clay)]">
+        <Icon className="size-4" />
+      </span>
+      <span>
+        <span className="block text-[10px] font-medium uppercase tracking-[0.16em] text-[var(--lobb-text-tertiary)]">{label}</span>
+        <span className="mt-1 block text-sm font-medium leading-6">{value}</span>
+      </span>
+    </div>
+  );
+}

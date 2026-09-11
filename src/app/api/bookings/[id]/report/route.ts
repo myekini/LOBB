@@ -7,12 +7,12 @@ import { clientIp, rateLimit } from "@/lib/rate-limit";
  * Player/coach-facing issue reporting — the low-friction front door to
  * disputes. Reporting instantly freezes the coach payout (booking →
  * disputed) so the player never has to chase money that already left.
- * Admin resolves within the 48h SLA (see docs/flows/disputes.md).
+ * Admin resolves within the 48h SLA (see docs/FLOWS.md).
  */
 
+// Must stay in sync with REPORT_CATEGORIES in the player booking-detail UI.
 const CATEGORIES = [
   "coach_no_show",
-  "player_no_show",
   "session_cut_short",
   "safety_concern",
   "other",
@@ -77,7 +77,7 @@ export const POST = withRole(["player", "coach"], async (request, auth, context)
   const { data: booking } = await auth.admin
     .from("bookings")
     .select(
-      `id, booking_ref, player_id, coach_id, status, starts_at, ends_at, paystack_transfer_code,
+      `id, human_ref, player_id, coach_id, status, starts_at, ends_at, paystack_transfer_code,
        coaches!bookings_coach_id_fkey ( full_name ),
        players!bookings_player_id_fkey ( full_name )`
     )
@@ -148,7 +148,7 @@ export const POST = withRole(["player", "coach"], async (request, auth, context)
       auth.admin,
       {
         bookingId: booking.id,
-        humanRef: booking.booking_ref,
+        humanRef: booking.human_ref,
         coachName: (Array.isArray(coachJoin) ? coachJoin[0] : coachJoin)?.full_name ?? "Coach",
         playerName: (Array.isArray(playerJoin) ? playerJoin[0] : playerJoin)?.full_name ?? "Player",
         startsAt: booking.starts_at,

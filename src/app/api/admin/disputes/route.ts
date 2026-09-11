@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withRole } from "@/lib/api-auth";
+import { internalError } from "@/lib/api-response";
 
 // ─── GET: list disputes with booking + party context ─────────────────────────
 
@@ -10,14 +11,14 @@ export const GET = withRole("admin", async (_request, auth) => {
       `id, booking_id, reason, status, resolution, player_refund_percent,
        coach_release_percent, internal_notes, created_at, resolved_at,
        bookings (
-         id, booking_ref, starts_at, location, status, total_amount_ngn, coach_payout_ngn,
+         id, human_ref, starts_at, location, status, total_amount_ngn, coach_payout_ngn,
          coaches!bookings_coach_id_fkey ( full_name ),
          players!bookings_player_id_fkey ( full_name )
        )`
     )
     .order("created_at", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return internalError(error);
   return NextResponse.json({ disputes: disputes ?? [] });
 });
 
@@ -33,13 +34,21 @@ export const POST = withRole("admin", async (request, auth) => {
 
   const { data: booking } = await auth.admin
     .from("bookings")
-    .select("id, status, escrow_released_at")
+    .select("id, status, escrow_released_at, paystack_transfer_code")
     .eq("id", body.booking_id)
     .maybeSingle();
 
   if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
   if (!["confirmed", "completed"].includes(booking.status)) {
     return NextResponse.json({ error: "Only confirmed or completed bookings can be disputed" }, { status: 409 });
+  }
+  // Once the coach has been paid there is nothing to freeze and no clean way to
+  // claw the transfer back. Disputes must be opened before payout.
+  if (booking.paystack_transfer_code) {
+    return NextResponse.json(
+      { error: "This booking is already paid out to the coach and can no longer be disputed" },
+      { status: 409 }
+    );
   }
 
   const { data: dispute, error } = await auth.admin
@@ -49,8 +58,10 @@ export const POST = withRole("admin", async (request, auth) => {
     .single();
 
   if (error) {
-    const message = error.code === "23505" ? "This booking already has a dispute" : error.message;
-    return NextResponse.json({ error: message }, { status: error.code === "23505" ? 409 : 500 });
+    if (error.code === "23505") {
+      return NextResponse.json({ error: "This booking already has a dispute" }, { status: 409 });
+    }
+    return internalError(error);
   }
 
   // Freeze the booking so the payout cron skips it while the dispute is open

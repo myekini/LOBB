@@ -1,0 +1,136 @@
+# Supabase Dashboard Setup — Manual Checklist
+
+Everything here is a **dashboard toggle**, not something a migration can set —
+do it once per project. Apply to both:
+
+- **Production**: `nnzddpvhldwjvhxbrrgh` (dashboard: supabase.com/dashboard/project/nnzddpvhldwjvhxbrrgh)
+- **Staging**: `zvqkofnkjdgxlbtbwhct` (dashboard: supabase.com/dashboard/project/zvqkofnkjdgxlbtbwhct)
+
+## 1. Authentication → Sign In / Providers → Email
+
+- [ ] **Email OTP Length = 6** (must match `NEXT_PUBLIC_OTP_LENGTH` in Vercel)
+- [ ] **Email OTP Expiration** ≤ 3600s
+- [ ] "Confirm email" stays **ON**
+- [ ] Prod only: **disable** any test/bypass options staging might use
+
+## 2. Authentication → URL Configuration
+
+The app verifies OTP codes directly via API (`verifyOtp` with a token) — it
+does **not** use magic-link redirects — so this isn't a hard blocker, but set
+it correctly anyway for Supabase's own internal defaults and any future flow
+that needs it (e.g. password reset, which isn't used today but might be).
+
+| Field | Production | Staging |
+|---|---|---|
+| Site URL | `https://lobb.ng` | `https://staging.lobb.ng` |
+| Redirect URLs (allowlist) | `https://lobb.ng/**` | `https://staging.lobb.ng/**`, `https://lobb-git-staging-myekinis-projects.vercel.app/**` |
+
+## 3. Authentication → Hooks → Send Email
+
+Both projects deliver OTP codes via a custom hook to Resend, not Supabase's
+built-in SMTP.
+
+- [ ] **Enabled**, pointing at `https://<app-url>/api/auth/email-hook`
+  - Production: `https://lobb.ng/api/auth/email-hook`
+  - Staging: `https://staging.lobb.ng/api/auth/email-hook` (or the `.vercel.app` URL until the domain is wired)
+- [ ] Secret matches `SUPABASE_EMAIL_HOOK_SECRET` in Vercel for that
+  environment (production and Preview currently share the **same** secret
+  value in Vercel — keep the hook secret identical on both Supabase projects
+  too, or split them if you'd rather isolate)
+
+**Staging is currently missing this** — that's why `send-otp` 500s there
+today. This is the one item actively blocking staging right now.
+
+## 4. Authentication → Hooks → Custom Access Token
+
+The app embeds `role` into the JWT via `custom_access_token_hook()` (defined
+in `supabase/migrations/20260624000002_functions.sql`) so middleware can
+route by role without a DB round-trip on every request. There's a graceful
+fallback to a `profiles` query if the claim is missing, so this is a
+**performance/consistency item, not a blocker** — but should be on for both:
+
+- [ ] Enable **Custom Access Token** hook → function `custom_access_token_hook`
+
+## 4b. Authentication → Sessions (refresh token lifetime)
+
+LOBB's model: one OTP at signup, then a long-lived session. Returning users
+re-authenticate with a **password or passkey**, never another code — so the
+session should last long enough that mobile users rarely hit a cold login.
+
+- [ ] **Refresh token expiry ≈ 60–90 days** (5184000–7776000s)
+- [ ] **Refresh token rotation = ON**, reuse interval 10s (the default)
+- [ ] Leave **"Enforce single session per user"** OFF
+
+## 4c. Authentication → Providers → Passkeys (WebAuthn) — optional
+
+Only needed to turn on the "Sign in with a passkey" button. Safe to skip; the
+UI stays hidden until both sides are enabled.
+
+- [ ] Enable the **Passkey / WebAuthn** provider
+- [ ] Relying Party ID = the bare domain (`lobb.ng` / `staging.lobb.ng`)
+- [ ] Add the app origins to the allowlist (`https://lobb.ng`, etc.)
+- [ ] Then set `NEXT_PUBLIC_LOBB_ENABLE_PASSKEYS=true` in Vercel for that env
+
+## 4d. Email/password sign-in
+
+- [ ] **Authentication → Providers → Email** — keep "Enable Email provider" ON
+      (it carries both OTP and password; no separate toggle)
+- [ ] **Password policy**: minimum length ≥ 8, "Check against HaveIBeenPwned" ON
+- [ ] Password is set *after* signup via `POST /api/auth/set-password`
+      (the `/auth/secure` step); there is no self-serve "forgot password" reset
+      flow yet — users fall back to "email me a login code" on the login page
+
+## 4e. Bot protection — Cloudflare Turnstile (optional but recommended)
+
+Guards `POST /api/auth/send-otp` on signup (the only place a code goes to a
+brand-new address). Verification **fails open** when unset.
+
+- [ ] Create a Turnstile widget at dash.cloudflare.com → Turnstile
+- [ ] Add the app domains to the widget's hostname allowlist
+- [ ] Set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` in Vercel
+
+## 4f. KYC field encryption (NIN/BVN)
+
+Per environment, **before** deploying the code that reads/writes
+`nin_encrypted`/`bvn_encrypted`:
+
+- [ ] Generate a key: `openssl rand -base64 32`
+- [ ] Set `KYC_ENCRYPTION_KEY` in Vercel for that environment — **a different
+      key for staging and prod**. Losing this key makes existing encrypted
+      NIN/BVN permanently unreadable; back it up in your password manager,
+      not just Vercel.
+- [ ] Run the migration `20260909000001_encrypt_kyc_fields.sql` (adds the new
+      columns; does not touch the old plaintext ones).
+- [ ] Deploy the app.
+- [ ] Run the backfill once per environment:
+      `NEXT_PUBLIC_SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... KYC_ENCRYPTION_KEY=... npx tsx scripts/backfill-kyc-encryption.ts`
+- [ ] Spot-check: submit a test coach's KYC, then bank details, and confirm
+      the Paystack customer-validation call still succeeds (proves
+      decrypt → Paystack round-trips).
+- [ ] Only after the above is confirmed in an environment: drop the old
+      `coaches.nin` / `coaches.bvn` plaintext columns there (a short follow-up
+      migration — commented at the bottom of `20260909000001_encrypt_kyc_fields.sql`).
+
+## 5. Database → Extensions
+
+- [ ] `pgcrypto` enabled (used for `gen_random_uuid()`/`gen_random_bytes()` in
+  migrations — usually on by default on new projects, confirm anyway)
+
+## 6. Project Settings → API
+
+- [ ] Confirm the four values in Vercel match this project exactly: URL,
+  anon/publishable key, service-role key. (Mismatches here are the #1 cause
+  of "works locally, 500s on staging" bugs.)
+
+## 7. Verify end to end
+
+After all of the above, per environment:
+
+1. Request a login code on that environment's URL — it should arrive within
+   seconds (Resend dashboard → Emails, filter by recipient, should show
+   `delivered`).
+2. Enter the code — should verify and route to the right dashboard (player →
+   `/home`, coach → `/coach/dashboard`, admin → `/admin`).
+3. Load a coach's public profile and confirm slots render (proves
+   `get_coach_available_slots` + `coach_profiles_public` view are both
+   healthy).

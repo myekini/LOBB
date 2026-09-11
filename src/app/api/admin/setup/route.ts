@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeEmail } from "@/lib/email";
 
@@ -32,8 +33,10 @@ function isProvisioningEnabled(): boolean {
 function authorize(request: Request): boolean {
   const secret = process.env.ADMIN_SETUP_SECRET;
   if (!secret) return false;
-  const token = request.headers.get("Authorization")?.replace("Bearer ", "");
-  return token === secret;
+  const token = request.headers.get("Authorization")?.replace("Bearer ", "") ?? "";
+  const a = Buffer.from(token);
+  const b = Buffer.from(secret);
+  return a.length === b.length && timingSafeEqual(a, b);
 }
 
 function getAdminEmails(): string[] {

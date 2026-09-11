@@ -33,10 +33,10 @@ export function LobbEmptyState({ title, body, action, className = "" }: EmptySta
   return (
     <section
       aria-live="polite"
-      className={`rounded-[14px] border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-6 py-10 text-center ${className}`}
+      className={`rounded-[var(--lobb-radius-lg)] border border-dashed border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] px-6 py-10 text-center ${className}`}
     >
       <TennisLineIllustration className="mx-auto h-24 w-32 text-[var(--lobb-clay)]" />
-      <h2 className="mt-5 text-[16px] font-black text-[var(--lobb-text-primary)]">{title}</h2>
+      <h2 className="mt-5 text-[16px] font-semibold text-[var(--lobb-text-primary)]">{title}</h2>
       <p className="mx-auto mt-2 max-w-[260px] text-[13px] font-medium leading-5 text-[var(--lobb-text-secondary)]">{body}</p>
       {action ? <div className="mt-6">{action}</div> : null}
     </section>

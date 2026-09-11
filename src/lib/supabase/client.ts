@@ -15,8 +15,18 @@ export function createClient() {
     throw new Error("LOBB sign in is temporarily unavailable. Please try again after the latest deployment finishes.");
   }
 
-  return createBrowserClient(
-    url,
-    key
-  );
+  return createBrowserClient(url, key, {
+    auth: {
+      // Persist + auto-refresh the Supabase session so returning users stay
+      // signed in for the life of the refresh token (set expiry to 60–90 days
+      // in the Supabase dashboard). OTP is a one-time signup cost — it should
+      // never fire again on a normal login.
+      persistSession: true,
+      autoRefreshToken: true,
+      // Enables auth.signInWithPasskey() / auth.registerPasskey().
+      // Also requires the WebAuthn/passkey provider to be enabled in the
+      // Supabase dashboard (Authentication → Providers).
+      experimental: { passkey: true },
+    },
+  });
 }

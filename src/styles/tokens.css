@@ -29,12 +29,12 @@
   --lobb-size-caption:  0.75rem;   /* 12px */
   --lobb-size-mono:     0.875rem;  /* 14px */
 
-  --lobb-weight-display: 900;
-  --lobb-weight-h1:      900;
-  --lobb-weight-h2:      900;
+  --lobb-weight-display: 700;
+  --lobb-weight-h1:      700;
+  --lobb-weight-h2:      600;
   --lobb-weight-body:    400;
-  --lobb-weight-label:   700;
-  --lobb-weight-caption: 700;
+  --lobb-weight-label:   600;
+  --lobb-weight-caption: 600;
   --lobb-weight-mono:    500;
 
   --lobb-leading-display: 0.96;
@@ -71,24 +71,34 @@
   --lobb-sp-12: 3rem;     /* 48px */
   --lobb-sp-16: 4rem;     /* 64px */
 
+  /* Controls: never introduce a fourth height or radius. */
+  --lobb-control-sm: 2rem;      /* 32px */
+  --lobb-control-md: 2.5rem;    /* 40px */
+  --lobb-control-lg: 3rem;      /* 48px */
+  --lobb-radius-sm: 0.375rem;   /*  6px */
+  --lobb-radius-md: 0.625rem;   /* 10px */
+  --lobb-radius-lg: 0.875rem;   /* 14px */
+
   /* ─── Color token reference ─────────────────────────────────────────────────
    * Values and dark-mode overrides live in globals.css.
    * Listed here for discoverability. Do not hard-code hex values in components.
    *
-   *  --lobb-black          Primary text, dark hero cards, strong actions
+   *  --lobb-bg-inverse     Dark hero cards and strong neutral actions
    *  --lobb-clay           CTA, brand accent, active booking state
    *  --lobb-clay-light     Clay tint for soft backgrounds and chips
    *  --lobb-clay-dark      Clay hover/pressed state
-   *  --lobb-bg             Warm page background
-   *  --lobb-surface        Cards, forms, modals
-   *  --lobb-border         Dividers and quiet borders
-   *  --lobb-muted          Helper text, captions, inactive nav
+   *  --lobb-bg-primary     Page background
+   *  --lobb-bg-secondary   Inset and grouped content
+   *  --lobb-bg-elevated    Cards, forms, and modals
+   *  --lobb-border-subtle  Dividers and quiet borders
    *  --lobb-success        Confirmed, approved, paid
    *  --lobb-error          Cancel, reject, failed payment
    *  --lobb-warning        Pending, attention states
    *  --lobb-text-primary   Body text (adjusts for dark mode)
-   *  --lobb-text-secondary Secondary text
+   *  --lobb-text-secondary Secondary text, captions, and inactive navigation
    *  --lobb-text-tertiary  Placeholder, metadata
-   *  --lobb-text-inverse   Text on dark surfaces
+   *  --lobb-text-inverse        Text on inverse surfaces (bg-inverse)
+   *  --lobb-text-inverse-muted  Secondary text on inverse surfaces
+   *  --lobb-border-inverse      Hairline borders / faint fills on inverse surfaces
    */
 }
