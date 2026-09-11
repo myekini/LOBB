@@ -522,6 +522,21 @@ create table if not exists public.consent_logs (
 );
 
 comment on table public.consent_logs is 'Audit trail of user acceptance for legal documents and sensitive-data consent.';
-comment on column public.coaches.paystack_subaccount_code is 'Legacy: old split-payment subaccount model, superseded by paystack_recipient_code + DVA.';
+
+-- paystack_subaccount_code is dropped by 20260714000001_db_cleanup.sql on any DB
+-- that's run that far — guard the comment so a full from-scratch replay (this
+-- file runs first, "create table if not exists" is a no-op on an existing
+-- table, so the column is never re-added) doesn't fail on an already-cleaned
+-- database.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'coaches' and column_name = 'paystack_subaccount_code'
+  ) then
+    execute 'comment on column public.coaches.paystack_subaccount_code is ''Legacy: old split-payment subaccount model, superseded by paystack_recipient_code + DVA.''';
+  end if;
+end $$;
+
 comment on column public.coaches.nin is 'National Identification Number — KYC. Verified via Smile Identity / VerifyMe (pending CAC).';
 comment on column public.coaches.bvn is 'Bank Verification Number — validated via Paystack customer identification during DVA issuance.';
