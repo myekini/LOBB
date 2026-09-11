@@ -19,8 +19,7 @@ $$;
 do $$ declare t text; begin
   for t in select unnest(array[
     'profiles', 'coaches', 'players',
-    'coach_availability', 'bookings', 'payments', 'reviews', 'disputes',
-    'otp_verifications'
+    'coach_availability', 'bookings', 'payments', 'reviews', 'disputes'
   ]) loop
     execute format(
       'drop trigger if exists set_updated_at on public.%I; '

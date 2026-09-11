@@ -352,19 +352,11 @@ create table if not exists public.paystack_events (
   created_at   timestamptz not null default now()
 );
 
--- ─── OTP verifications ────────────────────────────────────────────────────────
--- Persisted OTP state (survives deploys/restarts). Service-role access only.
-
-create table if not exists public.otp_verifications (
-  phone_number       text        primary key,
-  code_hash          text        not null,
-  role               public.user_role not null default 'player',
-  attempts           smallint    not null default 0,
-  request_timestamps bigint[]    not null default array[]::bigint[],
-  expires_at         timestamptz not null,
-  created_at         timestamptz not null default now(),
-  updated_at         timestamptz not null default now()
-);
+-- otp_verifications (the custom phone-OTP table) used to be created here.
+-- Removed 2026-09 — it's long gone from every real database (dropped by
+-- 20260714000001_db_cleanup.sql, zero code references remain) and recreating
+-- it on every full migration replay just to have a later file drop it again
+-- was pure churn. See db_cleanup.sql for the removal record.
 
 -- ─── Reviews ──────────────────────────────────────────────────────────────────
 -- One review per completed booking. Admin can soft-remove with a reason.
@@ -522,6 +514,21 @@ create table if not exists public.consent_logs (
 );
 
 comment on table public.consent_logs is 'Audit trail of user acceptance for legal documents and sensitive-data consent.';
-comment on column public.coaches.paystack_subaccount_code is 'Legacy: old split-payment subaccount model, superseded by paystack_recipient_code + DVA.';
+
+-- paystack_subaccount_code is dropped by 20260714000001_db_cleanup.sql on any DB
+-- that's run that far — guard the comment so a full from-scratch replay (this
+-- file runs first, "create table if not exists" is a no-op on an existing
+-- table, so the column is never re-added) doesn't fail on an already-cleaned
+-- database.
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'coaches' and column_name = 'paystack_subaccount_code'
+  ) then
+    execute 'comment on column public.coaches.paystack_subaccount_code is ''Legacy: old split-payment subaccount model, superseded by paystack_recipient_code + DVA.''';
+  end if;
+end $$;
+
 comment on column public.coaches.nin is 'National Identification Number — KYC. Verified via Smile Identity / VerifyMe (pending CAC).';
 comment on column public.coaches.bvn is 'Bank Verification Number — validated via Paystack customer identification during DVA issuance.';

@@ -19,13 +19,23 @@ set hourly_rate_ngn = least(75000, greatest(5000, (round(hourly_rate_ngn / 500.0
 where hourly_rate_ngn is not null
   and (hourly_rate_ngn < 5000 or hourly_rate_ngn > 75000 or hourly_rate_ngn % 500 <> 0);
 
-alter table public.coaches
-  add constraint coaches_hourly_rate_band_check
-  check (
-    hourly_rate_ngn is null
-    or (
-      hourly_rate_ngn >= 5000
-      and hourly_rate_ngn <= 75000
-      and hourly_rate_ngn % 500 = 0
-    )
-  );
+-- Postgres has no "add constraint if not exists" — guard it by name so this
+-- migration can be replayed (the CI pipeline re-runs every file on every
+-- push) without failing on a constraint that's already there.
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'coaches_hourly_rate_band_check'
+  ) then
+    alter table public.coaches
+      add constraint coaches_hourly_rate_band_check
+      check (
+        hourly_rate_ngn is null
+        or (
+          hourly_rate_ngn >= 5000
+          and hourly_rate_ngn <= 75000
+          and hourly_rate_ngn % 500 = 0
+        )
+      );
+  end if;
+end $$;
