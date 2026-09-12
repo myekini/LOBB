@@ -11,8 +11,11 @@
   }
 }
 
-/* One keyboard-focus contract for every interactive control. */
-:where(button, a, input, textarea, select, [role="button"], [tabindex]):focus-visible {
+/* Keyboard-focus contract for controls without their own focus treatment.
+   Inputs/textareas/selects define their own focus-visible ring per
+   component (see src/components/ui/*) — this generic orange outline used
+   to stack on top of those with !important, doubling up on every field. */
+:where(button, a, [role="button"], [tabindex]):focus-visible {
   outline: 2px solid var(--lobb-clay) !important;
   outline-offset: 2px !important;
 }
