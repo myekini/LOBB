@@ -23,7 +23,9 @@ export async function verifyTurnstile(token: string | undefined, ip?: string): P
     const body = new URLSearchParams({ secret, response: token });
     if (ip && ip !== "unknown") body.set("remoteip", ip);
 
-    const response = await fetch(VERIFY_URL, { method: "POST", body });
+    // Without a timeout, a slow/hanging Cloudflare response ties up the whole
+    // signup request for as long as the serverless function allows.
+    const response = await fetch(VERIFY_URL, { method: "POST", body, signal: AbortSignal.timeout(5000) });
     const payload = (await response.json().catch(() => null)) as { success?: boolean } | null;
     return Boolean(payload?.success);
   } catch {

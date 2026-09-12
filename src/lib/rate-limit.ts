@@ -24,6 +24,19 @@ export function rateLimit(
 
   hits.push(now);
   store.set(key, hits);
+
+  // Bound the store itself — a key with nothing recent is dead weight.
+  // Without this a warm instance accumulates one entry per unique IP/email
+  // it has ever seen, for as long as it stays warm. Uses a fixed staleness
+  // window (not the caller's windowMs) since call sites share this store
+  // with different window lengths.
+  if (store.size > 50_000) {
+    const staleBefore = now - 60 * 60 * 1000;
+    store.forEach((v, k) => {
+      if (v.every((t) => t <= staleBefore)) store.delete(k);
+    });
+  }
+
   return { ok: true, retryAfterSecs: 0 };
 }
 

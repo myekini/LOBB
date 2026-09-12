@@ -32,8 +32,12 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult 
     throw new Error("RESEND_API_KEY is not configured");
   }
 
+  // Supabase's auth email hook (the OTP-send critical path) enforces its own
+  // short timeout on this whole request — fail fast on a slow Resend call
+  // instead of hanging until Supabase's hook timeout kills it anyway.
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
+    signal: AbortSignal.timeout(6000),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",

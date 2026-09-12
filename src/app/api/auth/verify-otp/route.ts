@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeEmail } from "@/lib/email";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 function getAnonClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -30,6 +31,18 @@ export async function POST(request: Request) {
     const email = normalizeEmail(body.email);
     if (!email) {
       return NextResponse.json({ error: "Email is required." }, { status: 400 });
+    }
+
+    // Brute-force protection — a 6-digit code is only 1M combinations, and
+    // unlike send-otp/login-password this endpoint had no app-level throttle.
+    const ipLimit = rateLimit(`verify-otp:ip:${clientIp(request)}`, 20, 10 * 60 * 1000);
+    const emailLimit = rateLimit(`verify-otp:email:${email}`, 10, 10 * 60 * 1000);
+    if (!ipLimit.ok || !emailLimit.ok) {
+      const retry = Math.max(ipLimit.retryAfterSecs, emailLimit.retryAfterSecs);
+      return NextResponse.json(
+        { error: `Too many attempts. Try again in ${retry}s.` },
+        { status: 429, headers: { "Retry-After": String(retry) } },
+      );
     }
 
     const supabase = getAnonClient();
@@ -65,7 +78,11 @@ export async function POST(request: Request) {
       const { data: referringCoach } = await admin
         .from("coaches")
         .select("id")
-        .ilike("referral_code", refCode)
+        // referral_code is always generated upper(...) and refCode is
+        // already uppercased above — eq() lets this use
+        // coaches_referral_code_idx; ilike() can't (no case-insensitive
+        // index on this column), so it was a sequential scan every verify.
+        .eq("referral_code", refCode)
         .eq("status", "active")
         .maybeSingle();
       if (referringCoach) {
