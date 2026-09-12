@@ -1,32 +1,81 @@
-// NIN verification stub — replace with Smile Identity or VerifyMe once CAC is complete
-// and API credentials are obtained. The rest of the KYC flow (BVN via Paystack) is live.
+// NIN verification via Dojah (dojah.io). BVN is handled separately, live,
+// via Paystack (see /api/coaches/bank + the customeridentification.* webhook
+// handler in /api/payments/webhook).
 
 const KYC_PROVIDER_ENABLED = process.env.LOBB_KYC_PROVIDER_ENABLED === "true";
+const DOJAH_APP_ID = process.env.DOJAH_APP_ID;
+const DOJAH_SECRET_KEY = process.env.DOJAH_SECRET_KEY;
 
 export type NINVerificationResult =
   | { status: "verified"; name: string }
   | { status: "failed"; reason: string }
   | { status: "pending_provider" };
 
+type DojahNinEntity = {
+  first_name?: string;
+  last_name?: string;
+  middle_name?: string;
+};
+
 export async function verifyNIN(
   nin: string,
   firstName: string,
   lastName: string
 ): Promise<NINVerificationResult> {
-  void nin;
-  void firstName;
-  void lastName;
-
   if (!KYC_PROVIDER_ENABLED) {
-    // Stub: store the NIN, mark as pending provider activation.
-    // Once Smile Identity / VerifyMe is wired up, replace this block with the real API call.
+    // Store the NIN, mark as pending provider activation. Flip
+    // LOBB_KYC_PROVIDER_ENABLED=true once DOJAH_APP_ID/DOJAH_SECRET_KEY are
+    // set for the environment.
     return { status: "pending_provider" };
   }
 
-  // TODO: replace with Smile Identity or VerifyMe API call
-  // Example Smile Identity endpoint: POST https://3eydmgh10d.execute-api.us-west-2.amazonaws.com/test/v1/id_verification
-  // Body: { id_type: "NIN", id_number: nin, first_name: firstName, last_name: lastName, country: "NG" }
-  throw new Error("KYC provider enabled but not yet implemented — wire up Smile Identity or VerifyMe here");
+  if (!DOJAH_APP_ID || !DOJAH_SECRET_KEY) {
+    console.error("verifyNIN: LOBB_KYC_PROVIDER_ENABLED is true but DOJAH_APP_ID/DOJAH_SECRET_KEY are not set");
+    return { status: "pending_provider" };
+  }
+
+  // Dojah keys are prefixed by environment (test_sk_... / live keys don't
+  // carry that prefix) — this keeps sandbox vs production pointed at the
+  // right host without a third env var to keep in sync.
+  const baseUrl = DOJAH_SECRET_KEY.startsWith("test_") ? "https://sandbox.dojah.io" : "https://api.dojah.io";
+
+  let res: Response;
+  try {
+    res = await fetch(`${baseUrl}/api/v1/kyc/nin?nin=${encodeURIComponent(nin)}`, {
+      headers: { Authorization: DOJAH_SECRET_KEY, AppId: DOJAH_APP_ID },
+    });
+  } catch (err) {
+    console.error("verifyNIN: Dojah request failed:", err instanceof Error ? err.message : err);
+    return { status: "failed", reason: "Verification is temporarily unavailable. Please try again shortly." };
+  }
+
+  if (res.status === 404) {
+    return { status: "failed", reason: "No NIN record found. Check the number and try again." };
+  }
+  if (res.status === 400) {
+    return { status: "failed", reason: "NIN could not be read. Check the number and try again." };
+  }
+  if (!res.ok) {
+    // 401 (bad credentials), 402 (wallet balance), 424 (Dojah upstream down),
+    // 429 (rate limited) — none of these are the coach's fault or something
+    // they can fix by retrying their NIN. Keep the user-facing message generic,
+    // log the real status for whoever's on call.
+    console.error(`verifyNIN: Dojah returned ${res.status} ${res.statusText}`);
+    return { status: "failed", reason: "Verification is temporarily unavailable. Please try again shortly." };
+  }
+
+  const payload = (await res.json().catch(() => null)) as { entity?: DojahNinEntity } | null;
+  const entity = payload?.entity;
+  if (!entity) {
+    return { status: "failed", reason: "No NIN record found. Check the number and try again." };
+  }
+
+  const recordName = [entity.first_name, entity.middle_name, entity.last_name].filter(Boolean).join(" ").trim();
+  if (!namesAreSimilar(`${firstName} ${lastName}`, recordName)) {
+    return { status: "failed", reason: `Name on the NIN record ("${recordName}") does not match your profile name.` };
+  }
+
+  return { status: "verified", name: recordName };
 }
 
 // Fuzzy name match — handles Nigerian name ordering variations and middle names.

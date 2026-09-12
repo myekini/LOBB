@@ -111,6 +111,23 @@ Per environment, **before** deploying the code that reads/writes
       `coaches.nin` / `coaches.bvn` plaintext columns there (a short follow-up
       migration — commented at the bottom of `20260909000001_encrypt_kyc_fields.sql`).
 
+## 4g. NIN verification (Dojah)
+
+BVN is already live end-to-end via Paystack (`/api/coaches/bank` submits it,
+the `customeridentification.success`/`.failed` webhook confirms it). NIN goes
+through Dojah:
+
+- [ ] dojah.io → sign up → dashboard gives sandbox keys immediately, no wait
+- [ ] Set `DOJAH_APP_ID` + `DOJAH_SECRET_KEY` in Vercel for that environment —
+      sandbox keys for staging, a separate live app for production once ready
+- [ ] Set `LOBB_KYC_PROVIDER_ENABLED=true` (both are `false` by default —
+      until both are set, NIN submissions are stored but marked
+      `pending_provider`, never rejected or verified)
+- [ ] Spot-check: submit a test coach's NIN, confirm `kyc_nin_verified` flips
+      to `true` on the coaches row and the name-match logic
+      (`namesAreSimilar()` in `src/lib/kyc.ts`) doesn't false-positive/negative
+      on a real Nigerian name
+
 ## 5. Database → Extensions
 
 - [ ] `pgcrypto` enabled (used for `gen_random_uuid()`/`gen_random_bytes()` in
