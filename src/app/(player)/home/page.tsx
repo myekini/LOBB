@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, CalendarDays, Clock3, CreditCard, MapPin, TriangleAlert } from "lucide-react";
+import { ArrowRight, CalendarDays, Circle, Clock3, CreditCard, MapPin, TriangleAlert } from "lucide-react";
 import { PlayerBottomNav, PlayerHeader } from "@/components/layout/player-nav";
 import { SmallCoachCard } from "@/features/coaches/coach-cards";
 import { createClient } from "@/lib/supabase/server";
@@ -69,11 +69,10 @@ export default async function PlayerHomePage() {
   return (
     <main className="lobb-app-page min-h-screen pb-28 text-[var(--lobb-text-primary)]">
       <PlayerHeader active="home" title="Home" eyebrow="Player" />
-      <section className="mx-auto max-w-6xl px-4 pt-7 sm:px-6 lg:pt-10">
-        <p className="text-sm font-medium text-[var(--lobb-text-secondary)]">{timeOfDayGreeting()}, {firstName}</p>
+      <section className="mx-auto max-w-6xl px-4 pt-5 sm:px-6 lg:pt-7">
 
         {bookingsFailed ? (
-          <div className="mt-4 flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-error)]/40 bg-[var(--lobb-error)]/5 p-5">
+          <div className="flex items-start gap-3 rounded-[var(--lobb-radius-lg)] border border-[var(--lobb-border-error)]/40 bg-[var(--lobb-error)]/5 p-5">
             <TriangleAlert className="mt-0.5 size-5 shrink-0 text-[var(--lobb-error)]" />
             <div>
               <p className="font-medium text-[var(--lobb-text-primary)]">Could not load your bookings</p>
@@ -81,40 +80,55 @@ export default async function PlayerHomePage() {
             </div>
           </div>
         ) : nextBooking && needsPayment ? (
-          // ── State: payment pending — one job, one button ──
-          <article className="mt-4 lobb-surface-outlined border border-[var(--lobb-clay)]/30 bg-[var(--lobb-clay-light)] p-6">
-            <div className="flex items-center gap-2 text-[var(--lobb-clay)]"><CreditCard className="size-5" /><p className="text-xs font-medium uppercase tracking-[0.15em]">Payment pending</p></div>
-            <h1 className="mt-4 text-2xl font-semibold tracking-tight sm:text-3xl">Your session is waiting for payment.</h1>
-            <p className="mt-2 text-sm leading-6 text-[var(--lobb-text-secondary)]">Complete payment before your reserved slot expires — {formatBookingDate(nextBooking.starts_at)}.</p>
-            <Link href={`/dashboard/bookings/${nextBooking.id}`} className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-clay)] px-6 text-sm font-medium text-white">Complete payment<ArrowRight className="size-4" /></Link>
-          </article>
+          // ── State: payment pending ──
+          <section className="lobb-hero-card relative overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
+            <div className="lobb-hero-eyebrow inline-flex items-center gap-2 rounded-[var(--lobb-radius-md)] border px-3 py-2">
+              <Circle className="size-2 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
+              <span className="text-[11px] font-medium uppercase tracking-[0.18em]">{timeOfDayGreeting()}, {firstName}</span>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-white/85"><CreditCard className="size-4" /><p className="text-[11px] font-medium uppercase tracking-[0.16em]">Payment pending</p></div>
+            <h1 className="mt-2 max-w-xl text-[26px] font-semibold leading-[1.1] tracking-tight text-balance sm:text-[34px]">Your session is waiting for payment.</h1>
+            <p className="mt-3 max-w-md text-sm leading-6 text-white/70">Complete payment before your reserved slot expires — {formatBookingDate(nextBooking.starts_at)}.</p>
+            <Link href={`/dashboard/bookings/${nextBooking.id}`} className="mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white px-6 text-sm font-medium text-[#0d0d0d] transition hover:bg-white/85">Complete payment<ArrowRight className="size-4" /></Link>
+          </section>
         ) : nextBooking ? (
-          // ── State: upcoming session — the booking, not a coach pitch ──
-          <article className="mt-4 lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-5 sm:p-6">
-            <div className="grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.15em] text-[var(--lobb-clay)]">Your next session</p>
-                <h1 className="mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">{formatBookingDate(nextBooking.starts_at)}</h1>
-                <p className="mt-3 flex items-start gap-2 text-sm leading-6 text-[var(--lobb-text-secondary)]"><MapPin className="mt-1 size-4 shrink-0 text-[var(--lobb-clay)]" /><span className="break-words">{nextBooking.location || "Location pending"}</span></p>
+          // ── State: upcoming session ──
+          <section className="lobb-hero-card relative overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
+            <div className="lobb-hero-eyebrow inline-flex items-center gap-2 rounded-[var(--lobb-radius-md)] border px-3 py-2">
+              <Circle className="size-2 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
+              <span className="text-[11px] font-medium uppercase tracking-[0.18em]">{timeOfDayGreeting()}, {firstName}</span>
+            </div>
+            <div className="mt-5 flex flex-wrap items-end justify-between gap-5">
+              <div className="min-w-0">
+                <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-[var(--lobb-clay)]">Your next session</p>
+                <h1 className="mt-1.5 text-[28px] font-semibold leading-[1.05] tracking-tight text-balance sm:text-[36px]">{formatBookingDate(nextBooking.starts_at)}</h1>
+                <p className="mt-2.5 flex items-start gap-2 text-sm font-medium text-white/70"><MapPin className="mt-0.5 size-4 shrink-0 text-[var(--lobb-clay)]" /><span className="break-words">{nextBooking.location || "Location pending"}</span></p>
               </div>
-              <div className="flex items-center gap-3 sm:flex-col sm:items-end sm:text-right">
-                <div className="size-12 shrink-0 overflow-hidden rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-secondary)]">{coach?.profile_photo_url && (
+              <div className="flex items-center gap-3 rounded-[var(--lobb-radius-md)] border border-white/15 bg-white/[0.06] px-3 py-2.5">
+                <div className="size-9 shrink-0 overflow-hidden rounded-full bg-white/10">{coach?.profile_photo_url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={coach.profile_photo_url} alt="" className="size-full object-cover" />
                 )}</div>
-                <p className="min-w-0 truncate font-medium">{coach?.full_name ?? "Your coach"}</p>
+                <p className="truncate text-sm font-medium text-white">{coach?.full_name ?? "Your coach"}</p>
               </div>
             </div>
-            <div className="mt-6 flex gap-2 border-t border-[var(--lobb-border-subtle)] pt-5"><Link href={`/dashboard/bookings/${nextBooking.id}`} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-4 text-sm font-medium text-[var(--lobb-text-inverse)] sm:flex-none">View booking<ArrowRight className="size-4" /></Link><Link href="/dashboard" className="flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] px-4 text-sm font-medium">All bookings</Link></div>
-          </article>
+            <div className="mt-6 flex gap-2 border-t border-white/10 pt-5">
+              <Link href={`/dashboard/bookings/${nextBooking.id}`} className="flex h-11 items-center justify-center gap-2 rounded-[var(--lobb-radius-md)] bg-white px-5 text-sm font-medium text-[#0d0d0d] transition hover:bg-white/85">View booking<ArrowRight className="size-4" /></Link>
+              <Link href="/dashboard" className="flex h-11 items-center justify-center rounded-[var(--lobb-radius-md)] border border-white/15 px-4 text-sm font-medium text-white/85 transition hover:border-white/40">All bookings</Link>
+            </div>
+          </section>
         ) : (
           // ── State: nothing booked — one CTA, not four ──
-          <article className="mt-4 lobb-surface-outlined border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] p-6">
-            <CalendarDays className="size-5 text-[var(--lobb-clay)]" />
-            <h1 className="mt-5 text-2xl font-semibold tracking-tight sm:text-3xl">Ready for your next session?</h1>
-            <p className="mt-2 text-sm leading-6 text-[var(--lobb-text-secondary)]">Choose a verified coach and reserve a time that works for you.</p>
-            <Link href="/coaches" className="mt-6 inline-flex h-11 items-center gap-2 rounded-[var(--lobb-radius-md)] bg-[var(--lobb-bg-inverse)] px-5 text-sm font-medium text-[var(--lobb-text-inverse)]">Browse coaches<ArrowRight className="size-4" /></Link>
-          </article>
+          <section className="lobb-hero-card relative overflow-hidden border px-6 py-6 sm:px-8 sm:py-7">
+            <div className="lobb-hero-eyebrow inline-flex items-center gap-2 rounded-[var(--lobb-radius-md)] border px-3 py-2">
+              <Circle className="size-2 fill-[var(--lobb-clay)] text-[var(--lobb-clay)]" />
+              <span className="text-[11px] font-medium uppercase tracking-[0.18em]">{timeOfDayGreeting()}, {firstName}</span>
+            </div>
+            <CalendarDays className="mt-5 size-5 text-[var(--lobb-clay)]" />
+            <h1 className="mt-3 max-w-lg text-[28px] font-semibold leading-[1.05] tracking-tight text-balance sm:text-[36px]">Ready for your next session?</h1>
+            <p className="mt-2.5 max-w-md text-sm leading-6 text-white/70">Choose a verified coach and reserve a time that works for you.</p>
+            <Link href="/coaches" className="mt-6 inline-flex h-11 items-center gap-2 rounded-[var(--lobb-radius-md)] bg-white px-5 text-sm font-medium text-[#0d0d0d] transition hover:bg-white/85">Browse coaches<ArrowRight className="size-4" /></Link>
+          </section>
         )}
 
         {reviewableBooking && reviewableCoach && (
