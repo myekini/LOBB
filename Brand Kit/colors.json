@@ -1,0 +1,5 @@
+{
+  "rust": { "hex": "#C4622D", "role": "Primary accent — mark, CTAs, links, highlights" },
+  "ink": { "hex": "#0D0D0D", "role": "Primary text, dark surfaces, dark-lockup wordmark" },
+  "paper": { "hex": "#FAFAF8", "role": "Light surfaces, light-lockup wordmark on dark" }
+}

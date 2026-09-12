@@ -72,8 +72,13 @@ is touched — not as a standalone sweep.
 
 ## Brand assets
 
-- Logo assets: `brand/logo/`
-- Icons: `brand/icons/`
-- Verified asset: `brand/badges/`
+See `Brand Kit/README.md` for the full system (usage rules, clear space, minimum sizes).
+
+- Mark: `Brand Kit/mark/`
+- Wordmark: `Brand Kit/wordmark/`
+- Combined lockups: `Brand Kit/lockups/`
+- Favicons / app icons: `Brand Kit/favicon/`
+- Verified badge: `Brand Kit/badge/`
+- Color / type tokens: `Brand Kit/colors.json`, `Brand Kit/typography.json`
 
 The product promise is: **Book a coach. Not a favor.**

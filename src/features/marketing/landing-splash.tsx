@@ -11,8 +11,8 @@ const HERO_IMAGE = "/court-hero.jpg";
 function LobbMark({ size = 24, color = "#C4622D" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <path d="M 8 56 C 8 4 56 4 56 56" stroke={color} strokeWidth="4" strokeLinecap="round" />
-      <circle cx="32" cy="17" r="5.5" fill={color} />
+      <path d="M 12 54 C 9 25 20 7 35 6 C 50 5 59 15 58 29 C 57.5 39 51 47 41 51" stroke={color} strokeWidth="6.5" strokeLinecap="round" fill="none" />
+      <circle cx="36" cy="7.5" r="8.5" fill={color} />
     </svg>
   );
 }

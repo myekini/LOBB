@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/favicon.svg",
+    apple: "/icons/apple-touch-icon-180.png",
   },
   openGraph: {
     title: "LOBB - Book Verified Tennis Coaches in Lagos",

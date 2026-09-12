@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./brand/logo/lockup-dark.svg" alt="LOBB - Book a coach. Not a favor." width="272" />
+  <img src="./Brand Kit/lockups/lobb-lockup-horizontal-on-light.svg" alt="LOBB - Book a coach. Not a favor." width="272" />
 </p>
 
 <p align="center">
@@ -87,7 +87,7 @@ Premium and operational aesthetics with a warm, accessible color palette:
 | `--lobb-success` | `#2D6A4F` | Confirmed, approved states |
 | `--lobb-star` | `#F4A228` | Ratings and reviews |
 
-See `docs/DESIGN.md` and `brand-kit/brand-preview.html` for the canonical design documentation and visual preview.
+See `docs/DESIGN.md` and `Brand Kit/README.md` for the canonical design documentation and full asset set (marks, wordmarks, lockups, favicons, color/type tokens).
 
 ## Repository Structure
 
@@ -96,7 +96,7 @@ src/
   app/          Pages, route handlers, middleware
   components/   UI shells, cards, primitives
   lib/          Auth, helpers, Supabase clients
-brand-kit/      Logos, badges, design docs
+Brand Kit/      Logos, badges, favicons, color/type tokens
 supabase/       Database migrations
 ```
 
@@ -146,4 +146,4 @@ All rights reserved.
 
 ---
 
-**Need help?** Check `.env.example` for environment setup or review `brand-kit/` for design guidance.
+**Need help?** Check `.env.example` for environment setup or review `Brand Kit/` for design guidance.
