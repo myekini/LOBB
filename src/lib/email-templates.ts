@@ -89,7 +89,7 @@ const BRAND = {
 };
 
 export function emailShell(title: string, preview: string, body: string, cta?: { label: string; href: string }) {
-  const logoUrl = emailAssetUrl("/email/lobb-lockup.png");
+  const logoUrl = emailAssetUrl("/email/lobb-mark.png");
   const ctaHtml = cta
     ? `<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:28px;border-collapse:collapse;">
         <tr>
@@ -114,8 +114,8 @@ export function emailShell(title: string, preview: string, body: string, cta?: {
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border-collapse:collapse;">
             <tr>
               <td style="background:${BRAND.ink};padding:22px 26px;border-radius:14px 14px 0 0;">
-                <img src="${logoUrl}" width="112" height="27" alt="LOBB" style="display:block;width:112px;max-width:100%;height:auto;border:0;" />
-                <h1 style="margin:20px 0 0;color:#ffffff;font:700 24px/1.2 Arial,Helvetica,sans-serif;">${emailEscapeHtml(title)}</h1>
+                <img src="${logoUrl}" width="32" height="32" alt="LOBB" style="display:block;width:32px;height:32px;border:0;" />
+                <h1 style="margin:16px 0 0;color:#ffffff;font:700 24px/1.2 Arial,Helvetica,sans-serif;">${emailEscapeHtml(title)}</h1>
               </td>
             </tr>
             <tr>
@@ -318,8 +318,7 @@ export function bookingRescheduledEmail(info: EmailBookingInfo, recipient: "play
       ["Player", info.playerName],
       ["Location", info.location],
       ["Reference", info.reference],
-    ])}
-    ${noteCard("Calendar check", "Please use the new time for arrival, court logistics, and reminders.", "warning")}`,
+    ])}`,
     { label: "View booking", href: appUrl(recipient === "coach" ? `/coach/bookings/${info.bookingId}` : `/dashboard/bookings/${info.bookingId}`) }
   );
 
@@ -396,8 +395,7 @@ export function bookingConfirmedCoachEmail(info: EmailBookingInfo): EmailTemplat
       ["Player phone", info.playerPhone],
       ["Note", info.playerNotes],
       ["Booking ref", info.humanRef ?? info.reference],
-    ])}
-    ${noteCard("Coach checklist", "Confirm the location, review the player note, and keep your availability current after the session.", "success")}`,
+    ])}`,
     { label: "Open coach booking", href: appUrl(`/coach/bookings/${info.bookingId}`) }
   );
 
