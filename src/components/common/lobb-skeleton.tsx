@@ -107,8 +107,7 @@ export function LobbBrandLoader({ message = "Securing your session" }: { message
             <circle cx="36" cy="7.5" r="8.5" fill="var(--lobb-clay)" className="lobb-boot-circle" />
           </svg>
         </div>
-        <p className="mt-5 text-sm font-medium uppercase tracking-[0.22em]">LOBB</p>
-        <p className="mt-2 max-w-xs text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{message}</p>
+        <p className="mt-6 max-w-xs text-sm font-medium leading-6 text-[var(--lobb-text-secondary)]">{message}</p>
       </div>
     </div>
   );

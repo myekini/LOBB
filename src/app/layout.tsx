@@ -142,23 +142,21 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* App launch splash — installed-PWA only (gated in CSS). Mark only,
+            no wordmark underneath: the icon that's about to be the app icon
+            on their home screen is the entire point of this moment. */}
         <div className="lobb-pwa-boot" aria-hidden="true">
           <div className="lobb-pwa-boot-mark">
-            <svg width="80" height="80" viewBox="0 0 64 64" fill="none" className="lobb-boot-svg">
+            <svg width="96" height="96" viewBox="0 0 64 64" fill="none" className="lobb-boot-svg">
               <path
-                d="M 10 54 C 10 6 54 6 54 54"
+                d="M 12 54 C 9 25 20 7 35 6 C 50 5 59 15 58 29 C 57.5 39 51 47 41 51"
                 stroke="url(#boot-grad)"
-                strokeWidth="5"
+                strokeWidth="6.5"
                 strokeLinecap="round"
+                pathLength="1"
                 className="lobb-boot-path"
               />
-              <circle
-                cx="32"
-                cy="17"
-                r="7"
-                fill="#C4622D"
-                className="lobb-boot-circle"
-              />
+              <circle cx="36" cy="7.5" r="8.5" fill="#C4622D" className="lobb-boot-circle" />
               <defs>
                 <linearGradient id="boot-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#C4622D" />
@@ -166,8 +164,6 @@ export default function RootLayout({
                 </linearGradient>
               </defs>
             </svg>
-            <span className="lobb-boot-title">LOBB</span>
-            <span className="lobb-boot-sub">Lagos Tennis</span>
           </div>
         </div>
         <script

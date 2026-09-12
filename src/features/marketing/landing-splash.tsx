@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { CoachPublicProfile } from "@/lib/types";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -70,10 +69,10 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
         </div>
       </header>
 
-      <section aria-labelledby="hero-heading" className="relative z-10 mx-auto grid min-h-[calc(100dvh-4rem)] w-full max-w-7xl items-center overflow-hidden px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[minmax(0,1.22fr)_minmax(340px,0.78fr)] lg:px-8 lg:py-20">
-        <div className="relative z-10 max-w-4xl animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+      <section aria-labelledby="hero-heading" className="relative z-10 mx-auto flex min-h-[calc(100dvh-4rem)] w-full max-w-4xl flex-col justify-center px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
           <p className="mb-5 text-sm font-medium text-[var(--lobb-clay)]">Verified tennis coaching in Lagos</p>
-          <h1 id="hero-heading" className="max-w-[900px] text-[46px] font-semibold leading-[0.96] tracking-tight text-[var(--lobb-text-primary)] text-balance sm:text-[66px] lg:text-[78px]">
+          <h1 id="hero-heading" className="max-w-[820px] text-[46px] font-semibold leading-[0.96] tracking-tight text-[var(--lobb-text-primary)] text-balance sm:text-[66px] lg:text-[78px]">
             Skip the WhatsApp chase. Book a verified coach.
           </h1>
           <p className="mt-6 max-w-lg text-[16px] leading-7 text-[var(--lobb-text-secondary)] sm:text-[18px]">
@@ -88,11 +87,6 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
               Become a coach
             </Link>
           </div>
-        </div>
-
-        <div className="relative mt-10 min-h-[280px] animate-in overflow-hidden fade-in-0 duration-700 sm:min-h-[360px] lg:absolute lg:inset-y-0 lg:right-0 lg:mt-0 lg:w-[46%] lg:min-h-0" aria-hidden="true">
-          <Image src={HERO_IMAGE} alt="" fill priority sizes="(min-width: 1024px) 46vw, 100vw" className="object-cover object-center" />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,var(--lobb-bg-primary)_100%)] lg:bg-[linear-gradient(90deg,var(--lobb-bg-primary)_0%,transparent_42%),linear-gradient(180deg,transparent_70%,var(--lobb-bg-primary)_100%)]" />
         </div>
       </section>
 

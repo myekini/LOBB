@@ -85,9 +85,9 @@
   100% { transform: scale(1);    opacity: 1; }
 }
 
-@keyframes pwaBootTitle {
-  0%   { opacity: 0; transform: translateY(4px); }
-  100% { opacity: 1; transform: translateY(0); }
+@keyframes pwaBootGlow {
+  0%, 100% { filter: drop-shadow(0 0 28px rgba(196, 98, 45, 0.32)) drop-shadow(0 8px 16px rgba(0,0,0,0.6)); }
+  50%      { filter: drop-shadow(0 0 42px rgba(196, 98, 45, 0.52)) drop-shadow(0 8px 16px rgba(0,0,0,0.6)); }
 }
 
 @layer base {
@@ -257,14 +257,15 @@
 
   .lobb-pwa-boot-mark {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 1rem;
     animation: pwaBootMark 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   }
 
   .lobb-boot-svg {
     filter: drop-shadow(0 0 28px rgba(196, 98, 45, 0.32)) drop-shadow(0 8px 16px rgba(0,0,0,0.6));
+    /* One soft breath once the mark's drawn in, so the splash doesn't go
+       inert the moment the draw-on animation finishes. */
+    animation: pwaBootGlow 1.8s ease-in-out 0.6s infinite;
   }
 
   .lobb-boot-path {
@@ -282,28 +283,6 @@
     transform: scale(0);
     opacity: 0;
     animation: pwaCirclePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.85s forwards;
-  }
-
-  .lobb-boot-title {
-    color: rgba(255, 255, 255, 0.92);
-    font-size: 1rem;
-    font-weight: 900;
-    letter-spacing: 0.38em;
-    text-indent: 0.38em;
-    opacity: 0;
-    animation: pwaBootTitle 0.5s ease 1.05s forwards;
-  }
-
-  .lobb-boot-sub {
-    color: rgba(196, 98, 45, 0.72);
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    text-indent: 0.22em;
-    opacity: 0;
-    animation: pwaBootTitle 0.5s ease 1.2s forwards;
-    margin-top: -0.4rem;
   }
 
   .lobb-landing {
