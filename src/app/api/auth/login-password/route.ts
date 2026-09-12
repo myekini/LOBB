@@ -26,8 +26,10 @@ export async function POST(request: Request) {
 
     // Brute-force protection: per IP and per email.
     const ip = clientIp(request);
-    const ipLimit = rateLimit(`login-pw:ip:${ip}`, 20, 10 * 60 * 1000);
-    const emailLimit = rateLimit(`login-pw:email:${email}`, 8, 10 * 60 * 1000);
+    const [ipLimit, emailLimit] = await Promise.all([
+      rateLimit(`login-pw:ip:${ip}`, 20, 10 * 60 * 1000),
+      rateLimit(`login-pw:email:${email}`, 8, 10 * 60 * 1000),
+    ]);
     if (!ipLimit.ok || !emailLimit.ok) {
       const retry = Math.max(ipLimit.retryAfterSecs, emailLimit.retryAfterSecs);
       return NextResponse.json(

@@ -35,8 +35,10 @@ export async function POST(request: Request) {
 
     // Brute-force protection — a 6-digit code is only 1M combinations, and
     // unlike send-otp/login-password this endpoint had no app-level throttle.
-    const ipLimit = rateLimit(`verify-otp:ip:${clientIp(request)}`, 20, 10 * 60 * 1000);
-    const emailLimit = rateLimit(`verify-otp:email:${email}`, 10, 10 * 60 * 1000);
+    const [ipLimit, emailLimit] = await Promise.all([
+      rateLimit(`verify-otp:ip:${clientIp(request)}`, 20, 10 * 60 * 1000),
+      rateLimit(`verify-otp:email:${email}`, 10, 10 * 60 * 1000),
+    ]);
     if (!ipLimit.ok || !emailLimit.ok) {
       const retry = Math.max(ipLimit.retryAfterSecs, emailLimit.retryAfterSecs);
       return NextResponse.json(

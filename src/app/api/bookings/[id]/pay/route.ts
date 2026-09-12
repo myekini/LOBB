@@ -15,7 +15,7 @@ function callbackOrigin() {
 // single-use, so resuming checkout requires a fresh transaction pointed at the
 // same booking and payment row.
 export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const rl = rateLimit(`booking-pay:${clientIp(request)}`, 5, 10 * 60 * 1000);
+  const rl = await rateLimit(`booking-pay:${clientIp(request)}`, 5, 10 * 60 * 1000);
   if (!rl.ok) return apiError("RATE_LIMITED", 429);
 
   const auth = await requireRole(["player"]);

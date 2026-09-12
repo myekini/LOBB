@@ -44,8 +44,10 @@ export async function POST(request: Request) {
     }
 
     // App-level throttle on top of Supabase's own OTP limits: per IP and per email
-    const ipLimit = rateLimit(`send-otp:ip:${clientIp(request)}`, 10, 10 * 60 * 1000);
-    const emailLimit = rateLimit(`send-otp:email:${email}`, 5, 10 * 60 * 1000);
+    const [ipLimit, emailLimit] = await Promise.all([
+      rateLimit(`send-otp:ip:${clientIp(request)}`, 10, 10 * 60 * 1000),
+      rateLimit(`send-otp:email:${email}`, 5, 10 * 60 * 1000),
+    ]);
     if (!ipLimit.ok || !emailLimit.ok) {
       const retry = Math.max(ipLimit.retryAfterSecs, emailLimit.retryAfterSecs);
       return NextResponse.json(

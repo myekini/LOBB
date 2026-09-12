@@ -56,7 +56,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const rl = rateLimit(`booking-create:${clientIp(request)}`, 5, 10 * 60 * 1000);
+  const rl = await rateLimit(`booking-create:${clientIp(request)}`, 5, 10 * 60 * 1000);
   if (!rl.ok) {
     return apiError("RATE_LIMITED", 429);
   }

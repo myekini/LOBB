@@ -10,7 +10,7 @@ const MIN_ADVANCE_HOURS = 24;
 const MAX_ADVANCE_DAYS  = 30;
 
 export async function POST(request: Request) {
-  const rl = rateLimit(`booking-lock:${clientIp(request)}`, 10, 5 * 60 * 1000);
+  const rl = await rateLimit(`booking-lock:${clientIp(request)}`, 10, 5 * 60 * 1000);
   if (!rl.ok) {
     return apiError("RATE_LIMITED", 429);
   }

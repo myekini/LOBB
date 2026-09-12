@@ -9,7 +9,7 @@ import { apiError } from "@/lib/api-response";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
-  const rl = rateLimit(`payment-verify:${clientIp(request)}`, 30, 5 * 60 * 1000);
+  const rl = await rateLimit(`payment-verify:${clientIp(request)}`, 30, 5 * 60 * 1000);
   if (!rl.ok) {
     return apiError("RATE_LIMITED", 429);
   }
