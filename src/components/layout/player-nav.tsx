@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 const items = [
   { href: "/home",               label: "Home",     icon: Home },
   { href: "/coaches",            label: "Coaches",  icon: Search },
-  { href: "/dashboard/bookings", label: "Bookings", icon: CalendarDays },
+  { href: "/dashboard",          label: "Bookings", icon: CalendarDays },
   { href: "/profile",            label: "Profile",  icon: User },
 ] as const;
 

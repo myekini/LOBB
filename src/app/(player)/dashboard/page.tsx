@@ -3,7 +3,7 @@
 import { Button as LobbButton } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Script from "next/script";
 import {
   AlertCircle,
@@ -120,7 +120,6 @@ function CoachAvatar({ coach, size = "size-12" }: { coach: JoinedCoach | null; s
 /* ────────────────────────────────── Page ────────────────────────────────── */
 
 export default function DashboardPage() {
-  const pathname = usePathname();
   const router = useRouter();
   const [tab, setTab] = useState<BookingTab>("upcoming");
   const [upcoming, setUpcoming] = useState<DashboardBooking[]>([]);
@@ -134,12 +133,6 @@ export default function DashboardPage() {
     () => [...upcoming].sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()),
     [upcoming],
   );
-
-  useEffect(() => {
-    if (pathname === "/dashboard") {
-      router.replace("/dashboard/bookings");
-    }
-  }, [pathname, router]);
 
   // next/script's onLoad won't fire if the Paystack SDK is already loaded from
   // another page — detect the global directly so pay buttons don't stay disabled.

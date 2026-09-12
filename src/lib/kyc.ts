@@ -6,6 +6,9 @@ const KYC_PROVIDER_ENABLED = process.env.LOBB_KYC_PROVIDER_ENABLED === "true";
 const DOJAH_APP_ID = process.env.DOJAH_APP_ID;
 const DOJAH_SECRET_KEY = process.env.DOJAH_SECRET_KEY;
 
+// Dojah's only sandbox NIN — see the name-match relaxation below.
+const SANDBOX_TEST_NIN = "70123456789";
+
 export type NINVerificationResult =
   | { status: "verified"; name: string }
   | { status: "failed"; reason: string }
@@ -83,12 +86,22 @@ export async function verifyNIN(
   }
 
   const recordName = [entity.first_name, entity.middle_name, entity.last_name].filter(Boolean).join(" ").trim();
-  if (!namesAreSimilar(`${firstName} ${lastName}`, recordName)) {
+
+  // Dojah's sandbox has exactly one NIN (SANDBOX_TEST_NIN) and it always
+  // echoes back the same canned identity ("John Doe Adamu") — there's no way
+  // to get a second test NIN from them. Without this, every test coach whose
+  // profile name isn't literally "John Doe Adamu" fails the name-match check,
+  // which makes it impossible to create more than one verified test account.
+  // Real Dojah call still happens above (so the integration itself is still
+  // exercised); only the local name-gate relaxes, and only for this one
+  // number on a sandbox key. Production behavior is untouched.
+  const isSandboxTestNin = baseUrl === "https://sandbox.dojah.io" && nin === SANDBOX_TEST_NIN;
+  if (!isSandboxTestNin && !namesAreSimilar(`${firstName} ${lastName}`, recordName)) {
     console.error(`verifyNIN: name mismatch — profile "${firstName} ${lastName}" vs NIN record "${recordName}"`);
     return { status: "failed", reason: `Name on the NIN record ("${recordName}") does not match your profile name.` };
   }
 
-  return { status: "verified", name: recordName };
+  return { status: "verified", name: isSandboxTestNin ? `${firstName} ${lastName}`.trim() : recordName };
 }
 
 // Fuzzy name match — handles Nigerian name ordering variations and middle names.
