@@ -49,11 +49,15 @@ export async function verifyNIN(
     return { status: "failed", reason: "Verification is temporarily unavailable. Please try again shortly." };
   }
 
-  if (res.status === 404) {
-    return { status: "failed", reason: "No NIN record found. Check the number and try again." };
-  }
-  if (res.status === 400) {
-    return { status: "failed", reason: "NIN could not be read. Check the number and try again." };
+  if (res.status === 404 || res.status === 400) {
+    const raw = await res.text().catch(() => "");
+    console.error(`verifyNIN: Dojah returned ${res.status} for a NIN lookup — raw body:`, raw);
+    return {
+      status: "failed",
+      reason: res.status === 404
+        ? "No NIN record found. Check the number and try again."
+        : "NIN could not be read. Check the number and try again.",
+    };
   }
   if (!res.ok) {
     // 401 (bad credentials), 402 (wallet balance), 424 (Dojah upstream down),
@@ -64,14 +68,23 @@ export async function verifyNIN(
     return { status: "failed", reason: "Verification is temporarily unavailable. Please try again shortly." };
   }
 
-  const payload = (await res.json().catch(() => null)) as { entity?: DojahNinEntity } | null;
+  const rawText = await res.text();
+  const payload = (() => {
+    try {
+      return JSON.parse(rawText) as { entity?: DojahNinEntity };
+    } catch {
+      return null;
+    }
+  })();
   const entity = payload?.entity;
   if (!entity) {
+    console.error("verifyNIN: 200 OK but no `entity` in the response — raw body:", rawText);
     return { status: "failed", reason: "No NIN record found. Check the number and try again." };
   }
 
   const recordName = [entity.first_name, entity.middle_name, entity.last_name].filter(Boolean).join(" ").trim();
   if (!namesAreSimilar(`${firstName} ${lastName}`, recordName)) {
+    console.error(`verifyNIN: name mismatch — profile "${firstName} ${lastName}" vs NIN record "${recordName}"`);
     return { status: "failed", reason: `Name on the NIN record ("${recordName}") does not match your profile name.` };
   }
 

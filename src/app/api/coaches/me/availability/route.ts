@@ -27,9 +27,11 @@ export async function GET() {
     ]);
 
     if (slotsResult.error) {
+      console.error("[availability.load] coach_availability query failed:", slotsResult.error);
       return apiError("AVAILABILITY_LOAD_FAILED", 500);
     }
     if (blocksResult.error) {
+      console.error("[availability.load] coach_availability_blocks query failed:", blocksResult.error);
       return apiError("AVAILABILITY_LOAD_FAILED", 500);
     }
 
@@ -37,7 +39,8 @@ export async function GET() {
       slots: (slotsResult.data ?? []) as CoachAvailabilityRow[],
       blocks: (blocksResult.data ?? []) as CoachAvailabilityBlock[],
     });
-  } catch {
+  } catch (err) {
+    console.error("[availability.load] unexpected error:", err instanceof Error ? err.message : err);
     return apiError("AVAILABILITY_LOAD_FAILED", 500);
   }
 }
@@ -114,11 +117,19 @@ export async function PUT(request: Request) {
     });
 
     if (rpcError) {
+      console.error("[availability.save] set_coach_availability RPC failed:", {
+        coachId: auth.user.id,
+        message: rpcError.message,
+        details: rpcError.details,
+        hint: rpcError.hint,
+        code: rpcError.code,
+      });
       return apiError("AVAILABILITY_SAVE_FAILED", 500);
     }
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    console.error("[availability.save] unexpected error:", err instanceof Error ? err.message : err);
     return apiError("AVAILABILITY_SAVE_FAILED", 500);
   }
 }
