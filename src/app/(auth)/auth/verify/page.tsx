@@ -1,7 +1,7 @@
 "use client";
 
 import { Button as LobbButton } from "@/components/ui/button";
-import { Input as LobbInput } from "@/components/ui/input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
@@ -44,14 +44,13 @@ function getSafeNextPath(nextPath: string | undefined, role: string | undefined)
 
 export default function VerifyPage() {
   const router = useRouter();
-  const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+  const [code, setCode] = useState("");
   const [seconds, setSeconds] = useState(60);
   const [error, setError] = useState("");
   const [verifying, setVerifying] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
-  const inputs = useRef<Array<HTMLInputElement | null>>([]);
+  const otpRef = useRef<React.ComponentRef<typeof InputOTP>>(null);
   const pendingAuth = useMemo(() => (typeof window === "undefined" ? null : getPendingAuth()), []);
-  const code = digits.join("");
   const [resendMessage, setResendMessage] = useState("");
 
   useEffect(() => {
@@ -68,7 +67,7 @@ export default function VerifyPage() {
       return;
     }
 
-    inputs.current[0]?.focus();
+    otpRef.current?.focus();
   }, [pendingAuth, router]);
 
   useEffect(() => {
@@ -239,44 +238,6 @@ export default function VerifyPage() {
     routeAfterAuth("/auth/role");
   };
 
-  const fillAllDigits = (value: string) => {
-    const numeric = value.replace(/\D/g, "").slice(0, OTP_LENGTH);
-    if (!numeric) return;
-    const next = Array(OTP_LENGTH).fill("").map((_, i) => numeric[i] ?? "");
-    setDigits(next);
-    const nextCode = next.join("");
-    const focusIndex = Math.min(numeric.length, OTP_LENGTH - 1);
-    inputs.current[focusIndex]?.focus();
-    if (nextCode.replace(/\s/g, "").length === OTP_LENGTH) verify(nextCode);
-  };
-
-  const updateDigit = (index: number, value: string) => {
-    const numeric = value.replace(/\D/g, "");
-
-    if (numeric.length > 1) {
-      fillAllDigits(numeric);
-      return;
-    }
-
-    const next = [...digits];
-    next[index] = numeric;
-    setDigits(next);
-
-    if (numeric && index < OTP_LENGTH - 1) {
-      inputs.current[index + 1]?.focus();
-    }
-
-    const nextCode = next.join("");
-    if (nextCode.length === OTP_LENGTH) {
-      verify(nextCode);
-    }
-  };
-
-  const handlePaste = (event: React.ClipboardEvent) => {
-    event.preventDefault();
-    fillAllDigits(event.clipboardData.getData("text"));
-  };
-
   const resend = async () => {
     if (!pendingAuth) {
       return;
@@ -301,10 +262,10 @@ export default function VerifyPage() {
     setPendingAuth({ ...pendingAuth, sentAt: Date.now() });
 
     setSeconds(60);
-    setDigits(Array(OTP_LENGTH).fill(""));
+    setCode("");
     setError("");
     setResendMessage("A new verification code was sent.");
-    inputs.current[0]?.focus();
+    otpRef.current?.focus();
   };
 
   return (
@@ -339,32 +300,23 @@ export default function VerifyPage() {
 
         {/* ── OTP digit inputs ─────────────────────────────────────────── */}
         <div className="mt-9">
-          <div
-            className={`grid gap-2 ${isShaking ? "animate-[shake_0.35s_ease-in-out]" : ""}`}
-            style={{ gridTemplateColumns: `repeat(${OTP_LENGTH}, minmax(0, 1fr))` }}
-          >
-            {digits.map((digit, index) => (
-              <LobbInput
-                key={index}
-                ref={(element) => { inputs.current[index] = element; }}
-                aria-label={`Digit ${index + 1}`}
-                inputMode="numeric"
-                maxLength={OTP_LENGTH}
-                value={digit}
-                onChange={(event) => updateDigit(index, event.target.value)}
-                onPaste={handlePaste}
-                onKeyDown={(event) => {
-                  if (event.key === "Backspace" && !digits[index] && index > 0) {
-                    inputs.current[index - 1]?.focus();
-                  }
-                }}
-                className={`h-[60px] rounded-[var(--lobb-radius-lg)] border bg-[var(--lobb-bg-secondary)] text-[var(--lobb-text-primary)] text-center text-[22px] font-semibold shadow-[0_4px_24px_rgba(0,0,0,0.06)] outline-none transition-all duration-300 focus:-translate-y-1 focus:border-[var(--lobb-clay)] focus:bg-[var(--lobb-bg-elevated)] focus:shadow-[0_8px_32px_rgba(196,98,45,0.15)] ${
-                  error
-                    ? "border-[var(--lobb-border-error)]/50 text-[var(--lobb-border-error)] focus:border-[var(--lobb-border-error)] focus:shadow-[0_8px_32px_rgba(214,64,69,0.15)]"
-                    : "border-[var(--lobb-border-subtle)]"
-                }`}
-              />
-            ))}
+          <div className={isShaking ? "animate-[shake_0.35s_ease-in-out]" : ""}>
+            <InputOTP
+              ref={otpRef}
+              maxLength={OTP_LENGTH}
+              value={code}
+              onChange={setCode}
+              onComplete={(value) => verify(value)}
+              autoComplete="one-time-code"
+              inputMode="numeric"
+              containerClassName="w-full"
+            >
+              <InputOTPGroup className="w-full">
+                {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                  <InputOTPSlot key={index} index={index} hasError={Boolean(error)} />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
           </div>
           {error && <FormAlert className="mt-4">{error}</FormAlert>}
           {resendMessage && <FormAlert className="mt-4" variant="success">{resendMessage}</FormAlert>}
