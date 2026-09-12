@@ -6,7 +6,7 @@ import { internalError } from "@/lib/api-response";
 // table holds bank account numbers and encrypted KYC (NIN/BVN) that must not
 // reach the browser. Payout readiness is exposed as a boolean, not the raw code.
 const APPROVAL_COLUMNS =
-  "id, full_name, headline, bio, hourly_rate_ngn, primary_location, service_areas, certifications, demo_video_url, profile_photo_url, slug, created_at, paystack_recipient_code";
+  "id, full_name, headline, bio, hourly_rate_ngn, primary_location, service_areas, certifications, demo_video_url, profile_photo_url, slug, created_at, paystack_recipient_code, kyc_status, kyc_nin_verified, kyc_bvn_verified";
 
 export const GET = withRole("admin", async (_request, auth) => {
   const { data, error } = await auth.admin

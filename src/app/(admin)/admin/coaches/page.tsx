@@ -32,6 +32,9 @@ type CoachApproval = {
   bank_connected: boolean;
   slug: string | null;
   created_at: string;
+  kyc_status: string | null;
+  kyc_nin_verified: boolean;
+  kyc_bvn_verified: boolean;
 };
 
 type DirectoryCoach = {
@@ -92,17 +95,45 @@ function isProperCase(name: string) {
   return name.trim().split(/\s+/).every((part) => part.length > 0 && part[0] === part[0].toUpperCase() && /[a-zA-Z]/.test(part[0]));
 }
 
-function qualityChecks(coach: CoachApproval) {
+// Three different questions, deliberately not one flat list:
+//  - Identity: is this a real, verified person? (Dojah NIN + Paystack BVN —
+//    actual government-backed checks, not something an admin can eyeball)
+//  - Profile quality: is the page worth a player's trust? (content heuristics
+//    an admin genuinely should eyeball — these don't prove identity, they
+//    prove effort)
+//  - Payout ready: can LOBB actually pay this coach?
+function qualityCheckGroups(coach: CoachApproval) {
   return [
-    { label: "Name capitalised", pass: isProperCase(coach.full_name) },
-    { label: "Photo uploaded", pass: Boolean(coach.profile_photo_url) },
-    { label: "Headline 20+ chars", pass: (coach.headline?.length ?? 0) >= 20 },
-    { label: "Bio 80+ words", pass: wordCount(coach.bio) >= 80 },
-    { label: RATE_BAND_LABEL, pass: isValidCoachRate(coach.hourly_rate_ngn) },
-    { label: "Certification listed", pass: coach.certifications.some((c) => c.trim().length > 3) },
-    { label: "Demo video", pass: Boolean(coach.demo_video_url) },
-    { label: "Bank connected", pass: coach.bank_connected },
+    {
+      group: "Identity verification",
+      checks: [
+        { label: "NIN verified", pass: coach.kyc_nin_verified },
+        { label: "BVN verified", pass: coach.kyc_bvn_verified },
+      ],
+    },
+    {
+      group: "Profile quality",
+      checks: [
+        { label: "Name capitalised", pass: isProperCase(coach.full_name) },
+        { label: "Photo uploaded", pass: Boolean(coach.profile_photo_url) },
+        { label: "Headline 20+ chars", pass: (coach.headline?.length ?? 0) >= 20 },
+        { label: "Bio 80+ words", pass: wordCount(coach.bio) >= 80 },
+        { label: "Certification listed", pass: coach.certifications.some((c) => c.trim().length > 3) },
+        { label: "Demo video", pass: Boolean(coach.demo_video_url) },
+      ],
+    },
+    {
+      group: "Payout ready",
+      checks: [
+        { label: RATE_BAND_LABEL, pass: isValidCoachRate(coach.hourly_rate_ngn) },
+        { label: "Bank connected", pass: coach.bank_connected },
+      ],
+    },
   ];
+}
+
+function qualityChecks(coach: CoachApproval) {
+  return qualityCheckGroups(coach).flatMap((g) => g.checks);
 }
 
 export default function AdminCoachesPage() {
@@ -260,16 +291,20 @@ export default function AdminCoachesPage() {
                     <Info label="Profile" value={coach.slug ? "Public preview ready" : "Draft link only"} />
                   </dl>
 
-                  <div className="mt-5">
-                    <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">Launch standard</p>
-                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                      {checks.map(({ label, pass }) => (
-                        <div key={label} className={`flex items-center gap-1.5 rounded-[var(--lobb-radius-sm)] px-2 py-1.5 text-[11px] font-medium ${pass ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"}`}>
-                          {pass ? <Check className="size-3 shrink-0" /> : <X className="size-3 shrink-0" />}
-                          {label}
+                  <div className="mt-5 space-y-4">
+                    {qualityCheckGroups(coach).map(({ group, checks: groupChecks }) => (
+                      <div key={group}>
+                        <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--lobb-text-tertiary)]">{group}</p>
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                          {groupChecks.map(({ label, pass }) => (
+                            <div key={label} className={`flex items-center gap-1.5 rounded-[var(--lobb-radius-sm)] px-2 py-1.5 text-[11px] font-medium ${pass ? "bg-[var(--lobb-success-soft)] text-[var(--lobb-success)]" : "bg-[var(--lobb-error)]/10 text-[var(--lobb-error)]"}`}>
+                              {pass ? <Check className="size-3 shrink-0" /> : <X className="size-3 shrink-0" />}
+                              {label}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="mt-5 flex flex-wrap gap-2">

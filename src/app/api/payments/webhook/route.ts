@@ -81,6 +81,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // ── BVN identity validation result: this is the only place kyc_bvn_verified
+  //    ever gets set — validatePaystackCustomer() in /api/coaches/bank submits
+  //    the check but Paystack verifies it asynchronously and reports back only
+  //    here. Without this handler the column exists and is read (kyc-status
+  //    route, admin coach review) but never written — every coach reads as
+  //    BVN-unverified forever regardless of the actual outcome. ────────────────
+  if (event.event === "customeridentification.success" || event.event === "customeridentification.failed") {
+    const customerCode = event.data.customer_code as string | undefined;
+    if (!customerCode) return NextResponse.json({ ok: true });
+
+    if (event.event === "customeridentification.success") {
+      await admin
+        .from("coaches")
+        .update({ kyc_bvn_verified: true, kyc_status: "bvn_verified", kyc_failed_reason: null })
+        .eq("paystack_customer_code", customerCode);
+    } else {
+      const reason = String(event.data.reason ?? "BVN validation failed");
+      await admin
+        .from("coaches")
+        .update({ kyc_bvn_verified: false, kyc_status: "bvn_failed", kyc_failed_reason: reason })
+        .eq("paystack_customer_code", customerCode);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
   // ── Failed/reversed coach transfers: reopen for the cron to retry ───────────
   if (event.event === "transfer.failed" || event.event === "transfer.reversed") {
     const transferRef = event.data.reference as string | undefined;
