@@ -19,7 +19,7 @@ export default function GlobalRouteError({ error, reset }: { error: Error & { di
       <TennisLineIllustration className="h-24 w-32 text-[var(--lobb-clay)]" />
       <h1 className="mt-5 text-[18px] font-semibold">Something went wrong</h1>
       <p className="mx-auto mt-2 max-w-[280px] text-[13px] font-medium leading-5 text-[var(--lobb-text-secondary)]">
-        That page hit a snag. It's usually a slow connection — try again, and if it keeps happening let us know.
+        That page hit a snag. It&apos;s usually a slow connection — try again, and if it keeps happening let us know.
       </p>
       <button
         type="button"
