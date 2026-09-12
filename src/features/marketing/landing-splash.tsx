@@ -42,7 +42,7 @@ export function LandingSplash({ coaches, coachCount }: { coaches: CoachPublicPro
         <div className="lobb-landing-top-gradient absolute inset-x-0 top-0 h-[620px] bg-[linear-gradient(180deg,var(--lobb-bg-secondary),transparent)]" />
       </div>
 
-      <header className="lobb-landing-header sticky top-0 z-30 border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]/88 backdrop-blur-xl">
+      <header className="lobb-landing-header border-b border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-primary)]">
         <div className="mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-6 lg:px-8">
           <Link href="/" aria-label="LOBB home" className="group flex min-w-0 items-center gap-2.5 md:justify-self-start">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-[var(--lobb-radius-md)] border border-[var(--lobb-border-subtle)] bg-[var(--lobb-bg-elevated)] transition duration-300 group-hover:border-[var(--lobb-clay)]/45">

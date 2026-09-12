@@ -58,13 +58,13 @@ export function CoachBrowser({ coaches, coachCount }: { coaches: CoachPublicProf
         </div>
       </div>
 
-      <div className="flex flex-col justify-between border-t border-[var(--lobb-border-subtle)] p-6 sm:p-8 lg:border-l lg:border-t-0">
+      <div className="flex flex-col justify-between border-t border-[var(--lobb-border-subtle)] p-5 sm:p-7 lg:border-l lg:border-t-0">
         <div>
           <p className="text-sm font-medium text-[var(--lobb-clay)]">Find your fit</p>
-          <h3 className="mt-3 text-3xl font-semibold leading-[1.04] tracking-tight">Compare real coaches, quickly.</h3>
-          <p className="mt-4 max-w-sm text-sm leading-6 text-[var(--lobb-text-secondary)]">Tap a profile to compare coaching style, location, rating and price before you book.</p>
+          <h3 className="mt-2 text-xl font-semibold leading-[1.1] tracking-tight">Compare real coaches, quickly.</h3>
+          <p className="mt-2.5 max-w-sm text-sm leading-6 text-[var(--lobb-text-secondary)]">Tap a profile to compare style, location and price.</p>
         </div>
-        <div className="mt-8">
+        <div className="mt-6">
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-[var(--lobb-text-secondary)]">
             <span className="inline-flex items-center gap-1.5"><MapPin className="size-4 text-[var(--lobb-clay)]" />{selected.primary_location ?? "Lagos"}</span>
             <span className="inline-flex items-center gap-1.5"><Star className="size-4 fill-[var(--lobb-star)] text-[var(--lobb-star)]" />{selected.avg_rating != null ? Number(selected.avg_rating).toFixed(1) : "New"}</span>
