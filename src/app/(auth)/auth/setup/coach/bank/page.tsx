@@ -116,6 +116,14 @@ export default function CoachSetupBankPage() {
     }
   };
 
+  // Your profile is already submitted for review by this point (step 5 sets
+  // status: pending_review before routing here) — payouts genuinely aren't a
+  // hard gate on anything except getting paid. Players can't book a coach
+  // with no bank on file either way (enforced server-side at booking time),
+  // and the dashboard already carries a standing reminder until this is
+  // done, so there's no reason to trap someone on this exact screen.
+  const skip = () => router.push("/auth/setup/coach/submitted");
+
   return (
     <OnboardingShell step="6 of 6" backHref="/auth/setup/coach/5">
       <form onSubmit={submit} className="flex flex-1 flex-col pt-4 relative z-10">
@@ -127,7 +135,8 @@ export default function CoachSetupBankPage() {
           </OnboardingTitle>
           <OnboardingCopy>
             Add your personal bank account. LOBB will create a dedicated earnings account in your name
-            — your session payouts accumulate there, and you withdraw whenever you want.
+            — your session payouts accumulate there, and you withdraw whenever you want. Your profile
+            is already submitted either way — this just controls when you can get paid.
           </OnboardingCopy>
         </section>
 
@@ -218,6 +227,14 @@ export default function CoachSetupBankPage() {
           <OnboardingButton type="submit" disabled={!canContinue || saving}>
             {saving ? "Saving..." : "Save & submit profile"}
           </OnboardingButton>
+          <button
+            type="button"
+            onClick={skip}
+            disabled={saving}
+            className="mt-4 block w-full text-center text-[13px] font-medium text-[var(--lobb-text-tertiary)] transition-colors hover:text-[var(--lobb-text-secondary)] disabled:opacity-60"
+          >
+            Set up payouts later — you won&apos;t receive bookings until you do
+          </button>
         </div>
       </form>
     </OnboardingShell>
