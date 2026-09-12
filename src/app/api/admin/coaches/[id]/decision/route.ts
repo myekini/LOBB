@@ -120,7 +120,7 @@ export const POST = withRole("admin", async (request, auth, context) => {
     .eq("id", id)
     .maybeSingle();
 
-  if ((action === "approve" || action === "reject") && profile?.email && profile.email_notifications_enabled !== false) {
+  if (profile?.email && profile.email_notifications_enabled !== false) {
     // The decision is already committed; a mail failure must not 500 the request
     // (that makes admins re-click and double-log the action).
     try {

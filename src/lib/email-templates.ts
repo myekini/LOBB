@@ -490,10 +490,27 @@ export function bookingCancelledEmail(
 }
 
 export function coachDecisionEmail(
-  action: "approve" | "reject",
+  action: "approve" | "reject" | "suspend" | "unsuspend",
   reason: string | null,
   needsDirectContact: boolean
 ): EmailTemplate {
+  if (action === "suspend" || action === "unsuspend") {
+    const suspended = action === "suspend";
+    const subject = suspended ? "Your LOBB coach profile has been suspended" : "Your LOBB coach profile is active again";
+    const preview = suspended ? (reason ?? "Your profile is temporarily hidden from players.") : "Players can find and book you again.";
+    const html = shell(
+      suspended ? "Profile suspended" : "You're back",
+      preview,
+      suspended
+        ? `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your coach profile has been suspended and is hidden from players. Any confirmed bookings you already have are not affected.</p>${detailTable([
+            ["Reason", reason],
+          ])}${noteCard("Next step", "Reply to this email if you believe this is a mistake or want to know what's needed to be reinstated.", "warning")}`
+        : `<p style="margin:0;color:${BRAND.muted};font:700 16px/1.7 Arial,Helvetica,sans-serif;">Your coach profile is live again. Players can find and book your sessions as before.</p>${noteCard("Next step", "Double-check your availability is up to date before new bookings start coming in.", "success")}`,
+      { label: suspended ? "Contact support" : "View profile", href: suspended ? "mailto:support@lobb.ng" : appUrl("/coach/profile") }
+    );
+    return { subject, preview, html, text: `${subject}\n${preview}` };
+  }
+
   const approved = action === "approve";
   const subject = approved ? "Your LOBB coach profile is live" : "Your LOBB coach profile needs updates";
   const preview = approved ? "Players can now discover and book you." : reason ?? "Review the requested updates and resubmit.";

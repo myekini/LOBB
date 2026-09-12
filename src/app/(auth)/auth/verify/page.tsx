@@ -7,6 +7,7 @@ import { FormAlert } from "@/components/ui/form-alert";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import { OnboardingShell } from "@/features/auth/onboarding-shell";
 import { clearPendingAuth, getPendingAuth, setPendingAuth } from "@/lib/auth-flow";
 import { track } from "@/lib/analytics";
@@ -188,6 +189,9 @@ export default function VerifyPage() {
     const intendedRole = pendingAuth.role;
 
     if (profile?.role === "coach") {
+      if (intendedRole === "player") {
+        showLobbToast({ type: "info", message: "This email already has a coach account — signed in there instead." });
+      }
       track("User Signed In", { role: "coach" });
       routeAfterAuth(profile.full_name ? "/coach/dashboard" : "/auth/setup/coach/1");
       return;
@@ -211,6 +215,9 @@ export default function VerifyPage() {
         track("User Signed In", { role: "coach" });
         routeAfterAuth("/auth/setup/coach/1");
         return;
+      }
+      if (intendedRole === "coach" && profile.full_name) {
+        showLobbToast({ type: "info", message: "This email already has a player account — signed in there instead." });
       }
       track("User Signed In", { role: "player" });
       routeAfterAuth(profile.full_name ? "/home" : "/auth/setup/player");

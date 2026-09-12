@@ -48,6 +48,7 @@ export default function RolePage() {
   const [selected, setSelected] = useState<UserRole | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     const pending = getPendingAuth();
@@ -92,6 +93,16 @@ export default function RolePage() {
 
     track("Role Selected", { role: selected });
     router.replace(selected === "player" ? "/auth/setup/player" : "/auth/setup/coach/1");
+  };
+
+  // This screen only appears when a signed-in user has no role on file yet —
+  // there's otherwise no way out of it (no back button, and the middleware
+  // guard keeps sending a role-less user straight back here). Wrong account
+  // or landed here by mistake needs an actual exit.
+  const signOut = async () => {
+    setSigningOut(true);
+    await createClient().auth.signOut();
+    router.push("/auth/login");
   };
 
   return (
@@ -170,6 +181,15 @@ export default function RolePage() {
           <OnboardingButton disabled={!selected} loading={saving} onClick={continueFlow}>
             {saving ? "Saving" : "Continue"}
           </OnboardingButton>
+          <LobbButton
+            variant="unstyled"
+            type="button"
+            disabled={signingOut}
+            onClick={signOut}
+            className="mt-4 w-full text-center text-[13px] font-medium text-[var(--lobb-text-tertiary)] transition-colors hover:text-[var(--lobb-text-secondary)] disabled:opacity-60"
+          >
+            {signingOut ? "Signing out…" : "Wrong account? Sign out"}
+          </LobbButton>
         </div>
       </section>
     </OnboardingShell>

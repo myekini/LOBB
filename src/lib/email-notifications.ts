@@ -316,17 +316,24 @@ export async function sendRefundIssuedEmail(
   });
 }
 
+const COACH_DECISION_EMAIL_TYPE = {
+  approve: "coach_approved",
+  reject: "coach_rejected",
+  suspend: "coach_suspended",
+  unsuspend: "coach_reactivated",
+} as const;
+
 export async function sendCoachDecisionEmail(
   admin: SupabaseClient,
   coachId: string,
   email: string | null | undefined,
-  action: "approve" | "reject",
+  action: "approve" | "reject" | "suspend" | "unsuspend",
   reason: string | null,
   needsDirectContact: boolean
 ) {
   if (!email) return;
   await sendAndRecord(admin, {
-    type: action === "approve" ? "coach_approved" : "coach_rejected",
+    type: COACH_DECISION_EMAIL_TYPE[action],
     recipient_user_id: coachId,
     recipient_email: email,
     coach_id: coachId,
