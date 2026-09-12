@@ -18,6 +18,7 @@ import {
 } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
 import { COACH_RATE_PRESETS, coachRateError, isValidCoachRate } from "@/lib/config/pricing";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 const LAGOS_LOCATIONS = [
   "Lekki",
@@ -85,6 +86,9 @@ export default function CoachSetupStep4Page() {
       if (Array.isArray(coach.skill_levels)) {
         setSkillLevels((current) => (current.length ? current : (coach.skill_levels as string[])));
       }
+    }).catch((error) => {
+      console.error("[coach-setup-4] prefill failed:", error instanceof Error ? error.message : error);
+      showLobbToast({ type: "error", message: "Could not load your saved profile. You can still fill this in from scratch." });
     });
   }, []);
 
@@ -103,7 +107,8 @@ export default function CoachSetupStep4Page() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Your session expired. Please sign in again.");
+      showLobbToast({ type: "error", message: "Your session expired. Please sign in again." });
+      router.push("/auth/login");
       return;
     }
 

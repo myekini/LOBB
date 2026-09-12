@@ -21,21 +21,32 @@ type Bank = { name: string; code: string };
 export default function CoachSetupBankPage() {
   const router = useRouter();
   const [banks, setBanks] = useState<Bank[]>([]);
+  const [banksError, setBanksError] = useState(false);
+  const [banksLoading, setBanksLoading] = useState(true);
   const [accountNumber, setAccountNumber] = useState("");
   const [bankCode, setBankCode] = useState("");
   const [bankName, setBankName] = useState("");
   const [resolvedName, setResolvedName] = useState<string | null>(null);
+  const [resolveError, setResolveError] = useState(false);
   const [resolving, setResolving] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const resolveAbortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const loadBanks = () => {
+    setBanksError(false);
+    setBanksLoading(true);
     fetch("/api/paystack/banks")
       .then((r) => r.json() as Promise<{ banks?: Bank[]; error?: string }>)
-      .then((data) => { if (data.banks) setBanks(data.banks); })
-      .catch(() => {});
-  }, []);
+      .then((data) => {
+        if (data.banks?.length) setBanks(data.banks);
+        else setBanksError(true);
+      })
+      .catch(() => setBanksError(true))
+      .finally(() => setBanksLoading(false));
+  };
+
+  useEffect(loadBanks, []);
 
   // Prefill from a previously-saved bank on file (e.g. revisiting to update
   // payout details) so this step is never a blank slate.
@@ -52,12 +63,15 @@ export default function CoachSetupBankPage() {
       setAccountNumber((current) => current || coach.bank_account_number || "");
       setBankCode((current) => current || coach.bank_code || "");
       setBankName((current) => current || coach.bank_name || "");
+    }).catch((error) => {
+      console.error("[coach-setup-bank] prefill failed:", error instanceof Error ? error.message : error);
     });
   }, []);
 
   // Auto-resolve account name once 10 digits + bank are selected
   useEffect(() => {
     setResolvedName(null);
+    setResolveError(false);
     if (!/^\d{10}$/.test(accountNumber) || !bankCode) return;
 
     resolveAbortRef.current?.abort();
@@ -71,8 +85,12 @@ export default function CoachSetupBankPage() {
       .then((r) => r.json() as Promise<{ account_name?: string; error?: string }>)
       .then((data) => {
         if (data.account_name) setResolvedName(data.account_name);
+        else setResolveError(true);
       })
-      .catch(() => {})
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setResolveError(true);
+      })
       .finally(() => setResolving(false));
   }, [accountNumber, bankCode]);
 
@@ -149,11 +167,19 @@ export default function CoachSetupBankPage() {
               value={bankCode}
               onChange={handleBankChange}
               options={banks.map((bank) => ({ value: bank.code, label: bank.name }))}
-              placeholder={banks.length === 0 ? "Loading banks…" : "Select your bank"}
+              placeholder={banksLoading ? "Loading banks…" : banksError ? "Could not load banks" : "Select your bank"}
               searchPlaceholder="Search banks…"
               emptyMessage="No bank matches that search."
               disabled={banks.length === 0}
             />
+            {banksError && (
+              <p className="mt-2 text-[12px] font-medium text-[var(--lobb-error)]">
+                Could not load the bank list.{" "}
+                <button type="button" onClick={loadBanks} className="underline underline-offset-2">
+                  Try again
+                </button>
+              </p>
+            )}
           </div>
 
           {/* Account number */}
@@ -177,6 +203,11 @@ export default function CoachSetupBankPage() {
             <p className="mt-2 text-[12px] font-medium text-[var(--lobb-text-tertiary)]">
               Must be exactly 10 digits — your NUBAN number
             </p>
+            {resolveError && (
+              <p className="mt-2 text-[12px] font-medium text-[var(--lobb-error)]">
+                Could not confirm this account name — double-check the number and bank before submitting.
+              </p>
+            )}
           </div>
 
           {/* Account name confirmation */}

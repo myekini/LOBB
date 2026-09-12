@@ -198,7 +198,7 @@ export default function BookingDetailPage() {
             </span>
             <div>
               <h2 className="text-sm font-semibold text-[var(--lobb-text-primary)]">Booking confirmed</h2>
-              <p className="mt-1 text-sm leading-5 text-[var(--lobb-text-secondary)]">You’re all set. The session details and coach contact are below.</p>
+              <p className="mt-1 text-sm leading-5 text-[var(--lobb-text-secondary)]">Session details and coach contact are below.</p>
             </div>
           </section>
         )}

@@ -15,6 +15,7 @@ import { setPendingAuth } from "@/lib/auth-flow";
 import { resolvePostAuthPath } from "@/lib/auth-redirect";
 import { browserSupportsPasskeys, passkeyErrorMessage, passkeysEnabled, signInWithPasskey } from "@/lib/auth-passkey";
 import { track } from "@/lib/analytics";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 export function AuthLoginForm() {
   const router = useRouter();
@@ -33,6 +34,15 @@ export function AuthLoginForm() {
 
   useEffect(() => setShowPasskey(passkeysEnabled() && browserSupportsPasskeys()), []);
 
+  // Middleware appends this when it bounced a signed-in user whose session
+  // had gone stale — otherwise they land here with zero explanation.
+  useEffect(() => {
+    if (searchParams.get("reason") === "session_expired") {
+      showLobbToast({ type: "info", message: "You were signed out — please sign in again." });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const hasValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const busy = loading || sendingCode || passkeyBusy;
   const canSubmit = hasValidEmail && password.length > 0 && !busy;
@@ -47,6 +57,7 @@ export function AuthLoginForm() {
     const supabase = createClient();
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
     track("User Signed In", { role: profile?.role ?? "unknown", method });
+    showLobbToast({ type: "success", message: "Welcome back." });
     router.replace(await resolvePostAuthPath(supabase, userId, { nextPath }));
     router.refresh();
   };

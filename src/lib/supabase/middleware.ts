@@ -76,6 +76,14 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/auth/login";
     redirectUrl.searchParams.set("next", pathname + request.nextUrl.search);
+    // A stale/expired sb-* cookie was present but getUser() rejected it — this
+    // was a real signed-in visitor bounced mid-session, not a fresh arrival.
+    // Distinguishing the two lets the login page explain what happened
+    // instead of silently dropping them there.
+    const hadSession = request.cookies.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+    if (hadSession) {
+      redirectUrl.searchParams.set("reason", "session_expired");
+    }
     return NextResponse.redirect(redirectUrl);
   }
 

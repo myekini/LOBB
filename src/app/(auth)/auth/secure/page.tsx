@@ -15,6 +15,7 @@ import {
 import { LoginSkeleton } from "@/features/auth/auth-email-form";
 import { createClient } from "@/lib/supabase/client";
 import { track } from "@/lib/analytics";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 const MIN_LENGTH = 8;
 
@@ -39,6 +40,7 @@ function SecurePage() {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) {
+        showLobbToast({ type: "error", message: "Your verification session expired. Please sign in again." });
         router.replace("/auth/login");
         return;
       }
@@ -54,6 +56,10 @@ function SecurePage() {
         }
       }
       setChecking(false);
+    }).catch((error) => {
+      console.error("[auth-secure] getUser failed:", error instanceof Error ? error.message : error);
+      showLobbToast({ type: "error", message: "We could not verify your session. Please sign in again." });
+      router.replace("/auth/login");
     });
   }, [router, next, isReset]);
 
@@ -92,6 +98,7 @@ function SecurePage() {
     }
 
     track("Password Set");
+    showLobbToast({ type: "success", message: isReset ? "Password updated." : "Password set — you're all set." });
     proceed();
   };
 

@@ -243,19 +243,30 @@ export default function VerifyPage() {
       return;
     }
 
-    const response = await fetch("/api/auth/send-otp", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...(pendingAuth.email ? { email: pendingAuth.email } : { phone: pendingAuth.phone }),
-        ...(pendingAuth.role ? { role: pendingAuth.role } : {}),
-      }),
-    });
+    setError("");
+    setResendMessage("");
+
+    let response: Response;
+    try {
+      response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(pendingAuth.email ? { email: pendingAuth.email } : { phone: pendingAuth.phone }),
+          ...(pendingAuth.role ? { role: pendingAuth.role } : {}),
+        }),
+      });
+    } catch {
+      // Deliberately not fail(): that shakes the OTP boxes, which reads as
+      // "wrong code" — this failure has nothing to do with what's typed in.
+      setError("Could not reach LOBB. Check your connection and try again.");
+      return;
+    }
 
     const result = (await response.json().catch(() => null)) as { error?: string } | null;
 
     if (!response.ok) {
-      fail(result?.error || "Could not resend code. Try again.");
+      setError(result?.error || "Could not resend code. Try again.");
       return;
     }
 

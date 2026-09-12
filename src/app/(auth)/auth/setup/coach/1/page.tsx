@@ -17,6 +17,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 import { appErrorFromUnknown } from "@/lib/app-errors";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 export default function CoachSetupStepOnePage() {
   return (
@@ -46,27 +47,26 @@ function CoachSetupStepOneForm() {
   // Prefill from the existing draft so coaches can come back and edit a field
   // (e.g. fix their name for bank verification) without losing anything.
   useEffect(() => {
-    try {
-      const supabase = createClient();
-      supabase.auth.getUser().then(async ({ data }) => {
-        if (!data.user) return;
-        if (data.user.email) setAuthEmail(data.user.email);
-        const { data: coach } = await supabase
-          .from("coaches")
-          .select("full_name, headline, profile_photo_url")
-          .eq("id", data.user.id)
-          .maybeSingle();
-        if (!coach) return;
-        setFullName((current) => current || coach.full_name || "");
-        setHeadline((current) => current || coach.headline || "");
-        if (coach.profile_photo_url) {
-          setSavedPhotoUrl(coach.profile_photo_url);
-          setPhotoUrl((current) => current || coach.profile_photo_url);
-        }
-      });
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Sign in is temporarily unavailable.");
-    }
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data }) => {
+      if (!data.user) return;
+      if (data.user.email) setAuthEmail(data.user.email);
+      const { data: coach } = await supabase
+        .from("coaches")
+        .select("full_name, headline, profile_photo_url")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (!coach) return;
+      setFullName((current) => current || coach.full_name || "");
+      setHeadline((current) => current || coach.headline || "");
+      if (coach.profile_photo_url) {
+        setSavedPhotoUrl(coach.profile_photo_url);
+        setPhotoUrl((current) => current || coach.profile_photo_url);
+      }
+    }).catch((error) => {
+      console.error("[coach-setup-1] prefill failed:", error instanceof Error ? error.message : error);
+      showLobbToast({ type: "error", message: "Could not load your saved profile. You can still fill this in from scratch." });
+    });
   }, []);
 
   const next = async (event: React.FormEvent) => {
@@ -89,7 +89,8 @@ function CoachSetupStepOneForm() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Session expired. Please sign in again.");
+      showLobbToast({ type: "error", message: "Your session expired. Please sign in again." });
+      router.push("/auth/login");
       return;
     }
 

@@ -15,6 +15,7 @@ import {
 import { getPendingAuth } from "@/lib/auth-flow";
 import { createClient } from "@/lib/supabase/client";
 import { track } from "@/lib/analytics";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 type UserRole = "player" | "coach";
 
@@ -73,7 +74,7 @@ export default function RolePage() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Your verification session expired. Return to sign in and request a new code.");
+      showLobbToast({ type: "error", message: "Your verification session expired. Sign in again to request a new code." });
       router.push("/auth/login");
       return;
     }

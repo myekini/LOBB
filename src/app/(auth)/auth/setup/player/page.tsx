@@ -18,6 +18,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { uploadProfilePhoto } from "@/lib/supabase/uploads";
 import { appErrorFromUnknown } from "@/lib/app-errors";
+import { showLobbToast } from "@/providers/lobb-global-state";
 
 export default function PlayerSetupPage() {
   const router = useRouter();
@@ -32,6 +33,8 @@ export default function PlayerSetupPage() {
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => {
       if (data.user?.email) setAuthEmail(data.user.email);
+    }).catch((error) => {
+      console.error("[player-setup] getUser failed:", error instanceof Error ? error.message : error);
     });
   }, []);
 
@@ -50,7 +53,8 @@ export default function PlayerSetupPage() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Session expired. Please sign in again.");
+      showLobbToast({ type: "error", message: "Your session expired. Please sign in again." });
+      router.push("/auth/login");
       return;
     }
 
@@ -85,6 +89,7 @@ export default function PlayerSetupPage() {
       }
 
       track("Player Profile Created");
+      showLobbToast({ type: "success", message: "You're all set — welcome to LOBB." });
       router.replace("/home");
       router.refresh();
     } catch (error) {

@@ -17,6 +17,7 @@ import {
   OnboardingTitle,
 } from "@/features/auth/onboarding-shell";
 import { createClient } from "@/lib/supabase/client";
+import { showLobbToast } from "@/providers/lobb-global-state";
 import {
   CERTIFICATION_OPTIONS,
   COURT_ACCESS_OPTIONS,
@@ -65,6 +66,9 @@ export default function CoachSetupStep5Page() {
       if (Array.isArray(coach.languages)) setLanguages((c) => (c.length ? c : (coach.languages as string[])));
       if (coach.court_access) setCourtAccess((c) => c || (coach.court_access as CourtAccess));
       if (coach.demo_video_url) setDemoVideoUrl((c) => c || coach.demo_video_url || "");
+    }).catch((error) => {
+      console.error("[coach-setup-5] prefill failed:", error instanceof Error ? error.message : error);
+      showLobbToast({ type: "error", message: "Could not load your saved profile. You can still fill this in from scratch." });
     });
   }, []);
 
@@ -95,7 +99,8 @@ export default function CoachSetupStep5Page() {
 
     if (userError || !user) {
       setSaving(false);
-      setError("Your session expired. Please sign in again.");
+      showLobbToast({ type: "error", message: "Your session expired. Please sign in again." });
+      router.push("/auth/login");
       return;
     }
 
@@ -126,14 +131,21 @@ export default function CoachSetupStep5Page() {
       return;
     }
 
-    await fetch("/api/legal/consent", {
+    // Consent was already captured client-side (both checkboxes are required
+    // to reach this point) and the profile is already pending_review either
+    // way — this call just persists the record for audit purposes, so a
+    // failure here shouldn't block the flow. It should still be visible to
+    // whoever's on call instead of vanishing silently.
+    fetch("/api/legal/consent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         documents: ["coach_agreement", "coach_code_of_conduct", "coach_profile_accuracy"],
         metadata: { source: "coach_profile_submission" },
       }),
-    }).catch(() => null);
+    }).catch((error) => {
+      console.error("[coach-setup-5] legal consent record failed:", error instanceof Error ? error.message : error);
+    });
 
     track("Coach Profile Submitted");
     router.push("/auth/setup/coach/bank");
